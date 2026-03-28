@@ -266,7 +266,7 @@ export default function SettingsPage() {
                   </div>
                   {business.logo_url && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: BG, borderRadius: '8px', border: `1px solid ${BORDER}` }}>
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}/>
+                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'center' }}/>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '2px' }}>Logo preview</div>
                         <div style={{ fontSize: '12px', color: TEXT3 }}>This appears in the bottom left of the sidebar</div>
