@@ -9,16 +9,18 @@ export function useBusiness() {
     role_title: string | null
   } | null>(null)
 
+  const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session) { setLoaded(true); return }
       const { data: userData } = await supabase
         .from('users')
         .select('business_id, full_name, role_title')
         .eq('id', session.user.id)
         .single()
-      if (!userData) return
+      if (!userData) { setLoaded(true); return }
       const { data: bizData } = await supabase
         .from('businesses')
         .select('name, logo_url')
@@ -32,9 +34,10 @@ export function useBusiness() {
           role_title: userData.role_title,
         })
       }
+      setLoaded(true)
     }
     load()
   }, [])
 
-  return data
+  return { data, loaded }
 }
