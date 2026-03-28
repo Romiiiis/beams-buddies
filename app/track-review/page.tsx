@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-export default function TrackReviewPage() {
+function TrackReviewContent() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -35,5 +36,13 @@ export default function TrackReviewPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', color: '#5A5A5A', fontSize: '14px' }}>
       Redirecting…
     </div>
+  )
+}
+
+export default function TrackReviewPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', color: '#5A5A5A', fontSize: '14px' }}>Loading…</div>}>
+      <TrackReviewContent />
+    </Suspense>
   )
 }
