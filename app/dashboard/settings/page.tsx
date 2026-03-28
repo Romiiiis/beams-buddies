@@ -81,7 +81,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
       <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {logoUrl ? (
-            <img src={logoUrl} alt={userName || 'Logo'} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px', flexShrink: 0 }} />
+            <img src={logoUrl} alt={userName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px', flexShrink: 0 }} />
           ) : (
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '600' }}>{initials}</div>
           )}
