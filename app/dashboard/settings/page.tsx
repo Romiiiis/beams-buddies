@@ -34,15 +34,21 @@ const icons: Record<string, React.ReactElement> = {
 
 interface Platform { id: string; name: string; url: string }
 
-function Sidebar({ active, router, onSignOut }: { active: string, router: any, onSignOut: () => void }) {
+function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active: string, router: any, onSignOut: () => void, logoUrl?: string, businessName?: string }) {
   return (
     <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          {logoUrl ? (
+            <img src={logoUrl} alt={businessName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '32px', height: '32px', background: A, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 2L9.5 5H11.5L9 8.5L10 12L7 10L4 12L5 8.5L2.5 5H4.5L7 2Z" fill="white"/></svg>
+            </div>
+          )}
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>HVAC CRM</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
           </div>
         </div>
       </div>
@@ -94,6 +100,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [businessId, setBusinessId] = useState('')
+  const [business, setBusiness] = useState<any>({})
   const [form, setForm] = useState({
     google_review_url: '',
     facebook_review_url: '',
@@ -110,20 +117,23 @@ export default function SettingsPage() {
       const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
       if (!userData) return
       setBusinessId(userData.business_id)
-      const { data: settings } = await supabase
-        .from('business_settings')
-        .select('*')
-        .eq('business_id', userData.business_id)
-        .single()
-      if (settings) {
+
+      const [businessRes, settingsRes] = await Promise.all([
+        supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
+        supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
+      ])
+
+      if (businessRes.data) setBusiness(businessRes.data)
+
+      if (settingsRes.data) {
         setForm({
-          google_review_url: settings.google_review_url || '',
-          facebook_review_url: settings.facebook_review_url || '',
-          review_discount_amount: settings.review_discount_amount?.toString() || '10',
-          review_discount_max: settings.review_discount_max?.toString() || '30',
-          review_discount_enabled: settings.review_discount_enabled ?? true,
+          google_review_url: settingsRes.data.google_review_url || '',
+          facebook_review_url: settingsRes.data.facebook_review_url || '',
+          review_discount_amount: settingsRes.data.review_discount_amount?.toString() || '10',
+          review_discount_max: settingsRes.data.review_discount_max?.toString() || '30',
+          review_discount_enabled: settingsRes.data.review_discount_enabled ?? true,
         })
-        setPlatforms(settings.custom_review_platforms || [])
+        setPlatforms(settingsRes.data.custom_review_platforms || [])
       }
       setLoading(false)
     }
@@ -134,9 +144,16 @@ export default function SettingsPage() {
     e.preventDefault()
     setSaving(true)
     setSaved(false)
-    await supabase
-      .from('business_settings')
-      .upsert({
+
+    await Promise.all([
+      supabase.from('businesses').update({
+        name: business.name,
+        logo_url: business.logo_url || null,
+        phone: business.phone,
+        email: business.email,
+      }).eq('id', businessId),
+
+      supabase.from('business_settings').upsert({
         business_id: businessId,
         google_review_url: form.google_review_url || null,
         facebook_review_url: form.facebook_review_url || null,
@@ -145,7 +162,9 @@ export default function SettingsPage() {
         review_discount_enabled: form.review_discount_enabled,
         custom_review_platforms: platforms,
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'business_id' })
+      }, { onConflict: 'business_id' }),
+    ])
+
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
@@ -153,6 +172,10 @@ export default function SettingsPage() {
 
   function set(field: string, value: any) {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  function setBiz(field: string, value: any) {
+    setBusiness((prev: any) => ({ ...prev, [field]: value }))
   }
 
   function addPlatform() {
@@ -185,7 +208,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <Sidebar active="/dashboard/settings" router={router} onSignOut={signOut} />
+      <Sidebar active="/dashboard/settings" router={router} onSignOut={signOut} logoUrl={business.logo_url} businessName={business.name} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Settings</div>
@@ -205,41 +228,62 @@ export default function SettingsPage() {
             <form id="settings-form" onSubmit={handleSave}>
 
               <div style={section}>
+                <div style={sHead}>Business profile</div>
+                <div style={sBody}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Business name</label>
+                      <input style={input} value={business.name || ''} onChange={e => setBiz('name', e.target.value)} placeholder="Beams Marketing"/>
+                    </div>
+                    <div>
+                      <label style={label}>Phone</label>
+                      <input style={input} value={business.phone || ''} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000"/>
+                    </div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label style={label}>Email</label>
+                      <input style={input} value={business.email || ''} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com"/>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={label}>Logo URL</label>
+                    <input style={input} value={business.logo_url || ''} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png"/>
+                    <p style={hint}>Paste a direct link to your logo image. It will appear in the sidebar and on the customer registration page.</p>
+                  </div>
+                  {business.logo_url && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: BG, borderRadius: '8px', border: `1px solid ${BORDER}` }}>
+                      <img src={business.logo_url} alt="Logo preview" style={{ width: '52px', height: '52px', borderRadius: '8px', objectFit: 'cover' }}/>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '2px' }}>Logo preview</div>
+                        <div style={{ fontSize: '12px', color: TEXT3 }}>This is how your logo will appear in the sidebar</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={section}>
                 <div style={sHead}>Review platforms</div>
                 <div style={sBody}>
                   <div style={{ fontSize: '13px', color: TEXT3, lineHeight: 1.6, padding: '12px 14px', background: '#EAF6F5', borderRadius: '8px', border: '1px solid #CCEFED' }}>
                     Add your review page links below. These appear on the customer registration page after each installation, encouraging customers to leave a review in exchange for a service discount.
                   </div>
-
                   <div>
                     <label style={label}>Google review link</label>
                     <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review"/>
                     <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
                   </div>
-
                   <div>
                     <label style={label}>Facebook review link</label>
                     <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews"/>
                     <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
                   </div>
-
                   {platforms.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT2 }}>Additional platforms</div>
                       {platforms.map(p => (
                         <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '10px', alignItems: 'center' }}>
-                          <input
-                            style={input}
-                            value={p.name}
-                            onChange={e => updatePlatform(p.id, 'name', e.target.value)}
-                            placeholder="Platform name"
-                          />
-                          <input
-                            style={input}
-                            value={p.url}
-                            onChange={e => updatePlatform(p.id, 'url', e.target.value)}
-                            placeholder="https://…"
-                          />
+                          <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name"/>
+                          <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://…"/>
                           <button type="button" onClick={() => removePlatform(p.id)}
                             style={{ height: '40px', width: '40px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: '#B91C1C', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             ×
@@ -248,7 +292,6 @@ export default function SettingsPage() {
                       ))}
                     </div>
                   )}
-
                   <button type="button" onClick={addPlatform}
                     style={{ height: '38px', padding: '0 16px', borderRadius: '8px', border: `1px dashed ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px', width: 'fit-content' }}>
                     <span style={{ fontSize: '16px', color: A }}>+</span> Add another platform
@@ -269,7 +312,6 @@ export default function SettingsPage() {
                       <div style={{ position: 'absolute', top: '3px', left: form.review_discount_enabled ? '23px' : '3px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
                     </div>
                   </div>
-
                   {form.review_discount_enabled && (
                     <>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
@@ -284,11 +326,10 @@ export default function SettingsPage() {
                           <p style={hint}>Cap on total discount across all platforms</p>
                         </div>
                       </div>
-
                       <div style={{ padding: '14px 16px', background: '#FFFBEB', borderRadius: '8px', border: '1px solid #FEF3C7' }}>
                         <div style={{ fontSize: '13px', fontWeight: '600', color: '#78350F', marginBottom: '6px' }}>Preview — what customers will see</div>
                         <div style={{ fontSize: '13px', color: '#92400E', lineHeight: 1.7 }}>
-                          "For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>."
+                          For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
                         </div>
                         {allPlatformCount > 0 && (
                           <div style={{ marginTop: '10px', fontSize: '12px', color: '#92400E' }}>
