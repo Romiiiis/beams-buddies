@@ -81,7 +81,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
       <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {logoUrl ? (
-            <img src={logoUrl} alt={userName || 'Logo'} style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            <img src={logoUrl} alt={userName || 'Logo'} style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px', flexShrink: 0 }} />
           ) : (
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '600' }}>{initials}</div>
           )}
@@ -266,8 +266,7 @@ export default function SettingsPage() {
                   </div>
                   {business.logo_url && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: BG, borderRadius: '8px', border: `1px solid ${BORDER}` }}>
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'center' }}/>
-                      <div>
+<img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px' }}/>                      <div>
                         <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '2px' }}>Logo preview</div>
                         <div style={{ fontSize: '12px', color: TEXT3 }}>This appears in the bottom left of the sidebar</div>
                       </div>
