@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useBusiness } from '@/lib/useBusiness'
 import QRCode from 'qrcode'
 
 const A = '#2AA198'
@@ -33,15 +34,21 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/settings': <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
-function Sidebar({ active, router, onSignOut }: { active: string, router: any, onSignOut: () => void }) {
+function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active: string, router: any, onSignOut: () => void, logoUrl?: string, businessName?: string }) {
   return (
     <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          {logoUrl ? (
+            <img src={logoUrl} alt={businessName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '32px', height: '32px', background: A, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 2L9.5 5H11.5L9 8.5L10 12L7 10L4 12L5 8.5L2.5 5H4.5L7 2Z" fill="white"/></svg>
+            </div>
+          )}
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>HVAC CRM</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
           </div>
         </div>
       </div>
@@ -89,6 +96,7 @@ function Sidebar({ active, router, onSignOut }: { active: string, router: any, o
 
 export default function QRCodesPage() {
   const router = useRouter()
+  const business = useBusiness()
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [qrUrls, setQrUrls] = useState<Record<string, string>>({})
@@ -99,11 +107,7 @@ export default function QRCodesPage() {
       if (!session) { router.push('/login'); return }
       const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
       if (!userData) return
-      const { data } = await supabase
-        .from('jobs')
-        .select('id, qr_code_token, brand, model, capacity_kw, install_date, customers(first_name, last_name, suburb)')
-        .eq('business_id', userData.business_id)
-        .order('created_at', { ascending: false })
+      const { data } = await supabase.from('jobs').select('id, qr_code_token, brand, model, capacity_kw, install_date, customers(first_name, last_name, suburb)').eq('business_id', userData.business_id).order('created_at', { ascending: false })
       setJobs(data || [])
       const urls: Record<string, string> = {}
       for (const job of data || []) {
@@ -129,7 +133,7 @@ export default function QRCodesPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <Sidebar active="/dashboard/qrcodes" router={router} onSignOut={signOut} />
+      <Sidebar active="/dashboard/qrcodes" router={router} onSignOut={signOut} logoUrl={business?.logo_url || ''} businessName={business?.name || ''} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>QR codes</div>
@@ -161,14 +165,8 @@ export default function QRCodesPage() {
                     <div style={{ fontSize: '13px', color: TEXT2, marginBottom: '4px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} — {job.customers?.suburb || '—'}</div>
                     <div style={{ fontSize: '11px', color: TEXT3, fontFamily: 'monospace', marginBottom: '18px' }}>{job.qr_code_token?.slice(0, 20)}…</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => downloadQR(job.id, name)}
-                        style={{ height: '34px', padding: '0 16px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        Download
-                      </button>
-                      <button onClick={() => window.print()}
-                        style={{ height: '34px', padding: '0 16px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        Print
-                      </button>
+                      <button onClick={() => downloadQR(job.id, name)} style={{ height: '34px', padding: '0 16px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Download</button>
+                      <button onClick={() => window.print()} style={{ height: '34px', padding: '0 16px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Print</button>
                     </div>
                   </div>
                 )
