@@ -100,7 +100,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [businessId, setBusinessId] = useState('')
-  const [business, setBusiness] = useState<any>({})
+  const [business, setBusiness] = useState<any>({ name: '', email: '', phone: '', logo_url: '' })
   const [form, setForm] = useState({
     google_review_url: '',
     facebook_review_url: '',
@@ -123,7 +123,14 @@ export default function SettingsPage() {
         supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
       ])
 
-      if (businessRes.data) setBusiness(businessRes.data)
+      if (businessRes.data) {
+        setBusiness({
+          name: businessRes.data.name || '',
+          email: businessRes.data.email || '',
+          phone: businessRes.data.phone || '',
+          logo_url: businessRes.data.logo_url || '',
+        })
+      }
 
       if (settingsRes.data) {
         setForm({
@@ -201,7 +208,6 @@ export default function SettingsPage() {
   const section: React.CSSProperties = { background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '14px' }
   const sHead: React.CSSProperties = { padding: '14px 22px', borderBottom: `1px solid ${BORDER}`, fontSize: '14px', fontWeight: '600', color: TEXT }
   const sBody: React.CSSProperties = { padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }
-
   const allPlatformCount = (form.google_review_url ? 1 : 0) + (form.facebook_review_url ? 1 : 0) + platforms.filter(p => p.url).length
 
   async function signOut() { await supabase.auth.signOut(); router.push('/login') }
@@ -233,20 +239,20 @@ export default function SettingsPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Business name</label>
-                      <input style={input} value={business.name || ''} onChange={e => setBiz('name', e.target.value)} placeholder="Beams Marketing"/>
+                      <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name"/>
                     </div>
                     <div>
                       <label style={label}>Phone</label>
-                      <input style={input} value={business.phone || ''} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000"/>
+                      <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000"/>
                     </div>
                     <div style={{ gridColumn: 'span 2' }}>
                       <label style={label}>Email</label>
-                      <input style={input} value={business.email || ''} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com"/>
+                      <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com"/>
                     </div>
                   </div>
                   <div>
                     <label style={label}>Logo URL</label>
-                    <input style={input} value={business.logo_url || ''} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png"/>
+                    <input style={input} value={business.logo_url} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png"/>
                     <p style={hint}>Paste a direct link to your logo image. It will appear in the sidebar and on the customer registration page.</p>
                   </div>
                   {business.logo_url && (
@@ -326,13 +332,13 @@ export default function SettingsPage() {
                           <p style={hint}>Cap on total discount across all platforms</p>
                         </div>
                       </div>
-                      <div style={{ padding: '14px 16px', background: '#FFFBEB', borderRadius: '8px', border: '1px solid #FEF3C7' }}>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#78350F', marginBottom: '6px' }}>Preview — what customers will see</div>
-                        <div style={{ fontSize: '13px', color: '#92400E', lineHeight: 1.7 }}>
+                      <div style={{ padding: '14px 16px', background: '#F0F9F8', borderRadius: '8px', border: '1px solid #CCEFED' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#0A4F4C', marginBottom: '6px' }}>Preview — what customers will see</div>
+                        <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
                           For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
                         </div>
                         {allPlatformCount > 0 && (
-                          <div style={{ marginTop: '10px', fontSize: '12px', color: '#92400E' }}>
+                          <div style={{ marginTop: '10px', fontSize: '12px', color: TEXT3 }}>
                             {allPlatformCount} platform{allPlatformCount !== 1 ? 's' : ''} configured · max discount = ${Math.min(allPlatformCount * parseFloat(form.review_discount_amount || '10'), parseFloat(form.review_discount_max || '30'))} if all reviews left
                           </div>
                         )}
