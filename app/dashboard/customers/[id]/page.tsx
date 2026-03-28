@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useBusiness } from '@/lib/useBusiness'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
@@ -32,15 +33,21 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/settings': <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
-function Sidebar({ active, router, onSignOut }: { active: string, router: any, onSignOut: () => void }) {
+function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active: string, router: any, onSignOut: () => void, logoUrl?: string, businessName?: string }) {
   return (
     <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          {logoUrl ? (
+            <img src={logoUrl} alt={businessName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '32px', height: '32px', background: A, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 2L9.5 5H11.5L9 8.5L10 12L7 10L4 12L5 8.5L2.5 5H4.5L7 2Z" fill="white"/></svg>
+            </div>
+          )}
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>TradeLink</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>HVAC CRM</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
           </div>
         </div>
       </div>
@@ -89,6 +96,7 @@ function Sidebar({ active, router, onSignOut }: { active: string, router: any, o
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const business = useBusiness()
   const [customer, setCustomer] = useState<any>(null)
   const [jobs, setJobs] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<any[]>([])
@@ -124,14 +132,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   async function saveCustomer() {
     setSaving(true)
     await supabase.from('customers').update({
-      first_name: customerForm.first_name,
-      last_name: customerForm.last_name,
-      email: customerForm.email,
-      phone: customerForm.phone,
-      address: customerForm.address,
-      suburb: customerForm.suburb,
-      postcode: customerForm.postcode,
-      notes: customerForm.notes,
+      first_name: customerForm.first_name, last_name: customerForm.last_name,
+      email: customerForm.email, phone: customerForm.phone,
+      address: customerForm.address, suburb: customerForm.suburb,
+      postcode: customerForm.postcode, notes: customerForm.notes,
     }).eq('id', id)
     setCustomer(customerForm)
     setEditingCustomer(false)
@@ -144,17 +148,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     setSaving(true)
     const f = jobForms[jobId]
     await supabase.from('jobs').update({
-      brand: f.brand,
-      model: f.model,
+      brand: f.brand, model: f.model,
       capacity_kw: f.capacity_kw ? parseFloat(f.capacity_kw) : null,
-      equipment_type: f.equipment_type,
-      serial_number: f.serial_number,
-      install_location: f.install_location,
-      install_date: f.install_date,
+      equipment_type: f.equipment_type, serial_number: f.serial_number,
+      install_location: f.install_location, install_date: f.install_date,
       warranty_expiry: f.warranty_expiry || null,
       service_interval_months: parseInt(f.service_interval_months),
-      reminder_lead_days: parseInt(f.reminder_lead_days),
-      notes: f.notes,
+      reminder_lead_days: parseInt(f.reminder_lead_days), notes: f.notes,
     }).eq('id', jobId)
     setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...f } : j))
     setEditingJobId(null)
@@ -182,15 +182,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   async function signOut() { await supabase.auth.signOut(); router.push('/login') }
 
   const input: React.CSSProperties = {
-    width: '100%', height: '36px', padding: '0 10px',
-    borderRadius: '8px', border: `1px solid ${BORDER}`,
-    background: '#fff', color: TEXT, fontFamily: 'inherit',
-    fontSize: '13px', outline: 'none',
+    width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px',
+    border: `1px solid ${BORDER}`, background: '#fff', color: TEXT,
+    fontFamily: 'inherit', fontSize: '13px', outline: 'none',
   }
-
-  const label: React.CSSProperties = {
-    fontSize: '11px', color: TEXT3, marginBottom: '4px', display: 'block',
-  }
+  const label: React.CSSProperties = { fontSize: '11px', color: TEXT3, marginBottom: '4px', display: 'block' }
 
   if (loading) return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
@@ -200,15 +196,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   )
 
   if (!customer) return null
-
   const initials = (customer.first_name?.[0] || '') + (customer.last_name?.[0] || '')
   const uniquePlatforms = [...new Set(reviewClicks.map(r => r.platform))]
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <Sidebar active="/dashboard/customers" router={router} onSignOut={signOut} />
+      <Sidebar active="/dashboard/customers" router={router} onSignOut={signOut} logoUrl={business?.logo_url || ''} businessName={business?.name || ''} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span onClick={() => router.push('/dashboard/customers')} style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }}>← Customers</span>
@@ -225,10 +219,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-
-          {/* LEFT COLUMN */}
           <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
             <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px' }}>
                 <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '600' }}>{initials}</div>
@@ -237,7 +228,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Since {new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}</div>
                 </div>
               </div>
-
               {!editingCustomer ? (
                 <>
                   {[
@@ -276,9 +266,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div><label style={label}>Notes</label><textarea style={{ ...input, height: '60px', padding: '8px 10px', resize: 'none' as const }} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))}/></div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setEditingCustomer(false)} style={{ flex: 1, height: '34px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                    <button onClick={saveCustomer} disabled={saving} style={{ flex: 1, height: '34px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      {saving ? 'Saving…' : 'Save'}
-                    </button>
+                    <button onClick={saveCustomer} disabled={saving} style={{ flex: 1, height: '34px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save'}</button>
                   </div>
                 </div>
               )}
@@ -294,12 +282,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     const clicks = reviewClicks.filter(r => r.platform === platform)
                     const latest = new Date(clicks[0].clicked_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                     return (
-                      <div key={platform} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div key={platform as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>
-                            {platform.toLowerCase().includes('google') ? '🔍' : platform.toLowerCase().includes('facebook') ? '👍' : '⭐'}
+                            {(platform as string).toLowerCase().includes('google') ? '🔍' : (platform as string).toLowerCase().includes('facebook') ? '👍' : '⭐'}
                           </div>
-                          <span style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{platform}</span>
+                          <span style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{platform as string}</span>
                         </div>
                         <span style={{ fontSize: '11px', color: TEXT3 }}>{latest}</span>
                       </div>
@@ -310,12 +298,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             )}
           </div>
 
-          {/* RIGHT COLUMN */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {jobs.length === 0 ? (
-              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
-                No jobs yet for this customer.
-              </div>
+              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No jobs yet for this customer.</div>
             ) : jobs.map(job => {
               const s = statusPill(job.next_service_date)
               const f = jobForms[job.id] || job
@@ -349,12 +334,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Location</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{job.install_location || '—'}</div></div>
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Service interval</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>Every {job.service_interval_months} months</div></div>
                       </div>
-                      {job.notes && (
-                        <div style={{ padding: '0 22px 14px' }}>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Notes</div>
-                          <div style={{ fontSize: '13px', color: TEXT2 }}>{job.notes}</div>
-                        </div>
-                      )}
+                      {job.notes && <div style={{ padding: '0 22px 14px' }}><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Notes</div><div style={{ fontSize: '13px', color: TEXT2 }}>{job.notes}</div></div>}
                     </>
                   ) : (
                     <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -395,9 +375,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                       <div><label style={label}>Job notes</label><textarea style={{ ...input, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)}/></div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => setEditingJobId(null)} style={{ flex: 1, height: '36px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                        <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          {saving ? 'Saving…' : 'Save changes'}
-                        </button>
+                        <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save changes'}</button>
                       </div>
                     </div>
                   )}

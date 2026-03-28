@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useBusiness } from '@/lib/useBusiness'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
@@ -40,15 +41,21 @@ const avColors = [
   { bg: '#FFE4E6', color: '#881337' },
 ]
 
-function Sidebar({ active, router, onSignOut }: { active: string, router: any, onSignOut: () => void }) {
+function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active: string, router: any, onSignOut: () => void, logoUrl?: string, businessName?: string }) {
   return (
     <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          {logoUrl ? (
+            <img src={logoUrl} alt={businessName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '32px', height: '32px', background: A, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 2L9.5 5H11.5L9 8.5L10 12L7 10L4 12L5 8.5L2.5 5H4.5L7 2Z" fill="white"/></svg>
+            </div>
+          )}
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>HVAC CRM</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
           </div>
         </div>
       </div>
@@ -96,12 +103,12 @@ function Sidebar({ active, router, onSignOut }: { active: string, router: any, o
 
 export default function CustomersPage() {
   const router = useRouter()
+  const business = useBusiness()
   const [customers, setCustomers] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<Record<string, number>>({})
   const [totalPlatforms, setTotalPlatforms] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [businessId, setBusinessId] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -109,7 +116,6 @@ export default function CustomersPage() {
       if (!session) { router.push('/login'); return }
       const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
       if (!userData) return
-      setBusinessId(userData.business_id)
 
       const [customersRes, clicksRes, settingsRes] = await Promise.all([
         supabase.from('customers').select('*, jobs(id, brand, model, capacity_kw, next_service_date)').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
@@ -117,30 +123,23 @@ export default function CustomersPage() {
         supabase.from('business_settings').select('google_review_url, facebook_review_url, custom_review_platforms').eq('business_id', userData.business_id).single(),
       ])
 
+      let data = customersRes.data || []
       if (search) {
-        const filtered = (customersRes.data || []).filter((c: any) =>
-          `${c.first_name} ${c.last_name} ${c.email}`.toLowerCase().includes(search.toLowerCase())
-        )
-        setCustomers(filtered)
-      } else {
-        setCustomers(customersRes.data || [])
+        data = data.filter((c: any) => `${c.first_name} ${c.last_name} ${c.email}`.toLowerCase().includes(search.toLowerCase()))
       }
+      setCustomers(data)
 
-      const clicks: Record<string, number> = {}
       const uniqueClicks: Record<string, Set<string>> = {}
       for (const click of clicksRes.data || []) {
         if (!uniqueClicks[click.customer_id]) uniqueClicks[click.customer_id] = new Set()
         uniqueClicks[click.customer_id].add(click.platform)
       }
-      for (const [customerId, platforms] of Object.entries(uniqueClicks)) {
-        clicks[customerId] = platforms.size
-      }
+      const clicks: Record<string, number> = {}
+      for (const [cid, platforms] of Object.entries(uniqueClicks)) clicks[cid] = platforms.size
       setReviewClicks(clicks)
 
       const s = settingsRes.data
-      const platformCount = (s?.google_review_url ? 1 : 0) + (s?.facebook_review_url ? 1 : 0) + ((s?.custom_review_platforms || []).filter((p: any) => p.url).length)
-      setTotalPlatforms(platformCount)
-
+      setTotalPlatforms((s?.google_review_url ? 1 : 0) + (s?.facebook_review_url ? 1 : 0) + ((s?.custom_review_platforms || []).filter((p: any) => p.url).length))
       setLoading(false)
     }
     load()
@@ -160,14 +159,11 @@ export default function CustomersPage() {
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
-  async function signOut() {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  async function signOut() { await supabase.auth.signOut(); router.push('/login') }
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <Sidebar active="/dashboard/customers" router={router} onSignOut={signOut} />
+      <Sidebar active="/dashboard/customers" router={router} onSignOut={signOut} logoUrl={business?.logo_url || ''} businessName={business?.name || ''} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Customers</div>
@@ -180,12 +176,8 @@ export default function CustomersPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
           <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or email…"
-                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}
-              />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
+                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
             </div>
             {loading ? (
               <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
@@ -233,13 +225,9 @@ export default function CustomersPage() {
                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5"/></svg>
                                 <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
                               </div>
-                              {hasClicks && (
-                                <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>
-                              )}
+                              {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
                             </div>
-                          ) : (
-                            <span style={{ fontSize: '12px', color: TEXT3 }}>—</span>
-                          )}
+                          ) : <span style={{ fontSize: '12px', color: TEXT3 }}>—</span>}
                         </td>
                         <td style={{ padding: '13px 22px' }}>
                           <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>{s.label}</span>

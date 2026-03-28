@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useBusiness } from '@/lib/useBusiness'
 import { createCustomer, createJob } from '@/lib/queries'
 
 const A = '#2AA198'
@@ -33,15 +34,21 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/settings': <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
-function Sidebar({ active, router, onSignOut }: { active: string, router: any, onSignOut: () => void }) {
+function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active: string, router: any, onSignOut: () => void, logoUrl?: string, businessName?: string }) {
   return (
     <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          {logoUrl ? (
+            <img src={logoUrl} alt={businessName || 'Logo'} style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '32px', height: '32px', background: A, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M7 2L9.5 5H11.5L9 8.5L10 12L7 10L4 12L5 8.5L2.5 5H4.5L7 2Z" fill="white"/></svg>
+            </div>
+          )}
           <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>HVAC CRM</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
           </div>
         </div>
       </div>
@@ -89,6 +96,7 @@ function Sidebar({ active, router, onSignOut }: { active: string, router: any, o
 
 export default function AddJobPage() {
   const router = useRouter()
+  const business = useBusiness()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -98,9 +106,7 @@ export default function AddJobPage() {
     reminder_lead_days: '14', notes: '',
   })
 
-  function set(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
+  function set(field: string, value: string) { setForm(prev => ({ ...prev, [field]: value })) }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -148,27 +154,19 @@ export default function AddJobPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <Sidebar active="/dashboard/jobs" router={router} onSignOut={signOut} />
+      <Sidebar active="/dashboard/jobs" router={router} onSignOut={signOut} logoUrl={business?.logo_url || ''} businessName={business?.name || ''} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Add new job</div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => router.push('/dashboard')}
-              style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Cancel
-            </button>
-            <button form="job-form" type="submit" disabled={loading}
-              style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={() => router.push('/dashboard')} style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+            <button form="job-form" type="submit" disabled={loading} style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
               {loading ? 'Saving…' : 'Save & generate QR →'}
             </button>
           </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
-          {error && (
-            <div style={{ background: '#FEE2E2', color: '#7F1D1D', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', marginBottom: '16px', border: '1px solid #FECACA' }}>
-              {error}
-            </div>
-          )}
+          {error && <div style={{ background: '#FEE2E2', color: '#7F1D1D', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', marginBottom: '16px', border: '1px solid #FECACA' }}>{error}</div>}
           <form id="job-form" onSubmit={handleSubmit}>
             <div style={section}>
               <div style={sHead}>Customer details</div>
@@ -201,10 +199,7 @@ export default function AddJobPage() {
                 <div><label style={label}>Warranty expiry</label><input type="date" style={input} value={form.warranty_expiry} onChange={e => set('warranty_expiry', e.target.value)}/></div>
                 <div><label style={label}>Installation date *</label><input required type="date" style={input} value={form.install_date} onChange={e => set('install_date', e.target.value)}/></div>
                 <div><label style={label}>Location in property</label><input style={input} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder="Master bedroom, north wall"/></div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={label}>Job notes</label>
-                  <textarea style={{ ...input, height: '80px', padding: '10px 12px', resize: 'none' as const }} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Any notes about the installation…"/>
-                </div>
+                <div style={{ gridColumn: 'span 2' }}><label style={label}>Job notes</label><textarea style={{ ...input, height: '80px', padding: '10px 12px', resize: 'none' as const }} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Any notes about the installation…"/></div>
               </div>
             </div>
             <div style={section}>
