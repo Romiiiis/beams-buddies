@@ -55,7 +55,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName }: { active:
           )}
           <div>
             <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>{businessName || 'Jobyra'}</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>Trade CRM</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{businessName || 'Trade CRM'}</div>
           </div>
         </div>
       </div>
