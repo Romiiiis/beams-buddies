@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/app/dashboard/layout'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
@@ -102,7 +102,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
 
 export default function CustomersPage() {
   const router = useRouter()
-  const business = useBusiness()
+  const business = useBusinessData()
   const [customers, setCustomers] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<Record<string, number>>({})
   const [totalPlatforms, setTotalPlatforms] = useState(0)

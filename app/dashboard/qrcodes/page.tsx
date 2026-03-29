@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/app/dashboard/layout'
 import QRCode from 'qrcode'
 
 const A = '#2AA198'
@@ -98,7 +98,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
 
 export default function QRCodesPage() {
   const router = useRouter()
-  const business = useBusiness()
+  const business = useBusinessData()
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [qrUrls, setQrUrls] = useState<Record<string, string>>({})

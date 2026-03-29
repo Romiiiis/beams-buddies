@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/app/dashboard/layout'
 import { createCustomer, createJob } from '@/lib/queries'
 
 const A = '#2AA198'
@@ -95,7 +95,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
 
 export default function AddJobPage() {
   const router = useRouter()
-  const business = useBusiness()
+  const business = useBusinessData()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({

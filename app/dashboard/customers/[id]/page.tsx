@@ -3,7 +3,7 @@
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/app/dashboard/layout'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
@@ -95,7 +95,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const business = useBusiness()
+  const business = useBusinessData()
   const [customer, setCustomer] = useState<any>(null)
   const [jobs, setJobs] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<any[]>([])

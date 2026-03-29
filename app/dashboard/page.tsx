@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/app/dashboard/layout'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
@@ -122,7 +122,7 @@ function SkeletonLayout() {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const business = useBusiness()
+  const business = useBusinessData()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0 })
   const [upcoming, setUpcoming] = useState<any[]>([])
