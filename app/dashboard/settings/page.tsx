@@ -46,7 +46,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
           <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{businessName || 'Your business'}</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{businessName || ''}</div>
           </div>
         </div>
       </div>
@@ -86,8 +86,8 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '600' }}>{initials}</div>
           )}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{userName || 'Owner'}</div>
-            <div style={{ fontSize: '11px', color: TEXT3 }}>{userTitle || 'Owner'}</div>
+            <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{userName || ''}</div>
+            <div style={{ fontSize: '11px', color: TEXT3 }}>{userTitle || ''}</div>
           </div>
         </div>
         <button onClick={onSignOut} style={{ fontSize: '12px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Sign out</button>
