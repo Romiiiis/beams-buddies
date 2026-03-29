@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BusinessContext } from '@/lib/business-context'
 
+const CACHE_KEY = 'jobyra_business'
+
 type BusinessData = {
   name: string
   logo_url: string | null
@@ -11,16 +13,26 @@ type BusinessData = {
   role_title: string | null
 }
 
+function readCache(): BusinessData | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function writeCache(data: BusinessData) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)) } catch {}
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [business, setBusiness] = useState<BusinessData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [business, setBusiness] = useState<BusinessData | null>(readCache)
+  const [loading, setLoading] = useState(!readCache())
   const [tick, setTick] = useState(0)
 
   function refresh() { setTick(t => t + 1) }
 
   useEffect(() => {
     async function load() {
-      setLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { setLoading(false); return }
 
@@ -39,12 +51,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .single()
 
       if (bizData) {
-        setBusiness({
+        const data = {
           name: bizData.name,
           logo_url: bizData.logo_url,
           full_name: userData.full_name,
           role_title: userData.role_title,
-        })
+        }
+        setBusiness(data)
+        writeCache(data)
       }
 
       setLoading(false)
