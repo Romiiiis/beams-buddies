@@ -160,6 +160,8 @@ export default function CustomersPage() {
 
   async function signOut() { await supabase.auth.signOut(); router.push('/login') }
 
+  if (!business) return <div style={{ display: 'flex', height: '100vh', background: BG }}><div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: '1px solid #DEDEDE' }} /><div style={{ flex: 1, background: BG }} /></div>
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" router={router} onSignOut={signOut} logoUrl={business?.logo_url || ''} businessName={business?.name || ''} userName={business?.full_name || ''} userTitle={business?.role_title || ''} />
