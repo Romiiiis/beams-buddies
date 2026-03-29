@@ -13,25 +13,24 @@ type BusinessData = {
   role_title: string | null
 }
 
-function readCache(): BusinessData | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
-function writeCache(data: BusinessData) {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)) } catch {}
-}
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [business, setBusiness] = useState<BusinessData | null>(readCache)
-  const [loading, setLoading] = useState(!readCache())
+  const [business, setBusiness] = useState<BusinessData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [tick, setTick] = useState(0)
 
   function refresh() { setTick(t => t + 1) }
 
   useEffect(() => {
+    // Read cache on client only
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (raw) {
+        const cached = JSON.parse(raw)
+        setBusiness(cached)
+        setLoading(false)
+      }
+    } catch {}
+
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { setLoading(false); return }
@@ -58,10 +57,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           role_title: userData.role_title,
         }
         setBusiness(data)
-        writeCache(data)
+        setLoading(false)
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)) } catch {}
       }
-
-      setLoading(false)
     }
 
     load()
