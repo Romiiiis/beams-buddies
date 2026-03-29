@@ -46,7 +46,7 @@ function Sidebar({ active, router, onSignOut, logoUrl, businessName, userName, u
           <img src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png" alt="Jobyra" style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{businessName || ''}</div>
+            {businessName ? <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{businessName}</div> : <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px', marginTop: '4px' }} />}
           </div>
         </div>
       </div>
