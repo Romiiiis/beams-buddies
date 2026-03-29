@@ -3,7 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusinessData } from '@/app/dashboard/layout'
+import { useBusinessData } from '@/lib/business-context'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
