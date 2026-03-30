@@ -8,7 +8,6 @@ const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
 const BORDER = '#DEDEDE'
-const BG = '#F2F3F3'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -42,11 +41,11 @@ export function Sidebar({ active }: { active: string }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const navItems = [
-    { label: 'Dashboard', href: '/dashboard', icon: '⌂' },
-    { label: 'Customers', href: '/dashboard/customers', icon: '👥' },
-    { label: 'Schedule', href: '/dashboard/schedule', icon: '🗓' },
-    { label: 'Jobs', href: '/dashboard/jobs', icon: '🧰' },
+  const mainItems = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Customers', href: '/dashboard/customers' },
+    { label: 'Schedule', href: '/dashboard/schedule' },
+    { label: 'Jobs', href: '/dashboard/jobs' },
   ]
 
   const menuItems = [
@@ -76,7 +75,7 @@ export function Sidebar({ active }: { active: string }) {
             zIndex: 1000,
           }}
         >
-          {navItems.map(item => {
+          {mainItems.map(item => {
             const activeItem = active === item.href
             return (
               <button
@@ -95,7 +94,7 @@ export function Sidebar({ active }: { active: string }) {
                   cursor: 'pointer',
                 }}
               >
-                <span style={{ fontSize: '16px', lineHeight: 1 }}>{item.icon}</span>
+                {/* KEEP YOUR EXISTING ICON HERE */}
                 <span style={{ fontSize: '11px', fontWeight: activeItem ? '600' : '500' }}>{item.label}</span>
               </button>
             )
@@ -119,7 +118,7 @@ export function Sidebar({ active }: { active: string }) {
                 cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: '16px', lineHeight: 1 }}>⋯</span>
+              {/* KEEP YOUR ORIGINAL SETTINGS ICON HERE */}
               <span style={{ fontSize: '11px', fontWeight: isMenuActive || menuOpen ? '600' : '500' }}>Menu</span>
             </button>
 
@@ -137,7 +136,7 @@ export function Sidebar({ active }: { active: string }) {
                   overflow: 'hidden',
                 }}
               >
-                {menuItems.map(item => {
+                {menuItems.map((item, index) => {
                   const activeItem = active === item.href
                   return (
                     <button
@@ -150,7 +149,7 @@ export function Sidebar({ active }: { active: string }) {
                         width: '100%',
                         height: '44px',
                         border: 'none',
-                        borderBottom: `1px solid ${BORDER}`,
+                        borderBottom: index !== menuItems.length - 1 ? `1px solid ${BORDER}` : 'none',
                         background: activeItem ? '#F0F9F8' : '#fff',
                         color: activeItem ? A : TEXT2,
                         fontSize: '13px',
@@ -191,7 +190,7 @@ export function Sidebar({ active }: { active: string }) {
       </div>
 
       <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-        {navItems.map(item => {
+        {mainItems.map(item => {
           const activeItem = active === item.href
           return (
             <button
@@ -214,7 +213,7 @@ export function Sidebar({ active }: { active: string }) {
                 textAlign: 'left',
               }}
             >
-              <span style={{ width: '18px', textAlign: 'center' }}>{item.icon}</span>
+              {/* KEEP YOUR EXISTING ICON HERE */}
               <span>{item.label}</span>
             </button>
           )
@@ -241,7 +240,10 @@ export function Sidebar({ active }: { active: string }) {
             cursor: 'pointer',
           }}
         >
-          <span>Menu</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* KEEP YOUR ORIGINAL SETTINGS ICON HERE */}
+            <span>Menu</span>
+          </div>
           <span style={{ fontSize: '12px' }}>{menuOpen ? '▲' : '▼'}</span>
         </button>
 
@@ -259,7 +261,7 @@ export function Sidebar({ active }: { active: string }) {
               overflow: 'hidden',
             }}
           >
-            {menuItems.map(item => {
+            {menuItems.map((item, index) => {
               const activeItem = active === item.href
               return (
                 <button
@@ -272,7 +274,7 @@ export function Sidebar({ active }: { active: string }) {
                     width: '100%',
                     height: '42px',
                     border: 'none',
-                    borderBottom: `1px solid ${BORDER}`,
+                    borderBottom: index !== menuItems.length - 1 ? `1px solid ${BORDER}` : 'none',
                     background: activeItem ? '#F0F9F8' : '#fff',
                     color: activeItem ? A : TEXT2,
                     fontSize: '13px',
