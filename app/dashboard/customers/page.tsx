@@ -92,23 +92,29 @@ export default function CustomersPage() {
   const pad = isMobile ? '16px' : '30px'
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Customers</div>
-          <button onClick={() => router.push('/dashboard/jobs')}
-            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}>
-            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round"/></svg>
+          <button
+            onClick={() => router.push('/dashboard/jobs')}
+            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" /></svg>
             Add job
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: isMobile ? '12px 14px' : '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
-                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name or email…"
+                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}
+              />
             </div>
 
             {loading ? (
@@ -118,7 +124,6 @@ export default function CustomersPage() {
                 No customers yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
               </div>
             ) : isMobile ? (
-              // Mobile: card list
               <div>
                 {customers.map((c, i) => {
                   const av = avColors[i % avColors.length]
@@ -126,9 +131,11 @@ export default function CustomersPage() {
                   const clicks = reviewClicks[c.id] || 0
                   const hasClicks = clicks > 0
                   return (
-                    <div key={c.id}
+                    <div
+                      key={c.id}
                       onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                      style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}>
+                      style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
+                    >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
@@ -141,7 +148,7 @@ export default function CustomersPage() {
                         </div>
                         <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
                       </div>
-                      <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px' }}>
+                      <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
                         <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
                         {c.jobs?.[0]?.next_service_date && (
@@ -158,7 +165,6 @@ export default function CustomersPage() {
                 })}
               </div>
             ) : (
-              // Desktop: full table
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: '#F8F8F8' }}>
@@ -174,9 +180,12 @@ export default function CustomersPage() {
                     const clicks = reviewClicks[c.id] || 0
                     const hasClicks = clicks > 0
                     return (
-                      <tr key={c.id} style={{ borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
+                      <tr
+                        key={c.id}
+                        style={{ borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
                         onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
                         <td style={{ padding: '13px 22px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
@@ -195,7 +204,7 @@ export default function CustomersPage() {
                           {totalPlatforms > 0 ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: hasClicks ? '#FEF3C7' : '#F5F5F5', padding: '3px 9px', borderRadius: '20px', border: `1px solid ${hasClicks ? '#FDE68A' : BORDER}` }}>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5"/></svg>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5" /></svg>
                                 <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
                               </div>
                               {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
