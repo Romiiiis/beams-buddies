@@ -110,15 +110,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   const input: React.CSSProperties = {
-    width: '100%', height: '40px', padding: '0 10px', borderRadius: '8px',
-    border: `1px solid ${BORDER}`, background: '#fff', color: TEXT,
-    fontFamily: 'inherit', fontSize: '14px', outline: 'none',
+    width: '100%',
+    height: '40px',
+    padding: '0 10px',
+    borderRadius: '8px',
+    border: `1px solid ${BORDER}`,
+    background: '#fff',
+    color: TEXT,
+    fontFamily: 'inherit',
+    fontSize: '14px',
+    outline: 'none',
   }
   const label: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block' }
   const pad = isMobile ? '16px' : '30px'
 
   if (loading) return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
     </div>
@@ -129,9 +136,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const uniquePlatforms = [...new Set(reviewClicks.map(r => r.platform))]
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
         {/* Header */}
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -142,23 +149,27 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             {saved && <span style={{ fontSize: '12px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
-            <button onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button
+              onClick={() => router.push('/dashboard/jobs')}
+              style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
               + Add job
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div style={{
-          flex: 1, overflowY: 'auto',
-          padding: `${isMobile ? '16px' : '24px'} ${pad}`,
-          paddingBottom: isMobile ? '90px' : '24px',
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: '16px',
-          alignItems: 'flex-start',
-        }}>
+        <div
+          style={{
+            flex: 1,
+            padding: `${isMobile ? '16px' : '24px'} ${pad}`,
+            paddingBottom: isMobile ? '90px' : '24px',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: '16px',
+            alignItems: 'flex-start',
+          }}
+        >
 
           {/* Customer info panel */}
           <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -186,26 +197,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   ))}
                   <div style={{ padding: '12px 18px' }}>
-                    <button onClick={() => setEditingCustomer(true)}
-                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <button
+                      onClick={() => setEditingCustomer(true)}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
                       Edit customer details
                     </button>
                   </div>
                 </>
               ) : (
                 <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div><label style={label}>First name</label><input style={input} value={customerForm.first_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, first_name: e.target.value }))}/></div>
-                    <div><label style={label}>Last name</label><input style={input} value={customerForm.last_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, last_name: e.target.value }))}/></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
+                    <div><label style={label}>First name</label><input style={input} value={customerForm.first_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, first_name: e.target.value }))} /></div>
+                    <div><label style={label}>Last name</label><input style={input} value={customerForm.last_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, last_name: e.target.value }))} /></div>
                   </div>
-                  <div><label style={label}>Email</label><input style={input} value={customerForm.email || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, email: e.target.value }))}/></div>
-                  <div><label style={label}>Phone</label><input style={input} value={customerForm.phone || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, phone: e.target.value }))}/></div>
-                  <div><label style={label}>Address</label><input style={input} value={customerForm.address || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, address: e.target.value }))}/></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div><label style={label}>Suburb</label><input style={input} value={customerForm.suburb || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, suburb: e.target.value }))}/></div>
-                    <div><label style={label}>Postcode</label><input style={input} value={customerForm.postcode || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, postcode: e.target.value }))}/></div>
+                  <div><label style={label}>Email</label><input style={input} value={customerForm.email || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, email: e.target.value }))} /></div>
+                  <div><label style={label}>Phone</label><input style={input} value={customerForm.phone || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, phone: e.target.value }))} /></div>
+                  <div><label style={label}>Address</label><input style={input} value={customerForm.address || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, address: e.target.value }))} /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
+                    <div><label style={label}>Suburb</label><input style={input} value={customerForm.suburb || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, suburb: e.target.value }))} /></div>
+                    <div><label style={label}>Postcode</label><input style={input} value={customerForm.postcode || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, postcode: e.target.value }))} /></div>
                   </div>
-                  <div><label style={label}>Notes</label><textarea style={{ ...input, height: '60px', padding: '8px 10px', resize: 'none' as const }} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))}/></div>
+                  <div><label style={label}>Notes</label><textarea style={{ ...input, height: '60px', padding: '8px 10px', resize: 'none' as const }} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))} /></div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setEditingCustomer(false)} style={{ flex: 1, height: '34px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
                     <button onClick={saveCustomer} disabled={saving} style={{ flex: 1, height: '34px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save'}</button>
@@ -251,7 +264,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               return (
                 <div key={job.id} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                   <div style={{ height: '3px', background: A }} />
-                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ')}</div>
                       {job.model && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Model: {job.model}</div>}
@@ -259,8 +272,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                       <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
                       {!isEditing && (
-                        <button onClick={() => setEditingJobId(job.id)}
-                          style={{ height: '30px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <button
+                          onClick={() => setEditingJobId(job.id)}
+                          style={{ height: '30px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
                           Edit
                         </button>
                       )}
@@ -281,10 +296,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     </>
                   ) : (
                     <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div><label style={label}>Brand</label><input style={input} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)}/></div>
-                        <div><label style={label}>Model</label><input style={input} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)}/></div>
-                        <div><label style={label}>Capacity (kW)</label><input style={input} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)}/></div>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                        <div><label style={label}>Brand</label><input style={input} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)} /></div>
+                        <div><label style={label}>Model</label><input style={input} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)} /></div>
+                        <div><label style={label}>Capacity (kW)</label><input style={input} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} /></div>
                         <div><label style={label}>Equipment type</label>
                           <select style={input} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
                             <option value="split_system">Split system</option>
@@ -294,10 +309,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             <option value="other">Other</option>
                           </select>
                         </div>
-                        <div><label style={label}>Serial number</label><input style={input} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)}/></div>
-                        <div><label style={label}>Location</label><input style={input} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)}/></div>
-                        <div><label style={label}>Install date</label><input type="date" style={input} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)}/></div>
-                        <div><label style={label}>Warranty expiry</label><input type="date" style={input} value={f.warranty_expiry?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'warranty_expiry', e.target.value)}/></div>
+                        <div><label style={label}>Serial number</label><input style={input} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)} /></div>
+                        <div><label style={label}>Location</label><input style={input} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)} /></div>
+                        <div><label style={label}>Install date</label><input type="date" style={input} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)} /></div>
+                        <div><label style={label}>Warranty expiry</label><input type="date" style={input} value={f.warranty_expiry?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'warranty_expiry', e.target.value)} /></div>
                         <div><label style={label}>Service interval</label>
                           <select style={input} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
                             <option value="6">Every 6 months</option>
@@ -315,7 +330,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           </select>
                         </div>
                       </div>
-                      <div><label style={label}>Notes</label><textarea style={{ ...input, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)}/></div>
+                      <div><label style={label}>Notes</label><textarea style={{ ...input, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)} /></div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => setEditingJobId(null)} style={{ flex: 1, height: '36px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
                         <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save changes'}</button>
@@ -327,7 +342,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <div style={{ borderTop: `1px solid ${BORDER}`, padding: '14px 18px' }}>
                       <div style={{ fontSize: '12px', fontWeight: '600', color: TEXT3, marginBottom: '10px', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Service history</div>
                       {job.service_records.map((sr: any) => (
-                        <div key={sr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0' }}>
+                        <div key={sr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0', gap: '10px' }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{sr.service_type?.replace('_', ' ')}</div>
                             {sr.notes && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{sr.notes}</div>}
