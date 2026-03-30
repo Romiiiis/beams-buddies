@@ -1,345 +1,272 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useBusinessData } from '@/lib/business-context'
 
 const A = '#2AA198'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
 const BORDER = '#DEDEDE'
+const BG = '#F2F3F3'
 
-const navMain = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Customers', href: '/dashboard/customers' },
-  { label: 'Add job', href: '/dashboard/jobs' },
-]
-
-const navManage = [
-  { label: 'Service schedule', href: '/dashboard/schedule' },
-  { label: 'QR codes', href: '/dashboard/qrcodes' },
-  { label: 'Reports', href: '/dashboard/reports' },
-  { label: 'Settings', href: '/dashboard/settings' },
-]
-
-const bottomTabs = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Customers', href: '/dashboard/customers' },
-  { label: 'Add job', href: '/dashboard/jobs' },
-  { label: 'Schedule', href: '/dashboard/schedule' },
-  { label: 'Menu', href: 'menu' },
-]
-
-const menuTabs = [
-  { label: 'Reports', href: '/dashboard/reports' },
-  { label: 'QR codes', href: '/dashboard/qrcodes' },
-  { label: 'Settings', href: '/dashboard/settings' },
-]
-
-const icons: Record<string, React.ReactElement> = {
-  '/dashboard': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="2" width="5.5" height="5.5" rx="1.2" fill="currentColor"/>
-      <rect x="8.5" y="2" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
-      <rect x="2" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
-      <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
-    </svg>
-  ),
-  '/dashboard/customers': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <circle cx="6" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M2 13c0-2.2 1.8-3.5 4-3.5s4 1.3 4 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <path d="M11 8l1.5 1.5L15 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ),
-  '/dashboard/jobs': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <rect x="2.5" y="3" width="11" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M5 3V2M11 3V2M2.5 7h11M8 9.5v3M6.5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  ),
-  '/dashboard/schedule': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M8 6v3l2 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  ),
-  '/dashboard/qrcodes': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
-      <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
-      <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M9 11.5h5M11.5 9v5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  ),
-  '/dashboard/reports': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <path d="M2 12.5l3.5-4 3 2.5 3-5.5 3 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ),
-  '/dashboard/settings': (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  ),
+type SidebarProps = {
+  active?: string
 }
 
-function UserSkeleton() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-      <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <div style={{ width: '90px', height: '11px', background: '#F0F0F0', borderRadius: '4px' }} />
-        <div style={{ width: '60px', height: '10px', background: '#F0F0F0', borderRadius: '4px' }} />
-      </div>
-    </div>
-  )
-}
+const navItems = [
+  { label: 'Dashboard', href: '/dashboard', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M4 13h7V4H4v9Zm0 7h7v-5H4v5Zm9 0h7V11h-7v9Zm0-16v5h7V4h-7Z" fill="currentColor" />
+    </svg>
+  )},
+  { label: 'Customers', href: '/dashboard/customers', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M16 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM8 13a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8 0c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4ZM8 11c2.21 0 4-1.79 4-4S10.21 3 8 3 4 4.79 4 7s1.79 4 4 4Z" fill="currentColor" />
+    </svg>
+  )},
+  { label: 'Jobs', href: '/dashboard/jobs', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M10 4H4v16h16V8h-6l-4-4Zm1 2.5L13.5 9H18v9H6V6h5Z" fill="currentColor" />
+    </svg>
+  )},
+  { label: 'Schedule', href: '/dashboard/schedule', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z" fill="currentColor" />
+    </svg>
+  )},
+  { label: 'Settings', href: '/dashboard/settings', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.51.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" fill="currentColor" />
+    </svg>
+  )},
+]
 
-export function Sidebar({ active }: { active: string }) {
+export function Sidebar({ active = '/dashboard' }: SidebarProps) {
   const router = useRouter()
-  const { business, loading } = useBusinessData()
-  const [isMobile, setIsMobile] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => {
-    function check() { setIsMobile(window.innerWidth < 768) }
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  const initials = business?.full_name
-    ? business.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-    : ''
-
-  async function signOut() {
+  async function handleSignOut() {
     await supabase.auth.signOut()
     router.push('/login')
   }
 
-  if (isMobile) {
-    const menuActive = menuTabs.some(tab => tab.href === active)
+  return (
+    <aside
+      style={{
+        width: '276px',
+        minHeight: '100vh',
+        background: '#FFFFFF',
+        borderRight: `1px solid ${BORDER}`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '18px 14px 14px',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '6px 8px 18px',
+          }}
+        >
+          <div
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '14px',
+              background: 'linear-gradient(180deg, #DDF6F4 0%, #F8FFFE 100%)',
+              border: '1px solid #D6EEEC',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#0A4F4C',
+              fontSize: '15px',
+              fontWeight: '800',
+              letterSpacing: '-0.3px',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
+              flexShrink: 0,
+            }}
+          >
+            BM
+          </div>
 
-    return (
-      <>
-        {menuOpen && (
-          <>
-            <div
-              onClick={() => setMenuOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.18)',
-                zIndex: 120,
-              }}
-            />
+          <div style={{ minWidth: 0 }}>
             <div
               style={{
-                position: 'fixed',
-                left: '12px',
-                right: '12px',
-                bottom: '82px',
-                background: '#fff',
-                border: `1px solid ${BORDER}`,
-                borderRadius: '18px',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.14)',
-                overflow: 'hidden',
-                zIndex: 121,
+                fontSize: '14px',
+                fontWeight: '700',
+                color: TEXT,
+                lineHeight: 1.1,
+                letterSpacing: '-0.2px',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  padding: '10px 0 4px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '36px',
-                    height: '4px',
-                    borderRadius: '999px',
-                    background: '#D8D8D8',
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  padding: '8px 16px 6px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  color: TEXT3,
-                  letterSpacing: '0.4px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Menu
-              </div>
-
-              {menuTabs.map((item, index) => {
-                const itemActive = item.href === active
-                return (
-                  <div
-                    key={item.href}
-                    onClick={() => {
-                      setMenuOpen(false)
-                      router.push(item.href)
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '16px',
-                      cursor: 'pointer',
-                      background: itemActive ? '#F0F9F8' : '#fff',
-                      borderTop: index === 0 ? `1px solid ${BORDER}` : 'none',
-                      borderBottom: index !== menuTabs.length - 1 ? `1px solid ${BORDER}` : 'none',
-                    }}
-                  >
-                    <span style={{ display: 'flex', color: itemActive ? A : TEXT3 }}>
-                      {icons[item.href]}
-                    </span>
-                    <span style={{ fontSize: '15px', fontWeight: itemActive ? '600' : '500', color: itemActive ? '#0A4F4C' : TEXT2 }}>
-                      {item.label}
-                    </span>
-                  </div>
-                )
-              })}
+              Beam CRM
             </div>
-          </>
-        )}
+            <div
+              style={{
+                fontSize: '12px',
+                color: TEXT3,
+                marginTop: '4px',
+                lineHeight: 1.2,
+              }}
+            >
+              Service dashboard
+            </div>
+          </div>
+        </div>
 
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 122,
-          background: '#fff',
-          borderTop: `1px solid ${BORDER}`,
-          display: 'flex',
-          alignItems: 'stretch',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}>
-          {bottomTabs.map(tab => {
-            const isMenu = tab.href === 'menu'
-            const isActive = isMenu ? menuActive || menuOpen : tab.href === active
-
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {navItems.map(item => {
+            const isActive = active === item.href
             return (
-              <div
-                key={tab.href}
-                onClick={() => {
-                  if (isMenu) {
-                    setMenuOpen(prev => !prev)
-                  } else {
-                    setMenuOpen(false)
-                    router.push(tab.href)
-                  }
-                }}
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
                 style={{
-                  flex: 1,
+                  width: '100%',
+                  border: 'none',
+                  background: isActive ? '#F0F9F8' : 'transparent',
+                  color: isActive ? '#0A4F4C' : TEXT2,
+                  borderRadius: '12px',
+                  padding: '12px 12px',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '10px 4px 8px',
+                  gap: '12px',
                   cursor: 'pointer',
-                  gap: '4px',
-                  color: isActive ? A : TEXT3,
+                  fontSize: '14px',
+                  fontWeight: isActive ? '600' : '500',
+                  textAlign: 'left',
+                  fontFamily: 'inherit',
+                  transition: '0.18s ease',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) e.currentTarget.style.background = '#F7F7F7'
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) e.currentTarget.style.background = 'transparent'
                 }}
               >
-                <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>
-                  {isMenu ? icons['/dashboard/settings'] : icons[tab.href]}
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px' }}>
+                  {item.icon}
                 </span>
-                <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400', letterSpacing: '0.2px' }}>
-                  {tab.label}
-                </span>
-              </div>
+                <span>{item.label}</span>
+              </button>
             )
           })}
-        </div>
-      </>
-    )
-  }
+        </nav>
+      </div>
 
-  return (
-    <div style={{
-      width: '232px',
-      flexShrink: 0,
-      background: '#fff',
-      borderRight: `1px solid ${BORDER}`,
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      <div style={{ padding: '22px 20px 18px', borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <img
-            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-            alt="Jobyra"
-            style={{ width: '56px', height: '56px', borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }}
-          />
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            {loading ? (
-              <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px', marginTop: '5px' }} />
-            ) : (
-              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{business?.name || ''}</div>
-            )}
+      {/* Redesigned bottom left owner/sign out area */}
+      <div
+        style={{
+          marginTop: '18px',
+          paddingTop: '14px',
+          borderTop: `1px solid ${BORDER}`,
+        }}
+      >
+        <div
+          style={{
+            background: '#FAFAFA',
+            border: `1px solid ${BORDER}`,
+            borderRadius: '16px',
+            padding: '12px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '16px',
+                background: 'linear-gradient(180deg, #CCEFED 0%, #FFFFFF 100%)',
+                border: '1px solid #D6EEEC',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#0A4F4C',
+                fontSize: '15px',
+                fontWeight: '800',
+                letterSpacing: '-0.3px',
+                flexShrink: 0,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
+              }}
+            >
+              RA
+            </div>
+
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  color: TEXT,
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Ramiz Arib
+              </div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: TEXT3,
+                  marginTop: '3px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Owner
+              </div>
+            </div>
           </div>
+
+          <button
+            onClick={handleSignOut}
+            style={{
+              width: '100%',
+              height: '40px',
+              borderRadius: '12px',
+              border: '1px solid #E7E7E7',
+              background: '#FFFFFF',
+              color: TEXT2,
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#F7F7F7'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#FFFFFF'
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5 5 5Zm10 4H12v-2h8V5h-8V3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2Z" fill="currentColor" />
+            </svg>
+            Sign out
+          </button>
         </div>
       </div>
-
-      <div style={{ padding: '12px 10px', flex: 1 }}>
-        <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, letterSpacing: '0.6px', textTransform: 'uppercase', padding: '10px 10px 6px' }}>Main</div>
-        {navMain.map(item => {
-          const isActive = item.href === active
-          return (
-            <div key={item.href} onClick={() => router.push(item.href)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', color: isActive ? '#0A4F4C' : TEXT2, fontWeight: isActive ? '600' : '400', background: isActive ? '#CCEFED' : 'transparent', marginBottom: '2px' }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F0F0F0' }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-              <span style={{ color: isActive ? A : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
-              {item.label}
-            </div>
-          )
-        })}
-
-        <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, letterSpacing: '0.6px', textTransform: 'uppercase', padding: '14px 10px 6px' }}>Manage</div>
-        {navManage.map(item => {
-          const isActive = item.href === active
-          return (
-            <div key={item.href} onClick={() => router.push(item.href)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', color: isActive ? '#0A4F4C' : TEXT2, fontWeight: isActive ? '600' : '400', background: isActive ? '#CCEFED' : 'transparent', marginBottom: '2px' }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F0F0F0' }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-              <span style={{ color: isActive ? A : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
-              {item.label}
-            </div>
-          )
-        })}
-      </div>
-
-      <div style={{ padding: '16px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {loading ? <UserSkeleton /> : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {business?.logo_url ? (
-              <img src={business.logo_url} alt={business?.name || 'Logo'} style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px', flexShrink: 0 }} />
-            ) : (
-              <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '600', flexShrink: 0 }}>{initials}</div>
-            )}
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{business?.full_name || ''}</div>
-              <div style={{ fontSize: '11px', color: TEXT3 }}>{business?.role_title || ''}</div>
-            </div>
-          </div>
-        )}
-        <button onClick={signOut} style={{ fontSize: '12px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Sign out</button>
-      </div>
-    </div>
+    </aside>
   )
 }
