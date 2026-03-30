@@ -20,8 +20,20 @@ const avColors = [
   { bg: '#FFE4E6', color: '#881337' },
 ]
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function CustomersPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [customers, setCustomers] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<Record<string, number>>({})
   const [totalPlatforms, setTotalPlatforms] = useState(0)
@@ -77,11 +89,13 @@ export default function CustomersPage() {
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
+  const pad = isMobile ? '16px' : '30px'
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Customers</div>
           <button onClick={() => router.push('/dashboard/jobs')}
             style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}>
@@ -89,19 +103,62 @@ export default function CustomersPage() {
             Add job
           </button>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ padding: isMobile ? '12px 14px' : '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
                 style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
             </div>
+
             {loading ? (
               <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
             ) : customers.length === 0 ? (
               <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
                 No customers yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
               </div>
+            ) : isMobile ? (
+              // Mobile: card list
+              <div>
+                {customers.map((c, i) => {
+                  const av = avColors[i % avColors.length]
+                  const s = statusPill(c.jobs)
+                  const clicks = reviewClicks[c.id] || 0
+                  const hasClicks = clicks > 0
+                  return (
+                    <div key={c.id}
+                      onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                      style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{c.first_name} {c.last_name}</div>
+                            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{c.suburb || c.address || '—'}</div>
+                          </div>
+                        </div>
+                        <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px' }}>
+                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
+                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
+                        {c.jobs?.[0]?.next_service_date && (
+                          <span style={{ fontSize: '12px', color: TEXT3 }}>
+                            {new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                        {totalPlatforms > 0 && hasClicks && (
+                          <span style={{ fontSize: '12px', color: '#92400E' }}>⭐ {clicks}/{totalPlatforms}</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             ) : (
+              // Desktop: full table
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: '#F8F8F8' }}>
