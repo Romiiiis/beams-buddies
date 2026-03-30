@@ -75,9 +75,9 @@ export default function SchedulePage() {
   ]
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/schedule" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
         {/* Header */}
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -90,13 +90,16 @@ export default function SchedulePage() {
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
 
           {/* Filter tabs — scrollable on mobile */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
             {filterTabs.map(f => (
-              <button key={f.key} onClick={() => setFilter(f.key)}
-                style={{ height: '34px', padding: '0 14px', borderRadius: '20px', border: `1px solid ${filter === f.key ? A : BORDER}`, background: filter === f.key ? A : '#fff', color: filter === f.key ? '#fff' : TEXT2, fontSize: '13px', fontWeight: filter === f.key ? '600' : '400', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                style={{ height: '34px', padding: '0 14px', borderRadius: '20px', border: `1px solid ${filter === f.key ? A : BORDER}`, background: filter === f.key ? A : '#fff', color: filter === f.key ? '#fff' : TEXT2, fontSize: '13px', fontWeight: filter === f.key ? '600' : '400', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
                 {f.label}
               </button>
             ))}
