@@ -12,8 +12,20 @@ const TEXT3 = '#5A5A5A'
 const BORDER = '#DEDEDE'
 const BG = '#F2F3F3'
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function ReportsPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -69,20 +81,23 @@ export default function ReportsPage() {
     load()
   }, [router])
 
+  const pad = isMobile ? '16px' : '30px'
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/reports" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Reports</div>
-          <button style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Export PDF</button>
+          {!isMobile && <button style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Export PDF</button>}
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           {loading || !data ? (
             <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px', marginBottom: '20px' }}>
+              {/* Stats — 2x2 on mobile, 4 cols on desktop */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px', marginBottom: '14px' }}>
                 {[
                   { label: 'Total customers', value: data.totalCustomers, topBar: A, valColor: TEXT },
                   { label: 'Total units', value: data.totalJobs, topBar: A, valColor: TEXT },
@@ -91,52 +106,53 @@ export default function ReportsPage() {
                 ].map(s => (
                   <div key={s.label} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                     <div style={{ height: '3px', background: s.topBar }} />
-                    <div style={{ padding: '16px 20px 18px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT2, marginBottom: '10px' }}>{s.label}</div>
-                      <div style={{ fontSize: '30px', fontWeight: '600', color: s.valColor, lineHeight: 1, marginBottom: '6px' }}>{s.value}</div>
+                    <div style={{ padding: isMobile ? '12px 14px' : '16px 20px 18px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '500', color: TEXT2, marginBottom: '8px' }}>{s.label}</div>
+                      <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '600', color: s.valColor, lineHeight: 1 }}>{s.value}</div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '20px 22px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '18px' }}>Jobs by month</div>
+              {/* Charts — 1 col on mobile, 2 cols on desktop */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '16px' }}>Jobs by month</div>
                   {data.last6Months.map((month: { key: string, label: string }) => {
                     const count = data.monthCounts[month.label] || 0
                     const pct = Math.round((count / data.maxMonth) * 100)
                     return (
-                      <div key={month.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                        <div style={{ fontSize: '12px', color: TEXT3, width: '68px', textAlign: 'right', flexShrink: 0 }}>{month.label}</div>
+                      <div key={month.key} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '11px', color: TEXT3, width: '60px', textAlign: 'right', flexShrink: 0 }}>{month.label}</div>
                         <div style={{ flex: 1, height: '8px', background: BG, borderRadius: '4px', overflow: 'hidden' }}>
                           <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }}/>
                         </div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '24px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '20px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
                       </div>
                     )
                   })}
                 </div>
 
-                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '20px 22px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '18px' }}>Units by brand</div>
+                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '16px' }}>Units by brand</div>
                   {data.sortedBrands.length === 0 ? (
                     <div style={{ fontSize: '13px', color: TEXT3 }}>No data yet</div>
                   ) : data.sortedBrands.map(([brand, count]: [string, number]) => {
                     const pct = Math.round((count / data.maxBrand) * 100)
                     return (
-                      <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                        <div style={{ fontSize: '12px', color: TEXT3, width: '68px', textAlign: 'right', flexShrink: 0 }}>{brand}</div>
+                      <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '11px', color: TEXT3, width: '60px', textAlign: 'right', flexShrink: 0 }}>{brand}</div>
                         <div style={{ flex: 1, height: '8px', background: BG, borderRadius: '4px', overflow: 'hidden' }}>
                           <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }}/>
                         </div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '24px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '20px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
                       </div>
                     )
                   })}
                 </div>
 
-                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '20px 22px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '16px' }}>Service compliance</div>
+                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '14px' }}>Service compliance</div>
                   {[
                     { label: 'Total units tracked', value: data.totalJobs, color: TEXT },
                     { label: 'Overdue services', value: data.overdue, color: data.overdue > 0 ? '#B91C1C' : TEXT },
@@ -150,8 +166,8 @@ export default function ReportsPage() {
                   ))}
                 </div>
 
-                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '20px 22px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '16px' }}>Customer summary</div>
+                <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '14px' }}>Customer summary</div>
                   {[
                     { label: 'Total customers', value: data.totalCustomers },
                     { label: 'Jobs this month', value: data.jobsThisMonth },
