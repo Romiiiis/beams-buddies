@@ -12,9 +12,21 @@ const TEXT3 = '#5A5A5A'
 const BORDER = '#DEDEDE'
 const BG = '#F2F3F3'
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [customer, setCustomer] = useState<any>(null)
   const [jobs, setJobs] = useState<any[]>([])
   const [reviewClicks, setReviewClicks] = useState<any[]>([])
@@ -98,15 +110,16 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   const input: React.CSSProperties = {
-    width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px',
+    width: '100%', height: '40px', padding: '0 10px', borderRadius: '8px',
     border: `1px solid ${BORDER}`, background: '#fff', color: TEXT,
-    fontFamily: 'inherit', fontSize: '13px', outline: 'none',
+    fontFamily: 'inherit', fontSize: '14px', outline: 'none',
   }
-  const label: React.CSSProperties = { fontSize: '11px', color: TEXT3, marginBottom: '4px', display: 'block' }
+  const label: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block' }
+  const pad = isMobile ? '16px' : '30px'
 
   if (loading) return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}` }} />
+      <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
     </div>
   )
@@ -119,23 +132,36 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span onClick={() => router.push('/dashboard/customers')} style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }}>← Customers</span>
-            <span style={{ color: BORDER }}>|</span>
-            <span style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>{customer.first_name} {customer.last_name}</span>
+
+        {/* Header */}
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            <span onClick={() => router.push('/dashboard/customers')} style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500', flexShrink: 0 }}>←</span>
+            <span style={{ color: BORDER, flexShrink: 0 }}>|</span>
+            <span style={{ fontSize: isMobile ? '15px' : '17px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{customer.first_name} {customer.last_name}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {saved && <span style={{ fontSize: '13px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            {saved && <span style={{ fontSize: '12px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
             <button onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
               + Add job
             </button>
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-          <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Content */}
+        <div style={{
+          flex: 1, overflowY: 'auto',
+          padding: `${isMobile ? '16px' : '24px'} ${pad}`,
+          paddingBottom: isMobile ? '90px' : '24px',
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: '16px',
+          alignItems: 'flex-start',
+        }}>
+
+          {/* Customer info panel */}
+          <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px' }}>
                 <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#CCEFED', color: '#0A4F4C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '600' }}>{initials}</div>
@@ -214,6 +240,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             )}
           </div>
 
+          {/* Jobs panel */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {jobs.length === 0 ? (
               <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No jobs yet for this customer.</div>
@@ -224,16 +251,16 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               return (
                 <div key={job.id} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                   <div style={{ height: '3px', background: A }} />
-                  <div style={{ padding: '16px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
+                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ')}</div>
                       {job.model && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Model: {job.model}</div>}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>{s.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                      <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
                       {!isEditing && (
                         <button onClick={() => setEditingJobId(job.id)}
-                          style={{ height: '32px', padding: '0 14px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ height: '30px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>
                           Edit
                         </button>
                       )}
@@ -242,7 +269,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
                   {!isEditing ? (
                     <>
-                      <div style={{ padding: '14px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                      <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: '14px' }}>
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Serial number</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, fontFamily: 'monospace' }}>{job.serial_number || '—'}</div></div>
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Installed</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</div></div>
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Next service</div><div style={{ fontSize: '13px', fontWeight: '500', color: job.next_service_date && getDays(job.next_service_date) < 0 ? '#B91C1C' : TEXT }}>{job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</div></div>
@@ -250,10 +277,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Location</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{job.install_location || '—'}</div></div>
                         <div><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Service interval</div><div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>Every {job.service_interval_months} months</div></div>
                       </div>
-                      {job.notes && <div style={{ padding: '0 22px 14px' }}><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Notes</div><div style={{ fontSize: '13px', color: TEXT2 }}>{job.notes}</div></div>}
+                      {job.notes && <div style={{ padding: '0 18px 14px' }}><div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Notes</div><div style={{ fontSize: '13px', color: TEXT2 }}>{job.notes}</div></div>}
                     </>
                   ) : (
-                    <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div><label style={label}>Brand</label><input style={input} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)}/></div>
                         <div><label style={label}>Model</label><input style={input} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)}/></div>
@@ -268,8 +295,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           </select>
                         </div>
                         <div><label style={label}>Serial number</label><input style={input} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)}/></div>
-                        <div><label style={label}>Location in property</label><input style={input} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)}/></div>
-                        <div><label style={label}>Installation date</label><input type="date" style={input} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)}/></div>
+                        <div><label style={label}>Location</label><input style={input} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)}/></div>
+                        <div><label style={label}>Install date</label><input type="date" style={input} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)}/></div>
                         <div><label style={label}>Warranty expiry</label><input type="date" style={input} value={f.warranty_expiry?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'warranty_expiry', e.target.value)}/></div>
                         <div><label style={label}>Service interval</label>
                           <select style={input} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
@@ -279,7 +306,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             <option value="24">Every 24 months</option>
                           </select>
                         </div>
-                        <div><label style={label}>Reminder lead time</label>
+                        <div><label style={label}>Reminder</label>
                           <select style={input} value={f.reminder_lead_days || 14} onChange={e => setJobField(job.id, 'reminder_lead_days', e.target.value)}>
                             <option value="14">2 weeks before</option>
                             <option value="28">4 weeks before</option>
@@ -288,7 +315,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           </select>
                         </div>
                       </div>
-                      <div><label style={label}>Job notes</label><textarea style={{ ...input, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)}/></div>
+                      <div><label style={label}>Notes</label><textarea style={{ ...input, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)}/></div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => setEditingJobId(null)} style={{ flex: 1, height: '36px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
                         <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save changes'}</button>
@@ -297,7 +324,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   )}
 
                   {job.service_records?.length > 0 && (
-                    <div style={{ borderTop: `1px solid ${BORDER}`, padding: '14px 22px' }}>
+                    <div style={{ borderTop: `1px solid ${BORDER}`, padding: '14px 18px' }}>
                       <div style={{ fontSize: '12px', fontWeight: '600', color: TEXT3, marginBottom: '10px', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Service history</div>
                       {job.service_records.map((sr: any) => (
                         <div key={sr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0' }}>
