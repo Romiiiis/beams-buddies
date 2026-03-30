@@ -20,28 +20,20 @@ const avColors = [
   { bg: '#FFE4E6', color: '#881337' },
 ]
 
-function SkeletonLayout() {
-  return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
-      <div style={{ width: '232px', flexShrink: 0, background: '#fff', borderRight: `1px solid ${BORDER}` }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}` }} />
-        <div style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }}>
-            {[1,2,3,4].map(i => <div key={i} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', height: '100px' }} />)}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '14px' }}>
-            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', height: '300px' }} />
-            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', height: '300px' }} />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
 }
 
 export default function DashboardPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0 })
   const [upcoming, setUpcoming] = useState<any[]>([])
@@ -91,15 +83,16 @@ export default function DashboardPage() {
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
-  if (loading) return <SkeletonLayout />
-
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const pad = isMobile ? '16px' : '30px'
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+
+        {/* Header */}
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Dashboard</div>
             <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{todayStr}</div>
@@ -111,8 +104,11 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }}>
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+          {/* Stats grid — 2x2 on mobile, 4 cols on desktop */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px' }}>
             {[
               { label: 'Total customers', value: stats.customers, sub: 'registered', topBar: A, valColor: TEXT },
               { label: 'Active units', value: stats.units, sub: 'installed', topBar: A, valColor: TEXT },
@@ -121,24 +117,82 @@ export default function DashboardPage() {
             ].map(s => (
               <div key={s.label} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                 <div style={{ height: '3px', background: s.topBar }} />
-                <div style={{ padding: '16px 20px 18px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT2, marginBottom: '10px' }}>{s.label}</div>
-                  <div style={{ fontSize: '32px', fontWeight: '600', color: s.valColor, lineHeight: 1, marginBottom: '6px' }}>{s.value}</div>
-                  <div style={{ fontSize: '12px', color: TEXT3 }}>{s.sub}</div>
+                <div style={{ padding: isMobile ? '12px 14px 14px' : '16px 20px 18px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '500', color: TEXT2, marginBottom: '8px' }}>{s.label}</div>
+                  <div style={{ fontSize: isMobile ? '26px' : '32px', fontWeight: '600', color: s.valColor, lineHeight: 1, marginBottom: '4px' }}>{s.value}</div>
+                  <div style={{ fontSize: '11px', color: TEXT3 }}>{s.sub}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '14px' }}>
+          {/* Bottom section — stacked on mobile, side by side on desktop */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: '14px' }}>
+
+            {/* Upcoming services — show first on mobile */}
+            {isMobile && (
+              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>Upcoming services</span>
+                  <span style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }} onClick={() => router.push('/dashboard/schedule')}>View all →</span>
+                </div>
+                <div>
+                  {upcoming.length === 0 ? (
+                    <div style={{ padding: '28px 16px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No upcoming services.</div>
+                  ) : upcoming.map(job => {
+                    const days = getDays(job.next_service_date)
+                    const u = urgency(days)
+                    return (
+                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
+                        <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
+                          <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: u.val }}>{u.text}</div>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{u.label}</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Recent customers */}
             <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '16px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: isMobile ? '14px 16px' : '16px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>Recent customers</span>
                 <span style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }} onClick={() => router.push('/dashboard/customers')}>View all →</span>
               </div>
               {recent.length === 0 ? (
                 <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
                   No jobs yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
+                </div>
+              ) : isMobile ? (
+                // Mobile: simple list instead of table
+                <div>
+                  {recent.map((job, i) => {
+                    const av = avColors[i % avColors.length]
+                    const s = statusPill(job.next_service_date)
+                    return (
+                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                            {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
+                            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                          </div>
+                        </div>
+                        <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '8px', flexShrink: 0 }}>{s.label}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -182,36 +236,39 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>Upcoming services</span>
-                <span style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }} onClick={() => router.push('/dashboard/schedule')}>View all →</span>
-              </div>
-              <div>
-                {upcoming.length === 0 ? (
-                  <div style={{ padding: '36px 20px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No upcoming services.</div>
-                ) : upcoming.map(job => {
-                  const days = getDays(job.next_service_date)
-                  const u = urgency(days)
-                  return (
-                    <div key={job.id} style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                        <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+            {/* Upcoming services — desktop only (mobile shown above) */}
+            {!isMobile && (
+              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>Upcoming services</span>
+                  <span style={{ fontSize: '13px', color: A, cursor: 'pointer', fontWeight: '500' }} onClick={() => router.push('/dashboard/schedule')}>View all →</span>
+                </div>
+                <div>
+                  {upcoming.length === 0 ? (
+                    <div style={{ padding: '36px 20px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No upcoming services.</div>
+                  ) : upcoming.map(job => {
+                    const days = getDays(job.next_service_date)
+                    const u = urgency(days)
+                    return (
+                      <div key={job.id} style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                        <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
+                          <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: u.val }}>{u.text}</div>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{u.label}</div>
+                        </div>
                       </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: u.val }}>{u.text}</div>
-                        <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{u.label}</div>
-                      </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
