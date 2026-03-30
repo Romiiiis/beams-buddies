@@ -87,9 +87,9 @@ export default function DashboardPage() {
   const pad = isMobile ? '16px' : '30px'
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
         {/* Header */}
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -97,15 +97,17 @@ export default function DashboardPage() {
             <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Dashboard</div>
             <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{todayStr}</div>
           </div>
-          <button onClick={() => router.push('/dashboard/jobs')}
-            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}>
-            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round"/></svg>
+          <button
+            onClick={() => router.push('/dashboard/jobs')}
+            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" /></svg>
             Add job
           </button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           {/* Stats grid — 2x2 on mobile, 4 cols on desktop */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px' }}>
@@ -143,8 +145,11 @@ export default function DashboardPage() {
                     const days = getDays(job.next_service_date)
                     const u = urgency(days)
                     return (
-                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
+                      <div
+                        key={job.id}
+                        style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      >
                         <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
@@ -172,14 +177,16 @@ export default function DashboardPage() {
                   No jobs yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
                 </div>
               ) : isMobile ? (
-                // Mobile: simple list instead of table
                 <div>
                   {recent.map((job, i) => {
                     const av = avColors[i % avColors.length]
                     const s = statusPill(job.next_service_date)
                     return (
-                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
+                      <div
+                        key={job.id}
+                        style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
                             {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
@@ -208,10 +215,13 @@ export default function DashboardPage() {
                       const av = avColors[i % avColors.length]
                       const s = statusPill(job.next_service_date)
                       return (
-                        <tr key={job.id} style={{ cursor: 'pointer', borderBottom: '1px solid #F0F0F0' }}
+                        <tr
+                          key={job.id}
+                          style={{ cursor: 'pointer', borderBottom: '1px solid #F0F0F0' }}
                           onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                           onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
                           <td style={{ padding: '13px 22px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                               <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
@@ -250,10 +260,13 @@ export default function DashboardPage() {
                     const days = getDays(job.next_service_date)
                     const u = urgency(days)
                     return (
-                      <div key={job.id} style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                      <div
+                        key={job.id}
+                        style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
                         onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                         onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
                         <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
