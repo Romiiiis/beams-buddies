@@ -33,7 +33,7 @@ const bottomTabs = [
 
 const menuTabs = [
   { label: 'Reports', href: '/dashboard/reports' },
-  { label: 'QR Codes', href: '/dashboard/qrcodes' },
+  { label: 'QR codes', href: '/dashboard/qrcodes' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -119,7 +119,11 @@ export function Sidebar({ active }: { active: string }) {
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
   }, [])
 
   const initials = business?.full_name
@@ -131,15 +135,20 @@ export function Sidebar({ active }: { active: string }) {
     router.push('/login')
   }
 
-  // Mobile: bottom tab bar only
   if (isMobile) {
     const menuActive = menuTabs.some(tab => tab.href === active)
 
     return (
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: '#fff', borderTop: `1px solid ${BORDER}`,
-        display: 'flex', alignItems: 'stretch',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: '#fff',
+        borderTop: `1px solid ${BORDER}`,
+        display: 'flex',
+        alignItems: 'stretch',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
         {bottomTabs.map(tab => {
@@ -154,50 +163,70 @@ export function Sidebar({ active }: { active: string }) {
                 style={{ flex: 1, position: 'relative', display: 'flex' }}
               >
                 {menuOpen && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '100%',
-                    right: '8px',
-                    left: '8px',
-                    marginBottom: '8px',
-                    background: '#fff',
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: '12px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                    overflow: 'hidden',
-                  }}>
-                    {menuTabs.map((item, index) => {
-                      const itemActive = item.href === active
-                      return (
-                        <div
-                          key={item.href}
-                          onClick={() => {
-                            setMenuOpen(false)
-                            router.push(item.href)
-                          }}
-                          style={{
-                            padding: '12px 14px',
-                            cursor: 'pointer',
-                            fontSize: '13px',
-                            color: itemActive ? '#0A4F4C' : TEXT2,
-                            fontWeight: itemActive ? '600' : '400',
-                            background: itemActive ? '#CCEFED' : '#fff',
-                            borderBottom: index !== menuTabs.length - 1 ? `1px solid ${BORDER}` : 'none',
-                          }}
-                        >
-                          {item.label}
-                        </div>
-                      )
-                    })}
-                  </div>
+                  <>
+                    <div
+                      onClick={() => setMenuOpen(false)}
+                      style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'transparent',
+                        zIndex: 109,
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      right: '10px',
+                      width: '176px',
+                      marginBottom: '10px',
+                      background: '#fff',
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: '16px',
+                      boxShadow: '0 14px 34px rgba(0,0,0,0.12)',
+                      overflow: 'hidden',
+                      zIndex: 110,
+                    }}>
+                      {menuTabs.map((item, index) => {
+                        const itemActive = item.href === active
+                        return (
+                          <div
+                            key={item.href}
+                            onClick={() => {
+                              setMenuOpen(false)
+                              router.push(item.href)
+                            }}
+                            style={{
+                              padding: '14px 16px',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              lineHeight: 1.2,
+                              whiteSpace: 'nowrap',
+                              color: itemActive ? '#0A4F4C' : TEXT2,
+                              fontWeight: itemActive ? '600' : '500',
+                              background: itemActive ? '#CCEFED' : '#fff',
+                              borderBottom: index !== menuTabs.length - 1 ? `1px solid ${BORDER}` : 'none',
+                              textAlign: 'left',
+                            }}
+                          >
+                            {item.label}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
                 )}
 
                 <div
                   onClick={() => setMenuOpen(prev => !prev)}
                   style={{
-                    flex: 1, display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center',
-                    padding: '10px 4px 8px', cursor: 'pointer', gap: '4px',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '10px 4px 8px',
+                    cursor: 'pointer',
+                    gap: '4px',
                     color: isActive ? A : TEXT3,
                   }}
                 >
@@ -217,9 +246,14 @@ export function Sidebar({ active }: { active: string }) {
               key={tab.href}
               onClick={() => router.push(tab.href)}
               style={{
-                flex: 1, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                padding: '10px 4px 8px', cursor: 'pointer', gap: '4px',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 4px 8px',
+                cursor: 'pointer',
+                gap: '4px',
                 color: isActive ? A : TEXT3,
               }}
             >
@@ -236,7 +270,6 @@ export function Sidebar({ active }: { active: string }) {
     )
   }
 
-  // Desktop: full sidebar
   return (
     <div style={{
       width: '232px',
