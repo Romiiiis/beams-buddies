@@ -15,9 +15,21 @@ const BG = '#F2F3F3'
 
 interface Platform { id: string; name: string; url: string }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768) }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function SettingsPage() {
   const router = useRouter()
   const { refresh } = useBusinessData()
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -96,33 +108,39 @@ export default function SettingsPage() {
   function updatePlatform(id: string, field: 'name' | 'url', value: string) { setPlatforms(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p)) }
   function removePlatform(id: string) { setPlatforms(prev => prev.filter(p => p.id !== id)) }
 
-  const input: React.CSSProperties = { width: '100%', height: '40px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, color: TEXT, fontFamily: 'inherit', fontSize: '14px', outline: 'none' }
+  const pad = isMobile ? '16px' : '30px'
+  const input: React.CSSProperties = { width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, color: TEXT, fontFamily: 'inherit', fontSize: '14px', outline: 'none' }
   const label: React.CSSProperties = { fontSize: '13px', fontWeight: '500', color: TEXT2, marginBottom: '6px', display: 'block' }
   const hint: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginTop: '4px' }
   const section: React.CSSProperties = { background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '14px' }
   const sHead: React.CSSProperties = { padding: '14px 22px', borderBottom: `1px solid ${BORDER}`, fontSize: '14px', fontWeight: '600', color: TEXT }
-  const sBody: React.CSSProperties = { padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }
+  const sBody: React.CSSProperties = { padding: isMobile ? '16px' : '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }
   const allPlatformCount = (form.google_review_url ? 1 : 0) + (form.facebook_review_url ? 1 : 0) + platforms.filter(p => p.url).length
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/settings" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: '0 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+
+        {/* Header */}
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Settings</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {saved && <span style={{ fontSize: '13px', color: '#065F46', fontWeight: '500' }}>✓ Saved successfully</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {saved && <span style={{ fontSize: '13px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
             <button form="settings-form" type="submit" disabled={saving}
               style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
               {saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
           ) : (
             <form id="settings-form" onSubmit={handleSave}>
+
               <div style={section}>
                 <div style={sHead}>Your profile</div>
                 <div style={sBody}>
@@ -140,10 +158,11 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+
               <div style={section}>
                 <div style={sHead}>Business profile</div>
                 <div style={sBody}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Business name</label>
                       <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name"/>
@@ -153,7 +172,7 @@ export default function SettingsPage() {
                       <label style={label}>Phone</label>
                       <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000"/>
                     </div>
-                    <div style={{ gridColumn: 'span 2' }}>
+                    <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
                       <label style={label}>Email</label>
                       <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com"/>
                     </div>
@@ -174,6 +193,7 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+
               <div style={section}>
                 <div style={sHead}>Review platforms</div>
                 <div style={sBody}>
@@ -194,10 +214,10 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT2 }}>Additional platforms</div>
                       {platforms.map(p => (
-                        <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '10px', alignItems: 'center' }}>
-                          <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name"/>
+                        <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr auto' : '1fr 2fr auto', gap: '10px', alignItems: 'center' }}>
+                          {!isMobile && <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name"/>}
                           <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://…"/>
-                          <button type="button" onClick={() => removePlatform(p.id)} style={{ height: '40px', width: '40px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: '#B91C1C', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                          <button type="button" onClick={() => removePlatform(p.id)} style={{ height: '42px', width: '42px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: '#B91C1C', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
                         </div>
                       ))}
                     </div>
@@ -207,6 +227,7 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
+
               <div style={section}>
                 <div style={sHead}>Review discount</div>
                 <div style={sBody}>
@@ -249,6 +270,7 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+
             </form>
           )}
         </div>
