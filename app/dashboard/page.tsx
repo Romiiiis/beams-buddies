@@ -91,25 +91,94 @@ export default function DashboardPage() {
       <Sidebar active="/dashboard" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
-        {/* Header */}
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Dashboard</div>
-            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{todayStr}</div>
-          </div>
-          <button
-            onClick={() => router.push('/dashboard/jobs')}
-            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}
-          >
-            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" /></svg>
-            Add job
-          </button>
-        </div>
-
-        {/* Content */}
         <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          {/* Stats grid — 2x2 on mobile, 4 cols on desktop */}
+          {/* New header */}
+          <div style={{
+            background: '#fff',
+            border: `1px solid ${BORDER}`,
+            borderRadius: '16px',
+            padding: isMobile ? '18px 16px' : '22px 22px',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            justifyContent: 'space-between',
+            gap: '14px',
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 10px',
+                borderRadius: '999px',
+                background: '#F0F9F8',
+                color: '#0A4F4C',
+                fontSize: '12px',
+                fontWeight: '600',
+                marginBottom: '12px',
+              }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: A, display: 'inline-block' }} />
+                Overview
+              </div>
+
+              <div style={{
+                fontSize: isMobile ? '28px' : '32px',
+                lineHeight: 1,
+                fontWeight: '700',
+                color: TEXT,
+                letterSpacing: '-0.8px',
+                marginBottom: '8px',
+              }}>
+                Dashboard
+              </div>
+
+              <div style={{
+                fontSize: isMobile ? '13px' : '14px',
+                color: TEXT3,
+                lineHeight: 1.5,
+              }}>
+                Track customers, units, overdue services, and recent activity from one place.
+              </div>
+
+              <div style={{
+                fontSize: '12px',
+                color: TEXT3,
+                marginTop: '10px',
+              }}>
+                {todayStr}
+              </div>
+            </div>
+
+            <button
+              onClick={() => router.push('/dashboard/jobs')}
+              style={{
+                height: isMobile ? '42px' : '44px',
+                padding: '0 18px',
+                borderRadius: '10px',
+                border: 'none',
+                background: A,
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                fontFamily: 'inherit',
+                boxShadow: '0 8px 20px rgba(42,161,152,0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              Add job
+            </button>
+          </div>
+
+          {/* Stats grid */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px' }}>
             {[
               { label: 'Total customers', value: stats.customers, sub: 'registered', topBar: A, valColor: TEXT },
@@ -128,10 +197,8 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Bottom section — stacked on mobile, side by side on desktop */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: '14px' }}>
 
-            {/* Upcoming services — show first on mobile */}
             {isMobile && (
               <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                 <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -166,7 +233,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Recent customers */}
             <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: isMobile ? '14px 16px' : '16px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>Recent customers</span>
@@ -246,7 +312,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Upcoming services — desktop only (mobile shown above) */}
             {!isMobile && (
               <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
