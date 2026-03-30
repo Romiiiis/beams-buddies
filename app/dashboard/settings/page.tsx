@@ -118,24 +118,28 @@ export default function SettingsPage() {
   const allPlatformCount = (form.google_review_url ? 1 : 0) + (form.facebook_review_url ? 1 : 0) + platforms.filter(p => p.url).length
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/settings" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
         {/* Header */}
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Settings</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {saved && <span style={{ fontSize: '13px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
-            <button form="settings-form" type="submit" disabled={saving}
-              style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button
+              form="settings-form"
+              type="submit"
+              disabled={saving}
+              style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
               {saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
           ) : (
@@ -144,15 +148,15 @@ export default function SettingsPage() {
               <div style={section}>
                 <div style={sHead}>Your profile</div>
                 <div style={sBody}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Your name</label>
-                      <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib"/>
+                      <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
                       <p style={hint}>Shown in the bottom left of the sidebar</p>
                     </div>
                     <div>
                       <label style={label}>Your title</label>
-                      <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner"/>
+                      <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
                       <p style={hint}>Shown below your name in the sidebar</p>
                     </div>
                   </div>
@@ -165,26 +169,26 @@ export default function SettingsPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Business name</label>
-                      <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name"/>
+                      <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
                       <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
                     </div>
                     <div>
                       <label style={label}>Phone</label>
-                      <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000"/>
+                      <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
                     </div>
                     <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
                       <label style={label}>Email</label>
-                      <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com"/>
+                      <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
                     </div>
                   </div>
                   <div>
                     <label style={label}>Business logo URL</label>
-                    <input style={input} value={business.logo_url} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png"/>
+                    <input style={input} value={business.logo_url} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png" />
                     <p style={hint}>Shown in the bottom left of the sidebar next to your name</p>
                   </div>
                   {business.logo_url && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: BG, borderRadius: '8px', border: `1px solid ${BORDER}` }}>
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px' }}/>
+                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px' }} />
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '2px' }}>Logo preview</div>
                         <div style={{ fontSize: '12px', color: TEXT3 }}>This appears in the bottom left of the sidebar</div>
@@ -202,12 +206,12 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <label style={label}>Google review link</label>
-                    <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review"/>
+                    <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
                     <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
                   </div>
                   <div>
                     <label style={label}>Facebook review link</label>
-                    <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews"/>
+                    <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews" />
                     <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
                   </div>
                   {platforms.length > 0 && (
@@ -215,8 +219,8 @@ export default function SettingsPage() {
                       <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT2 }}>Additional platforms</div>
                       {platforms.map(p => (
                         <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr auto' : '1fr 2fr auto', gap: '10px', alignItems: 'center' }}>
-                          {!isMobile && <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name"/>}
-                          <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://…"/>
+                          {!isMobile && <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />}
+                          <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://…" />
                           <button type="button" onClick={() => removePlatform(p.id)} style={{ height: '42px', width: '42px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: '#B91C1C', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
                         </div>
                       ))}
@@ -236,22 +240,24 @@ export default function SettingsPage() {
                       <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
                       <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
                     </div>
-                    <div onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
-                      style={{ width: '44px', height: '24px', borderRadius: '12px', background: form.review_discount_enabled ? A : '#D1D5DB', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                    <div
+                      onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
+                      style={{ width: '44px', height: '24px', borderRadius: '12px', background: form.review_discount_enabled ? A : '#D1D5DB', cursor: 'pointer', position: 'relative', flexShrink: 0 }}
+                    >
                       <div style={{ position: 'absolute', top: '3px', left: form.review_discount_enabled ? '23px' : '3px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
                     </div>
                   </div>
                   {form.review_discount_enabled && (
                     <>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                         <div>
                           <label style={label}>Discount per review ($)</label>
-                          <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10"/>
+                          <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10" />
                           <p style={hint}>Amount off their next service per review left</p>
                         </div>
                         <div>
                           <label style={label}>Maximum discount ($)</label>
-                          <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30"/>
+                          <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30" />
                           <p style={hint}>Cap on total discount across all platforms</p>
                         </div>
                       </div>
