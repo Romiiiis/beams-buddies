@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
@@ -16,6 +16,7 @@ const navMain = [
   { label: 'Customers', href: '/dashboard/customers' },
   { label: 'Add job', href: '/dashboard/jobs' },
 ]
+
 const navManage = [
   { label: 'Service schedule', href: '/dashboard/schedule' },
   { label: 'QR codes', href: '/dashboard/qrcodes' },
@@ -103,27 +104,12 @@ export function Sidebar({ active }: { active: string }) {
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 768) }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
-  }, [])
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('touchstart', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchstart', handleClickOutside)
-    }
   }, [])
 
   const initials = business?.full_name
@@ -139,134 +125,145 @@ export function Sidebar({ active }: { active: string }) {
     const menuActive = menuTabs.some(tab => tab.href === active)
 
     return (
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: '#fff',
-        borderTop: `1px solid ${BORDER}`,
-        display: 'flex',
-        alignItems: 'stretch',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}>
-        {bottomTabs.map(tab => {
-          const isMenu = tab.href === 'menu'
-          const isActive = isMenu ? menuActive || menuOpen : tab.href === active
+      <>
+        {menuOpen && (
+          <>
+            <div
+              onClick={() => setMenuOpen(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.18)',
+                zIndex: 120,
+              }}
+            />
+            <div
+              style={{
+                position: 'fixed',
+                left: '12px',
+                right: '12px',
+                bottom: '82px',
+                background: '#fff',
+                border: `1px solid ${BORDER}`,
+                borderRadius: '18px',
+                boxShadow: '0 16px 40px rgba(0,0,0,0.14)',
+                overflow: 'hidden',
+                zIndex: 121,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '10px 0 4px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '36px',
+                    height: '4px',
+                    borderRadius: '999px',
+                    background: '#D8D8D8',
+                  }}
+                />
+              </div>
 
-          if (isMenu) {
+              <div
+                style={{
+                  padding: '8px 16px 6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: TEXT3,
+                  letterSpacing: '0.4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Menu
+              </div>
+
+              {menuTabs.map((item, index) => {
+                const itemActive = item.href === active
+                return (
+                  <div
+                    key={item.href}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      router.push(item.href)
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      background: itemActive ? '#F0F9F8' : '#fff',
+                      borderTop: index === 0 ? `1px solid ${BORDER}` : 'none',
+                      borderBottom: index !== menuTabs.length - 1 ? `1px solid ${BORDER}` : 'none',
+                    }}
+                  >
+                    <span style={{ display: 'flex', color: itemActive ? A : TEXT3 }}>
+                      {icons[item.href]}
+                    </span>
+                    <span style={{ fontSize: '15px', fontWeight: itemActive ? '600' : '500', color: itemActive ? '#0A4F4C' : TEXT2 }}>
+                      {item.label}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
+
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 122,
+          background: '#fff',
+          borderTop: `1px solid ${BORDER}`,
+          display: 'flex',
+          alignItems: 'stretch',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}>
+          {bottomTabs.map(tab => {
+            const isMenu = tab.href === 'menu'
+            const isActive = isMenu ? menuActive || menuOpen : tab.href === active
+
             return (
               <div
                 key={tab.href}
-                ref={menuRef}
-                style={{ flex: 1, position: 'relative', display: 'flex' }}
+                onClick={() => {
+                  if (isMenu) {
+                    setMenuOpen(prev => !prev)
+                  } else {
+                    setMenuOpen(false)
+                    router.push(tab.href)
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px 4px 8px',
+                  cursor: 'pointer',
+                  gap: '4px',
+                  color: isActive ? A : TEXT3,
+                }}
               >
-                {menuOpen && (
-                  <>
-                    <div
-                      onClick={() => setMenuOpen(false)}
-                      style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'transparent',
-                        zIndex: 109,
-                      }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '100%',
-                      right: '10px',
-                      width: '176px',
-                      marginBottom: '10px',
-                      background: '#fff',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '16px',
-                      boxShadow: '0 14px 34px rgba(0,0,0,0.12)',
-                      overflow: 'hidden',
-                      zIndex: 110,
-                    }}>
-                      {menuTabs.map((item, index) => {
-                        const itemActive = item.href === active
-                        return (
-                          <div
-                            key={item.href}
-                            onClick={() => {
-                              setMenuOpen(false)
-                              router.push(item.href)
-                            }}
-                            style={{
-                              padding: '14px 16px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              lineHeight: 1.2,
-                              whiteSpace: 'nowrap',
-                              color: itemActive ? '#0A4F4C' : TEXT2,
-                              fontWeight: itemActive ? '600' : '500',
-                              background: itemActive ? '#CCEFED' : '#fff',
-                              borderBottom: index !== menuTabs.length - 1 ? `1px solid ${BORDER}` : 'none',
-                              textAlign: 'left',
-                            }}
-                          >
-                            {item.label}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
-                )}
-
-                <div
-                  onClick={() => setMenuOpen(prev => !prev)}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '10px 4px 8px',
-                    cursor: 'pointer',
-                    gap: '4px',
-                    color: isActive ? A : TEXT3,
-                  }}
-                >
-                  <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>
-                    {icons['/dashboard/settings']}
-                  </span>
-                  <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400', letterSpacing: '0.2px' }}>
-                    {tab.label}
-                  </span>
-                </div>
+                <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>
+                  {isMenu ? icons['/dashboard/settings'] : icons[tab.href]}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400', letterSpacing: '0.2px' }}>
+                  {tab.label}
+                </span>
               </div>
             )
-          }
-
-          return (
-            <div
-              key={tab.href}
-              onClick={() => router.push(tab.href)}
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px 4px 8px',
-                cursor: 'pointer',
-                gap: '4px',
-                color: isActive ? A : TEXT3,
-              }}
-            >
-              <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>
-                {icons[tab.href]}
-              </span>
-              <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400', letterSpacing: '0.2px' }}>
-                {tab.label}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+          })}
+        </div>
+      </>
     )
   }
 
