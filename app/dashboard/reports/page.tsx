@@ -57,7 +57,10 @@ export default function ReportsPage() {
         return diff >= 0 && diff <= 30
       }).length
 
-      const brandCounts = jobs.reduce((acc: any, j) => { acc[j.brand] = (acc[j.brand] || 0) + 1; return acc }, {})
+      const brandCounts = jobs.reduce((acc: any, j) => {
+        acc[j.brand] = (acc[j.brand] || 0) + 1
+        return acc
+      }, {})
       const sortedBrands: [string, number][] = Object.entries(brandCounts).sort((a: any, b: any) => b[1] - a[1]) as [string, number][]
       const maxBrand = (sortedBrands[0]?.[1] as number) || 1
 
@@ -75,7 +78,18 @@ export default function ReportsPage() {
       })
       const maxMonth = Math.max(...last6Months.map(m => monthCounts[m.label] || 0), 1)
 
-      setData({ totalCustomers: customers.length, totalJobs: jobs.length, jobsThisMonth, overdue, dueSoon, sortedBrands, maxBrand, last6Months, monthCounts, maxMonth })
+      setData({
+        totalCustomers: customers.length,
+        totalJobs: jobs.length,
+        jobsThisMonth,
+        overdue,
+        dueSoon,
+        sortedBrands,
+        maxBrand,
+        last6Months,
+        monthCounts,
+        maxMonth,
+      })
       setLoading(false)
     }
     load()
@@ -84,19 +98,23 @@ export default function ReportsPage() {
   const pad = isMobile ? '16px' : '30px'
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/reports" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Reports</div>
-          {!isMobile && <button style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Export PDF</button>}
+          {!isMobile && (
+            <button style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Export PDF
+            </button>
+          )}
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
+
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           {loading || !data ? (
             <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
           ) : (
             <>
-              {/* Stats — 2x2 on mobile, 4 cols on desktop */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px', marginBottom: '14px' }}>
                 {[
                   { label: 'Total customers', value: data.totalCustomers, topBar: A, valColor: TEXT },
@@ -114,7 +132,6 @@ export default function ReportsPage() {
                 ))}
               </div>
 
-              {/* Charts — 1 col on mobile, 2 cols on desktop */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                 <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px' }}>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, marginBottom: '16px' }}>Jobs by month</div>
@@ -125,7 +142,7 @@ export default function ReportsPage() {
                       <div key={month.key} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                         <div style={{ fontSize: '11px', color: TEXT3, width: '60px', textAlign: 'right', flexShrink: 0 }}>{month.label}</div>
                         <div style={{ flex: 1, height: '8px', background: BG, borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }}/>
+                          <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }} />
                         </div>
                         <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '20px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
                       </div>
@@ -143,7 +160,7 @@ export default function ReportsPage() {
                       <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                         <div style={{ fontSize: '11px', color: TEXT3, width: '60px', textAlign: 'right', flexShrink: 0 }}>{brand}</div>
                         <div style={{ flex: 1, height: '8px', background: BG, borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }}/>
+                          <div style={{ width: `${pct}%`, height: '100%', background: A, borderRadius: '4px' }} />
                         </div>
                         <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, width: '20px', textAlign: 'right', flexShrink: 0 }}>{count}</div>
                       </div>
