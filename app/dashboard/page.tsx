@@ -254,12 +254,51 @@ export default function DashboardPage() {
                         onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                          <div
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '12px',
+                              background: `linear-gradient(180deg, ${av.bg} 0%, #FFFFFF 100%)`,
+                              color: av.color,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              flexShrink: 0,
+                              border: '1px solid rgba(0,0,0,0.05)',
+                            }}
+                          >
                             {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
                           </div>
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {job.customers?.first_name} {job.customers?.last_name}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', minWidth: 0 }}>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  maxWidth: '100%',
+                                  padding: '4px 8px',
+                                  borderRadius: '999px',
+                                  background: '#F7F7F7',
+                                  border: '1px solid #ECECEC',
+                                  color: TEXT3,
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: A, flexShrink: 0 }} />
+                                {job.customers?.suburb || 'No suburb'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '8px', flexShrink: 0 }}>{s.label}</span>
@@ -289,13 +328,50 @@ export default function DashboardPage() {
                           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                         >
                           <td style={{ padding: '13px 22px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div
+                                style={{
+                                  width: '42px',
+                                  height: '42px',
+                                  borderRadius: '14px',
+                                  background: `linear-gradient(180deg, ${av.bg} 0%, #FFFFFF 100%)`,
+                                  color: av.color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '13px',
+                                  fontWeight: '700',
+                                  flexShrink: 0,
+                                  border: '1px solid rgba(0,0,0,0.05)',
+                                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)',
+                                }}
+                              >
                                 {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
                               </div>
-                              <div>
-                                <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                                <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{job.customers?.suburb || '—'}</div>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, lineHeight: 1.2 }}>
+                                  {job.customers?.first_name} {job.customers?.last_name}
+                                </div>
+                                <div style={{ marginTop: '6px' }}>
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      padding: '4px 9px',
+                                      borderRadius: '999px',
+                                      background: '#F7F7F7',
+                                      border: '1px solid #ECECEC',
+                                      color: TEXT3,
+                                      fontSize: '11px',
+                                      fontWeight: '500',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: A, display: 'inline-block' }} />
+                                    {job.customers?.suburb || 'No suburb'}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>
