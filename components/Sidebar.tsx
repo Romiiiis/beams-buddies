@@ -51,7 +51,8 @@ const icons: Record<string, React.ReactElement> = {
 
 function NavItem({ href, label, active, router }: { href: string; label: string; active: boolean; router: any }) {
   return (
-    <div onClick={() => router.push(href)}
+    <div
+      onClick={() => router.push(href)}
       style={{
         display: 'flex', alignItems: 'center', gap: '10px',
         padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
@@ -63,7 +64,8 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
         transition: 'background 0.12s, color 0.12s',
       }}
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F5F5F2' }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+    >
       <span style={{ color: active ? A : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[href]}</span>
       {label}
     </div>
@@ -76,7 +78,9 @@ function SectionLabel({ label }: { label: string }) {
       fontSize: '10px', fontWeight: '500', color: TEXT3,
       letterSpacing: '0.8px', textTransform: 'uppercase' as const,
       padding: '12px 10px 5px',
-    }}>{label}</div>
+    }}>
+      {label}
+    </div>
   )
 }
 
@@ -101,7 +105,6 @@ export function Sidebar({ active }: { active: string }) {
     router.push('/login')
   }
 
-  // Mobile: bottom tab bar
   if (isMobile) {
     return (
       <div style={{
@@ -124,7 +127,6 @@ export function Sidebar({ active }: { active: string }) {
     )
   }
 
-  // Desktop sidebar
   return (
     <div style={{
       width: '220px', flexShrink: 0,
@@ -172,20 +174,19 @@ export function Sidebar({ active }: { active: string }) {
 
       {/* User footer */}
       <div style={{ padding: '12px 10px', borderTop: `0.5px solid ${BORDER}` }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
-        }}
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
           onMouseEnter={e => e.currentTarget.style.background = '#F5F5F2'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
           {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <>
               <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px' }} />
                 <div style={{ width: '50px', height: '9px', background: '#F0F0F0', borderRadius: '4px' }} />
               </div>
-            </div>
+            </>
           ) : (
             <>
               {business?.logo_url ? (
@@ -202,10 +203,12 @@ export function Sidebar({ active }: { active: string }) {
                 <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business?.full_name || ''}</div>
                 <div style={{ fontSize: '11px', color: TEXT3 }}>{business?.role_title || 'Owner'}</div>
               </div>
-              <button onClick={e => { e.stopPropagation(); signOut() }}
+              <button
+                onClick={e => { e.stopPropagation(); signOut() }}
                 style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}
                 onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                onMouseLeave={e => e.currentTarget.style.color = TEXT3}>
+                onMouseLeave={e => e.currentTarget.style.color = TEXT3}
+              >
                 Out
               </button>
             </>
