@@ -37,16 +37,74 @@ const bottomTabs = [
 ]
 
 const icons: Record<string, React.ReactElement> = {
-  '/dashboard': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1" fill="currentColor"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1" fill="currentColor" opacity="0.35"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1" fill="currentColor" opacity="0.35"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" fill="currentColor" opacity="0.35"/></svg>),
-  '/dashboard/customers': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="5.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2"/><path d="M1 13c0-2.2 2-3.5 4.5-3.5S10 10.8 10 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><circle cx="11.5" cy="10" r="2" stroke="currentColor" strokeWidth="1.2"/><path d="M11.5 9v1l1 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/jobs': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 5.5V14H1V5.5L7.5 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><rect x="5" y="9" width="5" height="5" rx="0.5" fill="currentColor" opacity="0.4"/></svg>),
-  '/dashboard/quotes': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.2" stroke="currentColor" strokeWidth="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/invoices': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="1.2" stroke="currentColor" strokeWidth="1.2"/><path d="M4.5 5.5h6M4.5 8h6M4.5 10.5h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/revenue': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1V14M4 4.5C4 3.1 5.6 2 7.5 2C9.4 2 11 3.1 11 4.5C11 5.9 9.4 7 7.5 7C5.6 7 4 8.1 4 9.5C4 10.9 5.6 12 7.5 12C9.4 12 11 10.9 11 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/schedule': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M7.5 4V7.5L9.5 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/qrcodes': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/><rect x="8.5" y="1.5" width="5" height="5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/><rect x="1.5" y="8.5" width="5" height="5" rx="0.8" stroke="currentColor" strokeWidth="1.2"/><path d="M8.5 11h5M11 8.5v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>),
-  '/dashboard/reports': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 11L5.5 7 8.5 9.5 11.5 4 14 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>),
-  '/dashboard/settings': (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M11 2L13 4L5 12L2 13L3 10L11 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>),
+  '/dashboard': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" fill="currentColor"/>
+      <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
+      <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
+      <rect x="9" y="9" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
+    </svg>
+  ),
+  '/dashboard/customers': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="6" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M1.5 13.5c0-2.2 2-3.5 4.5-3.5s4.5 1.3 4.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M11 8.5l1.5 1.5 2-2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  '/dashboard/jobs': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="3.5" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5.5 3.5V2.5M10.5 3.5V2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M2 7h12" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M8 10v2.5M6.5 11.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/quotes': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2.5" y="1.5" width="11" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/invoices': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M5 12h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/revenue': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.5v13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M5 5c0-1.4 1.3-2.5 3-2.5s3 1.1 3 2.5-1.3 2.5-3 2.5S5 9 5 10.3s1.3 2.2 3 2.2 3-1 3-2.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/schedule': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8.5" r="6" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M8 5.5v3.5l2.5 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  '/dashboard/qrcodes': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+      <rect x="9" y="1.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+      <rect x="1.5" y="9" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M9 11.5h5.5M11.5 9v5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/reports': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M2 12.5l3.5-4 3 2.5 3-5.5 2.5 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 14.5h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/dashboard/settings': (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
 }
 
 function NavItem({ href, label, active, router }: { href: string; label: string; active: boolean; router: any }) {
@@ -142,7 +200,7 @@ export function Sidebar({ active }: { active: string }) {
           <img
             src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
             alt="Jobyra"
-            style={{ width: '34px', height: '34px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+            style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
           />
           <div>
             <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
@@ -178,7 +236,7 @@ export function Sidebar({ active }: { active: string }) {
         >
           {loading ? (
             <>
-              <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px' }} />
                 <div style={{ width: '50px', height: '9px', background: '#F0F0F0', borderRadius: '4px' }} />
@@ -187,13 +245,13 @@ export function Sidebar({ active }: { active: string }) {
           ) : (
             <>
               {business?.logo_url ? (
-                <img src={business.logo_url} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
+                <img src={business.logo_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
               ) : (
                 <div style={{
-                  width: '30px', height: '30px', borderRadius: '50%',
+                  width: '36px', height: '36px', borderRadius: '50%',
                   background: A, color: '#fff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '11px', fontWeight: '600', flexShrink: 0,
+                  fontSize: '12px', fontWeight: '600', flexShrink: 0,
                 }}>{initials}</div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
