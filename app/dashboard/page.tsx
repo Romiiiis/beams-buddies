@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const A = '#2AA198'
+const A = '#1A6B5C'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
@@ -38,6 +38,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0 })
   const [upcoming, setUpcoming] = useState<any[]>([])
   const [recent, setRecent] = useState<any[]>([])
+  const [invoiceStats, setInvoiceStats] = useState({ collected: 0, outstanding: 0, overdueCount: 0 })
+  const [quoteStats, setQuoteStats] = useState({ total: 0, accepted: 0, pending: 0 })
 
   useEffect(() => {
     async function load() {
@@ -47,10 +49,14 @@ export default function DashboardPage() {
       if (!userData) { setLoading(false); return }
       const bid = userData.business_id
       const today = new Date()
-      const [customersRes, jobsRes] = await Promise.all([
+
+      const [customersRes, jobsRes, invoicesRes, quotesRes] = await Promise.all([
         supabase.from('customers').select('id').eq('business_id', bid),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb)').eq('business_id', bid).order('next_service_date', { ascending: true }),
+        supabase.from('invoices').select('status, total, amount_paid').eq('business_id', bid),
+        supabase.from('quotes').select('status, total').eq('business_id', bid),
       ])
+
       const jobs = jobsRes.data || []
       const overdue = jobs.filter(j => j.next_service_date && new Date(j.next_service_date) < today).length
       const jobsThisMonth = jobs.filter(j => {
@@ -60,6 +66,21 @@ export default function DashboardPage() {
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue, jobsThisMonth })
       setUpcoming(jobs.filter(j => j.next_service_date).slice(0, 5))
       setRecent([...jobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5))
+
+      const invoices = invoicesRes.data || []
+      setInvoiceStats({
+        collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0),
+        outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (i.total - i.amount_paid), 0),
+        overdueCount: invoices.filter(i => i.status === 'overdue').length,
+      })
+
+      const quotes = quotesRes.data || []
+      setQuoteStats({
+        total: quotes.length,
+        accepted: quotes.filter(q => q.status === 'accepted').length,
+        pending: quotes.filter(q => q.status === 'sent').length,
+      })
+
       setLoading(false)
     }
     load()
@@ -89,96 +110,28 @@ export default function DashboardPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
-
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          {/* New header */}
-          <div style={{
-            background: '#fff',
-            border: `1px solid ${BORDER}`,
-            borderRadius: '16px',
-            padding: isMobile ? '18px 16px' : '22px 22px',
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            alignItems: isMobile ? 'flex-start' : 'center',
-            justifyContent: 'space-between',
-            gap: '14px',
-          }}>
+          {/* Header */}
+          <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '16px', padding: isMobile ? '18px 16px' : '22px 22px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '14px' }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 10px',
-                borderRadius: '999px',
-                background: '#F0F9F8',
-                color: '#0A4F4C',
-                fontSize: '12px',
-                fontWeight: '600',
-                marginBottom: '12px',
-              }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '999px', background: '#F0F9F8', color: '#0A4F4C', fontSize: '12px', fontWeight: '600', marginBottom: '12px' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: A, display: 'inline-block' }} />
                 Overview
               </div>
-
-              <div style={{
-                fontSize: isMobile ? '28px' : '32px',
-                lineHeight: 1,
-                fontWeight: '700',
-                color: TEXT,
-                letterSpacing: '-0.8px',
-                marginBottom: '8px',
-              }}>
-                Dashboard
-              </div>
-
-              <div style={{
-                fontSize: isMobile ? '13px' : '14px',
-                color: TEXT3,
-                lineHeight: 1.5,
-              }}>
-                Track customers, units, overdue services, and recent activity from one place.
-              </div>
-
-              <div style={{
-                fontSize: '12px',
-                color: TEXT3,
-                marginTop: '10px',
-              }}>
-                {todayStr}
-              </div>
+              <div style={{ fontSize: isMobile ? '28px' : '32px', lineHeight: 1, fontWeight: '700', color: TEXT, letterSpacing: '-0.8px', marginBottom: '8px' }}>Dashboard</div>
+              <div style={{ fontSize: isMobile ? '13px' : '14px', color: TEXT3, lineHeight: 1.5 }}>Track customers, units, overdue services, and recent activity from one place.</div>
+              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '10px' }}>{todayStr}</div>
             </div>
-
-            <button
-              onClick={() => router.push('/dashboard/jobs')}
-              style={{
-                height: isMobile ? '42px' : '44px',
-                padding: '0 18px',
-                borderRadius: '10px',
-                border: 'none',
-                background: A,
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                fontFamily: 'inherit',
-                boxShadow: '0 8px 20px rgba(42,161,152,0.18)',
-                flexShrink: 0,
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-                <path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
+            <button onClick={() => router.push('/dashboard/jobs')}
+              style={{ height: isMobile ? '42px' : '44px', padding: '0 18px', borderRadius: '10px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'inherit', flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round"/></svg>
               Add job
             </button>
           </div>
 
-          {/* Stats grid */}
+          {/* Service stats */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: '10px' }}>
             {[
               { label: 'Total customers', value: stats.customers, sub: 'registered', topBar: A, valColor: TEXT },
@@ -197,6 +150,57 @@ export default function DashboardPage() {
             ))}
           </div>
 
+          {/* Finance snapshot */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '10px' }}>
+            {/* Revenue collected */}
+            <div onClick={() => router.push('/dashboard/revenue')}
+              style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ fontSize: '12px', color: TEXT3, fontWeight: '500' }}>Revenue collected</div>
+                <span style={{ fontSize: '11px', color: A, fontWeight: '600' }}>View →</span>
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#064E3B', letterSpacing: '-0.5px' }}>
+                ${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>from paid invoices</div>
+            </div>
+
+            {/* Outstanding */}
+            <div onClick={() => router.push('/dashboard/invoices')}
+              style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ fontSize: '12px', color: TEXT3, fontWeight: '500' }}>Outstanding</div>
+                <span style={{ fontSize: '11px', color: A, fontWeight: '600' }}>View →</span>
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: invoiceStats.outstanding > 0 ? '#1E3A8A' : TEXT, letterSpacing: '-0.5px' }}>
+                ${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>
+                {invoiceStats.overdueCount > 0 ? `${invoiceStats.overdueCount} overdue` : 'awaiting payment'}
+              </div>
+            </div>
+
+            {/* Quotes */}
+            <div onClick={() => router.push('/dashboard/quotes')}
+              style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ fontSize: '12px', color: TEXT3, fontWeight: '500' }}>Quotes</div>
+                <span style={{ fontSize: '11px', color: A, fontWeight: '600' }}>View →</span>
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px' }}>{quoteStats.total}</div>
+              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>
+                {quoteStats.accepted} accepted · {quoteStats.pending} pending
+              </div>
+            </div>
+          </div>
+
+          {/* Recent customers + Upcoming services */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: '14px' }}>
 
             {isMobile && (
@@ -212,11 +216,8 @@ export default function DashboardPage() {
                     const days = getDays(job.next_service_date)
                     const u = urgency(days)
                     return (
-                      <div
-                        key={job.id}
-                        style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      >
+                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
                         <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
@@ -248,11 +249,8 @@ export default function DashboardPage() {
                     const av = avColors[i % avColors.length]
                     const s = statusPill(job.next_service_date)
                     return (
-                      <div
-                        key={job.id}
-                        style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      >
+                      <div key={job.id} style={{ padding: '12px 16px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
                             {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
@@ -281,13 +279,10 @@ export default function DashboardPage() {
                       const av = avColors[i % avColors.length]
                       const s = statusPill(job.next_service_date)
                       return (
-                        <tr
-                          key={job.id}
-                          style={{ cursor: 'pointer', borderBottom: '1px solid #F0F0F0' }}
+                        <tr key={job.id} style={{ cursor: 'pointer', borderBottom: '1px solid #F0F0F0' }}
                           onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                           onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        >
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                           <td style={{ padding: '13px 22px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                               <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
@@ -325,13 +320,10 @@ export default function DashboardPage() {
                     const days = getDays(job.next_service_date)
                     const u = urgency(days)
                     return (
-                      <div
-                        key={job.id}
-                        style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                      <div key={job.id} style={{ padding: '14px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
                         onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                         onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
