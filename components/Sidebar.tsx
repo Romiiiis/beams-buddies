@@ -139,20 +139,17 @@ export function Sidebar({ active }: { active: string }) {
       {/* Logo */}
       <div style={{ padding: '20px 18px 16px', borderBottom: `0.5px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: A, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-              <path d="M2.5 8.5C2.5 5.186 5.186 2.5 8.5 2.5C10.1 2.5 11.55 3.13 12.62 4.16L10.5 6.28C9.96 5.8 9.26 5.5 8.5 5.5C6.84 5.5 5.5 6.84 5.5 8.5C5.5 10.16 6.84 11.5 8.5 11.5C9.78 11.5 10.88 10.73 11.33 9.63H8.5V7H14.5V8.5C14.5 11.814 11.814 14.5 8.5 14.5C5.186 14.5 2.5 11.814 2.5 8.5Z" fill="white"/>
-            </svg>
-          </div>
+          <img
+            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+            alt="Jobyra"
+            style={{ width: '34px', height: '34px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+          />
           <div>
             <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
             {loading ? (
               <div style={{ width: '70px', height: '9px', background: '#F0F0F0', borderRadius: '4px', marginTop: '4px' }} />
             ) : (
-              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px', letterSpacing: '0.6px', textTransform: 'uppercase' as const }}>
+              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px', letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>
                 {business?.name || 'Trade CRM'}
               </div>
             )}
