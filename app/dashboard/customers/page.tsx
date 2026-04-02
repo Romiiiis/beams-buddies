@@ -98,7 +98,7 @@ export default function CustomersPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
 
         {/* Flush header */}
-        <div style={{ background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '20px 16px 16px' : `24px ${pad} 20px` }}>
+        <div style={{ background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '20px 16px 16px' : `28px ${pad} 20px` }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
             <div>
               <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px', lineHeight: 1 }}>Customers</div>
@@ -110,8 +110,6 @@ export default function CustomersPage() {
               Add job
             </button>
           </div>
-
-          {/* Search */}
           <div style={{ marginTop: '16px' }}>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
               style={{ width: '100%', maxWidth: '360px', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '13px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
