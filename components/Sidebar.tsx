@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 
-const A = '#1A6B5C'
+const A = '#1C1C1E'
 const TEXT = '#1A1A1A'
 const TEXT2 = '#555555'
 const TEXT3 = '#AAAAAA'
 const BORDER = 'rgba(0,0,0,0.07)'
-const BG = '#F4F2EE'
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -73,8 +72,8 @@ const icons: Record<string, React.ReactElement> = {
   ),
   '/dashboard/revenue': (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-      <rect x="1.5" y="9" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.5"/>
-      <rect x="6.5" y="6" width="3" height="8" rx="0.8" fill="currentColor" opacity="0.7"/>
+      <rect x="1.5" y="9" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.4"/>
+      <rect x="6.5" y="6" width="3" height="8" rx="0.8" fill="currentColor" opacity="0.6"/>
       <rect x="11.5" y="2.5" width="3" height="11.5" rx="0.8" fill="currentColor"/>
       <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
     </svg>
@@ -126,7 +125,7 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
     >
-      <span style={{ color: active ? 'rgba(255,255,255,0.85)' : TEXT3, display: 'flex', flexShrink: 0 }}>
+      <span style={{ color: active ? 'rgba(255,255,255,0.7)' : TEXT3, display: 'flex', flexShrink: 0 }}>
         {icons[href]}
       </span>
       {label}
@@ -254,7 +253,7 @@ export function Sidebar({ active }: { active: string }) {
               ) : (
                 <div style={{
                   width: '34px', height: '34px', borderRadius: '50%',
-                  background: '#E8E4DC', color: '#666',
+                  background: '#E8E4DC', color: '#555',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '12px', fontWeight: '600', flexShrink: 0,
                 }}>{initials}</div>
