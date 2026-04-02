@@ -370,7 +370,7 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
+              gap: '12px',
               padding: '8px 8px',
               borderRadius: '8px',
               cursor: 'pointer',
@@ -386,16 +386,16 @@ export function Sidebar({ active }: { active: string }) {
               <>
                 <div
                   style={{
-                    width: '34px',
-                    height: '34px',
+                    width: '42px',
+                    height: '42px',
                     borderRadius: '50%',
                     background: '#F2F3F3',
                     flexShrink: 0,
                   }}
                 />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  <div style={{ width: '80px', height: '10px', background: '#F2F3F3', borderRadius: '4px' }} />
-                  <div style={{ width: '50px', height: '9px', background: '#F2F3F3', borderRadius: '4px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '5px' }}>
+                  <div style={{ width: '90px', height: '10px', background: '#F2F3F3', borderRadius: '4px' }} />
+                  <div style={{ width: '58px', height: '9px', background: '#F2F3F3', borderRadius: '4px' }} />
                 </div>
               </>
             ) : (
@@ -405,8 +405,8 @@ export function Sidebar({ active }: { active: string }) {
                     src={business.logo_url}
                     alt="Logo"
                     style={{
-                      width: '34px',
-                      height: '34px',
+                      width: '42px',
+                      height: '42px',
                       borderRadius: '50%',
                       objectFit: 'contain',
                       flexShrink: 0,
@@ -415,15 +415,15 @@ export function Sidebar({ active }: { active: string }) {
                 ) : (
                   <div
                     style={{
-                      width: '34px',
-                      height: '34px',
+                      width: '42px',
+                      height: '42px',
                       borderRadius: '50%',
                       background: BG,
                       color: TEXT2,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '12px',
+                      fontSize: '14px',
                       fontWeight: '600',
                       flexShrink: 0,
                     }}
@@ -432,7 +432,16 @@ export function Sidebar({ active }: { active: string }) {
                   </div>
                 )}
 
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    paddingTop: '1px',
+                  }}
+                >
                   <div
                     style={{
                       fontSize: '13px',
@@ -441,11 +450,19 @@ export function Sidebar({ active }: { active: string }) {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
+                      lineHeight: 1.2,
                     }}
                   >
                     {business?.full_name || ''}
                   </div>
-                  <div style={{ fontSize: '11px', color: TEXT3 }}>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      color: TEXT3,
+                      marginTop: '3px',
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {business?.role_title || 'Owner'}
                   </div>
                 </div>
@@ -472,7 +489,7 @@ export function Sidebar({ active }: { active: string }) {
                     e.currentTarget.style.color = TEXT3
                   }}
                 >
-                  Out
+                  Sign out
                 </button>
               </>
             )}
