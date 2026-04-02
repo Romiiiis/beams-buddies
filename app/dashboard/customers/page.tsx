@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const A = '#1C1C1E'
+const A = '#2AA198'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
-const BORDER = '#EBEBEB'
-const BG = '#F7F6F3'
+const BORDER = '#DEDEDE'
+const BG = '#F2F3F3'
 
 const avColors = [
   { bg: '#CCEFED', color: '#0A4F4C' },
@@ -89,136 +89,141 @@ export default function CustomersPage() {
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
-  const pad = isMobile ? '16px' : '32px'
+  const pad = isMobile ? '16px' : '30px'
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/customers" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-
-        {/* Header */}
-        <div style={{ padding: `28px ${pad} 0` }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <div>
-              <div style={{ fontSize: '22px', fontWeight: '600', color: TEXT, letterSpacing: '-0.4px' }}>Customers</div>
-              <div style={{ fontSize: '13px', color: TEXT3, marginTop: '3px' }}>{customers.length} total</div>
-            </div>
-            <button
-              onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round"/></svg>
-              Add job
-            </button>
-          </div>
-
-          {/* Search */}
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name or email…"
-            style={{ width: '100%', height: '40px', padding: '0 14px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit', marginBottom: '16px' }}
-          />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
+        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Customers</div>
+          <button
+            onClick={() => router.push('/dashboard/jobs')}
+            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" /></svg>
+            Add job
+          </button>
         </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, paddingBottom: isMobile ? '90px' : '32px' }}>
-          {loading ? (
-            <div style={{ padding: '64px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
-          ) : customers.length === 0 ? (
-            <div style={{ padding: '64px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
-              No customers yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
+        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
+          <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ padding: isMobile ? '12px 14px' : '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name or email…"
+                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}
+              />
             </div>
-          ) : isMobile ? (
-            <div style={{ padding: `0 ${pad}`, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {customers.map((c, i) => {
-                const av = avColors[i % avColors.length]
-                const s = statusPill(c.jobs)
-                const clicks = reviewClicks[c.id] || 0
-                const hasClicks = clicks > 0
-                return (
-                  <div key={c.id} onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                    style={{ background: '#fff', borderRadius: '10px', padding: '14px 16px', cursor: 'pointer', border: `1px solid ${BORDER}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
-                          {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{c.first_name} {c.last_name}</div>
-                          <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{c.suburb || c.address || '—'}</div>
-                        </div>
-                      </div>
-                      <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
-                      <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
-                      {totalPlatforms > 0 && hasClicks && <span style={{ fontSize: '12px', color: '#92400E' }}>⭐ {clicks}/{totalPlatforms}</span>}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div style={{ padding: `0 ${pad}` }}>
-              <div style={{ background: '#fff', borderRadius: '12px', border: `1px solid ${BORDER}`, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#FAFAF8' }}>
-                      {['Customer', 'Phone', 'Units', 'Next service', 'Reviews', 'Status', ''].map(h => (
-                        <th key={h} style={{ padding: '11px 22px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap', letterSpacing: '0.3px', textTransform: 'uppercase' as const }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((c, i) => {
-                      const av = avColors[i % avColors.length]
-                      const s = statusPill(c.jobs)
-                      const clicks = reviewClicks[c.id] || 0
-                      const hasClicks = clicks > 0
-                      return (
-                        <tr key={c.id} style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#FAFAF8')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                          <td style={{ padding: '13px 22px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
-                                {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                              </div>
-                              <div>
-                                <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT }}>{c.first_name} {c.last_name}</div>
-                                <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{c.suburb || c.address || '—'}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.phone || '—'}</td>
-                          <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2, textAlign: 'center' }}>{c.jobs?.length || 0}</td>
-                          <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
-                          <td style={{ padding: '13px 22px' }}>
-                            {totalPlatforms > 0 ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: hasClicks ? '#FEF3C7' : '#F5F5F5', padding: '3px 9px', borderRadius: '20px', border: `1px solid ${hasClicks ? '#FDE68A' : BORDER}` }}>
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5"/></svg>
-                                  <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
-                                </div>
-                                {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
-                              </div>
-                            ) : <span style={{ fontSize: '12px', color: TEXT3 }}>—</span>}
-                          </td>
-                          <td style={{ padding: '13px 22px' }}>
-                            <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>{s.label}</span>
-                          </td>
-                          <td style={{ padding: '13px 22px', textAlign: 'right' }}>
-                            <span style={{ color: TEXT3, fontSize: '13px', fontWeight: '500', cursor: 'pointer' }} onClick={() => router.push(`/dashboard/customers/${c.id}`)}>View →</span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+
+            {loading ? (
+              <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
+            ) : customers.length === 0 ? (
+              <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
+                No customers yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
               </div>
-            </div>
-          )}
+            ) : isMobile ? (
+              <div>
+                {customers.map((c, i) => {
+                  const av = avColors[i % avColors.length]
+                  const s = statusPill(c.jobs)
+                  const clicks = reviewClicks[c.id] || 0
+                  const hasClicks = clicks > 0
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                      style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{c.first_name} {c.last_name}</div>
+                            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{c.suburb || c.address || '—'}</div>
+                          </div>
+                        </div>
+                        <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
+                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
+                        {c.jobs?.[0]?.next_service_date && (
+                          <span style={{ fontSize: '12px', color: TEXT3 }}>
+                            {new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                        {totalPlatforms > 0 && hasClicks && (
+                          <span style={{ fontSize: '12px', color: '#92400E' }}>⭐ {clicks}/{totalPlatforms}</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F8F8F8' }}>
+                    {['Customer', 'Phone', 'Units', 'Next service', 'Reviews', 'Status', ''].map(h => (
+                      <th key={h} style={{ padding: '10px 22px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.map((c, i) => {
+                    const av = avColors[i % avColors.length]
+                    const s = statusPill(c.jobs)
+                    const clicks = reviewClicks[c.id] || 0
+                    const hasClicks = clicks > 0
+                    return (
+                      <tr
+                        key={c.id}
+                        style={{ borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <td style={{ padding: '13px 22px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+                            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                              {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '14px', fontWeight: '500', color: TEXT }}>{c.first_name} {c.last_name}</div>
+                              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{c.suburb || c.address || '—'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2 }}>{c.phone || '—'}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2, textAlign: 'center' }}>{c.jobs?.length || 0}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2 }}>{c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
+                        <td style={{ padding: '13px 22px' }}>
+                          {totalPlatforms > 0 ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: hasClicks ? '#FEF3C7' : '#F5F5F5', padding: '3px 9px', borderRadius: '20px', border: `1px solid ${hasClicks ? '#FDE68A' : BORDER}` }}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5" /></svg>
+                                <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
+                              </div>
+                              {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
+                            </div>
+                          ) : <span style={{ fontSize: '12px', color: TEXT3 }}>—</span>}
+                        </td>
+                        <td style={{ padding: '13px 22px' }}>
+                          <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>{s.label}</span>
+                        </td>
+                        <td style={{ padding: '13px 22px', textAlign: 'right' }}>
+                          <span style={{ color: A, fontSize: '13px', fontWeight: '500', cursor: 'pointer' }} onClick={() => router.push(`/dashboard/customers/${c.id}`)}>View →</span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </div>
