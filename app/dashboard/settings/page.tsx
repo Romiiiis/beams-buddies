@@ -582,6 +582,7 @@ export default function SettingsPage() {
                   aspect={1}
                   cropShape="round"
                   showGrid={false}
+                  restrictPosition={false}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
