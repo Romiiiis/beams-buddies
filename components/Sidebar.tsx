@@ -6,11 +6,14 @@ import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 
 const A = '#1A6B5C'
-const A_LIGHT = '#E8F4F1'
+const A_LIGHT = '#EAF6F2'
+const A_SOFT = 'rgba(26,107,92,0.08)'
 const TEXT = '#111111'
-const TEXT2 = '#444444'
-const TEXT3 = '#999999'
-const BORDER = 'rgba(0,0,0,0.08)'
+const TEXT2 = '#3E4743'
+const TEXT3 = '#7A817D'
+const BORDER = 'rgba(17,17,17,0.08)'
+const BORDER_SOFT = 'rgba(17,17,17,0.06)'
+const PANEL = '#FCFCFA'
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -115,31 +118,66 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
     <div
       onClick={() => router.push(href)}
       style={{
-        display: 'flex', alignItems: 'center', gap: '10px',
-        padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '11px',
+        padding: '10px 12px',
+        borderRadius: '12px',
+        cursor: 'pointer',
         fontSize: '13.5px',
         color: active ? A : TEXT2,
-        fontWeight: active ? '500' : '400',
+        fontWeight: active ? '600' : '500',
         background: active ? A_LIGHT : 'transparent',
-        marginBottom: '1px',
-        transition: 'background 0.12s, color 0.12s',
+        border: active ? `1px solid rgba(26,107,92,0.14)` : '1px solid transparent',
+        boxShadow: active ? '0 1px 2px rgba(26,107,92,0.08)' : 'none',
+        marginBottom: '4px',
+        transition: 'background 0.14s ease, color 0.14s ease, border-color 0.14s ease, transform 0.14s ease',
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F5F5F2' }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+      onMouseEnter={e => {
+        if (!active) {
+          e.currentTarget.style.background = '#F7F7F4'
+          e.currentTarget.style.borderColor = BORDER_SOFT
+        }
+      }}
+      onMouseLeave={e => {
+        if (!active) {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.borderColor = 'transparent'
+        }
+      }}
     >
-      <span style={{ color: active ? A : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[href]}</span>
-      {label}
+      <span
+        style={{
+          color: active ? A : TEXT3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          width: '28px',
+          height: '28px',
+          borderRadius: '9px',
+          background: active ? A_SOFT : 'transparent',
+        }}
+      >
+        {icons[href]}
+      </span>
+      <span>{label}</span>
     </div>
   )
 }
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <div style={{
-      fontSize: '10px', fontWeight: '500', color: TEXT3,
-      letterSpacing: '0.8px', textTransform: 'uppercase' as const,
-      padding: '12px 10px 5px',
-    }}>
+    <div
+      style={{
+        fontSize: '10px',
+        fontWeight: '700',
+        color: TEXT3,
+        letterSpacing: '1px',
+        textTransform: 'uppercase' as const,
+        padding: '16px 12px 8px',
+      }}
+    >
       {label}
     </div>
   )
@@ -168,19 +206,43 @@ export function Sidebar({ active }: { active: string }) {
 
   if (isMobile) {
     return (
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: '#fff', borderTop: `1px solid ${BORDER}`,
-        display: 'flex', alignItems: 'stretch',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          background: 'rgba(255,255,255,0.96)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          borderTop: `1px solid ${BORDER}`,
+          display: 'flex',
+          alignItems: 'stretch',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          boxShadow: '0 -8px 24px rgba(17,17,17,0.05)',
+        }}
+      >
         {bottomTabs.map(tab => {
           const isActive = tab.href === active
           return (
-            <div key={tab.href} onClick={() => router.push(tab.href)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px 8px', cursor: 'pointer', gap: '4px', color: isActive ? A : TEXT3 }}>
+            <div
+              key={tab.href}
+              onClick={() => router.push(tab.href)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 4px 8px',
+                cursor: 'pointer',
+                gap: '4px',
+                color: isActive ? A : TEXT3
+              }}
+            >
               <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>{icons[tab.href]}</span>
-              <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400' }}>{tab.label}</span>
+              <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '500' }}>{tab.label}</span>
             </div>
           )
         })}
@@ -189,33 +251,79 @@ export function Sidebar({ active }: { active: string }) {
   }
 
   return (
-    <div style={{
-      width: '220px',
-      flexShrink: 0,
-      background: '#fff',
-      borderRight: `0.5px solid ${BORDER}`,
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      position: 'sticky',
-      top: 0,
-      height: '100vh',
-    }}>
+    <div
+      style={{
+        width: '248px',
+        flexShrink: 0,
+        background: PANEL,
+        borderRight: `1px solid ${BORDER}`,
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        boxShadow: 'inset -1px 0 0 rgba(255,255,255,0.65)',
+      }}
+    >
+      <div
+        style={{
+          padding: '22px 18px 18px',
+          borderBottom: `1px solid ${BORDER_SOFT}`,
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 100%)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            borderRadius: '16px',
+            background: 'rgba(255,255,255,0.72)',
+            border: `1px solid rgba(17,17,17,0.05)`,
+            boxShadow: '0 8px 24px rgba(17,17,17,0.04)',
+          }}
+        >
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              background: '#fff',
+              border: `1px solid rgba(17,17,17,0.06)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              flexShrink: 0,
+              boxShadow: '0 4px 14px rgba(17,17,17,0.05)',
+            }}
+          >
+            <img
+              src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+              alt="Jobyra"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', flexShrink: 0 }}
+            />
+          </div>
 
-      {/* Logo */}
-      <div style={{ padding: '20px 18px 16px', borderBottom: `0.5px solid ${BORDER}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img
-            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-            alt="Jobyra"
-            style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
-          />
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
             {loading ? (
-              <div style={{ width: '70px', height: '9px', background: '#F0F0F0', borderRadius: '4px', marginTop: '4px' }} />
+              <div style={{ width: '74px', height: '9px', background: '#F0F0F0', borderRadius: '999px', marginTop: '6px' }} />
             ) : (
-              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px', letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: TEXT3,
+                  marginTop: '3px',
+                  letterSpacing: '0.9px',
+                  textTransform: 'uppercase' as const,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {business?.name || 'Trade CRM'}
               </div>
             )}
@@ -223,54 +331,139 @@ export function Sidebar({ active }: { active: string }) {
         </div>
       </div>
 
-      {/* Nav */}
-      <div style={{ padding: '8px 10px', flex: 1, overflowY: 'auto' }}>
+      <div style={{ padding: '10px 12px 12px', flex: 1, overflowY: 'auto' }}>
         <SectionLabel label="Overview" />
-        {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+        {navMain.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
+        ))}
 
         <SectionLabel label="Finance" />
-        {navFinance.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+        {navFinance.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
+        ))}
 
         <SectionLabel label="Manage" />
-        {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+        {navManage.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
+        ))}
       </div>
 
-      {/* User footer */}
-      <div style={{ padding: '12px 10px', borderTop: `0.5px solid ${BORDER}` }}>
+      <div
+        style={{
+          padding: '14px 12px 16px',
+          borderTop: `1px solid ${BORDER_SOFT}`,
+          background: 'linear-gradient(180deg, rgba(252,252,250,0) 0%, rgba(255,255,255,0.76) 100%)',
+        }}
+      >
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F5F5F2'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px',
+            borderRadius: '16px',
+            cursor: 'pointer',
+            background: 'rgba(255,255,255,0.8)',
+            border: `1px solid rgba(17,17,17,0.05)`,
+            boxShadow: '0 8px 20px rgba(17,17,17,0.04)',
+            transition: 'background 0.14s ease, border-color 0.14s ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = '#FFFFFF'
+            e.currentTarget.style.borderColor = 'rgba(17,17,17,0.08)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.8)'
+            e.currentTarget.style.borderColor = 'rgba(17,17,17,0.05)'
+          }}
         >
           {loading ? (
             <>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
+              <div style={{ width: '40px', height: '40px', borderRadius: '14px', background: '#F0F0F0', flexShrink: 0 }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px' }} />
-                <div style={{ width: '50px', height: '9px', background: '#F0F0F0', borderRadius: '4px' }} />
+                <div style={{ width: '86px', height: '10px', background: '#F0F0F0', borderRadius: '999px' }} />
+                <div style={{ width: '54px', height: '9px', background: '#F0F0F0', borderRadius: '999px' }} />
               </div>
             </>
           ) : (
             <>
               {business?.logo_url ? (
-                <img src={business.logo_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
+                <img
+                  src={business.logo_url}
+                  alt="Logo"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '14px',
+                    objectFit: 'cover',
+                    background: '#fff',
+                    border: `1px solid rgba(17,17,17,0.06)`,
+                    flexShrink: 0
+                  }}
+                />
               ) : (
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%',
-                  background: A, color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '12px', fontWeight: '600', flexShrink: 0,
-                }}>{initials}</div>
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '14px',
+                    background: A,
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    flexShrink: 0,
+                    boxShadow: '0 6px 14px rgba(26,107,92,0.22)',
+                  }}
+                >
+                  {initials}
+                </div>
               )}
+
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business?.full_name || ''}</div>
-                <div style={{ fontSize: '11px', color: TEXT3 }}>{business?.role_title || 'Owner'}</div>
+                <div
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: TEXT,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {business?.full_name || ''}
+                </div>
+                <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px' }}>
+                  {business?.role_title || 'Owner'}
+                </div>
               </div>
+
               <button
                 onClick={e => { e.stopPropagation(); signOut() }}
-                style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}
-                onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                onMouseLeave={e => e.currentTarget.style.color = TEXT3}
+                style={{
+                  fontSize: '11px',
+                  color: TEXT2,
+                  background: '#fff',
+                  border: `1px solid rgba(17,17,17,0.08)`,
+                  cursor: 'pointer',
+                  padding: '7px 10px',
+                  borderRadius: '10px',
+                  flexShrink: 0,
+                  fontWeight: '600',
+                  transition: 'border-color 0.14s ease, color 0.14s ease, background 0.14s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = TEXT
+                  e.currentTarget.style.background = '#F8F8F6'
+                  e.currentTarget.style.borderColor = 'rgba(17,17,17,0.12)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = TEXT2
+                  e.currentTarget.style.background = '#fff'
+                  e.currentTarget.style.borderColor = 'rgba(17,17,17,0.08)'
+                }}
               >
                 Out
               </button>
