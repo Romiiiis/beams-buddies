@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 
 const A = '#1A6B5C'
+const A_LIGHT = '#E8F4F1'
 const TEXT = '#111111'
-const TEXT2 = '#4F5753'
-const TEXT3 = '#7A817D'
-const BORDER = 'rgba(17,17,17,0.08)'
-const PANEL = '#FCFCFB'
+const TEXT2 = '#444444'
+const TEXT3 = '#999999'
+const BORDER = 'rgba(0,0,0,0.08)'
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -115,41 +115,32 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
     <div
       onClick={() => router.push(href)}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '11px',
-        padding: '10px 12px',
-        borderRadius: '16px',
-        cursor: 'pointer',
-        fontSize: '14px',
-        color: active ? '#FFFFFF' : TEXT2,
-        fontWeight: active ? '600' : '500',
-        background: active ? '#111111' : 'transparent',
-        marginBottom: '4px',
-        transition: 'background 0.14s ease, color 0.14s ease',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
+        fontSize: '13.5px',
+        color: active ? A : TEXT2,
+        fontWeight: active ? '500' : '400',
+        background: active ? A_LIGHT : 'transparent',
+        marginBottom: '1px',
+        transition: 'background 0.12s, color 0.12s',
       }}
-      onMouseEnter={e => {
-        if (!active) e.currentTarget.style.background = '#F7F8F7'
-      }}
-      onMouseLeave={e => {
-        if (!active) e.currentTarget.style.background = 'transparent'
-      }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F5F5F2' }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
     >
-      <span
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          width: '28px',
-          height: '28px',
-          borderRadius: '10px',
-          color: active ? '#FFFFFF' : TEXT3,
-        }}
-      >
-        {icons[href]}
-      </span>
-      <span>{label}</span>
+      <span style={{ color: active ? A : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[href]}</span>
+      {label}
+    </div>
+  )
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div style={{
+      fontSize: '10px', fontWeight: '500', color: TEXT3,
+      letterSpacing: '0.8px', textTransform: 'uppercase' as const,
+      padding: '12px 10px 5px',
+    }}>
+      {label}
     </div>
   )
 }
@@ -178,37 +169,18 @@ export function Sidebar({ active }: { active: string }) {
   if (isMobile) {
     return (
       <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: '#fff',
-        borderTop: `1px solid ${BORDER}`,
-        display: 'flex',
-        alignItems: 'stretch',
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+        background: '#fff', borderTop: `1px solid ${BORDER}`,
+        display: 'flex', alignItems: 'stretch',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
         {bottomTabs.map(tab => {
           const isActive = tab.href === active
           return (
-            <div
-              key={tab.href}
-              onClick={() => router.push(tab.href)}
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px 4px 8px',
-                cursor: 'pointer',
-                gap: '4px',
-                color: isActive ? A : TEXT3
-              }}
-            >
+            <div key={tab.href} onClick={() => router.push(tab.href)}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px 8px', cursor: 'pointer', gap: '4px', color: isActive ? A : TEXT3 }}>
               <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>{icons[tab.href]}</span>
-              <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '500' }}>{tab.label}</span>
+              <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400' }}>{tab.label}</span>
             </div>
           )
         })}
@@ -218,125 +190,87 @@ export function Sidebar({ active }: { active: string }) {
 
   return (
     <div style={{
-      width: '248px',
+      width: '220px',
       flexShrink: 0,
-      background: PANEL,
-      borderRight: `1px solid ${BORDER}`,
+      background: '#fff',
+      borderRight: `0.5px solid ${BORDER}`,
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'space-between',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       position: 'sticky',
       top: 0,
       height: '100vh',
-      padding: '18px 14px 16px',
     }}>
-      <div>
-        <div style={{ padding: '6px 6px 0' }}>
-          <div style={{ fontSize: '18px', fontWeight: '600', letterSpacing: '-0.3px', color: TEXT }}>Jobyra</div>
-          {loading ? (
-            <div style={{ width: '74px', height: '9px', background: '#F0F0F0', borderRadius: '999px', marginTop: '8px' }} />
-          ) : (
-            <div style={{
-              fontSize: '11px',
-              color: TEXT3,
-              marginTop: '4px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase' as const,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}>
-              {business?.name || 'Trade CRM'}
-            </div>
-          )}
-        </div>
 
-        <div style={{ marginTop: '26px' }}>
-          {navMain.map(item => (
-            <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
-          ))}
-          {navFinance.map(item => (
-            <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
-          ))}
-          {navManage.map(item => (
-            <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />
-          ))}
+      {/* Logo */}
+      <div style={{ padding: '20px 18px 16px', borderBottom: `0.5px solid ${BORDER}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img
+            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+            alt="Jobyra"
+            style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+          />
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
+            {loading ? (
+              <div style={{ width: '70px', height: '9px', background: '#F0F0F0', borderRadius: '4px', marginTop: '4px' }} />
+            ) : (
+              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px', letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>
+                {business?.name || 'Trade CRM'}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '10px 6px 2px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Nav */}
+      <div style={{ padding: '8px 10px', flex: 1, overflowY: 'auto' }}>
+        <SectionLabel label="Overview" />
+        {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+
+        <SectionLabel label="Finance" />
+        {navFinance.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+
+        <SectionLabel label="Manage" />
+        {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
+      </div>
+
+      {/* User footer */}
+      <div style={{ padding: '12px 10px', borderTop: `0.5px solid ${BORDER}` }}>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.background = '#F5F5F2'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
           {loading ? (
             <>
-              <div style={{ width: '40px', height: '40px', borderRadius: '16px', background: '#F0F0F0', flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
-                <div style={{ width: '86px', height: '10px', background: '#F0F0F0', borderRadius: '999px' }} />
-                <div style={{ width: '54px', height: '9px', background: '#F0F0F0', borderRadius: '999px' }} />
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F0F0F0', flexShrink: 0 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <div style={{ width: '80px', height: '10px', background: '#F0F0F0', borderRadius: '4px' }} />
+                <div style={{ width: '50px', height: '9px', background: '#F0F0F0', borderRadius: '4px' }} />
               </div>
             </>
           ) : (
             <>
               {business?.logo_url ? (
-                <img
-                  src={business.logo_url}
-                  alt="Logo"
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '16px',
-                    objectFit: 'cover',
-                    background: '#fff',
-                    flexShrink: 0
-                  }}
-                />
+                <img src={business.logo_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
               ) : (
                 <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '16px',
-                  background: '#ECEDEB',
-                  color: TEXT,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  flexShrink: 0,
-                }}>
-                  {initials}
-                </div>
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: A, color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '12px', fontWeight: '600', flexShrink: 0,
+                }}>{initials}</div>
               )}
-
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: TEXT,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {business?.full_name || ''}
-                </div>
-                <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px' }}>
-                  {business?.role_title || 'Owner'}
-                </div>
+                <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business?.full_name || ''}</div>
+                <div style={{ fontSize: '11px', color: TEXT3 }}>{business?.role_title || 'Owner'}</div>
               </div>
-
               <button
                 onClick={e => { e.stopPropagation(); signOut() }}
-                style={{
-                  border: `1px solid ${BORDER}`,
-                  background: '#fff',
-                  color: '#303532',
-                  cursor: 'pointer',
-                  padding: '7px 10px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  flexShrink: 0,
-                }}
+                style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}
+                onMouseEnter={e => e.currentTarget.style.color = TEXT}
+                onMouseLeave={e => e.currentTarget.style.color = TEXT3}
               >
                 Out
               </button>
