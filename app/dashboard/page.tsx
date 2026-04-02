@@ -40,7 +40,6 @@ export default function DashboardPage() {
   const [upcoming, setUpcoming] = useState<any[]>([])
   const [recent, setRecent] = useState<any[]>([])
   const [invoiceStats, setInvoiceStats] = useState({ collected: 0, outstanding: 0 })
-  const [overdueJobs, setOverdueJobs] = useState<any[]>([])
 
   useEffect(() => {
     async function load() {
@@ -66,7 +65,6 @@ export default function DashboardPage() {
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth })
       setUpcoming(jobs.filter(j => j.next_service_date && new Date(j.next_service_date) >= today).slice(0, 5))
-      setOverdueJobs(overdue.slice(0, 4))
       setRecent([...jobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5))
 
       const invoices = invoicesRes.data || []
@@ -180,39 +178,6 @@ export default function DashboardPage() {
               <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>units upcoming →</div>
             </div>
           </div>
-
-          {/* Overdue alert — only show if there are overdue */}
-          {overdueJobs.length > 0 && (
-            <div style={{ background: '#FFF9F9', border: '1px solid #FECACA', borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid #FECACA', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }} />
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#7F1D1D' }}>Overdue services — action required</span>
-                </div>
-                <span style={{ fontSize: '13px', color: '#EF4444', cursor: 'pointer', fontWeight: '500' }} onClick={() => router.push('/dashboard/schedule')}>View all →</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
-                {overdueJobs.map((job, i) => {
-                  const days = Math.abs(getDays(job.next_service_date))
-                  return (
-                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ padding: '14px 20px', borderBottom: i < overdueJobs.length - 1 ? '1px solid #FECACA' : 'none', borderRight: !isMobile && i % 2 === 0 ? '1px solid #FECACA' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#7F1D1D' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                        <div style={{ fontSize: '12px', color: '#B91C1C', marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {job.customers?.suburb || '—'}</div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#B91C1C' }}>{days}d</div>
-                        <div style={{ fontSize: '11px', color: '#B91C1C' }}>overdue</div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Recent customers + Upcoming */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '14px' }}>
