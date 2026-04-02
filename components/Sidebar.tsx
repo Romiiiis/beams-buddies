@@ -37,7 +37,6 @@ const bottomTabs = [
 ]
 
 const icons: Record<string, React.ReactElement> = {
-  // Dashboard — 4 squares grid
   '/dashboard': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" fill="currentColor"/>
@@ -46,7 +45,6 @@ const icons: Record<string, React.ReactElement> = {
       <rect x="9" y="9" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3"/>
     </svg>
   ),
-  // Customers — person with checkmark
   '/dashboard/customers': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="6" cy="5" r="2.8" stroke="currentColor" strokeWidth="1.4"/>
@@ -54,14 +52,12 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M11.5 7.5l1.2 1.2 2-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
-  // Add job — plus in a house shape
   '/dashboard/jobs': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M1.5 7L8 1.5 14.5 7V14.5H1.5V7Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
       <path d="M8 10V13M6.5 11.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   ),
-  // Quotes — document with lines and a tag
   '/dashboard/quotes': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M9.5 1.5H4A1.5 1.5 0 002.5 3v10A1.5 1.5 0 004 14.5h8A1.5 1.5 0 0013.5 13V5.5L9.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
@@ -69,14 +65,12 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M5.5 8.5h5M5.5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   ),
-  // Invoices — receipt with dollar sign
   '/dashboard/invoices': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M2.5 2.5v11l1.5-1 1.5 1 1.5-1 1.5 1 1.5-1 1.5 1 1.5-1V2.5H2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
       <path d="M8 4.5v7M6 6c0-.8.9-1.5 2-1.5s2 .7 2 1.5-.9 1.5-2 1.5S6 8.3 6 9s.9 1.5 2 1.5 2-.7 2-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   ),
-  // Revenue — bar chart going up
   '/dashboard/revenue': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="1.5" y="9" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.4"/>
@@ -85,14 +79,12 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
     </svg>
   ),
-  // Schedule — clock
   '/dashboard/schedule': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/>
       <path d="M8 4.5V8.5l3 1.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
-  // QR codes — actual QR pattern
   '/dashboard/qrcodes': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="1.5" y="1.5" width="5" height="5" rx="0.8" stroke="currentColor" strokeWidth="1.3"/>
@@ -104,14 +96,12 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M9.5 9.5h2M9.5 12h3M9.5 14.5h5M14.5 9.5v2M12 12v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   ),
-  // Reports — line chart
   '/dashboard/reports': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M1.5 12.5l3.5-4.5 3 2.5 3.5-6 3 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   ),
-  // Settings — gear
   '/dashboard/settings': (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1.4"/>
@@ -187,8 +177,21 @@ export function Sidebar({ active }: { active: string }) {
         {bottomTabs.map(tab => {
           const isActive = tab.href === active
           return (
-            <div key={tab.href} onClick={() => router.push(tab.href)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px 8px', cursor: 'pointer', gap: '4px', color: isActive ? A : TEXT3 }}>
+            <div
+              key={tab.href}
+              onClick={() => router.push(tab.href)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 4px 8px',
+                cursor: 'pointer',
+                gap: '4px',
+                color: isActive ? A : TEXT3
+              }}
+            >
               <span style={{ display: 'flex', color: isActive ? A : TEXT3 }}>{icons[tab.href]}</span>
               <span style={{ fontSize: '10px', fontWeight: isActive ? '600' : '400' }}>{tab.label}</span>
             </div>
@@ -200,14 +203,16 @@ export function Sidebar({ active }: { active: string }) {
 
   return (
     <div style={{
-      width: '220px', flexShrink: 0,
+      width: '220px',
+      flexShrink: 0,
+      alignSelf: 'flex-start',
       background: '#fff',
       borderRight: `0.5px solid ${BORDER}`,
-      display: 'flex', flexDirection: 'column',
+      display: 'flex',
+      flexDirection: 'column',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>
 
-      {/* Logo */}
       <div style={{ padding: '20px 18px 16px', borderBottom: `0.5px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img
@@ -228,8 +233,7 @@ export function Sidebar({ active }: { active: string }) {
         </div>
       </div>
 
-      {/* Nav */}
-      <div style={{ padding: '8px 10px', flex: 1, overflowY: 'auto' }}>
+      <div style={{ padding: '8px 10px' }}>
         <SectionLabel label="Overview" />
         {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
 
@@ -240,7 +244,6 @@ export function Sidebar({ active }: { active: string }) {
         {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} />)}
       </div>
 
-      {/* User footer */}
       <div style={{ padding: '12px 10px', borderTop: `0.5px solid ${BORDER}` }}>
         <div
           style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
