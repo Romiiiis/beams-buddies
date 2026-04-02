@@ -12,6 +12,7 @@ const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
 const BORDER = '#DEDEDE'
 const BG = '#F2F3F3'
+const LOGO_BUCKET = 'business-logos'
 
 interface Platform { id: string; name: string; url: string }
 
@@ -45,23 +46,43 @@ export default function SettingsPage() {
     review_discount_enabled: true,
   })
   const [platforms, setPlatforms] = useState<Platform[]>([])
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
-      const { data: userData } = await supabase.from('users').select('business_id, full_name, role_title').eq('id', session.user.id).single()
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('business_id, full_name, role_title')
+        .eq('id', session.user.id)
+        .single()
+
       if (!userData) return
+
       setBusinessId(userData.business_id)
-      setUserProfile({ full_name: userData.full_name || '', role_title: userData.role_title || '' })
+      setUserProfile({
+        full_name: userData.full_name || '',
+        role_title: userData.role_title || ''
+      })
+
       const [businessRes, settingsRes] = await Promise.all([
         supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
         supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
       ])
+
       if (businessRes.data) {
-        setBusiness({ name: businessRes.data.name || '', email: businessRes.data.email || '', phone: businessRes.data.phone || '', logo_url: businessRes.data.logo_url || '' })
+        setBusiness({
+          name: businessRes.data.name || '',
+          email: businessRes.data.email || '',
+          phone: businessRes.data.phone || '',
+          logo_url: businessRes.data.logo_url || '',
+        })
       }
+
       if (settingsRes.data) {
         setForm({
           google_review_url: settingsRes.data.google_review_url || '',
@@ -72,29 +93,99 @@ export default function SettingsPage() {
         })
         setPlatforms(settingsRes.data.custom_review_platforms || [])
       }
+
       setLoading(false)
     }
+
     load()
   }, [router])
+
+  async function handleLogoUpload(file: File) {
+    if (!file || !businessId) return
+
+    setUploadError('')
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml']
+    if (!validTypes.includes(file.type)) {
+      setUploadError('Please upload a PNG, JPG, WEBP, or SVG image.')
+      return
+    }
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const filePath = `${businessId}/logo-${Date.now()}.${fileExt}`
+
+    setUploadingLogo(true)
+
+    const { error: uploadErr } = await supabase.storage
+      .from(LOGO_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+      })
+
+    if (uploadErr) {
+      setUploadingLogo(false)
+      setUploadError(uploadErr.message || 'Logo upload failed.')
+      return
+    }
+
+    const { data: publicData } = supabase.storage
+      .from(LOGO_BUCKET)
+      .getPublicUrl(filePath)
+
+    if (!publicData?.publicUrl) {
+      setUploadingLogo(false)
+      setUploadError('Could not generate a public logo URL.')
+      return
+    }
+
+    setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
+    setUploadingLogo(false)
+  }
+
+  async function removeLogo() {
+    setBusiness(prev => ({ ...prev, logo_url: '' }))
+    setUploadError('')
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
     setSaved(false)
+
     await Promise.all([
-      supabase.from('businesses').update({ name: business.name, logo_url: business.logo_url || null, phone: business.phone, email: business.email }).eq('id', businessId),
-      supabase.from('users').update({ full_name: userProfile.full_name, role_title: userProfile.role_title }).eq('id', userId),
-      supabase.from('business_settings').upsert({
-        business_id: businessId,
-        google_review_url: form.google_review_url || null,
-        facebook_review_url: form.facebook_review_url || null,
-        review_discount_amount: parseFloat(form.review_discount_amount) || 10,
-        review_discount_max: parseFloat(form.review_discount_max) || 30,
-        review_discount_enabled: form.review_discount_enabled,
-        custom_review_platforms: platforms,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'business_id' }),
+      supabase
+        .from('businesses')
+        .update({
+          name: business.name,
+          logo_url: business.logo_url || null,
+          phone: business.phone,
+          email: business.email
+        })
+        .eq('id', businessId),
+
+      supabase
+        .from('users')
+        .update({
+          full_name: userProfile.full_name,
+          role_title: userProfile.role_title
+        })
+        .eq('id', userId),
+
+      supabase
+        .from('business_settings')
+        .upsert({
+          business_id: businessId,
+          google_review_url: form.google_review_url || null,
+          facebook_review_url: form.facebook_review_url || null,
+          review_discount_amount: parseFloat(form.review_discount_amount) || 10,
+          review_discount_max: parseFloat(form.review_discount_max) || 30,
+          review_discount_enabled: form.review_discount_enabled,
+          custom_review_platforms: platforms,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'business_id' }),
     ])
+
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
@@ -109,20 +200,60 @@ export default function SettingsPage() {
   function removePlatform(id: string) { setPlatforms(prev => prev.filter(p => p.id !== id)) }
 
   const pad = isMobile ? '16px' : '30px'
-  const input: React.CSSProperties = { width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, color: TEXT, fontFamily: 'inherit', fontSize: '14px', outline: 'none' }
-  const label: React.CSSProperties = { fontSize: '13px', fontWeight: '500', color: TEXT2, marginBottom: '6px', display: 'block' }
-  const hint: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginTop: '4px' }
-  const section: React.CSSProperties = { background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '14px' }
-  const sHead: React.CSSProperties = { padding: '14px 22px', borderBottom: `1px solid ${BORDER}`, fontSize: '14px', fontWeight: '600', color: TEXT }
-  const sBody: React.CSSProperties = { padding: isMobile ? '16px' : '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }
-  const allPlatformCount = (form.google_review_url ? 1 : 0) + (form.facebook_review_url ? 1 : 0) + platforms.filter(p => p.url).length
+  const input: React.CSSProperties = {
+    width: '100%',
+    height: '42px',
+    padding: '0 12px',
+    borderRadius: '8px',
+    border: `1px solid ${BORDER}`,
+    background: BG,
+    color: TEXT,
+    fontFamily: 'inherit',
+    fontSize: '14px',
+    outline: 'none'
+  }
+  const label: React.CSSProperties = {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: TEXT2,
+    marginBottom: '6px',
+    display: 'block'
+  }
+  const hint: React.CSSProperties = {
+    fontSize: '12px',
+    color: TEXT3,
+    marginTop: '4px'
+  }
+  const section: React.CSSProperties = {
+    background: '#fff',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '12px',
+    overflow: 'hidden',
+    marginBottom: '14px'
+  }
+  const sHead: React.CSSProperties = {
+    padding: '14px 22px',
+    borderBottom: `1px solid ${BORDER}`,
+    fontSize: '14px',
+    fontWeight: '600',
+    color: TEXT
+  }
+  const sBody: React.CSSProperties = {
+    padding: isMobile ? '16px' : '20px 22px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px'
+  }
+  const allPlatformCount =
+    (form.google_review_url ? 1 : 0) +
+    (form.facebook_review_url ? 1 : 0) +
+    platforms.filter(p => p.url).length
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
       <Sidebar active="/dashboard/settings" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
 
-        {/* Header */}
         <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Settings</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -130,7 +261,7 @@ export default function SettingsPage() {
             <button
               form="settings-form"
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingLogo}
               style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               {saving ? 'Saving…' : 'Save changes'}
@@ -138,7 +269,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Content */}
         <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
@@ -181,20 +311,117 @@ export default function SettingsPage() {
                       <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
                     </div>
                   </div>
+
                   <div>
-                    <label style={label}>Business logo URL</label>
-                    <input style={input} value={business.logo_url} onChange={e => setBiz('logo_url', e.target.value)} placeholder="https://your-logo-url.com/logo.png" />
-                    <p style={hint}>Shown in the bottom left of the sidebar next to your name</p>
-                  </div>
-                  {business.logo_url && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: BG, borderRadius: '8px', border: `1px solid ${BORDER}` }}>
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px' }} />
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '2px' }}>Logo preview</div>
-                        <div style={{ fontSize: '12px', color: TEXT3 }}>This appears in the bottom left of the sidebar</div>
+                    <label style={label}>Business logo</label>
+
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: isMobile ? 'column' : 'row',
+                      alignItems: isMobile ? 'stretch' : 'center',
+                      gap: '14px',
+                      padding: '14px 16px',
+                      background: BG,
+                      borderRadius: '8px',
+                      border: `1px solid ${BORDER}`
+                    }}>
+                      <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '50%',
+                        background: '#fff',
+                        border: `1px solid ${BORDER}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        flexShrink: 0
+                      }}>
+                        {business.logo_url ? (
+                          <img
+                            src={business.logo_url}
+                            alt="Logo preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
+                        )}
+                      </div>
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT, marginBottom: '4px' }}>
+                          Upload your business logo
+                        </div>
+                        <div style={{ fontSize: '12px', color: TEXT3, lineHeight: 1.6 }}>
+                          This appears in the bottom left of the sidebar next to your name.
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <label
+                          htmlFor="logo-upload"
+                          style={{
+                            height: '38px',
+                            padding: '0 16px',
+                            borderRadius: '8px',
+                            border: `1px solid ${BORDER}`,
+                            background: '#fff',
+                            color: TEXT2,
+                            fontSize: '13px',
+                            cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                            fontFamily: 'inherit',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: uploadingLogo ? 0.7 : 1
+                          }}
+                        >
+                          {uploadingLogo ? 'Uploading…' : 'Upload image'}
+                        </label>
+
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                          style={{ display: 'none' }}
+                          disabled={uploadingLogo}
+                          onChange={async e => {
+                            const file = e.target.files?.[0]
+                            if (file) await handleLogoUpload(file)
+                            e.currentTarget.value = ''
+                          }}
+                        />
+
+                        {business.logo_url && (
+                          <button
+                            type="button"
+                            onClick={removeLogo}
+                            style={{
+                              height: '38px',
+                              padding: '0 16px',
+                              borderRadius: '8px',
+                              border: `1px solid ${BORDER}`,
+                              background: '#fff',
+                              color: '#B91C1C',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
                     </div>
-                  )}
+
+                    {uploadError && (
+                      <p style={{ ...hint, color: '#B91C1C' }}>{uploadError}</p>
+                    )}
+
+                    {!uploadError && (
+                      <p style={hint}>PNG, JPG, WEBP, or SVG. After uploading, click Save changes.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
