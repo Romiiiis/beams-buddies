@@ -90,6 +90,13 @@ export default function CustomersPage() {
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
+  const todayStr = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
   const pad = isMobile ? '16px' : '32px'
 
   return (
@@ -97,27 +104,73 @@ export default function CustomersPage() {
       <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
 
-        {/* Flush header */}
-        <div style={{ background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '20px 16px 16px' : `28px ${pad} 20px` }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
-            <div>
-              <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px', lineHeight: 1 }}>Customers</div>
-              <div style={{ fontSize: '13px', color: TEXT3, marginTop: '5px' }}>{customers.length} total</div>
-            </div>
-            <button onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit', flexShrink: 0 }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+        <div
+          style={{
+            background: '#fff',
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '20px 16px 16px' : `28px ${pad} 20px`,
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'flex-end',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '6px', fontWeight: '500' }}>{todayStr}</div>
+            <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '700', color: TEXT, letterSpacing: '-0.6px', lineHeight: 1 }}>Customers</div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => router.push('/dashboard/jobs')}
+              style={{
+                height: '38px',
+                padding: '0 16px',
+                borderRadius: '8px',
+                border: 'none',
+                background: A,
+                color: '#fff',
+                fontSize: '13px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                fontFamily: 'inherit',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
               Add job
             </button>
           </div>
-          <div style={{ marginTop: '16px' }}>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
-              style={{ width: '100%', maxWidth: '360px', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '13px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
-          </div>
         </div>
 
-        {/* Content */}
         <div style={{ padding: `24px ${pad}`, paddingBottom: isMobile ? '90px' : '32px' }}>
+          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name or email…"
+              style={{
+                width: '100%',
+                maxWidth: '360px',
+                height: '38px',
+                padding: '0 12px',
+                borderRadius: '8px',
+                border: `1px solid ${BORDER}`,
+                background: '#fff',
+                fontSize: '13px',
+                color: TEXT,
+                outline: 'none',
+                fontFamily: 'inherit',
+              }}
+            />
+            <div style={{ fontSize: '13px', color: TEXT3, fontWeight: '500' }}>{customers.length} total</div>
+          </div>
+
           {loading ? (
             <div style={{ padding: '64px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
           ) : customers.length === 0 ? (
@@ -132,11 +185,28 @@ export default function CustomersPage() {
                 const clicks = reviewClicks[c.id] || 0
                 const hasClicks = clicks > 0
                 return (
-                  <div key={c.id} onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                    style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
+                  <div
+                    key={c.id}
+                    onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                    style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                        <div
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: av.bg,
+                            color: av.color,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            flexShrink: 0,
+                          }}
+                        >
                           {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
                         </div>
                         <div>
@@ -161,7 +231,22 @@ export default function CustomersPage() {
                 <thead>
                   <tr style={{ background: '#FAFAF8' }}>
                     {['Customer', 'Phone', 'Units', 'Next service', 'Reviews', 'Status', ''].map(h => (
-                      <th key={h} style={{ padding: '11px 22px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>{h}</th>
+                      <th
+                        key={h}
+                        style={{
+                          padding: '11px 22px',
+                          textAlign: 'left',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          color: TEXT3,
+                          borderBottom: `1px solid ${BORDER}`,
+                          whiteSpace: 'nowrap',
+                          textTransform: 'uppercase' as const,
+                          letterSpacing: '0.4px',
+                        }}
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -172,13 +257,30 @@ export default function CustomersPage() {
                     const clicks = reviewClicks[c.id] || 0
                     const hasClicks = clicks > 0
                     return (
-                      <tr key={c.id} style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
+                      <tr
+                        key={c.id}
+                        style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
                         onClick={() => router.push(`/dashboard/customers/${c.id}`)}
                         onMouseEnter={e => (e.currentTarget.style.background = '#FAFAF8')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
                         <td style={{ padding: '13px 22px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                            <div
+                              style={{
+                                width: '34px',
+                                height: '34px',
+                                borderRadius: '50%',
+                                background: av.bg,
+                                color: av.color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                flexShrink: 0,
+                              }}
+                            >
                               {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
                             </div>
                             <div>
@@ -189,12 +291,16 @@ export default function CustomersPage() {
                         </td>
                         <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.phone || '—'}</td>
                         <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2, textAlign: 'center' }}>{c.jobs?.length || 0}</td>
-                        <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>
+                          {c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}
+                        </td>
                         <td style={{ padding: '13px 22px' }}>
                           {totalPlatforms > 0 ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: hasClicks ? '#FEF3C7' : '#F5F5F5', padding: '3px 9px', borderRadius: '20px', border: `1px solid ${hasClicks ? '#FDE68A' : BORDER}` }}>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5"/></svg>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                  <path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5" />
+                                </svg>
                                 <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
                               </div>
                               {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
