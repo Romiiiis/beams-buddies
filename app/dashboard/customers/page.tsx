@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const A = '#2AA198'
+const A = '#1C1C1E'
+const TEAL = '#2AA198'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#5A5A5A'
-const BORDER = '#DEDEDE'
-const BG = '#F2F3F3'
+const BORDER = '#EBEBEB'
+const BG = '#FAFAF8'
 
 const avColors = [
-  { bg: '#CCEFED', color: '#0A4F4C' },
+  { bg: '#E8F4F1', color: '#0A4F4C' },
   { bg: '#DBEAFE', color: '#1E3A8A' },
   { bg: '#FEF3C7', color: '#78350F' },
   { bg: '#EDE9FE', color: '#4C1D95' },
@@ -80,96 +81,89 @@ export default function CustomersPage() {
   }
 
   function statusPill(jobs: any[]) {
-    if (!jobs?.length) return { label: 'No units', bg: '#EBEBEB', color: '#3A3A3A' }
+    if (!jobs?.length) return { label: 'No units', bg: '#F0F0F0', color: '#555' }
     const next = jobs[0]?.next_service_date
-    if (!next) return { label: 'No date', bg: '#EBEBEB', color: '#3A3A3A' }
+    if (!next) return { label: 'No date', bg: '#F0F0F0', color: '#555' }
     const days = getDays(next)
     if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
     if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
-  const pad = isMobile ? '16px' : '30px'
+  const pad = isMobile ? '16px' : '32px'
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, overflow: 'hidden' }}>
       <Sidebar active="/dashboard/customers" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
-        <div style={{ height: '58px', background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: `0 ${pad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ fontSize: '17px', fontWeight: '600', color: TEXT }}>Customers</div>
-          <button
-            onClick={() => router.push('/dashboard/jobs')}
-            style={{ height: '36px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit' }}
-          >
-            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.6" strokeLinecap="round" /></svg>
-            Add job
-          </button>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
+
+        {/* Flush header */}
+        <div style={{ background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '20px 16px 16px' : `24px ${pad} 20px` }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
+            <div>
+              <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px', lineHeight: 1 }}>Customers</div>
+              <div style={{ fontSize: '13px', color: TEXT3, marginTop: '5px' }}>{customers.length} total</div>
+            </div>
+            <button onClick={() => router.push('/dashboard/jobs')}
+              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit', flexShrink: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              Add job
+            </button>
+          </div>
+
+          {/* Search */}
+          <div style={{ marginTop: '16px' }}>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email…"
+              style={{ width: '100%', maxWidth: '360px', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '13px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}/>
+          </div>
         </div>
 
-        <div style={{ flex: 1, padding: `${isMobile ? '16px' : '24px'} ${pad}`, paddingBottom: isMobile ? '90px' : '24px' }}>
-          <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ padding: isMobile ? '12px 14px' : '14px 22px', borderBottom: `1px solid ${BORDER}` }}>
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or email…"
-                style={{ width: '100%', height: '36px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, fontSize: '14px', color: TEXT, outline: 'none', fontFamily: 'inherit' }}
-              />
+        {/* Content */}
+        <div style={{ padding: `24px ${pad}`, paddingBottom: isMobile ? '90px' : '32px' }}>
+          {loading ? (
+            <div style={{ padding: '64px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
+          ) : customers.length === 0 ? (
+            <div style={{ padding: '64px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
+              No customers yet. <span style={{ color: TEAL, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
             </div>
-
-            {loading ? (
-              <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading…</div>
-            ) : customers.length === 0 ? (
-              <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
-                No customers yet. <span style={{ color: A, cursor: 'pointer' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
-              </div>
-            ) : isMobile ? (
-              <div>
-                {customers.map((c, i) => {
-                  const av = avColors[i % avColors.length]
-                  const s = statusPill(c.jobs)
-                  const clicks = reviewClicks[c.id] || 0
-                  const hasClicks = clicks > 0
-                  return (
-                    <div
-                      key={c.id}
-                      onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                      style={{ padding: '14px 16px', borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
-                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{c.first_name} {c.last_name}</div>
-                            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{c.suburb || c.address || '—'}</div>
-                          </div>
+          ) : isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {customers.map((c, i) => {
+                const av = avColors[i % avColors.length]
+                const s = statusPill(c.jobs)
+                const clicks = reviewClicks[c.id] || 0
+                const hasClicks = clicks > 0
+                return (
+                  <div key={c.id} onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                    style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
+                          {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
                         </div>
-                        <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{c.first_name} {c.last_name}</div>
+                          <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{c.suburb || c.address || '—'}</div>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
-                        <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
-                        {c.jobs?.[0]?.next_service_date && (
-                          <span style={{ fontSize: '12px', color: TEXT3 }}>
-                            {new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
-                          </span>
-                        )}
-                        {totalPlatforms > 0 && hasClicks && (
-                          <span style={{ fontSize: '12px', color: '#92400E' }}>⭐ {clicks}/{totalPlatforms}</span>
-                        )}
-                      </div>
+                      <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
                     </div>
-                  )
-                })}
-              </div>
-            ) : (
+                    <div style={{ display: 'flex', gap: '16px', paddingLeft: '46px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12px', color: TEXT3 }}>{c.phone || '—'}</span>
+                      <span style={{ fontSize: '12px', color: TEXT3 }}>{c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}</span>
+                      {totalPlatforms > 0 && hasClicks && <span style={{ fontSize: '12px', color: '#92400E' }}>⭐ {clicks}/{totalPlatforms}</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: '#F8F8F8' }}>
+                  <tr style={{ background: '#FAFAF8' }}>
                     {['Customer', 'Phone', 'Units', 'Next service', 'Reviews', 'Status', ''].map(h => (
-                      <th key={h} style={{ padding: '10px 22px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap' }}>{h}</th>
+                      <th key={h} style={{ padding: '11px 22px', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -180,12 +174,10 @@ export default function CustomersPage() {
                     const clicks = reviewClicks[c.id] || 0
                     const hasClicks = clicks > 0
                     return (
-                      <tr
-                        key={c.id}
-                        style={{ borderBottom: '1px solid #F0F0F0', cursor: 'pointer' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
+                      <tr key={c.id} style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
+                        onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#FAFAF8')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <td style={{ padding: '13px 22px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', flexShrink: 0 }}>
@@ -197,14 +189,14 @@ export default function CustomersPage() {
                             </div>
                           </div>
                         </td>
-                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2 }}>{c.phone || '—'}</td>
-                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2, textAlign: 'center' }}>{c.jobs?.length || 0}</td>
-                        <td style={{ padding: '13px 22px', fontSize: '14px', color: TEXT2 }}>{c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.phone || '—'}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2, textAlign: 'center' }}>{c.jobs?.length || 0}</td>
+                        <td style={{ padding: '13px 22px', fontSize: '13px', color: TEXT2 }}>{c.jobs?.[0]?.next_service_date ? new Date(c.jobs[0].next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
                         <td style={{ padding: '13px 22px' }}>
                           {totalPlatforms > 0 ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: hasClicks ? '#FEF3C7' : '#F5F5F5', padding: '3px 9px', borderRadius: '20px', border: `1px solid ${hasClicks ? '#FDE68A' : BORDER}` }}>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5" /></svg>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.4 2.8 3.1.5-2.2 2.2.5 3.1L6 8.2 3.2 9.6l.5-3.1L1.5 4.3l3.1-.5L6 1z" fill={hasClicks ? '#F59E0B' : '#D1D5DB'} stroke={hasClicks ? '#D97706' : '#9CA3AF'} strokeWidth="0.5"/></svg>
                                 <span style={{ fontSize: '12px', fontWeight: '600', color: hasClicks ? '#92400E' : '#9CA3AF' }}>{clicks}/{totalPlatforms}</span>
                               </div>
                               {hasClicks && <span style={{ fontSize: '11px', color: TEXT3 }}>clicked</span>}
@@ -215,15 +207,15 @@ export default function CustomersPage() {
                           <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>{s.label}</span>
                         </td>
                         <td style={{ padding: '13px 22px', textAlign: 'right' }}>
-                          <span style={{ color: A, fontSize: '13px', fontWeight: '500', cursor: 'pointer' }} onClick={() => router.push(`/dashboard/customers/${c.id}`)}>View →</span>
+                          <span style={{ color: TEXT3, fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>View →</span>
                         </td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
