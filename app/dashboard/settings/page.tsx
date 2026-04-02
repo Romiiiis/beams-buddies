@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
@@ -27,6 +28,49 @@ function useIsMobile() {
   return isMobile
 }
 
+async function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.addEventListener('load', () => resolve(image))
+    image.addEventListener('error', error => reject(error))
+    image.setAttribute('crossOrigin', 'anonymous')
+    image.src = url
+  })
+}
+
+async function getCroppedImg(imageSrc: string, pixelCrop: { x: number; y: number; width: number; height: number }): Promise<Blob> {
+  const image = await createImage(imageSrc)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) throw new Error('Canvas context not available')
+
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  )
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        reject(new Error('Canvas is empty'))
+        return
+      }
+      resolve(blob)
+    }, 'image/png')
+  })
+}
+
 export default function SettingsPage() {
   const router = useRouter()
   const { refresh } = useBusinessData()
@@ -48,6 +92,12 @@ export default function SettingsPage() {
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [selectedImage, setSelectedImage] = useState('')
+  const [selectedFileName, setSelectedFileName] = useState('logo.png')
+  const [showCropper, setShowCropper] = useState(false)
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -64,10 +114,7 @@ export default function SettingsPage() {
       if (!userData) return
 
       setBusinessId(userData.business_id)
-      setUserProfile({
-        full_name: userData.full_name || '',
-        role_title: userData.role_title || ''
-      })
+      setUserProfile({ full_name: userData.full_name || '', role_title: userData.role_title || '' })
 
       const [businessRes, settingsRes] = await Promise.all([
         supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
@@ -100,50 +147,55 @@ export default function SettingsPage() {
     load()
   }, [router])
 
-  async function handleLogoUpload(file: File) {
-    if (!file || !businessId) return
+  async function handleCropAndUpload() {
+    if (!selectedImage || !croppedAreaPixels || !businessId) return
 
-    setUploadError('')
+    try {
+      setUploadingLogo(true)
+      setUploadError('')
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml']
-    if (!validTypes.includes(file.type)) {
-      setUploadError('Please upload a PNG, JPG, WEBP, or SVG image.')
-      return
-    }
+      const croppedBlob = await getCroppedImg(selectedImage, croppedAreaPixels)
+      const filePath = `${businessId}/logo-${Date.now()}.png`
 
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
-    const filePath = `${businessId}/logo-${Date.now()}.${fileExt}`
+      const { error: uploadErr } = await supabase.storage
+        .from(LOGO_BUCKET)
+        .upload(filePath, croppedBlob, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/png',
+        })
 
-    setUploadingLogo(true)
+      if (uploadErr) {
+        setUploadError(uploadErr.message || 'Logo upload failed.')
+        setUploadingLogo(false)
+        return
+      }
 
-    const { error: uploadErr } = await supabase.storage
-      .from(LOGO_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      })
+      const { data: publicData } = supabase.storage
+        .from(LOGO_BUCKET)
+        .getPublicUrl(filePath)
 
-    if (uploadErr) {
+      if (!publicData?.publicUrl) {
+        setUploadError('Could not generate a public logo URL.')
+        setUploadingLogo(false)
+        return
+      }
+
+      setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
+      setShowCropper(false)
+      setSelectedImage('')
+      setSelectedFileName('logo.png')
+      setCrop({ x: 0, y: 0 })
+      setZoom(1)
+      setCroppedAreaPixels(null)
       setUploadingLogo(false)
-      setUploadError(uploadErr.message || 'Logo upload failed.')
-      return
-    }
-
-    const { data: publicData } = supabase.storage
-      .from(LOGO_BUCKET)
-      .getPublicUrl(filePath)
-
-    if (!publicData?.publicUrl) {
+    } catch (err: any) {
+      setUploadError(err?.message || 'Could not crop and upload image.')
       setUploadingLogo(false)
-      setUploadError('Could not generate a public logo URL.')
-      return
     }
-
-    setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
-    setUploadingLogo(false)
   }
 
-  async function removeLogo() {
+  function removeLogo() {
     setBusiness(prev => ({ ...prev, logo_url: '' }))
     setUploadError('')
   }
@@ -200,54 +252,13 @@ export default function SettingsPage() {
   function removePlatform(id: string) { setPlatforms(prev => prev.filter(p => p.id !== id)) }
 
   const pad = isMobile ? '16px' : '30px'
-  const input: React.CSSProperties = {
-    width: '100%',
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '8px',
-    border: `1px solid ${BORDER}`,
-    background: BG,
-    color: TEXT,
-    fontFamily: 'inherit',
-    fontSize: '14px',
-    outline: 'none'
-  }
-  const label: React.CSSProperties = {
-    fontSize: '13px',
-    fontWeight: '500',
-    color: TEXT2,
-    marginBottom: '6px',
-    display: 'block'
-  }
-  const hint: React.CSSProperties = {
-    fontSize: '12px',
-    color: TEXT3,
-    marginTop: '4px'
-  }
-  const section: React.CSSProperties = {
-    background: '#fff',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '12px',
-    overflow: 'hidden',
-    marginBottom: '14px'
-  }
-  const sHead: React.CSSProperties = {
-    padding: '14px 22px',
-    borderBottom: `1px solid ${BORDER}`,
-    fontSize: '14px',
-    fontWeight: '600',
-    color: TEXT
-  }
-  const sBody: React.CSSProperties = {
-    padding: isMobile ? '16px' : '20px 22px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  }
-  const allPlatformCount =
-    (form.google_review_url ? 1 : 0) +
-    (form.facebook_review_url ? 1 : 0) +
-    platforms.filter(p => p.url).length
+  const input: React.CSSProperties = { width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: BG, color: TEXT, fontFamily: 'inherit', fontSize: '14px', outline: 'none' }
+  const label: React.CSSProperties = { fontSize: '13px', fontWeight: '500', color: TEXT2, marginBottom: '6px', display: 'block' }
+  const hint: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginTop: '4px' }
+  const section: React.CSSProperties = { background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '14px' }
+  const sHead: React.CSSProperties = { padding: '14px 22px', borderBottom: `1px solid ${BORDER}`, fontSize: '14px', fontWeight: '600', color: TEXT }
+  const sBody: React.CSSProperties = { padding: isMobile ? '16px' : '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }
+  const allPlatformCount = (form.google_review_url ? 1 : 0) + (form.facebook_review_url ? 1 : 0) + platforms.filter(p => p.url).length
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
@@ -341,7 +352,7 @@ export default function SettingsPage() {
                           <img
                             src={business.logo_url}
                             alt="Logo preview"
-                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
                         ) : (
                           <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
@@ -387,7 +398,20 @@ export default function SettingsPage() {
                           disabled={uploadingLogo}
                           onChange={async e => {
                             const file = e.target.files?.[0]
-                            if (file) await handleLogoUpload(file)
+                            if (!file) return
+
+                            setUploadError('')
+                            setSelectedFileName(file.name)
+
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              setSelectedImage(reader.result as string)
+                              setCrop({ x: 0, y: 0 })
+                              setZoom(1)
+                              setShowCropper(true)
+                            }
+                            reader.readAsDataURL(file)
+
                             e.currentTarget.value = ''
                           }}
                         />
@@ -419,7 +443,7 @@ export default function SettingsPage() {
                     )}
 
                     {!uploadError && (
-                      <p style={hint}>PNG, JPG, WEBP, or SVG. After uploading, click Save changes.</p>
+                      <p style={hint}>PNG, JPG, WEBP, or SVG. You can move and zoom the image before saving.</p>
                     )}
                   </div>
                 </div>
@@ -508,6 +532,126 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {showCropper && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '520px',
+            background: '#fff',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              padding: '16px 18px',
+              borderBottom: `1px solid ${BORDER}`,
+              fontSize: '15px',
+              fontWeight: '600',
+              color: TEXT
+            }}>
+              Adjust logo
+            </div>
+
+            <div style={{ padding: '18px' }}>
+              <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '10px' }}>
+                {selectedFileName}
+              </div>
+
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '320px',
+                background: '#111',
+                borderRadius: '12px',
+                overflow: 'hidden'
+              }}>
+                <Cropper
+                  image={selectedImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+                />
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <label style={{ ...label, marginBottom: '8px' }}>Zoom</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.01"
+                  value={zoom}
+                  onChange={e => setZoom(Number(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div style={{
+                marginTop: '18px',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCropper(false)
+                    setSelectedImage('')
+                    setSelectedFileName('logo.png')
+                    setCrop({ x: 0, y: 0 })
+                    setZoom(1)
+                    setCroppedAreaPixels(null)
+                  }}
+                  style={{
+                    height: '38px',
+                    padding: '0 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${BORDER}`,
+                    background: '#fff',
+                    color: TEXT2,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCropAndUpload}
+                  disabled={uploadingLogo}
+                  style={{
+                    height: '38px',
+                    padding: '0 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: A,
+                    color: '#fff',
+                    cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                    opacity: uploadingLogo ? 0.7 : 1
+                  }}
+                >
+                  {uploadingLogo ? 'Saving…' : 'Save image'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
