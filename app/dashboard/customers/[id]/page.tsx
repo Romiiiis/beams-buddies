@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const A = '#1C1C1E'
 const TEAL = '#2AA198'
+const TEAL_DARK = '#1E8C84'
+const TEAL_LIGHT = '#E6F5F4'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
-const TEXT3 = '#5A5A5A'
-const BORDER = '#EBEBEB'
-const BG = '#FAFAF8'
+const TEXT3 = '#6B7280'
+const BORDER = '#E5E7EB'
+const BG = '#F4F4F2'
+const WHITE = '#FFFFFF'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -103,16 +105,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   function statusPill(nextServiceDate: string | null) {
-    if (!nextServiceDate) return { label: 'No date', bg: '#F0F0F0', color: '#555' }
+    if (!nextServiceDate) return { label: 'No date', bg: '#F3F4F6', color: '#6B7280' }
     const days = getDays(nextServiceDate)
     if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
     if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
     return { label: 'Good', bg: '#D1FAE5', color: '#064E3B' }
   }
 
-  const inp: React.CSSProperties = { width: '100%', height: '40px', padding: '0 10px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#fff', color: TEXT, fontFamily: 'inherit', fontSize: '14px', outline: 'none' }
-  const lbl: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block' }
+  const inp: React.CSSProperties = {
+    width: '100%', height: '40px', padding: '0 10px', borderRadius: '8px',
+    border: `1px solid ${BORDER}`, background: WHITE, color: TEXT,
+    fontFamily: 'inherit', fontSize: '14px', outline: 'none',
+  }
+  const lbl: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block', fontWeight: '500' }
   const pad = isMobile ? '16px' : '32px'
+
+  const card: React.CSSProperties = {
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    borderRadius: '14px',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+    overflow: 'hidden',
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG }}>
@@ -122,7 +136,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   )
 
   if (!customer) return null
-  const initials = (customer.first_name?.[0] || '') + (customer.last_name?.[0] || '')
   const uniquePlatforms = [...new Set(reviewClicks.map(r => r.platform))]
 
   return (
@@ -130,45 +143,61 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       <Sidebar active="/dashboard/customers" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
 
-        {/* Flush header */}
-        <div style={{ background: '#fff', borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '20px 16px 16px' : `24px ${pad} 20px`, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
+        {/* HEADER */}
+        <div style={{
+          background: '#33B5AC',
+          padding: isMobile ? '24px 16px 22px' : `32px ${pad} 28px`,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'flex-end',
+          justifyContent: 'space-between',
+          gap: '16px',
+        }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <div style={{ marginBottom: '8px' }}>
               <span onClick={() => router.push('/dashboard/customers')}
-                style={{ fontSize: '12px', color: TEXT3, cursor: 'pointer', fontWeight: '500' }}>
+                style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontWeight: '500' }}>
                 ← Customers
               </span>
             </div>
-            <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px', lineHeight: 1 }}>
+            <div style={{ fontSize: isMobile ? '24px' : '30px', fontWeight: '800', color: WHITE, letterSpacing: '-0.6px', lineHeight: 1 }}>
               {customer.first_name} {customer.last_name}
             </div>
-            <div style={{ fontSize: '13px', color: TEXT3, marginTop: '5px' }}>
+            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '6px', fontWeight: '500' }}>
               Customer since {new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}
               {customer.suburb ? ` · ${customer.suburb}` : ''}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-            {saved && <span style={{ fontSize: '12px', color: '#065F46', fontWeight: '500' }}>✓ Saved</span>}
+            {saved && (
+              <span style={{ fontSize: '12px', color: WHITE, fontWeight: '600', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px' }}>✓ Saved</span>
+            )}
             <button onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '38px', padding: '0 16px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
-              + Add job
+              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: '7px' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke={TEAL_DARK} strokeWidth="2" strokeLinecap="round"/></svg>
+              Add job
             </button>
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: `24px ${pad}`, paddingBottom: isMobile ? '90px' : '32px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', alignItems: 'flex-start' }}>
+        {/* BODY */}
+        <div style={{ padding: `28px ${pad}`, paddingBottom: isMobile ? '90px' : '40px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', alignItems: 'flex-start' }}>
 
-          {/* Left panel */}
-          <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* LEFT PANEL */}
+          <div style={{ width: isMobile ? '100%' : '268px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-            {/* Customer details */}
-            <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+            {/* Contact details */}
+            <div style={card}>
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: TEXT }}>Contact details</span>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: TEAL, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>Profile</div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: TEXT }}>Contact details</div>
+                </div>
                 {!editingCustomer && (
                   <button onClick={() => setEditingCustomer(true)}
-                    style={{ fontSize: '12px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    style={{ fontSize: '12px', color: TEXT3, background: 'none', border: `1px solid ${BORDER}`, borderRadius: '6px', cursor: 'pointer', padding: '4px 10px', fontFamily: 'inherit', fontWeight: '500' }}>
                     Edit
                   </button>
                 )}
@@ -185,8 +214,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     { label: 'Notes', value: customer.notes || '—' },
                   ].map(row => (
                     <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '9px 18px', borderBottom: `1px solid ${BORDER}`, gap: '12px' }}>
-                      <span style={{ fontSize: '12px', color: TEXT3, flexShrink: 0 }}>{row.label}</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: '500', textAlign: 'right' }}>{row.value}</span>
+                      <span style={{ fontSize: '12px', color: TEXT3, flexShrink: 0, fontWeight: '500' }}>{row.label}</span>
+                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: '600', textAlign: 'right' }}>{row.value}</span>
                     </div>
                   ))}
                 </div>
@@ -206,7 +235,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div><label style={lbl}>Notes</label><textarea style={{ ...inp, height: '60px', padding: '8px 10px', resize: 'none' as const }} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))}/></div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setEditingCustomer(false)} style={{ flex: 1, height: '36px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                    <button onClick={saveCustomer} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save'}</button>
+                    <button onClick={saveCustomer} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: TEAL, color: WHITE, fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save'}</button>
                   </div>
                 </div>
               )}
@@ -218,18 +247,20 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 { label: 'Units installed', value: jobs.length },
                 { label: 'Service records', value: jobs.reduce((s, j) => s + (j.service_records?.length || 0), 0) },
               ].map(s => (
-                <div key={s.label} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '14px 16px' }}>
-                  <div style={{ fontSize: '22px', fontWeight: '700', color: TEXT, letterSpacing: '-0.5px' }}>{s.value}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>{s.label}</div>
+                <div key={s.label} style={{ ...card, padding: '16px' }}>
+                  <div style={{ height: '3px', background: TEAL, borderRadius: '2px', marginBottom: '12px' }} />
+                  <div style={{ fontSize: '26px', fontWeight: '800', color: TEXT, letterSpacing: '-0.6px' }}>{s.value}</div>
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px', fontWeight: '500' }}>{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Review activity */}
             {reviewClicks.length > 0 && (
-              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: TEXT }}>Review activity</span>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: TEAL, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>Engagement</div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: TEXT }}>Review activity</div>
                 </div>
                 <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {uniquePlatforms.map(platform => {
@@ -237,8 +268,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     const latest = new Date(clicks[0].clicked_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                     return (
                       <div key={platform as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{platform as string}</span>
-                        <span style={{ fontSize: '11px', color: TEXT3 }}>{latest}</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: TEXT }}>{platform as string}</span>
+                        <span style={{ fontSize: '11px', color: TEXT3, background: '#F3F4F6', padding: '2px 8px', borderRadius: '6px' }}>{latest}</span>
                       </div>
                     )
                   })}
@@ -247,33 +278,34 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             )}
           </div>
 
-          {/* Jobs */}
+          {/* JOBS */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: TEAL, textTransform: 'uppercase', letterSpacing: '1px' }}>
               {jobs.length} Unit{jobs.length !== 1 ? 's' : ''} installed
             </div>
 
             {jobs.length === 0 ? (
-              <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
+              <div style={{ ...card, padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
                 No jobs yet for this customer.
               </div>
             ) : jobs.map(job => {
               const s = statusPill(job.next_service_date)
               const f = jobForms[job.id] || job
               const isEditing = editingJobId === job.id
+              const accentColor = s.label === 'Overdue' ? '#EF4444' : s.label === 'Due soon' ? '#F59E0B' : TEAL
               return (
-                <div key={job.id} style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ height: '3px', background: s.label === 'Overdue' ? '#EF4444' : s.label === 'Due soon' ? '#F59E0B' : TEAL }} />
-                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <div key={job.id} style={card}>
+                  <div style={{ height: '3px', background: accentColor }} />
+                  <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '15px', fontWeight: '600', color: TEXT }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ')}</div>
-                      {job.model && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Model: {job.model}</div>}
+                      <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ')}</div>
+                      {job.model && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>Model: {job.model}</div>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                      <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>{s.label}</span>
+                      <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>{s.label}</span>
                       {!isEditing && (
                         <button onClick={() => setEditingJobId(job.id)}
-                          style={{ height: '30px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ height: '30px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
                           Edit
                         </button>
                       )}
@@ -282,7 +314,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
                   {!isEditing ? (
                     <>
-                      <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '14px' }}>
+                      <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
                         {[
                           { label: 'Serial number', value: job.serial_number || '—', mono: true },
                           { label: 'Installed', value: new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) },
@@ -292,20 +324,20 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           { label: 'Service interval', value: `Every ${job.service_interval_months} months` },
                         ].map(row => (
                           <div key={row.label}>
-                            <div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>{row.label}</div>
-                            <div style={{ fontSize: '13px', fontWeight: '500', color: row.danger ? '#B91C1C' : TEXT, fontFamily: row.mono ? 'monospace' : 'inherit' }}>{row.value}</div>
+                            <div style={{ fontSize: '11px', color: TEXT3, marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{row.label}</div>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: row.danger ? '#B91C1C' : TEXT, fontFamily: row.mono ? 'monospace' : 'inherit' }}>{row.value}</div>
                           </div>
                         ))}
                       </div>
                       {job.notes && (
-                        <div style={{ padding: '0 18px 14px' }}>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginBottom: '3px' }}>Notes</div>
+                        <div style={{ padding: '0 20px 16px' }}>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Notes</div>
                           <div style={{ fontSize: '13px', color: TEXT2 }}>{job.notes}</div>
                         </div>
                       )}
                     </>
                   ) : (
-                    <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                         <div><label style={lbl}>Brand</label><input style={inp} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)}/></div>
                         <div><label style={lbl}>Model</label><input style={inp} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)}/></div>
@@ -343,22 +375,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                       <div><label style={lbl}>Notes</label><textarea style={{ ...inp, height: '70px', padding: '8px 10px', resize: 'none' as const }} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)}/></div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => setEditingJobId(null)} style={{ flex: 1, height: '36px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'transparent', color: TEXT2, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                        <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: A, color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save changes'}</button>
+                        <button onClick={() => saveJob(job.id)} disabled={saving} style={{ flex: 1, height: '36px', borderRadius: '8px', border: 'none', background: TEAL, color: WHITE, fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving…' : 'Save changes'}</button>
                       </div>
                     </div>
                   )}
 
                   {job.service_records?.length > 0 && (
-                    <div style={{ borderTop: `1px solid ${BORDER}`, padding: '14px 18px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, marginBottom: '10px', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Service history</div>
+                    <div style={{ borderTop: `1px solid ${BORDER}`, padding: '16px 20px', background: '#FAFAFA' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: TEAL, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Service history</div>
                       {job.service_records.map((sr: any) => (
-                        <div key={sr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${BORDER}`, gap: '10px' }}>
+                        <div key={sr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: `1px solid ${BORDER}`, gap: '10px' }}>
                           <div>
-                            <div style={{ fontSize: '13px', fontWeight: '500', color: TEXT }}>{sr.service_type?.replace('_', ' ')}</div>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT }}>{sr.service_type?.replace('_', ' ')}</div>
                             {sr.notes && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{sr.notes}</div>}
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: '12px', color: TEXT2 }}>{new Date(sr.service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                            <div style={{ fontSize: '12px', color: TEXT2, fontWeight: '500' }}>{new Date(sr.service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                             {sr.cost && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>${sr.cost}</div>}
                           </div>
                         </div>
