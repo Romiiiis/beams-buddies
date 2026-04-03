@@ -123,27 +123,22 @@ export default function DashboardPage() {
       <Sidebar active="/dashboard" />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
 
-        {/* TEAL HEADER */}
+        {/* HEADER */}
         <div style={{
-          background: `linear-gradient(135deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`,
+          background: '#33B5AC',
           padding: isMobile ? '24px 16px 22px' : `32px ${pad} 28px`,
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: isMobile ? 'flex-start' : 'flex-end',
           justifyContent: 'space-between',
           gap: '16px',
-          position: 'relative',
-          overflow: 'hidden',
         }}>
-          <div style={{ position: 'absolute', right: isMobile ? '-40px' : '60px', top: '-60px', width: '220px', height: '220px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', right: isMobile ? '20px' : '200px', bottom: '-80px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
-
-          <div style={{ position: 'relative' }}>
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '6px', fontWeight: '500', letterSpacing: '0.2px' }}>{todayStr}</div>
+          <div>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', marginBottom: '6px', fontWeight: '500', letterSpacing: '0.2px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '28px' : '34px', fontWeight: '800', color: WHITE, letterSpacing: '-0.8px', lineHeight: 1 }}>Dashboard</div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', position: 'relative' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button onClick={() => router.push('/dashboard/quotes')}
               style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.12)', color: WHITE, fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
@@ -163,7 +158,7 @@ export default function DashboardPage() {
         {/* PAGE BODY */}
         <div style={{ padding: `${isMobile ? '20px' : '28px'} ${pad}`, paddingBottom: isMobile ? '90px' : '40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          {/* STATS ROW */}
+          {/* STATS */}
           <div>
             <div style={sectionLabel}>Overview</div>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
