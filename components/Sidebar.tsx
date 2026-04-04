@@ -42,84 +42,110 @@ const bottomTabs = [
 ]
 
 const icons: Record<string, React.ReactElement> = {
+  // Dashboard — bold 2x2 grid, top-left filled
   '/dashboard': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" fill="currentColor"/>
-      <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity="0.3"/>
-      <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity="0.3"/>
-      <rect x="9" y="9" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity="0.6"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor"/>
+      <rect x="10" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.35"/>
+      <rect x="1" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.35"/>
+      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.6"/>
     </svg>
   ),
+
+  // Customers — solid person + smaller second person
   '/dashboard/customers': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="5.5" cy="4.5" r="2.5" fill="currentColor" opacity="0.9"/>
-      <path d="M1 13.5C1 11 3 9.5 5.5 9.5S10 11 10 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      <circle cx="11.5" cy="5" r="2" fill="currentColor" opacity="0.4"/>
-      <path d="M10.5 13.5c0-1.5.8-2.7 2-3.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.5"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="7" cy="5" r="3" fill="currentColor"/>
+      <path d="M1 16c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      <circle cx="14" cy="6" r="2" fill="currentColor" opacity="0.45"/>
+      <path d="M14 11.5c1.7.5 3 1.8 3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.45"/>
     </svg>
   ),
+
+  // Add job — bold house with plus
   '/dashboard/jobs': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M8 1.5L14.5 7V14.5H1.5V7L8 1.5Z" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-      <circle cx="8" cy="10" r="1.5" fill="currentColor"/>
-      <path d="M8 7V8.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M2 8.5L9 2l7 6.5V16.5H2V8.5Z" fill="currentColor" opacity="0.2"/>
+      <path d="M2 8.5L9 2l7 6.5V16.5H2V8.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+      <path d="M9 10v4M7 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   ),
+
+  // Quotes — doc with folded corner + lines
   '/dashboard/quotes': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M9.5 1.5H4A1.5 1.5 0 002.5 3v10A1.5 1.5 0 004 14.5h8A1.5 1.5 0 0013.5 13V5.5L9.5 1.5Z" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-      <path d="M9.5 1.5V5.5H13.5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-      <path d="M5.5 8.5h5M5.5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M11 1.5H4.5A1.5 1.5 0 003 3v12a1.5 1.5 0 001.5 1.5H13.5A1.5 1.5 0 0015 15V5.5L11 1.5Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M11 1.5V5.5H15" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M6 9.5h6M6 12.5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
     </svg>
   ),
+
+  // Invoices — receipt with dollar
   '/dashboard/invoices': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M2.5 2.5h11v10l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1V2.5Z" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-      <path d="M8 4.5v7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-      <path d="M6 6c0-.8.9-1.5 2-1.5s2 .7 2 1.5-.9 1.5-2 1.5S6 8.3 6 9s.9 1.5 2 1.5 2-.7 2-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M3 2h12v13l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L3 15V2Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M9 5v8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M7 6.5C7 5.7 7.9 5 9 5s2 .7 2 1.5S10.1 8 9 8s-2 .8-2 1.5S7.9 11 9 11s2-.7 2-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
     </svg>
   ),
+
+  // Revenue — 3 bars rising + trend arrow
   '/dashboard/revenue': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1.5" y="9.5" width="2.5" height="5" rx="0.75" fill="currentColor" opacity="0.3"/>
-      <rect x="6" y="6.5" width="2.5" height="8" rx="0.75" fill="currentColor" opacity="0.6"/>
-      <rect x="10.5" y="2.5" width="2.5" height="12" rx="0.75" fill="currentColor"/>
-      <path d="M1.5 1.5L5 5l3-2 4-2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="12" cy="1.5" r="1.2" fill="currentColor"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="1" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.35"/>
+      <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.6"/>
+      <rect x="13" y="3" width="4" height="14" rx="1" fill="currentColor"/>
+      <path d="M1.5 10L5 7l3 2 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 4h4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
+
+  // Schedule — clock, bold hands
   '/dashboard/schedule': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="6.5" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="1.4"/>
-      <path d="M8 4.5V8.5l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="8" cy="8" r="1" fill="currentColor"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="9" r="7.5" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="2"/>
+      <path d="M9 5V9.5L12 11.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
+
+  // QR codes — classic QR finder pattern
   '/dashboard/qrcodes': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1.5" y="1.5" width="5" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="2.75" y="2.75" width="2.5" height="2.5" rx="0.5" fill="currentColor"/>
-      <rect x="9.5" y="1.5" width="5" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="10.75" y="2.75" width="2.5" height="2.5" rx="0.5" fill="currentColor"/>
-      <rect x="1.5" y="9.5" width="5" height="5" rx="1" fill="currentColor" opacity="0.15" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="2.75" y="10.75" width="2.5" height="2.5" rx="0.5" fill="currentColor"/>
-      <path d="M9.5 9.5h2M11.5 9.5v2M9.5 11.5h2M11.5 11.5v2.5h2.5v-2.5M9.5 14h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      {/* top-left finder */}
+      <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+      <rect x="3" y="3" width="2" height="2" fill="currentColor"/>
+      {/* top-right finder */}
+      <rect x="11" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+      <rect x="13" y="3" width="2" height="2" fill="currentColor"/>
+      {/* bottom-left finder */}
+      <rect x="1" y="11" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+      <rect x="3" y="13" width="2" height="2" fill="currentColor"/>
+      {/* bottom-right data dots */}
+      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
+      <rect x="15" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
+      <rect x="11" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
+      <rect x="13" y="13" width="2" height="2" rx="0.5" fill="currentColor" opacity="0.4"/>
+      <rect x="15" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
     </svg>
   ),
+
+  // Reports — line chart with dots
   '/dashboard/reports': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M1.5 11.5l3-3.5 2.5 2 3-5 3 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-      <circle cx="4.5" cy="8" r="1.2" fill="currentColor" opacity="0.4"/>
-      <circle cx="7" cy="10" r="1.2" fill="currentColor" opacity="0.4"/>
-      <circle cx="10" cy="5" r="1.2" fill="currentColor" opacity="0.4"/>
-      <circle cx="13" cy="9" r="1.2" fill="currentColor" opacity="0.4"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M1 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M2 13l3.5-4 3 3 4-6 3 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="5.5" cy="9" r="1.5" fill="currentColor"/>
+      <circle cx="8.5" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="12.5" cy="6" r="1.5" fill="currentColor"/>
+      <circle cx="15.5" cy="10" r="1.5" fill="currentColor"/>
     </svg>
   ),
+
+  // Settings — bold gear
   '/dashboard/settings': (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M6.5 1.5l-.5 1.5a5 5 0 00-1.5.9L3 3.5 1.5 6l1.2 1a4.5 4.5 0 000 2L1.5 10 3 12.5l1.5-.4a5 5 0 001.5.9l.5 1.5h3l.5-1.5a5 5 0 001.5-.9l1.5.4L14 10l-1.2-1a4.5 4.5 0 000-2L14 6l-1.5-2.5-1.5.4a5 5 0 00-1.5-.9L9 1.5H6.5Z" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-      <circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.9"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path fillRule="evenodd" clipRule="evenodd" d="M9 12a3 3 0 100-6 3 3 0 000 6Z" fill="currentColor"/>
+      <path d="M7.2 1.5l-.6 1.8a6 6 0 00-1.8 1L3 3.6 1.5 6.3l1.5 1.2a5.8 5.8 0 000 3L1.5 11.7 3 14.4l1.8-.7a6 6 0 001.8 1l.6 1.8h3.6l.6-1.8a6 6 0 001.8-1l1.8.7 1.5-2.7-1.5-1.2a5.8 5.8 0 000-3l1.5-1.2L15 3.6l-1.8.7a6 6 0 00-1.8-1l-.6-1.8H7.2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" fill="none"/>
     </svg>
   ),
 }
@@ -129,24 +155,19 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
     <div
       onClick={() => router.push(href)}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '8px 10px',
-        borderRadius: '9px',
-        cursor: 'pointer',
-        fontSize: '13px',
-        fontWeight: active ? '600' : '500',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        padding: '8px 10px', borderRadius: '9px', cursor: 'pointer',
+        fontSize: '13px', fontWeight: active ? '600' : '500',
         color: active ? WHITE : TEXT2,
         background: active ? TEAL : 'transparent',
         marginBottom: '1px',
+        boxShadow: active ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
         transition: 'background 0.12s, color 0.12s',
-        boxShadow: active ? '0 2px 8px rgba(42,161,152,0.25)' : 'none',
       }}
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = BG }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
     >
-      <span style={{ color: active ? 'rgba(255,255,255,0.9)' : TEXT3, display: 'flex', flexShrink: 0 }}>
+      <span style={{ color: active ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>
         {icons[href]}
       </span>
       {label}
@@ -156,11 +177,7 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <div style={{
-      fontSize: '10px', fontWeight: '700', color: TEXT3,
-      letterSpacing: '0.8px', textTransform: 'uppercase',
-      padding: '14px 10px 5px',
-    }}>
+    <div style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '14px 10px 5px' }}>
       {label}
     </div>
   )
@@ -212,15 +229,13 @@ export function Sidebar({ active }: { active: string }) {
 
   return (
     <div style={{
-      width: '224px', flexShrink: 0,
-      background: WHITE,
-      borderRight: `1px solid ${BORDER}`,
-      display: 'flex', flexDirection: 'column',
+      width: '224px', flexShrink: 0, background: WHITE,
+      borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       position: 'sticky', top: 0, height: '100vh',
     }}>
 
-      {/* LOGO HEADER */}
+      {/* HEADER */}
       <div style={{ padding: '18px 16px 16px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img
@@ -256,7 +271,7 @@ export function Sidebar({ active }: { active: string }) {
 
         {/* USER FOOTER */}
         <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 8px', borderRadius: '10px', cursor: 'pointer' }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}
             onMouseEnter={e => e.currentTarget.style.background = BG}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             {loading ? (
@@ -276,11 +291,11 @@ export function Sidebar({ active }: { active: string }) {
                     {initials}
                   </div>
                 )}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '1px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
                     {business?.full_name || ''}
                   </div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', lineHeight: 1.2, fontWeight: '500' }}>
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
                     {business?.role_title || 'Owner'}
                   </div>
                 </div>
