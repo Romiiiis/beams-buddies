@@ -14,6 +14,9 @@ const BORDER = '#E5E7EB'
 const BG = '#F4F4F2'
 const WHITE = '#FFFFFF'
 
+const SIDEBAR_COLLAPSED = 60
+const SIDEBAR_EXPANDED = 224
+
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Customers', href: '/dashboard/customers' },
@@ -42,7 +45,6 @@ const bottomTabs = [
 ]
 
 const icons: Record<string, React.ReactElement> = {
-  // Dashboard — bold 2x2 grid, top-left filled
   '/dashboard': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor"/>
@@ -51,8 +53,6 @@ const icons: Record<string, React.ReactElement> = {
       <rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.6"/>
     </svg>
   ),
-
-  // Customers — solid person + smaller second person
   '/dashboard/customers': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <circle cx="7" cy="5" r="3" fill="currentColor"/>
@@ -61,8 +61,6 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M14 11.5c1.7.5 3 1.8 3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.45"/>
     </svg>
   ),
-
-  // Add job — bold house with plus
   '/dashboard/jobs': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M2 8.5L9 2l7 6.5V16.5H2V8.5Z" fill="currentColor" opacity="0.2"/>
@@ -70,8 +68,6 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M9 10v4M7 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   ),
-
-  // Quotes — doc with folded corner + lines
   '/dashboard/quotes': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M11 1.5H4.5A1.5 1.5 0 003 3v12a1.5 1.5 0 001.5 1.5H13.5A1.5 1.5 0 0015 15V5.5L11 1.5Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
@@ -79,8 +75,6 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M6 9.5h6M6 12.5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
     </svg>
   ),
-
-  // Invoices — receipt with dollar
   '/dashboard/invoices': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M3 2h12v13l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L3 15V2Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
@@ -88,8 +82,6 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M7 6.5C7 5.7 7.9 5 9 5s2 .7 2 1.5S10.1 8 9 8s-2 .8-2 1.5S7.9 11 9 11s2-.7 2-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
     </svg>
   ),
-
-  // Revenue — 3 bars rising + trend arrow
   '/dashboard/revenue': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <rect x="1" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.35"/>
@@ -99,28 +91,20 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M12 4h4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
-
-  // Schedule — clock, bold hands
   '/dashboard/schedule': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <circle cx="9" cy="9" r="7.5" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="2"/>
       <path d="M9 5V9.5L12 11.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
-
-  // QR codes — classic QR finder pattern
   '/dashboard/qrcodes': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      {/* top-left finder */}
       <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
       <rect x="3" y="3" width="2" height="2" fill="currentColor"/>
-      {/* top-right finder */}
       <rect x="11" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
       <rect x="13" y="3" width="2" height="2" fill="currentColor"/>
-      {/* bottom-left finder */}
       <rect x="1" y="11" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
       <rect x="3" y="13" width="2" height="2" fill="currentColor"/>
-      {/* bottom-right data dots */}
       <rect x="11" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
       <rect x="15" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
       <rect x="11" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
@@ -128,8 +112,6 @@ const icons: Record<string, React.ReactElement> = {
       <rect x="15" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
     </svg>
   ),
-
-  // Reports — line chart with dots
   '/dashboard/reports': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M1 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -140,8 +122,6 @@ const icons: Record<string, React.ReactElement> = {
       <circle cx="15.5" cy="10" r="1.5" fill="currentColor"/>
     </svg>
   ),
-
-  // Settings — bold gear
   '/dashboard/settings': (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path fillRule="evenodd" clipRule="evenodd" d="M9 12a3 3 0 100-6 3 3 0 000 6Z" fill="currentColor"/>
@@ -150,19 +130,28 @@ const icons: Record<string, React.ReactElement> = {
   ),
 }
 
-function NavItem({ href, label, active, router }: { href: string; label: string; active: boolean; router: any }) {
+function NavItem({ href, label, active, router, expanded }: { href: string; label: string; active: boolean; router: any; expanded: boolean }) {
   return (
     <div
       onClick={() => router.push(href)}
+      title={!expanded ? label : undefined}
       style={{
-        display: 'flex', alignItems: 'center', gap: '10px',
-        padding: '8px 10px', borderRadius: '9px', cursor: 'pointer',
-        fontSize: '13px', fontWeight: active ? '600' : '500',
+        display: 'flex',
+        alignItems: 'center',
+        gap: expanded ? '10px' : '0',
+        padding: expanded ? '8px 10px' : '8px 0',
+        justifyContent: expanded ? 'flex-start' : 'center',
+        borderRadius: '9px',
+        cursor: 'pointer',
+        fontSize: '13px',
+        fontWeight: active ? '600' : '500',
         color: active ? WHITE : TEXT2,
         background: active ? TEAL : 'transparent',
         marginBottom: '1px',
         boxShadow: active ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-        transition: 'background 0.12s, color 0.12s',
+        transition: 'background 0.12s, color 0.12s, padding 0.2s',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
       }}
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = BG }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
@@ -170,15 +159,27 @@ function NavItem({ href, label, active, router }: { href: string; label: string;
       <span style={{ color: active ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>
         {icons[href]}
       </span>
-      {label}
+      {expanded && (
+        <span style={{ opacity: expanded ? 1 : 0, transition: 'opacity 0.15s', overflow: 'hidden' }}>
+          {label}
+        </span>
+      )}
     </div>
   )
 }
 
-function SectionLabel({ label }: { label: string }) {
+function SectionLabel({ label, expanded }: { label: string; expanded: boolean }) {
   return (
-    <div style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '14px 10px 5px' }}>
-      {label}
+    <div style={{
+      fontSize: '10px', fontWeight: '700', color: TEXT3,
+      letterSpacing: '0.8px', textTransform: 'uppercase',
+      padding: expanded ? '14px 10px 5px' : '14px 0 5px',
+      textAlign: expanded ? 'left' : 'center',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      transition: 'padding 0.2s',
+    }}>
+      {expanded ? label : '·'}
     </div>
   )
 }
@@ -187,6 +188,7 @@ export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 768) }
@@ -228,22 +230,35 @@ export function Sidebar({ active }: { active: string }) {
   }
 
   return (
-    <div style={{
-      width: '224px', flexShrink: 0, background: WHITE,
-      borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      position: 'sticky', top: 0, height: '100vh',
-    }}>
-
+    <div
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+      style={{
+        width: expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
+        flexShrink: 0,
+        background: WHITE,
+        borderRight: `1px solid ${BORDER}`,
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)',
+        overflow: 'hidden',
+        zIndex: 50,
+        boxShadow: expanded ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
+      }}
+    >
       {/* HEADER */}
-      <div style={{ padding: '18px 16px 16px', borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img
-            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-            alt="Jobyra"
-            style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
-          />
-          <div>
+      <div style={{ padding: '18px 10px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px', minHeight: '72px', overflow: 'hidden' }}>
+        <img
+          src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+          alt="Jobyra"
+          style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+        />
+        {expanded && (
+          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
             {loading ? (
               <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
@@ -253,35 +268,29 @@ export function Sidebar({ active }: { active: string }) {
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* NAV */}
-      <div style={{ padding: '6px 8px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <SectionLabel label="Overview"/>
-        {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router}/>)}
+      <div style={{ padding: `6px ${expanded ? '8px' : '6px'}`, flex: 1, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', transition: 'padding 0.2s' }}>
+        <SectionLabel label="Overview" expanded={expanded}/>
+        {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
 
-        <SectionLabel label="Finance"/>
-        {navFinance.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router}/>)}
+        <SectionLabel label="Finance" expanded={expanded}/>
+        {navFinance.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
 
-        <SectionLabel label="Manage"/>
-        {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router}/>)}
+        <SectionLabel label="Manage" expanded={expanded}/>
+        {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
 
         <div style={{ flex: 1 }}/>
 
         {/* USER FOOTER */}
         <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: expanded ? '10px' : '0', padding: expanded ? '8px' : '8px 0', justifyContent: expanded ? 'flex-start' : 'center', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden', transition: 'padding 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.background = BG}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             {loading ? (
-              <>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  <div style={{ width: '90px', height: '10px', background: BG, borderRadius: '4px' }}/>
-                  <div style={{ width: '58px', height: '9px', background: BG, borderRadius: '4px' }}/>
-                </div>
-              </>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
             ) : (
               <>
                 {business?.logo_url ? (
@@ -291,20 +300,24 @@ export function Sidebar({ active }: { active: string }) {
                     {initials}
                   </div>
                 )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
-                    {business?.full_name || ''}
-                  </div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
-                    {business?.role_title || 'Owner'}
-                  </div>
-                </div>
-                <button onClick={e => { e.stopPropagation(); signOut() }}
-                  style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0, fontWeight: '500' }}
-                  onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                  onMouseLeave={e => e.currentTarget.style.color = TEXT3}>
-                  Sign out
-                </button>
+                {expanded && (
+                  <>
+                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+                        {business?.full_name || ''}
+                      </div>
+                      <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
+                        {business?.role_title || 'Owner'}
+                      </div>
+                    </div>
+                    <button onClick={e => { e.stopPropagation(); signOut() }}
+                      style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0, fontWeight: '500', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => e.currentTarget.style.color = TEXT}
+                      onMouseLeave={e => e.currentTarget.style.color = TEXT3}>
+                      Sign out
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
