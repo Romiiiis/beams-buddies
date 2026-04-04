@@ -130,6 +130,9 @@ const icons: Record<string, React.ReactElement> = {
   ),
 }
 
+const TRANSITION = 'width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)'
+const PADDING_TRANSITION = 'padding 0.35s cubic-bezier(0.25,0.46,0.45,0.94)'
+
 function NavItem({ href, label, active, router, expanded }: { href: string; label: string; active: boolean; router: any; expanded: boolean }) {
   return (
     <div
@@ -149,7 +152,7 @@ function NavItem({ href, label, active, router, expanded }: { href: string; labe
         background: active ? TEAL : 'transparent',
         marginBottom: '1px',
         boxShadow: active ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-        transition: 'background 0.12s, color 0.12s, padding 0.2s',
+        transition: `background 0.12s, color 0.12s, ${PADDING_TRANSITION}, gap 0.35s cubic-bezier(0.25,0.46,0.45,0.94)`,
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
@@ -159,11 +162,14 @@ function NavItem({ href, label, active, router, expanded }: { href: string; labe
       <span style={{ color: active ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>
         {icons[href]}
       </span>
-      {expanded && (
-        <span style={{ opacity: expanded ? 1 : 0, transition: 'opacity 0.15s', overflow: 'hidden' }}>
-          {label}
-        </span>
-      )}
+      <span style={{
+        opacity: expanded ? 1 : 0,
+        maxWidth: expanded ? '200px' : '0',
+        transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+        overflow: 'hidden',
+      }}>
+        {label}
+      </span>
     </div>
   )
 }
@@ -171,15 +177,25 @@ function NavItem({ href, label, active, router, expanded }: { href: string; labe
 function SectionLabel({ label, expanded }: { label: string; expanded: boolean }) {
   return (
     <div style={{
-      fontSize: '10px', fontWeight: '700', color: TEXT3,
-      letterSpacing: '0.8px', textTransform: 'uppercase',
+      fontSize: '10px',
+      fontWeight: '700',
+      color: TEXT3,
+      letterSpacing: '0.8px',
+      textTransform: 'uppercase',
       padding: expanded ? '14px 10px 5px' : '14px 0 5px',
       textAlign: expanded ? 'left' : 'center',
       overflow: 'hidden',
       whiteSpace: 'nowrap',
-      transition: 'padding 0.2s',
+      transition: PADDING_TRANSITION,
     }}>
-      {expanded ? label : '·'}
+      <span style={{
+        opacity: expanded ? 1 : 0,
+        transition: 'opacity 0.2s ease',
+        display: expanded ? 'inline' : 'none',
+      }}>
+        {label}
+      </span>
+      {!expanded && <span style={{ opacity: 0.4 }}>·</span>}
     </div>
   )
 }
@@ -244,51 +260,89 @@ export function Sidebar({ active }: { active: string }) {
         position: 'sticky',
         top: 0,
         height: '100vh',
-        transition: 'width 0.22s cubic-bezier(0.4,0,0.2,1)',
+        transition: TRANSITION,
         overflow: 'hidden',
         zIndex: 50,
-        boxShadow: expanded ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
+        boxShadow: expanded ? '4px 0 24px rgba(0,0,0,0.07)' : 'none',
       }}
     >
       {/* HEADER */}
-      <div style={{ padding: '18px 10px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px', minHeight: '72px', overflow: 'hidden' }}>
+      <div style={{
+        padding: '18px 10px 16px',
+        borderBottom: `1px solid ${BORDER}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        minHeight: '72px',
+        overflow: 'hidden',
+      }}>
         <img
           src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
           alt="Jobyra"
           style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
         />
-        {expanded && (
-          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            {loading ? (
-              <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
-            ) : (
-              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: '600' }}>
-                {business?.name || 'Trade CRM'}
-              </div>
-            )}
-          </div>
-        )}
+        <div style={{
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          opacity: expanded ? 1 : 0,
+          maxWidth: expanded ? '160px' : '0',
+          transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+        }}>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
+          {loading ? (
+            <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
+          ) : (
+            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: '600' }}>
+              {business?.name || 'Trade CRM'}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* NAV */}
-      <div style={{ padding: `6px ${expanded ? '8px' : '6px'}`, flex: 1, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', transition: 'padding 0.2s' }}>
+      <div style={{
+        padding: `6px ${expanded ? '8px' : '6px'}`,
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: PADDING_TRANSITION,
+      }}>
         <SectionLabel label="Overview" expanded={expanded}/>
-        {navMain.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
+        {navMain.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
+        ))}
 
         <SectionLabel label="Finance" expanded={expanded}/>
-        {navFinance.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
+        {navFinance.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
+        ))}
 
         <SectionLabel label="Manage" expanded={expanded}/>
-        {navManage.map(item => <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>)}
+        {navManage.map(item => (
+          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
+        ))}
 
         <div style={{ flex: 1 }}/>
 
         {/* USER FOOTER */}
         <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: expanded ? '10px' : '0', padding: expanded ? '8px' : '8px 0', justifyContent: expanded ? 'flex-start' : 'center', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden', transition: 'padding 0.2s' }}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: expanded ? '10px' : '0',
+              padding: expanded ? '8px' : '8px 0',
+              justifyContent: expanded ? 'flex-start' : 'center',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              transition: `${PADDING_TRANSITION}, gap 0.35s cubic-bezier(0.25,0.46,0.45,0.94)`,
+            }}
             onMouseEnter={e => e.currentTarget.style.background = BG}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
             {loading ? (
               <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
             ) : (
@@ -300,24 +354,38 @@ export function Sidebar({ active }: { active: string }) {
                     {initials}
                   </div>
                 )}
-                {expanded && (
-                  <>
-                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                      <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
-                        {business?.full_name || ''}
-                      </div>
-                      <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
-                        {business?.role_title || 'Owner'}
-                      </div>
-                    </div>
-                    <button onClick={e => { e.stopPropagation(); signOut() }}
-                      style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0, fontWeight: '500', whiteSpace: 'nowrap' }}
-                      onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                      onMouseLeave={e => e.currentTarget.style.color = TEXT3}>
-                      Sign out
-                    </button>
-                  </>
-                )}
+                <div style={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  opacity: expanded ? 1 : 0,
+                  maxWidth: expanded ? '120px' : '0',
+                  transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                }}>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+                    {business?.full_name || ''}
+                  </div>
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
+                    {business?.role_title || 'Owner'}
+                  </div>
+                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); signOut() }}
+                  style={{
+                    fontSize: '11px', color: TEXT3, background: 'none', border: 'none',
+                    cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0,
+                    fontWeight: '500', whiteSpace: 'nowrap',
+                    opacity: expanded ? 1 : 0,
+                    maxWidth: expanded ? '60px' : '0',
+                    overflow: 'hidden',
+                    transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = TEXT}
+                  onMouseLeave={e => e.currentTarget.style.color = TEXT3}
+                >
+                  Sign out
+                </button>
               </>
             )}
           </div>
