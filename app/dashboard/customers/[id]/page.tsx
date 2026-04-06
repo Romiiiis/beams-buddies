@@ -107,12 +107,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       // Step 1: get all job IDs
       const { data: jobData, error: jobFetchError } = await supabase
         .from('jobs').select('id').eq('customer_id', id)
-      
       if (jobFetchError) throw new Error(`Fetch jobs: ${jobFetchError.message}`)
-      
+
       const jobIds = jobData?.map(j => j.id) || []
 
-      // Step 2: delete service_records for those jobs
+      // Step 2: delete child records of jobs
       if (jobIds.length > 0) {
         const { error: srError } = await supabase
           .from('service_records').delete().in('job_id', jobIds)
@@ -120,25 +119,34 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
         const { error: rcJobError } = await supabase
           .from('review_clicks').delete().in('job_id', jobIds)
-        if (rcJobError) throw new Error(`Delete review_clicks (job): ${rcJobError.message}`)
+        if (rcJobError) throw new Error(`Delete review_clicks (by job): ${rcJobError.message}`)
       }
 
       // Step 3: delete review_clicks by customer_id
       const { error: rcError } = await supabase
         .from('review_clicks').delete().eq('customer_id', id)
-      if (rcError) throw new Error(`Delete review_clicks (customer): ${rcError.message}`)
+      if (rcError) throw new Error(`Delete review_clicks (by customer): ${rcError.message}`)
 
-      // Step 4: delete jobs
+      // Step 4: delete invoices linked to customer
+      const { error: invError } = await supabase
+        .from('invoices').delete().eq('customer_id', id)
+      if (invError) throw new Error(`Delete invoices: ${invError.message}`)
+
+      // Step 5: delete quotes linked to customer
+      const { error: quoteError } = await supabase
+        .from('quotes').delete().eq('customer_id', id)
+      if (quoteError) throw new Error(`Delete quotes: ${quoteError.message}`)
+
+      // Step 6: delete jobs
       const { error: jobsError } = await supabase
         .from('jobs').delete().eq('customer_id', id)
       if (jobsError) throw new Error(`Delete jobs: ${jobsError.message}`)
 
-      // Step 5: delete customer
+      // Step 7: delete customer
       const { error: customerError } = await supabase
         .from('customers').delete().eq('id', id)
       if (customerError) throw new Error(`Delete customer: ${customerError.message}`)
 
-      // Success — navigate away
       router.push('/dashboard/customers')
 
     } catch (err: any) {
@@ -169,15 +177,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     border: `1px solid ${BORDER}`, background: WHITE, color: TEXT,
     fontFamily: 'inherit', fontSize: '14px', outline: 'none',
   }
-  const lbl: React.CSSProperties = { fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block', fontWeight: '500' }
+  const lbl: React.CSSProperties = {
+    fontSize: '12px', color: TEXT3, marginBottom: '4px', display: 'block', fontWeight: '500',
+  }
   const pad = isMobile ? '16px' : '32px'
-
   const card: React.CSSProperties = {
-    background: WHITE,
-    border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-    overflow: 'hidden',
+    background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)', overflow: 'hidden',
   }
 
   if (loading) return (
@@ -199,11 +205,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         <div style={{
           background: '#33B5AC',
           padding: isMobile ? '24px 16px 22px' : `32px ${pad} 28px`,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
+          display: 'flex', flexDirection: isMobile ? 'column' : 'row',
           alignItems: isMobile ? 'flex-start' : 'flex-end',
-          justifyContent: 'space-between',
-          gap: '16px',
+          justifyContent: 'space-between', gap: '16px',
         }}>
           <div>
             <div style={{ marginBottom: '8px' }}>
@@ -246,6 +250,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           {/* LEFT PANEL */}
           <div style={{ width: isMobile ? '100%' : '268px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
+            {/* Contact details */}
             <div style={card}>
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
@@ -259,7 +264,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   </button>
                 )}
               </div>
-
               {!editingCustomer ? (
                 <div>
                   {[
@@ -298,6 +302,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
+            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
                 { label: 'Units installed', value: jobs.length },
@@ -311,6 +316,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
 
+            {/* Review activity */}
             {reviewClicks.length > 0 && (
               <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
@@ -473,7 +479,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This cannot be undone.
               </div>
               {deleteError && (
-                <div style={{ marginTop: '12px', padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', fontSize: '13px', color: '#B91C1C' }}>
+                <div style={{ marginTop: '14px', padding: '12px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', fontSize: '13px', color: '#B91C1C', fontWeight: '500' }}>
                   {deleteError}
                 </div>
               )}
