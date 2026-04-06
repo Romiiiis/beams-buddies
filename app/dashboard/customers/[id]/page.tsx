@@ -36,6 +36,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState(false)
   const [editingJobId, setEditingJobId] = useState<string | null>(null)
   const [customerForm, setCustomerForm] = useState<any>({})
@@ -94,6 +96,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+  }
+
+  async function deleteCustomer() {
+    setDeleting(true)
+    await supabase.from('jobs').delete().eq('customer_id', id)
+    await supabase.from('customers').delete().eq('id', id)
+    router.push('/dashboard/customers')
   }
 
   function setJobField(jobId: string, field: string, value: any) {
@@ -168,10 +177,16 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               {customer.suburb ? ` · ${customer.suburb}` : ''}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
             {saved && (
               <span style={{ fontSize: '12px', color: WHITE, fontWeight: '600', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px' }}>✓ Saved</span>
             )}
+            <button onClick={() => setShowDeleteConfirm(true)}
+              style={{ height: '38px', padding: '0 16px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.35)', background: 'rgba(239,68,68,0.15)', color: WHITE, fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.32)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}>
+              Delete customer
+            </button>
             <button onClick={() => router.push('/dashboard/jobs')}
               style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: '7px' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
@@ -403,6 +418,32 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </div>
+
+      {/* DELETE CONFIRM MODAL */}
+      {showDeleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '420px', border: `1px solid ${BORDER}`, boxShadow: '0 20px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+            <div style={{ height: '4px', background: '#EF4444' }} />
+            <div style={{ padding: '24px 24px 20px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>Danger zone</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: TEXT, marginBottom: '10px' }}>Delete {customer.first_name} {customer.last_name}?</div>
+              <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
+                This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This action cannot be undone.
+              </div>
+            </div>
+            <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
+              <button onClick={() => setShowDeleteConfirm(false)}
+                style={{ flex: 1, height: '42px', borderRadius: '9px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+                Cancel
+              </button>
+              <button onClick={deleteCustomer} disabled={deleting}
+                style={{ flex: 1, height: '42px', borderRadius: '9px', border: 'none', background: '#EF4444', color: WHITE, fontSize: '14px', fontWeight: '700', cursor: deleting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: deleting ? 0.7 : 1 }}>
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
