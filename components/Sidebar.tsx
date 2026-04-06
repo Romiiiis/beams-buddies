@@ -130,84 +130,10 @@ const icons: Record<string, React.ReactElement> = {
   ),
 }
 
-const EASE = 'cubic-bezier(0.4,0,0.2,1)'
-const TRANSITION = `width 0.2s ${EASE}`
-const PADDING_TRANSITION = `padding 0.2s ${EASE}`
-const CONTENT_TRANSITION = `opacity 0.15s ease, max-width 0.2s ${EASE}`
-const GAP_TRANSITION = `gap 0.2s ${EASE}`
-
-function NavItem({ href, label, active, router, expanded }: { href: string; label: string; active: boolean; router: any; expanded: boolean }) {
-  return (
-    <div
-      onClick={() => router.push(href)}
-      title={!expanded ? label : undefined}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: expanded ? '10px' : '0',
-        padding: expanded ? '8px 10px' : '8px 0',
-        justifyContent: expanded ? 'flex-start' : 'center',
-        borderRadius: '9px',
-        cursor: 'pointer',
-        fontSize: '13px',
-        fontWeight: active ? '600' : '500',
-        color: active ? WHITE : TEXT2,
-        background: active ? TEAL : 'transparent',
-        marginBottom: '1px',
-        boxShadow: active ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-        transition: `background 0.12s, color 0.12s, ${PADDING_TRANSITION}, ${GAP_TRANSITION}`,
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-      }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = BG }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-    >
-      <span style={{ color: active ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>
-        {icons[href]}
-      </span>
-      <span style={{
-        opacity: expanded ? 1 : 0,
-        maxWidth: expanded ? '200px' : '0',
-        transition: CONTENT_TRANSITION,
-        overflow: 'hidden',
-      }}>
-        {label}
-      </span>
-    </div>
-  )
-}
-
-function SectionLabel({ label, expanded }: { label: string; expanded: boolean }) {
-  return (
-    <div style={{
-      fontSize: '10px',
-      fontWeight: '700',
-      color: TEXT3,
-      letterSpacing: '0.8px',
-      textTransform: 'uppercase',
-      padding: expanded ? '14px 10px 5px' : '14px 0 5px',
-      textAlign: expanded ? 'left' : 'center',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      transition: PADDING_TRANSITION,
-    }}>
-      <span style={{
-        opacity: expanded ? 1 : 0,
-        transition: 'opacity 0.15s ease',
-        display: expanded ? 'inline' : 'none',
-      }}>
-        {label}
-      </span>
-      {!expanded && <span style={{ opacity: 0.4 }}>·</span>}
-    </div>
-  )
-}
-
 export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
-  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 768) }
@@ -227,173 +153,317 @@ export function Sidebar({ active }: { active: string }) {
 
   if (isMobile) {
     return (
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: WHITE, borderTop: `1px solid ${BORDER}`,
-        display: 'flex', alignItems: 'stretch',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
-      }}>
-        {bottomTabs.map(tab => {
-          const isActive = tab.href === active
-          return (
-            <div key={tab.href} onClick={() => router.push(tab.href)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px 8px', cursor: 'pointer', gap: '4px', color: isActive ? TEAL : TEXT3 }}>
-              <span style={{ display: 'flex', color: isActive ? TEAL : TEXT3 }}>{icons[tab.href]}</span>
-              <span style={{ fontSize: '10px', fontWeight: isActive ? '700' : '400' }}>{tab.label}</span>
-            </div>
-          )
-        })}
-      </div>
+      <>
+        <style>{`
+          .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 4px 8px; cursor: pointer; gap: 4px; }
+        `}</style>
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+          background: WHITE, borderTop: `1px solid ${BORDER}`,
+          display: 'flex', alignItems: 'stretch',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
+        }}>
+          {bottomTabs.map(tab => {
+            const isActive = tab.href === active
+            return (
+              <div key={tab.href} onClick={() => router.push(tab.href)} className="mobile-tab"
+                style={{ color: isActive ? TEAL : TEXT3 }}>
+                <span style={{ display: 'flex', color: isActive ? TEAL : TEXT3 }}>{icons[tab.href]}</span>
+                <span style={{ fontSize: '10px', fontWeight: isActive ? '700' : '400' }}>{tab.label}</span>
+              </div>
+            )
+          })}
+        </div>
+      </>
     )
   }
 
+  const css = `
+    .jobyra-sidebar {
+      width: ${SIDEBAR_COLLAPSED}px;
+      transition: width 0.2s cubic-bezier(0.4,0,0.2,1),
+                  box-shadow 0.2s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: none;
+    }
+    .jobyra-sidebar:hover {
+      width: ${SIDEBAR_EXPANDED}px;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.07);
+    }
+
+    /* Label text */
+    .jobyra-sidebar .nav-label {
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+    }
+    .jobyra-sidebar:hover .nav-label {
+      opacity: 1;
+      max-width: 200px;
+    }
+
+    /* Nav item padding & gap */
+    .jobyra-sidebar .nav-item {
+      padding: 8px 0;
+      justify-content: center;
+      gap: 0;
+      transition: background 0.12s, padding 0.2s cubic-bezier(0.4,0,0.2,1), gap 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jobyra-sidebar:hover .nav-item {
+      padding: 8px 10px;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+    .jobyra-sidebar .nav-item:hover:not(.nav-active) {
+      background: ${BG};
+    }
+
+    /* Section labels */
+    .jobyra-sidebar .section-label {
+      padding: 14px 0 5px;
+      text-align: center;
+      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jobyra-sidebar:hover .section-label {
+      padding: 14px 10px 5px;
+      text-align: left;
+    }
+    .jobyra-sidebar .section-dot { opacity: 0.4; }
+    .jobyra-sidebar .section-text { display: none; }
+    .jobyra-sidebar:hover .section-dot { display: none; }
+    .jobyra-sidebar:hover .section-text { display: inline; }
+
+    /* Header text */
+    .jobyra-sidebar .header-text {
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jobyra-sidebar:hover .header-text {
+      opacity: 1;
+      max-width: 160px;
+    }
+
+    /* Nav padding */
+    .jobyra-sidebar .nav-body {
+      padding: 6px 6px;
+      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jobyra-sidebar:hover .nav-body {
+      padding: 6px 8px;
+    }
+
+    /* Footer */
+    .jobyra-sidebar .footer-row {
+      padding: 8px 0;
+      justify-content: center;
+      gap: 0;
+      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1), gap 0.2s cubic-bezier(0.4,0,0.2,1), background 0.12s;
+    }
+    .jobyra-sidebar:hover .footer-row {
+      padding: 8px;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+    .jobyra-sidebar .footer-row:hover {
+      background: ${BG};
+    }
+    .jobyra-sidebar .footer-text {
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
+      flex: 1;
+      min-width: 0;
+    }
+    .jobyra-sidebar:hover .footer-text {
+      opacity: 1;
+      max-width: 120px;
+    }
+    .jobyra-sidebar .signout-btn {
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jobyra-sidebar:hover .signout-btn {
+      opacity: 1;
+      max-width: 60px;
+    }
+  `
+
   return (
-    <div
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-      style={{
-        width: expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
-        flexShrink: 0,
-        background: WHITE,
-        borderRight: `1px solid ${BORDER}`,
-        display: 'flex',
-        flexDirection: 'column',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        transition: TRANSITION,
-        overflow: 'hidden',
-        zIndex: 50,
-        boxShadow: expanded ? '4px 0 24px rgba(0,0,0,0.07)' : 'none',
-      }}
-    >
-      {/* HEADER */}
-      <div style={{
-        padding: '18px 10px 16px',
-        borderBottom: `1px solid ${BORDER}`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        minHeight: '72px',
-        overflow: 'hidden',
-      }}>
-        <img
-          src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-          alt="Jobyra"
-          style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
-        />
-        <div style={{
+    <>
+      <style>{css}</style>
+      <div
+        className="jobyra-sidebar"
+        style={{
+          flexShrink: 0,
+          background: WHITE,
+          borderRight: `1px solid ${BORDER}`,
+          display: 'flex',
+          flexDirection: 'column',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
           overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          opacity: expanded ? 1 : 0,
-          maxWidth: expanded ? '160px' : '0',
-          transition: CONTENT_TRANSITION,
+          zIndex: 50,
+        }}
+      >
+        {/* HEADER */}
+        <div style={{
+          padding: '18px 10px 16px',
+          borderBottom: `1px solid ${BORDER}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          minHeight: '72px',
+          overflow: 'hidden',
         }}>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-          {loading ? (
-            <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
-          ) : (
-            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: '600' }}>
-              {business?.name || 'Trade CRM'}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* NAV */}
-      <div style={{
-        padding: `6px ${expanded ? '8px' : '6px'}`,
-        flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: PADDING_TRANSITION,
-      }}>
-        <SectionLabel label="Overview" expanded={expanded}/>
-        {navMain.map(item => (
-          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
-        ))}
-
-        <SectionLabel label="Finance" expanded={expanded}/>
-        {navFinance.map(item => (
-          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
-        ))}
-
-        <SectionLabel label="Manage" expanded={expanded}/>
-        {navManage.map(item => (
-          <NavItem key={item.href} href={item.href} label={item.label} active={item.href === active} router={router} expanded={expanded}/>
-        ))}
-
-        <div style={{ flex: 1 }}/>
-
-        {/* USER FOOTER */}
-        <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: expanded ? '10px' : '0',
-              padding: expanded ? '8px' : '8px 0',
-              justifyContent: expanded ? 'flex-start' : 'center',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              overflow: 'hidden',
-              transition: `${PADDING_TRANSITION}, ${GAP_TRANSITION}`,
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = BG}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
+          <img
+            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+            alt="Jobyra"
+            style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+          />
+          <div className="header-text">
+            <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
             {loading ? (
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
+              <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
             ) : (
-              <>
-                {business?.logo_url ? (
-                  <img src={business.logo_url} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0, border: `1px solid ${BORDER}` }}/>
-                ) : (
-                  <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: `linear-gradient(135deg, #33B5AC, ${TEAL_DARK})`, color: WHITE, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0 }}>
-                    {initials}
-                  </div>
-                )}
-                <div style={{
-                  flex: 1,
-                  minWidth: 0,
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  opacity: expanded ? 1 : 0,
-                  maxWidth: expanded ? '120px' : '0',
-                  transition: CONTENT_TRANSITION,
-                }}>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
-                    {business?.full_name || ''}
-                  </div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>
-                    {business?.role_title || 'Owner'}
-                  </div>
-                </div>
-                <button
-                  onClick={e => { e.stopPropagation(); signOut() }}
-                  style={{
-                    fontSize: '11px', color: TEXT3, background: 'none', border: 'none',
-                    cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0,
-                    fontWeight: '500', whiteSpace: 'nowrap',
-                    opacity: expanded ? 1 : 0,
-                    maxWidth: expanded ? '60px' : '0',
-                    overflow: 'hidden',
-                    transition: CONTENT_TRANSITION,
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                  onMouseLeave={e => e.currentTarget.style.color = TEXT3}
-                >
-                  Sign out
-                </button>
-              </>
+              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: '600' }}>
+                {business?.name || 'Trade CRM'}
+              </div>
             )}
           </div>
         </div>
+
+        {/* NAV */}
+        <div className="nav-body" style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* Overview */}
+          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <span className="section-dot">·</span>
+            <span className="section-text">Overview</span>
+          </div>
+          {navMain.map(item => {
+            const isActive = item.href === active
+            return (
+              <div key={item.href} onClick={() => router.push(item.href)}
+                className={`nav-item${isActive ? ' nav-active' : ''}`}
+                title={item.label}
+                style={{
+                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  color: isActive ? WHITE : TEXT2,
+                  background: isActive ? TEAL : 'transparent',
+                  marginBottom: '1px',
+                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
+                  overflow: 'hidden', whiteSpace: 'nowrap',
+                }}>
+                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                <span className="nav-label">{item.label}</span>
+              </div>
+            )
+          })}
+
+          {/* Finance */}
+          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <span className="section-dot">·</span>
+            <span className="section-text">Finance</span>
+          </div>
+          {navFinance.map(item => {
+            const isActive = item.href === active
+            return (
+              <div key={item.href} onClick={() => router.push(item.href)}
+                className={`nav-item${isActive ? ' nav-active' : ''}`}
+                title={item.label}
+                style={{
+                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  color: isActive ? WHITE : TEXT2,
+                  background: isActive ? TEAL : 'transparent',
+                  marginBottom: '1px',
+                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
+                  overflow: 'hidden', whiteSpace: 'nowrap',
+                }}>
+                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                <span className="nav-label">{item.label}</span>
+              </div>
+            )
+          })}
+
+          {/* Manage */}
+          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <span className="section-dot">·</span>
+            <span className="section-text">Manage</span>
+          </div>
+          {navManage.map(item => {
+            const isActive = item.href === active
+            return (
+              <div key={item.href} onClick={() => router.push(item.href)}
+                className={`nav-item${isActive ? ' nav-active' : ''}`}
+                title={item.label}
+                style={{
+                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  color: isActive ? WHITE : TEXT2,
+                  background: isActive ? TEAL : 'transparent',
+                  marginBottom: '1px',
+                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
+                  overflow: 'hidden', whiteSpace: 'nowrap',
+                }}>
+                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                <span className="nav-label">{item.label}</span>
+              </div>
+            )
+          })}
+
+          <div style={{ flex: 1 }}/>
+
+          {/* USER FOOTER */}
+          <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
+            <div className="footer-row" style={{ display: 'flex', alignItems: 'center', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden' }}>
+              {loading ? (
+                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
+              ) : (
+                <>
+                  {business?.logo_url ? (
+                    <img src={business.logo_url} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0, border: `1px solid ${BORDER}` }}/>
+                  ) : (
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: `linear-gradient(135deg, #33B5AC, ${TEAL_DARK})`, color: WHITE, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0 }}>
+                      {initials}
+                    </div>
+                  )}
+                  <div className="footer-text">
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>{business?.full_name || ''}</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>{business?.role_title || 'Owner'}</div>
+                  </div>
+                  <button
+                    className="signout-btn"
+                    onClick={e => { e.stopPropagation(); signOut() }}
+                    style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0, fontWeight: '500', whiteSpace: 'nowrap' }}
+                    onMouseEnter={e => e.currentTarget.style.color = TEXT}
+                    onMouseLeave={e => e.currentTarget.style.color = TEXT3}
+                  >
+                    Sign out
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
