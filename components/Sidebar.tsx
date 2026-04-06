@@ -130,8 +130,11 @@ const icons: Record<string, React.ReactElement> = {
   ),
 }
 
-const TRANSITION = 'width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)'
-const PADDING_TRANSITION = 'padding 0.35s cubic-bezier(0.25,0.46,0.45,0.94)'
+const EASE = 'cubic-bezier(0.4,0,0.2,1)'
+const TRANSITION = `width 0.2s ${EASE}`
+const PADDING_TRANSITION = `padding 0.2s ${EASE}`
+const CONTENT_TRANSITION = `opacity 0.15s ease, max-width 0.2s ${EASE}`
+const GAP_TRANSITION = `gap 0.2s ${EASE}`
 
 function NavItem({ href, label, active, router, expanded }: { href: string; label: string; active: boolean; router: any; expanded: boolean }) {
   return (
@@ -152,7 +155,7 @@ function NavItem({ href, label, active, router, expanded }: { href: string; labe
         background: active ? TEAL : 'transparent',
         marginBottom: '1px',
         boxShadow: active ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-        transition: `background 0.12s, color 0.12s, ${PADDING_TRANSITION}, gap 0.35s cubic-bezier(0.25,0.46,0.45,0.94)`,
+        transition: `background 0.12s, color 0.12s, ${PADDING_TRANSITION}, ${GAP_TRANSITION}`,
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
@@ -165,7 +168,7 @@ function NavItem({ href, label, active, router, expanded }: { href: string; labe
       <span style={{
         opacity: expanded ? 1 : 0,
         maxWidth: expanded ? '200px' : '0',
-        transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+        transition: CONTENT_TRANSITION,
         overflow: 'hidden',
       }}>
         {label}
@@ -190,7 +193,7 @@ function SectionLabel({ label, expanded }: { label: string; expanded: boolean })
     }}>
       <span style={{
         opacity: expanded ? 1 : 0,
-        transition: 'opacity 0.2s ease',
+        transition: 'opacity 0.15s ease',
         display: expanded ? 'inline' : 'none',
       }}>
         {label}
@@ -286,7 +289,7 @@ export function Sidebar({ active }: { active: string }) {
           whiteSpace: 'nowrap',
           opacity: expanded ? 1 : 0,
           maxWidth: expanded ? '160px' : '0',
-          transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+          transition: CONTENT_TRANSITION,
         }}>
           <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
           {loading ? (
@@ -338,7 +341,7 @@ export function Sidebar({ active }: { active: string }) {
               borderRadius: '10px',
               cursor: 'pointer',
               overflow: 'hidden',
-              transition: `${PADDING_TRANSITION}, gap 0.35s cubic-bezier(0.25,0.46,0.45,0.94)`,
+              transition: `${PADDING_TRANSITION}, ${GAP_TRANSITION}`,
             }}
             onMouseEnter={e => e.currentTarget.style.background = BG}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -361,7 +364,7 @@ export function Sidebar({ active }: { active: string }) {
                   whiteSpace: 'nowrap',
                   opacity: expanded ? 1 : 0,
                   maxWidth: expanded ? '120px' : '0',
-                  transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                  transition: CONTENT_TRANSITION,
                 }}>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
                     {business?.full_name || ''}
@@ -379,7 +382,7 @@ export function Sidebar({ active }: { active: string }) {
                     opacity: expanded ? 1 : 0,
                     maxWidth: expanded ? '60px' : '0',
                     overflow: 'hidden',
-                    transition: 'opacity 0.2s ease, max-width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                    transition: CONTENT_TRANSITION,
                   }}
                   onMouseEnter={e => e.currentTarget.style.color = TEXT}
                   onMouseLeave={e => e.currentTarget.style.color = TEXT3}
