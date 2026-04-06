@@ -38,6 +38,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [saved, setSaved] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [editingCustomer, setEditingCustomer] = useState(false)
   const [editingJobId, setEditingJobId] = useState<string | null>(null)
   const [customerForm, setCustomerForm] = useState<any>({})
@@ -100,21 +101,51 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   async function deleteCustomer() {
     setDeleting(true)
+    setDeleteError('')
 
-    // Get all job IDs first
-    const { data: jobData } = await supabase.from('jobs').select('id').eq('customer_id', id)
-    const jobIds = jobData?.map(j => j.id) || []
+    try {
+      // Step 1: get all job IDs
+      const { data: jobData, error: jobFetchError } = await supabase
+        .from('jobs').select('id').eq('customer_id', id)
+      
+      if (jobFetchError) throw new Error(`Fetch jobs: ${jobFetchError.message}`)
+      
+      const jobIds = jobData?.map(j => j.id) || []
 
-    // Delete in dependency order
-    if (jobIds.length > 0) {
-      await supabase.from('service_records').delete().in('job_id', jobIds)
-      await supabase.from('review_clicks').delete().in('job_id', jobIds)
+      // Step 2: delete service_records for those jobs
+      if (jobIds.length > 0) {
+        const { error: srError } = await supabase
+          .from('service_records').delete().in('job_id', jobIds)
+        if (srError) throw new Error(`Delete service_records: ${srError.message}`)
+
+        const { error: rcJobError } = await supabase
+          .from('review_clicks').delete().in('job_id', jobIds)
+        if (rcJobError) throw new Error(`Delete review_clicks (job): ${rcJobError.message}`)
+      }
+
+      // Step 3: delete review_clicks by customer_id
+      const { error: rcError } = await supabase
+        .from('review_clicks').delete().eq('customer_id', id)
+      if (rcError) throw new Error(`Delete review_clicks (customer): ${rcError.message}`)
+
+      // Step 4: delete jobs
+      const { error: jobsError } = await supabase
+        .from('jobs').delete().eq('customer_id', id)
+      if (jobsError) throw new Error(`Delete jobs: ${jobsError.message}`)
+
+      // Step 5: delete customer
+      const { error: customerError } = await supabase
+        .from('customers').delete().eq('id', id)
+      if (customerError) throw new Error(`Delete customer: ${customerError.message}`)
+
+      // Success — navigate away
+      router.push('/dashboard/customers')
+
+    } catch (err: any) {
+      console.error('Delete failed:', err.message)
+      setDeleteError(err.message)
+      setDeleting(false)
     }
-    await supabase.from('review_clicks').delete().eq('customer_id', id)
-    await supabase.from('jobs').delete().eq('customer_id', id)
-    await supabase.from('customers').delete().eq('id', id)
-
-    router.push('/dashboard/customers')
   }
 
   function setJobField(jobId: string, field: string, value: any) {
@@ -215,7 +246,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           {/* LEFT PANEL */}
           <div style={{ width: isMobile ? '100%' : '268px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-            {/* Contact details */}
             <div style={card}>
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
@@ -268,7 +298,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
-            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
                 { label: 'Units installed', value: jobs.length },
@@ -282,7 +311,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
 
-            {/* Review activity */}
             {reviewClicks.length > 0 && (
               <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
@@ -444,9 +472,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
                 This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This cannot be undone.
               </div>
+              {deleteError && (
+                <div style={{ marginTop: '12px', padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', fontSize: '13px', color: '#B91C1C' }}>
+                  {deleteError}
+                </div>
+              )}
             </div>
             <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
-              <button onClick={() => setShowDeleteConfirm(false)}
+              <button onClick={() => { setShowDeleteConfirm(false); setDeleteError('') }}
                 style={{ flex: 1, height: '42px', borderRadius: '9px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '14px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Cancel
               </button>
