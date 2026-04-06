@@ -100,8 +100,20 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   async function deleteCustomer() {
     setDeleting(true)
+
+    // Get all job IDs first
+    const { data: jobData } = await supabase.from('jobs').select('id').eq('customer_id', id)
+    const jobIds = jobData?.map(j => j.id) || []
+
+    // Delete in dependency order
+    if (jobIds.length > 0) {
+      await supabase.from('service_records').delete().in('job_id', jobIds)
+      await supabase.from('review_clicks').delete().in('job_id', jobIds)
+    }
+    await supabase.from('review_clicks').delete().eq('customer_id', id)
     await supabase.from('jobs').delete().eq('customer_id', id)
     await supabase.from('customers').delete().eq('id', id)
+
     router.push('/dashboard/customers')
   }
 
@@ -426,9 +438,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             <div style={{ height: '4px', background: '#EF4444' }} />
             <div style={{ padding: '24px 24px 20px' }}>
               <div style={{ fontSize: '11px', fontWeight: '700', color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>Danger zone</div>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: TEXT, marginBottom: '10px' }}>Delete {customer.first_name} {customer.last_name}?</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: TEXT, marginBottom: '10px' }}>
+                Delete {customer.first_name} {customer.last_name}?
+              </div>
               <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
-                This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This action cannot be undone.
+                This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This cannot be undone.
               </div>
             </div>
             <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
