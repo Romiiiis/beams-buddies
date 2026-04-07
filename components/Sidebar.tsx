@@ -45,10 +45,26 @@ const bottomTabs = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
+const iconBase = {
+  width: 20,
+  height: 20,
+  viewBox: '0 0 24 24',
+  fill: 'none' as const,
+  stroke: 'currentColor',
+  strokeWidth: 1.9,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+  style: {
+    display: 'block',
+    flexShrink: 0,
+    overflow: 'visible',
+    vectorEffect: 'non-scaling-stroke' as const,
+  },
+}
+
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <rect x="3" y="3" width="7" height="7" rx="2.2"/>
       <rect x="14" y="3" width="7" height="11" rx="2.2"/>
       <rect x="3" y="14" width="7" height="7" rx="2.2"/>
@@ -56,8 +72,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/customers': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <circle cx="12" cy="8" r="3.2"/>
       <path d="M6.5 18c.8-2.6 3-4 5.5-4s4.7 1.4 5.5 4"/>
       <circle cx="5.5" cy="9.5" r="2.2" opacity="0.55"/>
@@ -67,8 +82,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/leads': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <circle cx="12" cy="12" r="7"/>
       <circle cx="12" cy="12" r="3"/>
       <line x1="12" y1="2.5" x2="12" y2="5"/>
@@ -78,8 +92,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/jobs': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M14 3H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/>
       <path d="M14 3v4h4"/>
       <path d="M9 9h6"/>
@@ -90,8 +103,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/quotes': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/>
       <path d="M14 3v5h5"/>
       <path d="M9 12h6"/>
@@ -99,16 +111,14 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/invoices': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M7 3h10v18l-2-1.4L13 21l-2-1.4L9 21l-2-1.4L5 21V5a2 2 0 0 1 2-2Z"/>
       <path d="M10.5 8.5c0-.9.9-1.5 2-1.5s2 .6 2 1.5-.8 1.4-2 1.7c-1.2.3-2 1-2 1.8 0 .9.9 1.5 2 1.5s2-.6 2-1.5"/>
       <path d="M12.5 6.5v9"/>
     </svg>
   ),
   '/dashboard/revenue': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M4 20V11"/>
       <path d="M10 20V7"/>
       <path d="M16 20V13"/>
@@ -117,8 +127,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/schedule': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M16 2v4"/>
       <path d="M8 2v4"/>
       <path d="M3 9h12"/>
@@ -132,8 +141,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/qrcodes': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <rect x="3" y="3" width="6" height="6" rx="1.2"/>
       <rect x="15" y="3" width="6" height="6" rx="1.2"/>
       <rect x="3" y="15" width="6" height="6" rx="1.2"/>
@@ -145,8 +153,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/reports': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <path d="M4 20h16"/>
       <path d="M6 16l4-4 3 3 5-7"/>
       <circle cx="6" cy="16" r="1"/>
@@ -156,8 +163,7 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/settings': (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg {...iconBase}>
       <circle cx="12" cy="12" r="3.2"/>
       <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.9 1.9 0 0 1-2.7 2.7l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.9 1.9 0 0 1-3.8 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.9 1.9 0 0 1-2.7-2.7l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1.9 1.9 0 0 1 0-3.8h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1 1 0 0 0 1.1.2h.1a1 1 0 0 0 .6-.9V4a1.9 1.9 0 0 1 3.8 0v.2a1 1 0 0 0 .6.9h.1a1 1 0 0 0 1.1-.2l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6h.2a1.9 1.9 0 0 1 0 3.8h-.2a1 1 0 0 0-.9.6Z"/>
     </svg>
@@ -189,7 +195,30 @@ export function Sidebar({ active }: { active: string }) {
     return (
       <>
         <style>{`
-          .mobile-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 4px 8px; cursor: pointer; gap: 4px; }
+          .mobile-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 4px 8px;
+            cursor: pointer;
+            gap: 4px;
+          }
+          .mobile-tab-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            line-height: 0;
+          }
+          .mobile-tab-icon svg {
+            display: block;
+            width: 20px;
+            height: 20px;
+          }
         `}</style>
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
@@ -201,9 +230,15 @@ export function Sidebar({ active }: { active: string }) {
           {bottomTabs.map(tab => {
             const isActive = tab.href === active
             return (
-              <div key={tab.href} onClick={() => router.push(tab.href)} className="mobile-tab"
-                style={{ color: isActive ? TEAL : TEXT3 }}>
-                <span style={{ display: 'flex', color: isActive ? TEAL : TEXT3 }}>{icons[tab.href]}</span>
+              <div
+                key={tab.href}
+                onClick={() => router.push(tab.href)}
+                className="mobile-tab"
+                style={{ color: isActive ? TEAL : TEXT3 }}
+              >
+                <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
+                  {icons[tab.href]}
+                </span>
                 <span style={{ fontSize: '10px', fontWeight: isActive ? '700' : '400' }}>{tab.label}</span>
               </div>
             )
@@ -317,6 +352,21 @@ export function Sidebar({ active }: { active: string }) {
       opacity: 1;
       max-width: 60px;
     }
+    .jobyra-sidebar .nav-icon {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 0;
+    }
+    .jobyra-sidebar .nav-icon svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
   `
 
   return (
@@ -338,7 +388,6 @@ export function Sidebar({ active }: { active: string }) {
           zIndex: 50,
         }}
       >
-        {/* HEADER */}
         <div style={{
           padding: '18px 10px 16px',
           borderBottom: `1px solid ${BORDER}`,
@@ -365,7 +414,6 @@ export function Sidebar({ active }: { active: string }) {
           </div>
         </div>
 
-        {/* NAV */}
         <div className="nav-body" style={{
           flex: 1,
           overflowY: 'auto',
@@ -373,7 +421,6 @@ export function Sidebar({ active }: { active: string }) {
           display: 'flex',
           flexDirection: 'column',
         }}>
-          {/* Overview */}
           <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <span className="section-dot">·</span>
             <span className="section-text">Overview</span>
@@ -381,25 +428,34 @@ export function Sidebar({ active }: { active: string }) {
           {navMain.map(item => {
             const isActive = item.href === active
             return (
-              <div key={item.href} onClick={() => router.push(item.href)}
+              <div
+                key={item.href}
+                onClick={() => router.push(item.href)}
                 className={`nav-item${isActive ? ' nav-active' : ''}`}
                 title={item.label}
                 style={{
-                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '9px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: isActive ? '600' : '500',
                   color: isActive ? WHITE : TEXT2,
                   background: isActive ? TEAL : 'transparent',
                   marginBottom: '1px',
                   boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden', whiteSpace: 'nowrap',
-                }}>
-                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
+                  {icons[item.href]}
+                </span>
                 <span className="nav-label">{item.label}</span>
               </div>
             )
           })}
 
-          {/* Finance */}
           <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <span className="section-dot">·</span>
             <span className="section-text">Finance</span>
@@ -407,25 +463,34 @@ export function Sidebar({ active }: { active: string }) {
           {navFinance.map(item => {
             const isActive = item.href === active
             return (
-              <div key={item.href} onClick={() => router.push(item.href)}
+              <div
+                key={item.href}
+                onClick={() => router.push(item.href)}
                 className={`nav-item${isActive ? ' nav-active' : ''}`}
                 title={item.label}
                 style={{
-                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '9px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: isActive ? '600' : '500',
                   color: isActive ? WHITE : TEXT2,
                   background: isActive ? TEAL : 'transparent',
                   marginBottom: '1px',
                   boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden', whiteSpace: 'nowrap',
-                }}>
-                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
+                  {icons[item.href]}
+                </span>
                 <span className="nav-label">{item.label}</span>
               </div>
             )
           })}
 
-          {/* Manage */}
           <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <span className="section-dot">·</span>
             <span className="section-text">Manage</span>
@@ -433,19 +498,29 @@ export function Sidebar({ active }: { active: string }) {
           {navManage.map(item => {
             const isActive = item.href === active
             return (
-              <div key={item.href} onClick={() => router.push(item.href)}
+              <div
+                key={item.href}
+                onClick={() => router.push(item.href)}
                 className={`nav-item${isActive ? ' nav-active' : ''}`}
                 title={item.label}
                 style={{
-                  display: 'flex', alignItems: 'center', borderRadius: '9px', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: isActive ? '600' : '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '9px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: isActive ? '600' : '500',
                   color: isActive ? WHITE : TEXT2,
                   background: isActive ? TEAL : 'transparent',
                   marginBottom: '1px',
                   boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden', whiteSpace: 'nowrap',
-                }}>
-                <span style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3, display: 'flex', flexShrink: 0 }}>{icons[item.href]}</span>
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
+                  {icons[item.href]}
+                </span>
                 <span className="nav-label">{item.label}</span>
               </div>
             )
@@ -453,7 +528,6 @@ export function Sidebar({ active }: { active: string }) {
 
           <div style={{ flex: 1 }}/>
 
-          {/* USER FOOTER */}
           <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
             <div className="footer-row" style={{ display: 'flex', alignItems: 'center', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden' }}>
               {loading ? (
