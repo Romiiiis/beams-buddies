@@ -14,7 +14,7 @@ const TEXT3 = '#6B7280'
 const BORDER = '#E8E4DF'
 const BG = '#F5F2EE'
 const WHITE = '#FDFBF8'
-const CHARCOAL = '#3D3D3D'
+const ACCENT = '#C8C4BE'
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                 { label: 'Jobs this month', value: stats.jobsThisMonth, sub: 'new installs', valColor: TEXT },
               ].map(s => (
                 <div key={s.label} style={card}>
-                  <div style={{ height: '3px', background: CHARCOAL }} />
+                  <div style={{ height: '3px', background: ACCENT }} />
                   <div style={{ padding: isMobile ? '12px' : '14px 18px 16px' }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{s.label}</div>
                     <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '800', color: s.valColor, lineHeight: 1, marginBottom: '4px', letterSpacing: '-0.6px' }}>{s.value}</div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
                   style={{ ...card, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)' }}>
-                  <div style={{ height: '3px', background: CHARCOAL }} />
+                  <div style={{ height: '3px', background: ACCENT }} />
                   <div style={{ padding: '14px 18px 16px' }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{f.label}</div>
                     <div style={{ fontSize: '24px', fontWeight: '800', color: f.valColor, letterSpacing: '-0.5px', marginBottom: '4px', lineHeight: 1 }}>{f.value}</div>
