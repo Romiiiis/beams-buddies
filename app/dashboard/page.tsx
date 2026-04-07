@@ -13,7 +13,7 @@ const TEXT = '#0F172A'
 const TEXT2 = '#334155'
 const TEXT3 = '#64748B'
 const BORDER = '#E2E8F0'
-const BG = '#F4F7F9'
+const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const HEADER_BG = '#FAFAFA'
 
@@ -375,15 +375,15 @@ export default function DashboardPage() {
     >
       <Sidebar active="/dashboard" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-        <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+        <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', background: BG }}>
           {/* HERO */}
           <div
             style={{
               background: HEADER_BG,
               padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.35fr) minmax(320px, 0.95fr)',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr',
               gap: '14px',
               alignItems: 'stretch',
               borderBottom: `1px solid ${BORDER}`,
@@ -454,91 +454,6 @@ export default function DashboardPage() {
                   <IconCalendar />
                   Service schedule
                 </button>
-              </div>
-            </div>
-
-            <div
-              style={{
-                borderRadius: '14px',
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                padding: '12px',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                alignContent: 'start',
-              }}
-            >
-              {[
-                { label: 'Overdue', value: stats.overdue },
-                { label: 'Due soon', value: dueSoonCount },
-                { label: 'Collected', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}` },
-                { label: 'Jobs this month', value: stats.jobsThisMonth },
-              ].map(item => (
-                <div
-                  key={item.label}
-                  style={{
-                    borderRadius: '12px',
-                    padding: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: '#FCFCFC',
-                  }}
-                >
-                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: TEXT3, marginBottom: '6px' }}>
-                    {item.label}
-                  </div>
-                  <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 900, letterSpacing: '-0.04em', color: TEXT, lineHeight: 1 }}>
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-
-              <div
-                style={{
-                  gridColumn: '1 / -1',
-                  marginTop: '2px',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  border: `1px solid ${BORDER}`,
-                  background: '#FCFCFC',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '10px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: TEXT3, marginBottom: '3px' }}>
-                    Search recent customers
-                  </div>
-                  <div style={{ fontSize: '12px', color: TEXT3 }}>
-                    Find a customer, suburb, or unit brand
-                  </div>
-                </div>
-                <div
-                  style={{
-                    minWidth: isMobile ? '110px' : '170px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search..."
-                    style={{
-                      width: '100%',
-                      height: '36px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT,
-                      padding: '0 12px',
-                      outline: 'none',
-                      fontSize: '13px',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                </div>
               </div>
             </div>
           </div>
