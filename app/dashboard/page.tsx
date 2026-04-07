@@ -40,74 +40,74 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconUsers() {
+function IconUsers({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.8"/>
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/>
+      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function IconTool() {
+function IconTool({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.86l-6.01 6.01a1.5 1.5 0 1 0 2.12 2.12l6.01-6.01a4 4 0 0 0 5.86-5.4l-2.33 2.33-2.25-.45-.45-2.25 2.45-2.21Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.86l-6.01 6.01a1.5 1.5 0 1 0 2.12 2.12l6.01-6.01a4 4 0 0 0 5.86-5.4l-2.33 2.33-2.25-.45-.45-2.25 2.45-2.21Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function IconAlert() {
+function IconAlert({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <circle cx="12" cy="16.5" r="0.8" fill="currentColor"/>
-      <path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+      <circle cx="12" cy="16.5" r="0.9" fill="currentColor"/>
+      <path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function IconInvoice() {
+function IconInvoice({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/>
+      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function IconRevenue() {
+function IconRevenue({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function IconCalendar() {
+function IconCalendar({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.8"/>
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/>
+      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function IconArrow() {
+function IconArrow({ size = 15 }: { size?: number }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function IconSpark() {
+function IconSpark({ size = 16 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/>
+      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
     </svg>
   )
 }
@@ -303,6 +303,19 @@ export default function DashboardPage() {
     gap: '8px',
   }
 
+  const iconWrap = (color: string): React.CSSProperties => ({
+    width: '36px',
+    height: '36px',
+    borderRadius: '12px',
+    background: '#F8FAFC',
+    color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `1px solid ${BORDER}`,
+    flexShrink: 0,
+  })
+
   const filteredRecent = useMemo(() => {
     if (!search.trim()) return recent
     const term = search.toLowerCase()
@@ -319,7 +332,7 @@ export default function DashboardPage() {
       label: 'Customers',
       value: stats.customers,
       sub: 'Registered in your CRM',
-      icon: <IconUsers />,
+      icon: <IconUsers size={18} />,
       accent: TEXT,
       span: 'span 3',
     },
@@ -327,7 +340,7 @@ export default function DashboardPage() {
       label: 'Active units',
       value: stats.units,
       sub: 'Installed and tracked',
-      icon: <IconTool />,
+      icon: <IconTool size={18} />,
       accent: TEAL_DARK,
       span: 'span 3',
     },
@@ -335,7 +348,7 @@ export default function DashboardPage() {
       label: 'Overdue services',
       value: stats.overdue,
       sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear',
-      icon: <IconAlert />,
+      icon: <IconAlert size={18} />,
       accent: stats.overdue > 0 ? RED : TEXT,
       span: 'span 2',
     },
@@ -343,17 +356,10 @@ export default function DashboardPage() {
       label: 'Outstanding invoices',
       value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       sub: invoiceStats.outstanding > 0 ? 'Awaiting payment' : 'Nothing outstanding',
-      icon: <IconInvoice />,
+      icon: <IconInvoice size={18} />,
       accent: invoiceStats.outstanding > 0 ? AMBER : TEXT,
       span: 'span 4',
     },
-  ]
-
-  const activityFeed = [
-    stats.jobsThisMonth > 0 ? `${stats.jobsThisMonth} new jobs added this month` : 'No new jobs this month yet',
-    stats.overdue > 0 ? `${stats.overdue} services need attention` : 'No overdue services right now',
-    invoiceStats.paidCount > 0 ? `${invoiceStats.paidCount} invoices marked paid` : 'No paid invoices recorded yet',
-    upcoming.length > 0 ? `${upcoming.length} upcoming services scheduled` : 'No upcoming services scheduled',
   ]
 
   if (loading) {
@@ -438,7 +444,7 @@ export default function DashboardPage() {
                     border: 'none',
                   }}
                 >
-                  <IconSpark />
+                  <IconSpark size={16} />
                   Add job
                 </button>
 
@@ -446,7 +452,7 @@ export default function DashboardPage() {
                   onClick={() => router.push('/dashboard/quotes')}
                   style={quickActionStyle}
                 >
-                  <IconInvoice />
+                  <IconInvoice size={16} />
                   New quote
                 </button>
 
@@ -454,7 +460,7 @@ export default function DashboardPage() {
                   onClick={() => router.push('/dashboard/schedule')}
                   style={quickActionStyle}
                 >
-                  <IconCalendar />
+                  <IconCalendar size={16} />
                   Service schedule
                 </button>
               </div>
@@ -501,19 +507,7 @@ export default function DashboardPage() {
                         gap: '10px',
                       }}
                     >
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '12px',
-                          background: '#F8FAFC',
-                          color: item.accent,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: `1px solid ${BORDER}`,
-                        }}
-                      >
+                      <div style={iconWrap(item.accent)}>
                         {item.icon}
                       </div>
 
@@ -575,8 +569,8 @@ export default function DashboardPage() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Collected vs outstanding</div>
-                      <div style={{ color: TEAL_DARK }}>
-                        <IconRevenue />
+                      <div style={iconWrap(TEAL_DARK)}>
+                        <IconRevenue size={18} />
                       </div>
                     </div>
 
@@ -757,47 +751,6 @@ export default function DashboardPage() {
                 </div>
 
                 <div style={{ ...shellCard, padding: '14px' }}>
-                  <div style={sectionLabel}>{sectionDash}Activity</div>
-
-                  <div style={{ display: 'grid', gap: '8px' }}>
-                    {activityFeed.map((item, index) => (
-                      <div
-                        key={`${item}-${index}`}
-                        style={{
-                          borderRadius: '12px',
-                          padding: '10px 12px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '30px',
-                            height: '30px',
-                            borderRadius: '10px',
-                            background: '#F8FAFC',
-                            color: TEAL_DARK,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            border: `1px solid ${BORDER}`,
-                          }}
-                        >
-                          <IconSpark />
-                        </div>
-                        <div style={{ fontSize: '12px', color: TEXT2, lineHeight: 1.45 }}>
-                          {item}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ ...shellCard, padding: '14px' }}>
                   <div style={sectionLabel}>{sectionDash}Quick actions</div>
 
                   <div
@@ -808,10 +761,10 @@ export default function DashboardPage() {
                     }}
                   >
                     {[
-                      { label: 'Send service reminders', href: '/dashboard/schedule' },
-                      { label: 'Create a new invoice', href: '/dashboard/invoices' },
-                      { label: 'View QR codes', href: '/dashboard/qrcodes' },
-                      { label: 'Open revenue page', href: '/dashboard/revenue' },
+                      { label: 'Send service reminders', href: '/dashboard/schedule', icon: <IconCalendar size={15} /> },
+                      { label: 'Create a new invoice', href: '/dashboard/invoices', icon: <IconInvoice size={15} /> },
+                      { label: 'View QR codes', href: '/dashboard/qrcodes', icon: <IconSpark size={15} /> },
+                      { label: 'Open revenue page', href: '/dashboard/revenue', icon: <IconRevenue size={15} /> },
                     ].map(a => (
                       <button
                         key={a.label}
@@ -830,11 +783,17 @@ export default function DashboardPage() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
+                          gap: '10px',
                         }}
                       >
-                        <span>{a.label}</span>
-                        <span style={{ color: TEAL_DARK }}>
-                          <IconArrow />
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <span style={{ color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {a.icon}
+                          </span>
+                          <span>{a.label}</span>
+                        </span>
+                        <span style={{ color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconArrow size={15} />
                         </span>
                       </button>
                     ))}
@@ -889,7 +848,7 @@ export default function DashboardPage() {
                     }}
                   >
                     View all
-                    <IconArrow />
+                    <IconArrow size={15} />
                   </button>
                 </div>
 
