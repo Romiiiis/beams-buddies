@@ -79,29 +79,35 @@ const icons: Record<string, React.ReactElement> = {
   ),
   '/dashboard/leads': (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="8"/>
-      <circle cx="12" cy="12" r="3"/>
+      <circle cx="12" cy="12" r="7"/>
+      <path d="M12 5v2"/>
+      <path d="M12 17v2"/>
+      <path d="M5 12h2"/>
+      <path d="M17 12h2"/>
+      <circle cx="12" cy="12" r="2.2"/>
     </svg>
   ),
   '/dashboard/jobs': (
     <svg {...iconBase}>
-      <path d="M6 3h8l4 4v14H6z"/>
-      <line x1="12" y1="11" x2="12" y2="17"/>
-      <line x1="9" y1="14" x2="15" y2="14"/>
+      <rect x="4" y="3" width="14" height="18" rx="2"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="12" y1="9" x2="12" y2="15"/>
     </svg>
   ),
   '/dashboard/quotes': (
     <svg {...iconBase}>
-      <path d="M6 3h9l3 3v15H6z"/>
-      <line x1="9" y1="12" x2="15" y2="12"/>
-      <line x1="9" y1="16" x2="13" y2="16"/>
+      <rect x="4" y="3" width="14" height="18" rx="2"/>
+      <line x1="8" y1="9" x2="16" y2="9"/>
+      <line x1="8" y1="13" x2="14" y2="13"/>
+      <line x1="8" y1="17" x2="12" y2="17"/>
     </svg>
   ),
   '/dashboard/invoices': (
     <svg {...iconBase}>
-      <path d="M6 2h12v20l-2-1-2 1-2-1-2 1-2-1-2 1z"/>
-      <line x1="8" y1="8" x2="16" y2="8"/>
-      <line x1="8" y1="12" x2="16" y2="12"/>
+      <rect x="4" y="3" width="14" height="18" rx="2"/>
+      <path d="M8 8h8"/>
+      <path d="M8 12h8"/>
+      <path d="M8 16h5"/>
     </svg>
   ),
   '/dashboard/revenue': (
