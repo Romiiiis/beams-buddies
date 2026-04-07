@@ -120,6 +120,9 @@ export default function LeadsPage() {
         .insert([{
           business_id: businessId,
           customer_id: customer.id,
+          equipment_type: 'other',
+          brand: 'TBC',
+          install_date: lead.preferred_date || new Date().toISOString().split('T')[0],
           notes: `${lead.job_type} — ${lead.issue_summary}. Booked: ${lead.preferred_date} at ${lead.preferred_start_time}.`,
         }])
 
