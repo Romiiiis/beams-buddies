@@ -14,6 +14,7 @@ const TEXT3 = '#6B7280'
 const BORDER = '#E8E4DF'
 const BG = '#F5F2EE'
 const WHITE = '#FDFBF8'
+const CHARCOAL = '#3D3D3D'
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
@@ -123,7 +124,9 @@ export default function DashboardPage() {
     gap: '8px',
   }
 
-  const sectionDash = <span style={{ width: '14px', height: '2px', background: TEAL, borderRadius: '2px', display: 'inline-block', flexShrink: 0 }}/>
+  const sectionDash = (
+    <span style={{ width: '14px', height: '2px', background: TEAL, borderRadius: '2px', display: 'inline-block', flexShrink: 0 }}/>
+  )
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, overflow: 'hidden' }}>
@@ -169,13 +172,13 @@ export default function DashboardPage() {
             <div style={sectionLabel}>{sectionDash}Overview</div>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
               {[
-                { label: 'Customers', value: stats.customers, sub: 'registered', accent: TEAL, valColor: TEXT },
-                { label: 'Active units', value: stats.units, sub: 'installed', accent: TEAL, valColor: TEXT },
-                { label: 'Overdue services', value: stats.overdue, sub: stats.overdue > 0 ? 'need attention' : 'all clear', accent: stats.overdue > 0 ? '#EF4444' : TEAL, valColor: stats.overdue > 0 ? '#B91C1C' : TEXT },
-                { label: 'Jobs this month', value: stats.jobsThisMonth, sub: 'new installs', accent: '#8B5CF6', valColor: TEXT },
+                { label: 'Customers', value: stats.customers, sub: 'registered', valColor: TEXT },
+                { label: 'Active units', value: stats.units, sub: 'installed', valColor: TEXT },
+                { label: 'Overdue services', value: stats.overdue, sub: stats.overdue > 0 ? 'need attention' : 'all clear', valColor: stats.overdue > 0 ? '#B91C1C' : TEXT },
+                { label: 'Jobs this month', value: stats.jobsThisMonth, sub: 'new installs', valColor: TEXT },
               ].map(s => (
                 <div key={s.label} style={card}>
-                  <div style={{ height: '3px', background: s.accent }} />
+                  <div style={{ height: '3px', background: CHARCOAL }} />
                   <div style={{ padding: isMobile ? '12px' : '14px 18px 16px' }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{s.label}</div>
                     <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '800', color: s.valColor, lineHeight: 1, marginBottom: '4px', letterSpacing: '-0.6px' }}>{s.value}</div>
@@ -191,39 +194,15 @@ export default function DashboardPage() {
             <div style={sectionLabel}>{sectionDash}Financials</div>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '10px' }}>
               {[
-                {
-                  href: '/dashboard/revenue',
-                  label: 'Revenue collected',
-                  value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                  sub: 'from paid invoices →',
-                  valColor: '#065F46',
-                  accent: '#10B981',
-                  bg: '#F0FDF9',
-                },
-                {
-                  href: '/dashboard/invoices',
-                  label: 'Outstanding',
-                  value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                  sub: 'awaiting payment →',
-                  valColor: invoiceStats.outstanding > 0 ? '#92400E' : TEXT,
-                  accent: invoiceStats.outstanding > 0 ? '#F59E0B' : TEAL,
-                  bg: invoiceStats.outstanding > 0 ? '#FFFDF0' : WHITE,
-                },
-                {
-                  href: '/dashboard/schedule',
-                  label: 'Due for service',
-                  value: `${upcoming.length}`,
-                  sub: 'units upcoming →',
-                  valColor: upcoming.length > 0 ? '#1E3A8A' : TEXT,
-                  accent: upcoming.length > 0 ? '#3B82F6' : TEAL,
-                  bg: upcoming.length > 0 ? '#F0F6FF' : WHITE,
-                },
+                { href: '/dashboard/revenue', label: 'Revenue collected', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'from paid invoices →', valColor: '#065F46' },
+                { href: '/dashboard/invoices', label: 'Outstanding', value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'awaiting payment →', valColor: invoiceStats.outstanding > 0 ? '#92400E' : TEXT },
+                { href: '/dashboard/schedule', label: 'Due for service', value: `${upcoming.length}`, sub: 'units upcoming →', valColor: upcoming.length > 0 ? '#1E3A8A' : TEXT },
               ].map(f => (
                 <div key={f.label} onClick={() => router.push(f.href)}
-                  style={{ ...card, cursor: 'pointer', background: f.bg, transition: 'transform 0.15s, box-shadow 0.15s' }}
+                  style={{ ...card, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)' }}>
-                  <div style={{ height: '3px', background: f.accent }} />
+                  <div style={{ height: '3px', background: CHARCOAL }} />
                   <div style={{ padding: '14px 18px 16px' }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{f.label}</div>
                     <div style={{ fontSize: '24px', fontWeight: '800', color: f.valColor, letterSpacing: '-0.5px', marginBottom: '4px', lineHeight: 1 }}>{f.value}</div>
