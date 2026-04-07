@@ -4,6 +4,19 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
+import {
+  LayoutDashboard,
+  Users,
+  Target,
+  FilePlus,
+  FileText,
+  Receipt,
+  TrendingUp,
+  Clock,
+  QrCode,
+  BarChart2,
+  Settings,
+} from 'lucide-react'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1E8C84'
@@ -46,141 +59,17 @@ const bottomTabs = [
 ]
 
 const icons: Record<string, React.ReactElement> = {
-  '/dashboard': (
-    <svg width="18" height="18" viewBox="-30 -30 60 60" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="-26" y="-26" width="22" height="14" rx="4"/>
-      <rect x="4"   y="-26" width="22" height="30" rx="4"/>
-      <rect x="-26" y="-8"  width="22" height="30" rx="4"/>
-      <rect x="4"   y="8"   width="22" height="14" rx="4"/>
-    </svg>
-  ),
-  '/dashboard/customers': (
-    <svg width="18" height="18" viewBox="-32 -28 64 42" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="0" cy="-18" r="8"/>
-      <path d="M-14,6 C-14,-4 14,-4 14,6"/>
-      <circle cx="-20" cy="-8" r="6" opacity="0.5"/>
-      <path d="M-30,10 C-30,3 -10,3 -10,10" opacity="0.5"/>
-      <circle cx="20" cy="-8" r="6" opacity="0.5"/>
-      <path d="M10,10 C10,3 30,3 30,10" opacity="0.5"/>
-    </svg>
-  ),
-  '/dashboard/leads': (
-    <svg width="18" height="18" viewBox="-30 -30 60 60" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="0" cy="0" r="26"/>
-      <circle cx="0" cy="0" r="17"/>
-      <line x1="0"   y1="-26" x2="0"   y2="-21"/>
-      <line x1="0"   y1="21"  x2="0"   y2="26"/>
-      <line x1="-26" y1="0"   x2="-21" y2="0"/>
-      <line x1="21"  y1="0"   x2="26"  y2="0"/>
-      <circle cx="0" cy="-4" r="5"/>
-      <path d="M-7,10 C-7,4 7,4 7,10"/>
-    </svg>
-  ),
-  '/dashboard/jobs': (
-    <svg width="18" height="18" viewBox="-28 -34 60 60" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="-24" y="-30" width="30" height="36" rx="4"/>
-      <line x1="-19" y1="-20" x2="-1"  y2="-20"/>
-      <line x1="-19" y1="-12" x2="-1"  y2="-12"/>
-      <line x1="-19" y1="-4"  x2="-8"  y2="-4"/>
-      <circle cx="12" cy="16" r="12"/>
-      <line x1="12" y1="9"  x2="12" y2="23"/>
-      <line x1="5"  y1="16" x2="19" y2="16"/>
-    </svg>
-  ),
-  '/dashboard/quotes': (
-    <svg width="18" height="18" viewBox="-34 -34 68 68" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      {/* back document */}
-      <rect x="-22" y="-28" width="26" height="34" rx="5" opacity="0.35"/>
-      {/* front document */}
-      <rect x="-6" y="-20" width="26" height="34" rx="5"/>
-      {/* coin */}
-      <circle cx="6" cy="-4" r="11"/>
-      <circle cx="6" cy="-4" r="6"/>
-      {/* text lines */}
-      <line x1="-1" y1="14" x2="15" y2="14"/>
-      <line x1="-1" y1="20" x2="13" y2="20"/>
-    </svg>
-  ),
-  '/dashboard/invoices': (
-    <svg width="18" height="18" viewBox="-30 -34 64 72" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      {/* receipt body — straight sides, curled bottom */}
-      <path d="M-20,-30 L22,-30 L22,20 Q14,26 6,20 Q-2,14 -10,20 Q-18,26 -20,20 Z"/>
-      {/* bullet + line rows */}
-      <circle cx="-12" cy="-12" r="3"/>
-      <line x1="-5" y1="-12" x2="14" y2="-12"/>
-      <circle cx="-12" cy="-1" r="3"/>
-      <line x1="-5" y1="-1" x2="14" y2="-1"/>
-      <circle cx="-12" cy="10" r="3"/>
-      <line x1="-5" y1="10" x2="10" y2="10"/>
-      {/* dollar coin top-right */}
-      <circle cx="22" cy="-26" r="14"/>
-      <text x="22" y="-20" textAnchor="middle" fontSize="16" fontWeight="bold" stroke="currentColor" strokeWidth="1" fill="currentColor">$</text>
-    </svg>
-  ),
-  '/dashboard/revenue': (
-    <svg width="18" height="18" viewBox="-34 -38 72 72" fill="none"
-      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
-      {/* hand */}
-      <path d="M-30,10 Q-20,28 0,26 Q20,24 32,10 Q24,6 16,14 Q8,6 0,10"/>
-      <rect x="-30" y="0" width="10" height="18" rx="3"/>
-      {/* coin stack */}
-      <ellipse cx="16" cy="-4" rx="14" ry="5"/>
-      <ellipse cx="16" cy="-11" rx="14" ry="5"/>
-      <ellipse cx="16" cy="-18" rx="14" ry="5"/>
-      <ellipse cx="16" cy="-25" rx="14" ry="5"/>
-      <line x1="2"  y1="-4"  x2="2"  y2="-25"/>
-      <line x1="30" y1="-4"  x2="30" y2="-25"/>
-      {/* dollar coin front */}
-      <circle cx="2" cy="2" r="13"/>
-      <text x="2" y="8" textAnchor="middle" fontSize="14" fontWeight="bold" stroke="currentColor" strokeWidth="1" fill="currentColor">$</text>
-      {/* up arrow */}
-      <line x1="-14" y1="-10" x2="-14" y2="-32"/>
-      <polyline points="-22,-24 -14,-34 -6,-24"/>
-    </svg>
-  ),
-  '/dashboard/schedule': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="7.5" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="2"/>
-      <path d="M9 5V9.5L12 11.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ),
-  '/dashboard/qrcodes': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
-      <rect x="3" y="3" width="2" height="2" fill="currentColor"/>
-      <rect x="11" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
-      <rect x="13" y="3" width="2" height="2" fill="currentColor"/>
-      <rect x="1" y="11" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.8" fill="none"/>
-      <rect x="3" y="13" width="2" height="2" fill="currentColor"/>
-      <rect x="11" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
-      <rect x="15" y="11" width="2" height="2" rx="0.5" fill="currentColor"/>
-      <rect x="11" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
-      <rect x="13" y="13" width="2" height="2" rx="0.5" fill="currentColor" opacity="0.4"/>
-      <rect x="15" y="15" width="2" height="2" rx="0.5" fill="currentColor"/>
-    </svg>
-  ),
-  '/dashboard/reports': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M1 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-      <path d="M2 13l3.5-4 3 3 4-6 3 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="5.5" cy="9" r="1.5" fill="currentColor"/>
-      <circle cx="8.5" cy="12" r="1.5" fill="currentColor"/>
-      <circle cx="12.5" cy="6" r="1.5" fill="currentColor"/>
-      <circle cx="15.5" cy="10" r="1.5" fill="currentColor"/>
-    </svg>
-  ),
-  '/dashboard/settings': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path fillRule="evenodd" clipRule="evenodd" d="M9 12a3 3 0 100-6 3 3 0 000 6Z" fill="currentColor"/>
-      <path d="M7.2 1.5l-.6 1.8a6 6 0 00-1.8 1L3 3.6 1.5 6.3l1.5 1.2a5.8 5.8 0 000 3L1.5 11.7 3 14.4l1.8-.7a6 6 0 001.8 1l.6 1.8h3.6l.6-1.8a6 6 0 001.8-1l1.8.7 1.5-2.7-1.5-1.2a5.8 5.8 0 000-3l1.5-1.2L15 3.6l-1.8.7a6 6 0 00-1.8-1l-.6-1.8H7.2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" fill="none"/>
-    </svg>
-  ),
+  '/dashboard':          <LayoutDashboard size={18} strokeWidth={1.75}/>,
+  '/dashboard/customers':<Users           size={18} strokeWidth={1.75}/>,
+  '/dashboard/leads':    <Target          size={18} strokeWidth={1.75}/>,
+  '/dashboard/jobs':     <FilePlus        size={18} strokeWidth={1.75}/>,
+  '/dashboard/quotes':   <FileText        size={18} strokeWidth={1.75}/>,
+  '/dashboard/invoices': <Receipt         size={18} strokeWidth={1.75}/>,
+  '/dashboard/revenue':  <TrendingUp      size={18} strokeWidth={1.75}/>,
+  '/dashboard/schedule': <Clock           size={18} strokeWidth={1.75}/>,
+  '/dashboard/qrcodes':  <QrCode          size={18} strokeWidth={1.75}/>,
+  '/dashboard/reports':  <BarChart2       size={18} strokeWidth={1.75}/>,
+  '/dashboard/settings': <Settings        size={18} strokeWidth={1.75}/>,
 }
 
 export function Sidebar({ active }: { active: string }) {
