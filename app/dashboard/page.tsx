@@ -9,20 +9,20 @@ const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
-const TEXT = '#0F172A'
-const TEXT2 = '#334155'
-const TEXT3 = '#64748B'
-const BORDER = '#E2E8F0'
-const BG = '#FAFAFA'
-const WHITE = '#FFFFFF'
-const HEADER_BG = '#FAFAFA'
+const TEXT = '#F8FAFC'
+const TEXT2 = '#CBD5E1'
+const TEXT3 = '#94A3B8'
+const BORDER = '#334155'
+const BG = '#23272F'
+const WHITE = '#2B313A'
+const HEADER_BG = '#23272F'
 
 const avColors = [
-  { bg: '#E8F4F1', color: '#0A4F4C' },
-  { bg: '#DBEAFE', color: '#1E3A8A' },
-  { bg: '#FEF3C7', color: '#78350F' },
-  { bg: '#EDE9FE', color: '#4C1D95' },
-  { bg: '#FFE4E6', color: '#881337' },
+  { bg: '#334155', color: '#E2E8F0' },
+  { bg: '#1E3A8A', color: '#DBEAFE' },
+  { bg: '#78350F', color: '#FEF3C7' },
+  { bg: '#4C1D95', color: '#EDE9FE' },
+  { bg: '#881337', color: '#FFE4E6' },
 ]
 
 function useIsMobile() {
@@ -206,17 +206,17 @@ export default function DashboardPage() {
   }
 
   function urgency(days: number) {
-    if (days < 0) return { dot: '#EF4444', val: RED, label: 'overdue', text: `${Math.abs(days)}d` }
-    if (days <= 30) return { dot: '#F59E0B', val: AMBER, label: 'until due', text: `${days}d` }
-    return { dot: TEAL, val: TEAL_DARK, label: 'until due', text: `${days}d` }
+    if (days < 0) return { dot: '#EF4444', val: '#FCA5A5', label: 'overdue', text: `${Math.abs(days)}d` }
+    if (days <= 30) return { dot: '#F59E0B', val: '#FCD34D', label: 'until due', text: `${days}d` }
+    return { dot: TEAL, val: '#5EEAD4', label: 'until due', text: `${days}d` }
   }
 
   function statusPill(nextServiceDate: string | null) {
-    if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
+    if (!nextServiceDate) return { label: 'No date', bg: '#334155', color: '#CBD5E1' }
     const days = getDays(nextServiceDate)
-    if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
-    if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
-    return { label: 'Good', bg: '#DCFCE7', color: '#166534' }
+    if (days < 0) return { label: 'Overdue', bg: '#4C1D1D', color: '#FECACA' }
+    if (days <= 30) return { label: 'Due soon', bg: '#422006', color: '#FDE68A' }
+    return { label: 'Good', bg: '#052E2B', color: '#99F6E4' }
   }
 
   const dueSoonCount = useMemo(() => {
@@ -258,7 +258,7 @@ export default function DashboardPage() {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+    boxShadow: '0 6px 18px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.12)',
     overflow: 'hidden',
   }
 
@@ -327,21 +327,21 @@ export default function DashboardPage() {
       value: stats.units,
       sub: 'Installed and tracked',
       icon: <IconTool />,
-      accent: TEAL_DARK,
+      accent: '#5EEAD4',
     },
     {
       label: 'Overdue services',
       value: stats.overdue,
       sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear',
       icon: <IconAlert />,
-      accent: stats.overdue > 0 ? RED : TEXT,
+      accent: stats.overdue > 0 ? '#FCA5A5' : TEXT,
     },
     {
       label: 'Outstanding invoices',
       value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       sub: invoiceStats.outstanding > 0 ? 'Awaiting payment' : 'Nothing outstanding',
       icon: <IconInvoice />,
-      accent: invoiceStats.outstanding > 0 ? AMBER : TEXT,
+      accent: invoiceStats.outstanding > 0 ? '#FCD34D' : TEXT,
     },
   ]
 
@@ -377,13 +377,12 @@ export default function DashboardPage() {
 
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', background: BG }}>
-          {/* HERO */}
           <div
             style={{
               background: HEADER_BG,
               padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr',
+              gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'stretch',
               borderBottom: `1px solid ${BORDER}`,
@@ -409,7 +408,7 @@ export default function DashboardPage() {
 
               <div
                 style={{
-                  fontSize: isMobile ? '14px' : '14px',
+                  fontSize: '14px',
                   lineHeight: 1.5,
                   color: TEXT3,
                   maxWidth: '760px',
@@ -458,7 +457,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* BODY */}
           <div
             style={{
               padding: isMobile ? '14px' : '16px 24px 20px',
@@ -469,7 +467,6 @@ export default function DashboardPage() {
               flex: 1,
             }}
           >
-            {/* KPI CARDS */}
             <div>
               <div style={sectionLabel}>{sectionDash}Overview</div>
               <div
@@ -503,7 +500,7 @@ export default function DashboardPage() {
                           width: '36px',
                           height: '36px',
                           borderRadius: '12px',
-                          background: '#F8FAFC',
+                          background: '#313843',
                           color: item.accent,
                           display: 'flex',
                           alignItems: 'center',
@@ -543,7 +540,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* INTELLIGENCE ROW */}
             <div
               style={{
                 display: 'grid',
@@ -552,7 +548,6 @@ export default function DashboardPage() {
                 alignItems: 'start',
               }}
             >
-              {/* Revenue snapshot */}
               <div style={{ ...shellCard, padding: '14px' }}>
                 <div style={sectionLabel}>{sectionDash}Revenue snapshot</div>
 
@@ -567,7 +562,7 @@ export default function DashboardPage() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Collected vs outstanding</div>
-                    <div style={{ color: TEAL_DARK }}>
+                    <div style={{ color: '#5EEAD4' }}>
                       <IconRevenue />
                     </div>
                   </div>
@@ -592,7 +587,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div style={{ marginTop: '14px' }}>
-                    <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{ height: '8px', background: '#3A4350', borderRadius: '999px', overflow: 'hidden' }}>
                       <div
                         style={{
                           height: '100%',
@@ -634,7 +629,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Service pipeline */}
               <div style={{ ...shellCard, padding: '14px' }}>
                 <div style={sectionLabel}>{sectionDash}Service pipeline</div>
 
@@ -674,7 +668,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Today's priorities */}
               <div style={{ ...shellCard, padding: '14px' }}>
                 <div style={sectionLabel}>{sectionDash}Today’s priorities</div>
 
@@ -737,7 +730,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* MAIN GRID */}
             <div
               style={{
                 display: 'grid',
@@ -746,7 +738,6 @@ export default function DashboardPage() {
                 alignItems: 'start',
               }}
             >
-              {/* Recent customers */}
               <div style={{ ...shellCard, padding: '14px' }}>
                 <div
                   style={{
@@ -766,7 +757,7 @@ export default function DashboardPage() {
                       height: '34px',
                       borderRadius: '10px',
                       border: `1px solid ${BORDER}`,
-                      background: '#F8FAFC',
+                      background: '#313843',
                       color: TEXT2,
                       fontSize: '12px',
                       fontWeight: 700,
@@ -890,9 +881,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Right rail */}
               <div style={{ display: 'grid', gap: '10px' }}>
-                {/* Upcoming */}
                 <div style={{ ...shellCard, padding: '14px' }}>
                   <div style={sectionLabel}>{sectionDash}Upcoming services</div>
 
@@ -966,7 +955,6 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* Activity */}
                 <div style={{ ...shellCard, padding: '14px' }}>
                   <div style={sectionLabel}>{sectionDash}Activity</div>
 
@@ -989,8 +977,8 @@ export default function DashboardPage() {
                             width: '30px',
                             height: '30px',
                             borderRadius: '10px',
-                            background: '#F8FAFC',
-                            color: TEAL_DARK,
+                            background: '#313843',
+                            color: '#5EEAD4',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1008,7 +996,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Quick actions */}
                 <div style={{ ...shellCard, padding: '14px' }}>
                   <div style={sectionLabel}>{sectionDash}Quick actions</div>
 
@@ -1026,7 +1013,7 @@ export default function DashboardPage() {
                           height: '40px',
                           borderRadius: '10px',
                           border: `1px solid ${BORDER}`,
-                          background: '#FFFFFF',
+                          background: WHITE,
                           color: TEXT2,
                           padding: '0 12px',
                           fontSize: '12px',
@@ -1039,7 +1026,7 @@ export default function DashboardPage() {
                         }}
                       >
                         <span>{a.label}</span>
-                        <span style={{ color: TEAL_DARK }}>
+                        <span style={{ color: '#5EEAD4' }}>
                           <IconArrow />
                         </span>
                       </button>
