@@ -1,211 +1,1291 @@
 'use client'
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Cropper from 'react-easy-crop'
+import { supabase } from '@/lib/supabase'
+import { Sidebar } from '@/components/Sidebar'
+import { useBusinessData } from '@/lib/business-context'
 
-const A = '#1C1C1E'
-const TEAL = '#2AA198'
-const TEXT = '#0A0A0A'
-const TEXT2 = '#2D2D2D'
-const TEXT3 = '#5A5A5A'
-const BORDER = '#EBEBEB'
-const BG = '#FAFAF8'
+const TEAL = '#1F9E94'
+const TEAL_DARK = '#177A72'
+const TEXT = '#0B1220'
+const TEXT2 = '#1F2937'
+const TEXT3 = '#475569'
+const BORDER = '#E2E8F0'
+const BG = '#FAFAFA'
+const WHITE = '#FFFFFF'
+const HEADER_BG = '#111111'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const LOGO_BUCKET = 'business-logos'
+
+interface Platform {
+  id: string
+  name: string
+  url: string
+}
+
+const TYPE = {
+  label: {
+    fontSize: '10px',
+    fontWeight: 800,
+    letterSpacing: '0.08em' as const,
+    textTransform: 'uppercase' as const,
+    color: TEXT3,
+  },
+  section: {
+    fontSize: '10px',
+    fontWeight: 800,
+    letterSpacing: '0.14em' as const,
+    textTransform: 'uppercase' as const,
+    color: TEXT3,
+  },
+  bodySm: {
+    fontSize: '11px',
+    fontWeight: 500,
+    color: TEXT3,
+    lineHeight: 1.45,
+  },
+  body: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: TEXT2,
+    lineHeight: 1.45,
+  },
+  titleSm: {
+    fontSize: '12px',
+    fontWeight: 800,
+    color: TEXT,
+    lineHeight: 1.3,
+  },
+  title: {
+    fontSize: '13px',
+    fontWeight: 700,
+    color: TEXT2,
+    lineHeight: 1.35,
+  },
+  valueLg: {
+    fontSize: '28px',
+    fontWeight: 900,
+    letterSpacing: '-0.05em' as const,
+    lineHeight: 1,
+  },
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
-  useState(() => {
-    if (typeof window !== 'undefined') {
-      const check = () => setIsMobile(window.innerWidth < 768)
-      check()
-      window.addEventListener('resize', check)
-      return () => window.removeEventListener('resize', check)
+  useEffect(() => {
+    function check() {
+      setIsMobile(window.innerWidth < 768)
     }
-  })
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   return isMobile
 }
 
-export default function LoginPage() {
+async function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.addEventListener('load', () => resolve(image))
+    image.addEventListener('error', error => reject(error))
+    image.setAttribute('crossOrigin', 'anonymous')
+    image.src = url
+  })
+}
+
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: { x: number; y: number; width: number; height: number }
+): Promise<Blob> {
+  const image = await createImage(imageSrc)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas context not available')
+
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  )
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        reject(new Error('Canvas is empty'))
+        return
+      }
+      resolve(blob)
+    }, 'image/png')
+  })
+}
+
+function IconSpark({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconUsers({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconBuilding({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 21V7l8-4 8 4v14M9 21v-4h6v4M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconCard({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M3 10h18" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function IconStar({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m12 3 2.8 5.7L21 9.6l-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export default function SettingsPage() {
   const router = useRouter()
+  const { refresh } = useBusinessData()
   const isMobile = useIsMobile()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [businessId, setBusinessId] = useState('')
+  const [userId, setUserId] = useState('')
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const [business, setBusiness] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    logo_url: '',
+  })
 
-    if (error) {
-      setError(error.message)
+  const [userProfile, setUserProfile] = useState({
+    full_name: '',
+    role_title: '',
+  })
+
+  const [form, setForm] = useState({
+    google_review_url: '',
+    facebook_review_url: '',
+    review_discount_amount: '10',
+    review_discount_max: '30',
+    review_discount_enabled: true,
+  })
+
+  const [bankDetails, setBankDetails] = useState({
+    bank_name: '',
+    account_name: '',
+    bsb: '',
+    account_number: '',
+    payment_terms: '14',
+    invoice_notes: '',
+  })
+
+  const [platforms, setPlatforms] = useState<Platform[]>([])
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [selectedImage, setSelectedImage] = useState('')
+  const [selectedFileName, setSelectedFileName] = useState('logo.png')
+  const [showCropper, setShowCropper] = useState(false)
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
+    x: number
+    y: number
+    width: number
+    height: number
+  } | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      setUserId(session.user.id)
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('business_id, full_name, role_title')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!userData) {
+        setLoading(false)
+        return
+      }
+
+      setBusinessId(userData.business_id)
+      setUserProfile({
+        full_name: userData.full_name || '',
+        role_title: userData.role_title || '',
+      })
+
+      const [businessRes, settingsRes] = await Promise.all([
+        supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
+        supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
+      ])
+
+      if (businessRes.data) {
+        setBusiness({
+          name: businessRes.data.name || '',
+          email: businessRes.data.email || '',
+          phone: businessRes.data.phone || '',
+          logo_url: businessRes.data.logo_url || '',
+        })
+      }
+
+      if (settingsRes.data) {
+        setForm({
+          google_review_url: settingsRes.data.google_review_url || '',
+          facebook_review_url: settingsRes.data.facebook_review_url || '',
+          review_discount_amount: settingsRes.data.review_discount_amount?.toString() || '10',
+          review_discount_max: settingsRes.data.review_discount_max?.toString() || '30',
+          review_discount_enabled: settingsRes.data.review_discount_enabled ?? true,
+        })
+
+        setPlatforms(settingsRes.data.custom_review_platforms || [])
+
+        setBankDetails({
+          bank_name: settingsRes.data.bank_name || '',
+          account_name: settingsRes.data.account_name || '',
+          bsb: settingsRes.data.bsb || '',
+          account_number: settingsRes.data.account_number || '',
+          payment_terms: settingsRes.data.payment_terms?.toString() || '14',
+          invoice_notes: settingsRes.data.invoice_notes || '',
+        })
+      }
+
       setLoading(false)
-      return
     }
 
-    router.push('/dashboard')
+    load()
+  }, [router])
+
+  async function handleCropAndUpload() {
+    if (!selectedImage || !croppedAreaPixels || !businessId) return
+
+    try {
+      setUploadingLogo(true)
+      setUploadError('')
+
+      const croppedBlob = await getCroppedImg(selectedImage, croppedAreaPixels)
+      const filePath = `${businessId}/logo-${Date.now()}.png`
+
+      const { error: uploadErr } = await supabase.storage
+        .from(LOGO_BUCKET)
+        .upload(filePath, croppedBlob, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/png',
+        })
+
+      if (uploadErr) {
+        setUploadError(uploadErr.message || 'Logo upload failed.')
+        setUploadingLogo(false)
+        return
+      }
+
+      const { data: publicData } = supabase.storage.from(LOGO_BUCKET).getPublicUrl(filePath)
+
+      if (!publicData?.publicUrl) {
+        setUploadError('Could not generate a public logo URL.')
+        setUploadingLogo(false)
+        return
+      }
+
+      setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
+      setShowCropper(false)
+      setSelectedImage('')
+      setSelectedFileName('logo.png')
+      setCrop({ x: 0, y: 0 })
+      setZoom(1)
+      setCroppedAreaPixels(null)
+      setUploadingLogo(false)
+    } catch (err: any) {
+      setUploadError(err?.message || 'Could not crop and upload image.')
+      setUploadingLogo(false)
+    }
+  }
+
+  function removeLogo() {
+    setBusiness(prev => ({ ...prev, logo_url: '' }))
+    setUploadError('')
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setSaved(false)
+
+    await Promise.all([
+      supabase
+        .from('businesses')
+        .update({
+          name: business.name,
+          logo_url: business.logo_url || null,
+          phone: business.phone,
+          email: business.email,
+        })
+        .eq('id', businessId),
+
+      supabase
+        .from('users')
+        .update({
+          full_name: userProfile.full_name,
+          role_title: userProfile.role_title,
+        })
+        .eq('id', userId),
+
+      supabase.from('business_settings').upsert({
+        business_id: businessId,
+        google_review_url: form.google_review_url || null,
+        facebook_review_url: form.facebook_review_url || null,
+        review_discount_amount: parseFloat(form.review_discount_amount) || 10,
+        review_discount_max: parseFloat(form.review_discount_max) || 30,
+        review_discount_enabled: form.review_discount_enabled,
+        custom_review_platforms: platforms,
+        bank_name: bankDetails.bank_name || null,
+        account_name: bankDetails.account_name || null,
+        bsb: bankDetails.bsb || null,
+        account_number: bankDetails.account_number || null,
+        payment_terms: parseInt(bankDetails.payment_terms) || 14,
+        invoice_notes: bankDetails.invoice_notes || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'business_id' }),
+    ])
+
+    setSaving(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+    refresh()
+  }
+
+  function set(field: string, value: any) {
+    setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  function setBiz(field: string, value: any) {
+    setBusiness(prev => ({ ...prev, [field]: value }))
+  }
+
+  function setUser(field: string, value: string) {
+    setUserProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  function setBank(field: string, value: string) {
+    setBankDetails(prev => ({ ...prev, [field]: value }))
+  }
+
+  function addPlatform() {
+    setPlatforms(prev => [...prev, { id: crypto.randomUUID(), name: '', url: '' }])
+  }
+
+  function updatePlatform(id: string, field: 'name' | 'url', value: string) {
+    setPlatforms(prev => prev.map(p => (p.id === id ? { ...p, [field]: value } : p)))
+  }
+
+  function removePlatform(id: string) {
+    setPlatforms(prev => prev.filter(p => p.id !== id))
+  }
+
+  const todayStr = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+  const allPlatformCount =
+    (form.google_review_url ? 1 : 0) +
+    (form.facebook_review_url ? 1 : 0) +
+    platforms.filter(p => p.url).length
+
+  const input: React.CSSProperties = {
+    width: '100%',
+    height: '42px',
+    padding: '0 12px',
+    borderRadius: '10px',
+    border: `1px solid ${BORDER}`,
+    background: WHITE,
+    color: TEXT,
+    fontFamily: FONT,
+    fontSize: '13px',
+    outline: 'none',
+  }
+
+  const label: React.CSSProperties = {
+    ...TYPE.label,
+    marginBottom: '6px',
+    display: 'block',
+  }
+
+  const hint: React.CSSProperties = {
+    ...TYPE.bodySm,
+    marginTop: '4px',
+  }
+
+  const shellCard: React.CSSProperties = {
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    borderRadius: '16px',
+    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+    overflow: 'hidden',
+  }
+
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.section,
+    marginBottom: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  }
+
+  const sectionDash = (
+    <span
+      style={{
+        width: '12px',
+        height: '2px',
+        background: TEAL,
+        borderRadius: '999px',
+        display: 'inline-block',
+        flexShrink: 0,
+      }}
+    />
+  )
+
+  const quickActionStyle: React.CSSProperties = {
+    border: `1px solid ${BORDER}`,
+    background: WHITE,
+    color: TEXT2,
+    borderRadius: '10px',
+    height: '38px',
+    padding: '0 14px',
+    fontSize: '12px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+  }
+
+  const sHead = (labelText: string, sub: string) => (
+    <div style={{ padding: isMobile ? '14px' : '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
+      <div style={{ ...TYPE.section, color: TEAL, marginBottom: '2px' }}>{labelText}</div>
+      <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT }}>{sub}</div>
+    </div>
+  )
+
+  const sBody: React.CSSProperties = {
+    padding: isMobile ? '14px' : '16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: BG,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          background: '#fff',
-          borderBottom: `1px solid ${BORDER}`,
-          padding: isMobile ? '20px 16px 16px' : '28px 32px 20px',
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: '16px',
-        }}
-      >
-        <div>
-          <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '6px', fontWeight: '500' }}>
-            Secure access
-          </div>
-          <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '700', color: TEXT, letterSpacing: '-0.6px', lineHeight: 1 }}>
-            Sign in
-          </div>
-        </div>
-      </div>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+      <Sidebar active="/dashboard/settings" />
 
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: isMobile ? '16px' : '32px',
-        }}
-      >
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            width: '100%',
-            maxWidth: '430px',
-            background: '#fff',
-            border: `1px solid ${BORDER}`,
-            borderRadius: '12px',
-            overflow: 'hidden',
+            background: HEADER_BG,
+            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: '14px',
+            alignItems: 'stretch',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}
         >
-          <div style={{ height: '3px', background: TEAL }} />
-
-          <div style={{ padding: isMobile ? '22px 18px' : '28px 28px 26px' }}>
-            <div style={{ marginBottom: '24px' }}>
-              <h1
-                style={{
-                  fontSize: '22px',
-                  fontWeight: '700',
-                  margin: 0,
-                  marginBottom: '6px',
-                  color: TEXT,
-                  letterSpacing: '-0.4px',
-                }}
-              >
-                TradeLink CRM
-              </h1>
-              <p style={{ fontSize: '13px', color: TEXT3, margin: 0 }}>
-                Sign in to your account
-              </p>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
+              {todayStr}
             </div>
 
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: TEXT2 }}>Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  style={{
-                    height: '42px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${BORDER}`,
-                    background: '#fff',
-                    fontSize: '14px',
-                    outline: 'none',
-                    color: TEXT,
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
+            <div
+              style={{
+                fontSize: isMobile ? '28px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: '#FFFFFF',
+                marginBottom: '8px',
+              }}
+            >
+              Settings
+            </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: TEXT2 }}>Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  style={{
-                    height: '42px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${BORDER}`,
-                    background: '#fff',
-                    fontSize: '14px',
-                    outline: 'none',
-                    color: TEXT,
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
+            </div>
 
-              {error && (
-                <div
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              {saved && (
+                <span
                   style={{
+                    height: '38px',
+                    padding: '0 14px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.12)',
+                    color: '#FFFFFF',
+                    display: 'inline-flex',
+                    alignItems: 'center',
                     fontSize: '12px',
-                    color: '#7F1D1D',
-                    background: '#FFF9F9',
-                    border: '1px solid #FECACA',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    lineHeight: 1.5,
+                    fontWeight: 700,
                   }}
                 >
-                  {error}
-                </div>
+                  Saved
+                </span>
               )}
 
               <button
+                form="settings-form"
                 type="submit"
-                disabled={loading}
+                disabled={saving || uploadingLogo}
                 style={{
-                  height: '38px',
-                  marginTop: '4px',
-                  background: A,
-                  color: '#fff',
+                  ...quickActionStyle,
+                  background: TEAL,
+                  color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  opacity: loading ? 0.7 : 1,
+                  opacity: saving || uploadingLogo ? 0.7 : 1,
+                  cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
                 }}
               >
-                {loading ? 'Signing in…' : 'Sign in'}
+                <IconSpark size={16} />
+                {saving ? 'Saving...' : 'Save changes'}
               </button>
-            </form>
+            </div>
           </div>
         </div>
+
+        <div
+          style={{
+            padding: isMobile ? '14px' : '16px 24px 20px',
+            background: BG,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            flex: 1,
+          }}
+        >
+          {loading ? (
+            <div
+              style={{
+                ...shellCard,
+                padding: '48px',
+                textAlign: 'center',
+                color: TEXT3,
+                fontSize: '14px',
+              }}
+            >
+              Loading...
+            </div>
+          ) : (
+            <form id="settings-form" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <div style={sectionLabel}>{sectionDash}Overview</div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
+                    gap: '10px',
+                  }}
+                >
+                  {[
+                    {
+                      label: 'Account profile',
+                      value: userProfile.full_name ? 'Ready' : 'Setup',
+                      sub: 'Sidebar identity',
+                      icon: <IconUsers size={17} />,
+                      accent: TEXT,
+                      span: 'span 3',
+                    },
+                    {
+                      label: 'Business profile',
+                      value: business.name ? 'Ready' : 'Setup',
+                      sub: 'Brand details added',
+                      icon: <IconBuilding size={17} />,
+                      accent: TEAL_DARK,
+                      span: 'span 3',
+                    },
+                    {
+                      label: 'Payment details',
+                      value: bankDetails.account_number ? 'Ready' : 'Missing',
+                      sub: 'Invoice payout setup',
+                      icon: <IconCard size={17} />,
+                      accent: '#1E3A8A',
+                      span: 'span 3',
+                    },
+                    {
+                      label: 'Review platforms',
+                      value: `${allPlatformCount}`,
+                      sub: 'Active links configured',
+                      icon: <IconStar size={17} />,
+                      accent: '#92400E',
+                      span: 'span 3',
+                    },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      style={{
+                        ...shellCard,
+                        padding: isMobile ? '12px' : '12px 14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        gridColumn: isMobile ? 'span 1' : item.span,
+                        minHeight: '124px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <div
+                          style={{
+                            width: '34px',
+                            height: '34px',
+                            borderRadius: '11px',
+                            background: '#F8FAFC',
+                            color: item.accent,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: `1px solid ${BORDER}`,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {item.icon}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                            color: TEXT3,
+                          }}
+                        >
+                          Live
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
+                        <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '24px', color: item.accent, marginBottom: '5px' }}>
+                          {item.value}
+                        </div>
+                        <div style={{ ...TYPE.body, fontSize: '11px' }}>{item.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div style={sectionLabel}>{sectionDash}Account</div>
+                <div style={shellCard}>
+                  {sHead('Profile', 'Your profile')}
+                  <div style={sBody}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={label}>Your name</label>
+                        <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
+                        <p style={hint}>Shown in the bottom left of the sidebar</p>
+                      </div>
+
+                      <div>
+                        <label style={label}>Your title</label>
+                        <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
+                        <p style={hint}>Shown below your name in the sidebar</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={sectionLabel}>{sectionDash}Business</div>
+                <div style={shellCard}>
+                  {sHead('Branding', 'Business profile')}
+                  <div style={sBody}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={label}>Business name</label>
+                        <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
+                        <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
+                      </div>
+
+                      <div>
+                        <label style={label}>Phone</label>
+                        <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
+                      </div>
+
+                      <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
+                        <label style={label}>Email</label>
+                        <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
+                      </div>
+                    </div>
+
+                    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                      <div style={{ height: '3px', background: TEAL }} />
+                      <div
+                        style={{
+                          padding: isMobile ? '16px' : '18px 20px',
+                          display: 'flex',
+                          flexDirection: isMobile ? 'column' : 'row',
+                          alignItems: isMobile ? 'stretch' : 'center',
+                          gap: '14px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '72px',
+                            height: '72px',
+                            borderRadius: '50%',
+                            background: WHITE,
+                            border: `1px solid ${BORDER}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {business.logo_url ? (
+                            <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
+                          )}
+                        </div>
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
+                          <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <label
+                            htmlFor="logo-upload"
+                            style={{
+                              height: '38px',
+                              padding: '0 16px',
+                              borderRadius: '8px',
+                              border: `1px solid ${BORDER}`,
+                              background: WHITE,
+                              color: TEXT2,
+                              fontSize: '12px',
+                              cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                              fontFamily: FONT,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              opacity: uploadingLogo ? 0.7 : 1,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {uploadingLogo ? 'Uploading...' : 'Upload image'}
+                          </label>
+
+                          <input
+                            id="logo-upload"
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                            style={{ display: 'none' }}
+                            disabled={uploadingLogo}
+                            onChange={async e => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              setUploadError('')
+                              setSelectedFileName(file.name)
+                              const reader = new FileReader()
+                              reader.onload = () => {
+                                setSelectedImage(reader.result as string)
+                                setCrop({ x: 0, y: 0 })
+                                setZoom(1)
+                                setShowCropper(true)
+                              }
+                              reader.readAsDataURL(file)
+                              e.currentTarget.value = ''
+                            }}
+                          />
+
+                          {business.logo_url && (
+                            <button
+                              type="button"
+                              onClick={removeLogo}
+                              style={{
+                                height: '38px',
+                                padding: '0 16px',
+                                borderRadius: '8px',
+                                border: `1px solid ${BORDER}`,
+                                background: WHITE,
+                                color: '#B91C1C',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                fontFamily: FONT,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {uploadError ? (
+                      <p style={{ ...hint, color: '#B91C1C' }}>{uploadError}</p>
+                    ) : (
+                      <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={sectionLabel}>{sectionDash}Invoicing</div>
+                <div style={shellCard}>
+                  {sHead('Bank details', 'Payment & bank details')}
+                  <div style={sBody}>
+                    <div
+                      style={{
+                        padding: '14px 16px',
+                        background: '#F0F9F8',
+                        borderRadius: '10px',
+                        border: '1px solid #CCEFED',
+                        fontSize: '13px',
+                        color: TEXT2,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      These details are printed on invoices sent to customers. Keep them accurate so payments land correctly.
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={label}>Bank name</label>
+                        <input style={input} value={bankDetails.bank_name} onChange={e => setBank('bank_name', e.target.value)} placeholder="e.g. Commonwealth Bank" />
+                      </div>
+
+                      <div>
+                        <label style={label}>Account name</label>
+                        <input style={input} value={bankDetails.account_name} onChange={e => setBank('account_name', e.target.value)} placeholder="e.g. Romis Arib Pty Ltd" />
+                      </div>
+
+                      <div>
+                        <label style={label}>BSB</label>
+                        <input style={input} value={bankDetails.bsb} onChange={e => setBank('bsb', e.target.value)} placeholder="062-000" />
+                        <p style={hint}>6 digits, format: XXX-XXX</p>
+                      </div>
+
+                      <div>
+                        <label style={label}>Account number</label>
+                        <input style={input} value={bankDetails.account_number} onChange={e => setBank('account_number', e.target.value)} placeholder="12345678" />
+                      </div>
+
+                      <div>
+                        <label style={label}>Payment terms (days)</label>
+                        <select style={input} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
+                          <option value="7">7 days</option>
+                          <option value="14">14 days</option>
+                          <option value="21">21 days</option>
+                          <option value="30">30 days</option>
+                        </select>
+                        <p style={hint}>Shown on invoice as "Due within X days"</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={label}>Default invoice notes</label>
+                      <textarea
+                        style={{ ...input, height: '80px', padding: '10px 12px', resize: 'none' as const }}
+                        value={bankDetails.invoice_notes}
+                        onChange={e => setBank('invoice_notes', e.target.value)}
+                        placeholder="e.g. Please include invoice number as reference. Thank you for your business!"
+                      />
+                      <p style={hint}>Printed at the bottom of every invoice</p>
+                    </div>
+
+                    {(bankDetails.bsb || bankDetails.account_number) && (
+                      <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                        <div style={{ height: '3px', background: TEAL }} />
+                        <div style={{ padding: '16px 18px' }}>
+                          <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '10px' }}>Preview — invoice payment section</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
+                            {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
+                            {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
+                            {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
+                            {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={sectionLabel}>{sectionDash}Reviews</div>
+                <div style={shellCard}>
+                  {sHead('Platforms', 'Review platforms')}
+                  <div style={sBody}>
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        color: TEXT2,
+                        lineHeight: 1.6,
+                        padding: '14px 16px',
+                        background: '#F0F9F8',
+                        borderRadius: '10px',
+                        border: '1px solid #CCEFED',
+                      }}
+                    >
+                      Add your review page links below. These appear on the customer registration page after each installation.
+                    </div>
+
+                    <div>
+                      <label style={label}>Google review link</label>
+                      <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
+                      <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
+                    </div>
+
+                    <div>
+                      <label style={label}>Facebook review link</label>
+                      <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews" />
+                      <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
+                    </div>
+
+                    {platforms.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
+                        {platforms.map(p => (
+                          <div
+                            key={p.id}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: isMobile ? '1fr auto' : '1fr 2fr auto',
+                              gap: '10px',
+                              alignItems: 'center',
+                              padding: '12px',
+                              background: '#F9FAFB',
+                              border: `1px solid ${BORDER}`,
+                              borderRadius: '10px',
+                            }}
+                          >
+                            {!isMobile && (
+                              <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
+                            )}
+                            <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://..." />
+                            <button
+                              type="button"
+                              onClick={() => removePlatform(p.id)}
+                              style={{
+                                height: '42px',
+                                width: '42px',
+                                borderRadius: '8px',
+                                border: `1px solid ${BORDER}`,
+                                background: WHITE,
+                                color: '#B91C1C',
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={addPlatform}
+                      style={{
+                        height: '38px',
+                        padding: '0 16px',
+                        borderRadius: '8px',
+                        border: `1px dashed ${BORDER}`,
+                        background: 'transparent',
+                        color: TEXT2,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        width: 'fit-content',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <span style={{ fontSize: '16px' }}>+</span> Add another platform
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={sectionLabel}>{sectionDash}Discount</div>
+                <div style={shellCard}>
+                  {sHead('Discount', 'Review discount')}
+                  <div style={sBody}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '14px',
+                        padding: '16px',
+                        background: '#F9FAFB',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
+                        <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
+                      </div>
+
+                      <div
+                        onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
+                        style={{
+                          width: '44px',
+                          height: '24px',
+                          borderRadius: '12px',
+                          background: form.review_discount_enabled ? TEAL : '#D1D5DB',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '3px',
+                            left: form.review_discount_enabled ? '23px' : '3px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: WHITE,
+                            transition: 'left 0.15s',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {form.review_discount_enabled && (
+                      <>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                          <div>
+                            <label style={label}>Discount per review ($)</label>
+                            <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10" />
+                            <p style={hint}>Amount off their next service per review left</p>
+                          </div>
+
+                          <div>
+                            <label style={label}>Maximum discount ($)</label>
+                            <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30" />
+                            <p style={hint}>Cap on total discount across all platforms</p>
+                          </div>
+                        </div>
+
+                        <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                          <div style={{ height: '3px', background: TEAL }} />
+                          <div style={{ padding: '16px 18px' }}>
+                            <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '6px' }}>Preview — what customers will see</div>
+                            <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
+                              For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
+                            </div>
+                            {allPlatformCount > 0 && (
+                              <div style={{ marginTop: '10px', fontSize: '12px', color: TEXT3 }}>
+                                {allPlatformCount} platform{allPlatformCount !== 1 ? 's' : ''} configured • max discount = $
+                                {Math.min(
+                                  allPlatformCount * parseFloat(form.review_discount_amount || '10'),
+                                  parseFloat(form.review_discount_max || '30')
+                                )}{' '}
+                                if all reviews left
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
+
+      {showCropper && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              background: WHITE,
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            }}
+          >
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ ...TYPE.section, color: TEAL, marginBottom: '2px' }}>Upload</div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT }}>Adjust logo</div>
+              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{selectedFileName}</div>
+            </div>
+
+            <div style={{ padding: '18px' }}>
+              <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111', borderRadius: '12px', overflow: 'hidden' }}>
+                <Cropper
+                  image={selectedImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  restrictPosition={false}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+                />
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <label style={{ ...label, marginBottom: '8px' }}>Zoom</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.01"
+                  value={zoom}
+                  onChange={e => setZoom(Number(e.target.value))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCropper(false)
+                    setSelectedImage('')
+                    setSelectedFileName('logo.png')
+                    setCrop({ x: 0, y: 0 })
+                    setZoom(1)
+                    setCroppedAreaPixels(null)
+                  }}
+                  style={{
+                    height: '38px',
+                    padding: '0 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    fontWeight: 600,
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCropAndUpload}
+                  disabled={uploadingLogo}
+                  style={{
+                    height: '38px',
+                    padding: '0 18px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: TEAL,
+                    color: WHITE,
+                    cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                    opacity: uploadingLogo ? 0.7 : 1,
+                    fontFamily: FONT,
+                    fontWeight: 700,
+                  }}
+                >
+                  {uploadingLogo ? 'Saving...' : 'Save image'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
