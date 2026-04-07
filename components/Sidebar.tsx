@@ -20,6 +20,7 @@ const SIDEBAR_EXPANDED = 224
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Customers', href: '/dashboard/customers' },
+  { label: 'Leads', href: '/dashboard/leads' },
   { label: 'Add job', href: '/dashboard/jobs' },
 ]
 
@@ -39,8 +40,8 @@ const navManage = [
 const bottomTabs = [
   { label: 'Home', href: '/dashboard' },
   { label: 'Customers', href: '/dashboard/customers' },
+  { label: 'Leads', href: '/dashboard/leads' },
   { label: 'Add job', href: '/dashboard/jobs' },
-  { label: 'Schedule', href: '/dashboard/schedule' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -59,6 +60,12 @@ const icons: Record<string, React.ReactElement> = {
       <path d="M1 16c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
       <circle cx="14" cy="6" r="2" fill="currentColor" opacity="0.45"/>
       <path d="M14 11.5c1.7.5 3 1.8 3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.45"/>
+    </svg>
+  ),
+  '/dashboard/leads': (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M2 3.5A1.5 1.5 0 013.5 2h11A1.5 1.5 0 0116 3.5v9a1.5 1.5 0 01-1.5 1.5H10l-3 3v-3H3.5A1.5 1.5 0 012 12.5v-9Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M6 7h6M6 10h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
     </svg>
   ),
   '/dashboard/jobs': (
@@ -190,8 +197,6 @@ export function Sidebar({ active }: { active: string }) {
       width: ${SIDEBAR_EXPANDED}px;
       box-shadow: 4px 0 24px rgba(0,0,0,0.07);
     }
-
-    /* Label text */
     .jobyra-sidebar .nav-label {
       opacity: 0;
       max-width: 0;
@@ -203,8 +208,6 @@ export function Sidebar({ active }: { active: string }) {
       opacity: 1;
       max-width: 200px;
     }
-
-    /* Nav item padding & gap */
     .jobyra-sidebar .nav-item {
       padding: 8px 0;
       justify-content: center;
@@ -219,8 +222,6 @@ export function Sidebar({ active }: { active: string }) {
     .jobyra-sidebar .nav-item:hover:not(.nav-active) {
       background: ${BG};
     }
-
-    /* Section labels */
     .jobyra-sidebar .section-label {
       padding: 14px 0 5px;
       text-align: center;
@@ -234,8 +235,6 @@ export function Sidebar({ active }: { active: string }) {
     .jobyra-sidebar .section-text { display: none; }
     .jobyra-sidebar:hover .section-dot { display: none; }
     .jobyra-sidebar:hover .section-text { display: inline; }
-
-    /* Header text */
     .jobyra-sidebar .header-text {
       opacity: 0;
       max-width: 0;
@@ -247,8 +246,6 @@ export function Sidebar({ active }: { active: string }) {
       opacity: 1;
       max-width: 160px;
     }
-
-    /* Nav padding */
     .jobyra-sidebar .nav-body {
       padding: 6px 6px;
       transition: padding 0.2s cubic-bezier(0.4,0,0.2,1);
@@ -256,8 +253,6 @@ export function Sidebar({ active }: { active: string }) {
     .jobyra-sidebar:hover .nav-body {
       padding: 6px 8px;
     }
-
-    /* Footer */
     .jobyra-sidebar .footer-row {
       padding: 8px 0;
       justify-content: center;
