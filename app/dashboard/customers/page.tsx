@@ -198,36 +198,64 @@ export default function CustomersPage() {
           style={{
             background: HEADER_BG,
             padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex',
-            alignItems: isMobile ? 'flex-start' : 'flex-end',
-            justifyContent: 'space-between',
+            display: 'grid',
+            gridTemplateColumns: '1fr',
             gap: '14px',
-            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: 'stretch',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}
         >
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginBottom: '5px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
               {todayStr}
             </div>
-            <div style={{ fontSize: isMobile ? '28px' : '34px', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-              Customers
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => router.push('/dashboard/jobs')}
+            <div
               style={{
-                ...quickActionStyle,
-                background: TEAL,
+                fontSize: isMobile ? '28px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
                 color: '#FFFFFF',
-                border: 'none',
+                marginBottom: '8px',
               }}
             >
-              <IconSpark size={16} />
-              Add job
-            </button>
+              Customers
+            </div>
+
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              View customer records, service status, and review activity from one premium control centre.
+            </div>
+
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => router.push('/dashboard/jobs')}
+                style={{
+                  ...quickActionStyle,
+                  background: TEAL,
+                  color: '#FFFFFF',
+                  border: 'none',
+                }}
+              >
+                <IconSpark size={16} />
+                Add job
+              </button>
+            </div>
           </div>
         </div>
 
