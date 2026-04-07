@@ -9,9 +9,9 @@ const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
-const TEXT = '#0F172A'
-const TEXT2 = '#334155'
-const TEXT3 = '#64748B'
+const TEXT = '#0B1220'
+const TEXT2 = '#1F2937'
+const TEXT3 = '#475569'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
@@ -362,9 +362,9 @@ export default function DashboardPage() {
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '12px',
+    width: '34px',
+    height: '34px',
+    borderRadius: '11px',
     background: '#F8FAFC',
     color,
     display: 'flex',
@@ -390,7 +390,7 @@ export default function DashboardPage() {
       label: 'Customers',
       value: stats.customers,
       sub: 'Registered in your CRM',
-      icon: <IconUsers size={18} />,
+      icon: <IconUsers size={17} />,
       accent: TEXT,
       span: 'span 3',
     },
@@ -398,7 +398,7 @@ export default function DashboardPage() {
       label: 'Active units',
       value: stats.units,
       sub: 'Installed and tracked',
-      icon: <IconTool size={18} />,
+      icon: <IconTool size={17} />,
       accent: TEAL_DARK,
       span: 'span 3',
     },
@@ -406,7 +406,7 @@ export default function DashboardPage() {
       label: 'Overdue services',
       value: stats.overdue,
       sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear',
-      icon: <IconAlert size={18} />,
+      icon: <IconAlert size={17} />,
       accent: stats.overdue > 0 ? RED : TEXT,
       span: 'span 2',
     },
@@ -414,7 +414,7 @@ export default function DashboardPage() {
       label: 'Outstanding invoices',
       value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       sub: invoiceStats.outstanding > 0 ? 'Awaiting payment' : 'Nothing outstanding',
-      icon: <IconInvoice size={18} />,
+      icon: <IconInvoice size={17} />,
       accent: invoiceStats.outstanding > 0 ? AMBER : TEXT,
       span: 'span 4',
     },
@@ -550,12 +550,12 @@ export default function DashboardPage() {
                     key={item.label}
                     style={{
                       ...shellCard,
-                      padding: isMobile ? '14px' : '15px',
+                      padding: isMobile ? '12px' : '12px 14px',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
+                      gap: '8px',
                       gridColumn: isMobile ? 'span 1' : item.span,
-                      minHeight: item.label === 'Outstanding invoices' && !isMobile ? '152px' : 'unset',
+                      minHeight: item.label === 'Outstanding invoices' && !isMobile ? '132px' : '124px',
                     }}
                   >
                     <div
@@ -584,13 +584,13 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>
+                      <div style={{ ...TYPE.label, marginBottom: '5px' }}>
                         {item.label}
                       </div>
-                      <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '24px' : TYPE.valueLg.fontSize, color: item.accent, marginBottom: '6px' }}>
+                      <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
                         {item.value}
                       </div>
-                      <div style={TYPE.body}>
+                      <div style={{ ...TYPE.body, fontSize: '11px' }}>
                         {item.sub}
                       </div>
                     </div>
