@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const TEAL = '#2AA198'
-const TEAL_DARK = '#1E8C84'
-const TEAL_LIGHT = '#E6F5F4'
+const TEAL = '#1F9E94'
+const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E0F2F0'
 const TEXT = '#0A0A0A'
 const TEXT2 = '#2D2D2D'
 const TEXT3 = '#6B7280'
-const BORDER = '#E5E7EB'
-const BG = '#F0F0EE'
-const WHITE = '#FFFFFF'
+const BORDER = '#E8E4DF'
+const BG = '#F5F2EE'
+const WHITE = '#FDFBF8'
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
@@ -32,22 +32,6 @@ function useIsMobile() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return isMobile
-}
-
-function SectionHeading({ label, sub, action, onAction }: { label: string; sub?: string; action?: string; onAction?: () => void }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '12px' }}>
-      <div>
-        <div style={{ fontSize: '11px', fontWeight: '700', color: TEAL, textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '3px' }}>{sub || '\u00A0'}</div>
-        <div style={{ fontSize: '20px', fontWeight: '800', color: TEXT, letterSpacing: '-0.4px', lineHeight: 1 }}>{label}</div>
-      </div>
-      {action && (
-        <span onClick={onAction} style={{ fontSize: '13px', color: TEXT3, cursor: 'pointer', fontWeight: '500', border: `1px solid ${BORDER}`, borderRadius: '7px', padding: '5px 12px', background: WHITE }}>
-          {action}
-        </span>
-      )}
-    </div>
-  )
 }
 
 export default function DashboardPage() {
@@ -103,7 +87,7 @@ export default function DashboardPage() {
   function urgency(days: number) {
     if (days < 0) return { dot: '#EF4444', val: '#B91C1C', label: 'overdue', text: `${Math.abs(days)}d` }
     if (days <= 30) return { dot: '#F59E0B', val: '#92400E', label: 'until due', text: `${days}d` }
-    return { dot: TEAL, val: '#0D6E69', label: 'until due', text: `${days}d` }
+    return { dot: TEAL, val: TEAL_DARK, label: 'until due', text: `${days}d` }
   }
 
   function statusPill(nextServiceDate: string | null) {
@@ -115,21 +99,31 @@ export default function DashboardPage() {
   }
 
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-  const pad = isMobile ? '16px' : '36px'
+  const pad = isMobile ? '16px' : '32px'
 
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)',
+    borderRadius: '14px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)',
     overflow: 'hidden',
   }
 
-  const divider: React.CSSProperties = {
-    height: '1px',
-    background: '#E2E2E0',
-    margin: `${isMobile ? '24px' : '32px'} 0`,
+  const sectionLabel: React.CSSProperties = {
+    fontSize: '11px',
+    fontWeight: '700',
+    color: TEXT3,
+    textTransform: 'uppercase',
+    letterSpacing: '1.2px',
+    marginBottom: '12px',
+    paddingBottom: '10px',
+    borderBottom: `2px solid ${BORDER}`,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   }
+
+  const sectionDash = <span style={{ width: '14px', height: '2px', background: TEAL, borderRadius: '2px', display: 'inline-block', flexShrink: 0 }}/>
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, overflow: 'hidden' }}>
@@ -138,8 +132,8 @@ export default function DashboardPage() {
 
         {/* HEADER */}
         <div style={{
-          background: '#33B5AC',
-          padding: isMobile ? '24px 16px 22px' : `32px ${pad} 28px`,
+          background: '#1A8F86',
+          padding: isMobile ? '22px 16px 20px' : `28px ${pad} 24px`,
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: isMobile ? 'flex-start' : 'flex-end',
@@ -147,18 +141,18 @@ export default function DashboardPage() {
           gap: '16px',
         }}>
           <div>
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '6px', fontWeight: '500' }}>{todayStr}</div>
-            <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '800', color: WHITE, letterSpacing: '-1px', lineHeight: 1 }}>Dashboard</div>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '5px', fontWeight: '500' }}>{todayStr}</div>
+            <div style={{ fontSize: isMobile ? '26px' : '32px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.8px', lineHeight: 1 }}>Dashboard</div>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button onClick={() => router.push('/dashboard/quotes')}
-              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.12)', color: WHITE, fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}>
+              style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
               New quote
             </button>
             <button onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '38px', padding: '0 18px', borderRadius: '8px', border: 'none', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+              style={{ height: '36px', padding: '0 16px', borderRadius: '8px', border: 'none', background: '#FFFFFF', color: TEAL_DARK, fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '7px', fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke={TEAL_DARK} strokeWidth="2" strokeLinecap="round"/></svg>
@@ -168,63 +162,87 @@ export default function DashboardPage() {
         </div>
 
         {/* PAGE BODY */}
-        <div style={{ padding: `${isMobile ? '24px' : '36px'} ${pad}`, paddingBottom: isMobile ? '90px' : '48px' }}>
+        <div style={{ padding: `${isMobile ? '20px' : '28px'} ${pad}`, paddingBottom: isMobile ? '90px' : '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-          {/* ── SECTION 1: OVERVIEW ── */}
-          <SectionHeading label="Business overview" sub="At a glance"/>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
-            {[
-              { label: 'Customers', value: stats.customers, sub: 'registered', accent: TEAL, valColor: TEXT },
-              { label: 'Active units', value: stats.units, sub: 'installed', accent: TEAL, valColor: TEXT },
-              { label: 'Overdue services', value: stats.overdue, sub: stats.overdue > 0 ? 'need attention' : 'all clear', accent: stats.overdue > 0 ? '#EF4444' : TEAL, valColor: stats.overdue > 0 ? '#B91C1C' : TEXT },
-              { label: 'Jobs this month', value: stats.jobsThisMonth, sub: 'new installs', accent: '#8B5CF6', valColor: TEXT },
-            ].map(s => (
-              <div key={s.label} style={card}>
-                <div style={{ height: '4px', background: s.accent }} />
-                <div style={{ padding: isMobile ? '16px 14px' : '20px 22px 22px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px' }}>{s.label}</div>
-                  <div style={{ fontSize: isMobile ? '32px' : '40px', fontWeight: '800', color: s.valColor, lineHeight: 1, marginBottom: '6px', letterSpacing: '-1px' }}>{s.value}</div>
-                  <div style={{ fontSize: '12px', color: TEXT3, fontWeight: '500' }}>{s.sub}</div>
+          {/* STATS */}
+          <div>
+            <div style={sectionLabel}>{sectionDash}Overview</div>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
+              {[
+                { label: 'Customers', value: stats.customers, sub: 'registered', accent: TEAL, valColor: TEXT },
+                { label: 'Active units', value: stats.units, sub: 'installed', accent: TEAL, valColor: TEXT },
+                { label: 'Overdue services', value: stats.overdue, sub: stats.overdue > 0 ? 'need attention' : 'all clear', accent: stats.overdue > 0 ? '#EF4444' : TEAL, valColor: stats.overdue > 0 ? '#B91C1C' : TEXT },
+                { label: 'Jobs this month', value: stats.jobsThisMonth, sub: 'new installs', accent: '#8B5CF6', valColor: TEXT },
+              ].map(s => (
+                <div key={s.label} style={card}>
+                  <div style={{ height: '3px', background: s.accent }} />
+                  <div style={{ padding: isMobile ? '12px' : '14px 18px 16px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{s.label}</div>
+                    <div style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: '800', color: s.valColor, lineHeight: 1, marginBottom: '4px', letterSpacing: '-0.6px' }}>{s.value}</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: '500' }}>{s.sub}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div style={divider}/>
-
-          {/* ── SECTION 2: FINANCIALS ── */}
-          <SectionHeading label="Financial snapshot" sub="Money" action="View invoices →" onAction={() => router.push('/dashboard/invoices')}/>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '12px' }}>
-            {[
-              { href: '/dashboard/revenue', label: 'Revenue collected', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'from paid invoices', valColor: '#065F46', accent: '#10B981', bg: '#F0FDF4' },
-              { href: '/dashboard/invoices', label: 'Outstanding', value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'awaiting payment', valColor: invoiceStats.outstanding > 0 ? '#92400E' : TEXT, accent: invoiceStats.outstanding > 0 ? '#F59E0B' : TEAL, bg: invoiceStats.outstanding > 0 ? '#FFFBEB' : WHITE },
-              { href: '/dashboard/schedule', label: 'Due for service', value: String(upcoming.length), sub: 'units upcoming', valColor: upcoming.length > 0 ? '#1E3A8A' : TEXT, accent: upcoming.length > 0 ? '#3B82F6' : TEAL, bg: upcoming.length > 0 ? '#EFF6FF' : WHITE },
-            ].map(f => (
-              <div key={f.label} onClick={() => router.push(f.href)}
-                style={{ ...card, cursor: 'pointer', background: f.bg, transition: 'transform 0.15s, box-shadow 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)' }}>
-                <div style={{ height: '4px', background: f.accent }} />
-                <div style={{ padding: '20px 22px 22px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px' }}>{f.label}</div>
-                  <div style={{ fontSize: '30px', fontWeight: '800', color: f.valColor, letterSpacing: '-0.8px', marginBottom: '6px', lineHeight: 1 }}>{f.value}</div>
-                  <div style={{ fontSize: '12px', color: TEXT3, fontWeight: '500' }}>{f.sub} →</div>
+          {/* FINANCIALS */}
+          <div>
+            <div style={sectionLabel}>{sectionDash}Financials</div>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '10px' }}>
+              {[
+                {
+                  href: '/dashboard/revenue',
+                  label: 'Revenue collected',
+                  value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                  sub: 'from paid invoices →',
+                  valColor: '#065F46',
+                  accent: '#10B981',
+                  bg: '#F0FDF9',
+                },
+                {
+                  href: '/dashboard/invoices',
+                  label: 'Outstanding',
+                  value: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                  sub: 'awaiting payment →',
+                  valColor: invoiceStats.outstanding > 0 ? '#92400E' : TEXT,
+                  accent: invoiceStats.outstanding > 0 ? '#F59E0B' : TEAL,
+                  bg: invoiceStats.outstanding > 0 ? '#FFFDF0' : WHITE,
+                },
+                {
+                  href: '/dashboard/schedule',
+                  label: 'Due for service',
+                  value: `${upcoming.length}`,
+                  sub: 'units upcoming →',
+                  valColor: upcoming.length > 0 ? '#1E3A8A' : TEXT,
+                  accent: upcoming.length > 0 ? '#3B82F6' : TEAL,
+                  bg: upcoming.length > 0 ? '#F0F6FF' : WHITE,
+                },
+              ].map(f => (
+                <div key={f.label} onClick={() => router.push(f.href)}
+                  style={{ ...card, cursor: 'pointer', background: f.bg, transition: 'transform 0.15s, box-shadow 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)' }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)' }}>
+                  <div style={{ height: '3px', background: f.accent }} />
+                  <div style={{ padding: '14px 18px 16px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>{f.label}</div>
+                    <div style={{ fontSize: '24px', fontWeight: '800', color: f.valColor, letterSpacing: '-0.5px', marginBottom: '4px', lineHeight: 1 }}>{f.value}</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: '500' }}>{f.sub}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div style={divider}/>
-
-          {/* ── SECTION 3: CUSTOMERS + SCHEDULE ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: '28px', alignItems: 'start' }}>
+          {/* RECENT + UPCOMING */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
             {/* Recent customers */}
             <div>
-              <SectionHeading label="Recent customers" sub="Activity" action="View all →" onAction={() => router.push('/dashboard/customers')}/>
+              <div style={sectionLabel}>{sectionDash}Recent customers</div>
               <div style={card}>
                 {recent.length === 0 ? (
-                  <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
+                  <div style={{ padding: '40px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>
                     No jobs yet. <span style={{ color: TEAL, cursor: 'pointer', fontWeight: '600' }} onClick={() => router.push('/dashboard/jobs')}>Add your first job →</span>
                   </div>
                 ) : isMobile ? (
@@ -233,18 +251,18 @@ export default function DashboardPage() {
                       const av = avColors[i % avColors.length]
                       const s = statusPill(job.next_service_date)
                       return (
-                        <div key={job.id} style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        <div key={job.id} style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                           onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: 0 }}>
+                            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: 0 }}>
                               {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
                             </div>
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                              <div style={{ fontSize: '12px', color: TEXT3 }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
                             </div>
                           </div>
-                          <span style={{ background: s.bg, color: s.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', whiteSpace: 'nowrap', marginLeft: '8px', flexShrink: 0 }}>{s.label}</span>
+                          <span style={{ background: s.bg, color: s.color, padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', whiteSpace: 'nowrap', marginLeft: '8px', flexShrink: 0 }}>{s.label}</span>
                         </div>
                       )
                     })}
@@ -252,9 +270,9 @@ export default function DashboardPage() {
                 ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: '#F8F8F6' }}>
+                      <tr style={{ background: '#F7F4F0' }}>
                         {['Customer', 'Unit', 'Next service', 'Status'].map(h => (
-                          <th key={h} style={{ padding: '12px 22px', textAlign: 'left', fontSize: '11px', fontWeight: '700', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                          <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: '11px', fontWeight: '700', color: TEXT3, borderBottom: `1px solid ${BORDER}`, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -265,23 +283,23 @@ export default function DashboardPage() {
                         return (
                           <tr key={job.id} style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}` }}
                             onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                            onMouseEnter={e => (e.currentTarget.style.background = '#F8F8F6')}
+                            onMouseEnter={e => (e.currentTarget.style.background = '#F7F4F0')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                            <td style={{ padding: '15px 22px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: 0 }}>
+                            <td style={{ padding: '12px 20px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: av.bg, color: av.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', flexShrink: 0 }}>
                                   {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
                                 </div>
                                 <div>
-                                  <div style={{ fontSize: '14px', fontWeight: '600', color: TEXT }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                                  <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px' }}>{job.customers?.suburb || '—'}</div>
+                                  <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT }}>{job.customers?.first_name} {job.customers?.last_name}</div>
+                                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.customers?.suburb || '—'}</div>
                                 </div>
                               </div>
                             </td>
-                            <td style={{ padding: '15px 22px', fontSize: '13px', color: TEXT2, fontWeight: '500' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</td>
-                            <td style={{ padding: '15px 22px', fontSize: '13px', color: TEXT2 }}>{job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
-                            <td style={{ padding: '15px 22px' }}>
-                              <span style={{ background: s.bg, color: s.color, padding: '4px 11px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap' }}>{s.label}</span>
+                            <td style={{ padding: '12px 20px', fontSize: '13px', color: TEXT2, fontWeight: '500' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</td>
+                            <td style={{ padding: '12px 20px', fontSize: '13px', color: TEXT2 }}>{job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }) : '—'}</td>
+                            <td style={{ padding: '12px 20px' }}>
+                              <span style={{ background: s.bg, color: s.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', whiteSpace: 'nowrap' }}>{s.label}</span>
                             </td>
                           </tr>
                         )
@@ -292,28 +310,28 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Upcoming + Quick actions */}
+            {/* Upcoming sidebar */}
             {!isMobile && (
               <div>
-                <SectionHeading label="Upcoming services" sub="Schedule" action="View all →" onAction={() => router.push('/dashboard/schedule')}/>
+                <div style={sectionLabel}>{sectionDash}Upcoming services</div>
                 <div style={card}>
                   {upcoming.length === 0 ? (
-                    <div style={{ padding: '36px 20px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>No upcoming services.</div>
+                    <div style={{ padding: '32px 20px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>No upcoming services.</div>
                   ) : upcoming.map(job => {
                     const days = getDays(job.next_service_date)
                     const u = urgency(days)
                     return (
-                      <div key={job.id} style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                      <div key={job.id} style={{ padding: '11px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
                         onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#F8F8F6')}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#F7F4F0')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
                         </div>
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: '13px', fontWeight: '700', color: u.val }}>{u.text}</div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: u.val }}>{u.text}</div>
                           <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px' }}>{u.label}</div>
                         </div>
                       </div>
@@ -321,16 +339,16 @@ export default function DashboardPage() {
                   })}
 
                   {/* Quick actions */}
-                  <div style={{ padding: '16px 20px', background: '#F8F8F6', borderTop: `1px solid ${BORDER}` }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: '10px' }}>Quick actions</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ padding: '12px 18px', borderTop: `1px solid ${BORDER}`, background: '#F7F4F0' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '8px' }}>Quick actions</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       {[
                         { label: 'Send service reminders', href: '/dashboard/schedule' },
                         { label: 'Create a new invoice', href: '/dashboard/invoices' },
                         { label: 'View QR codes', href: '/dashboard/qrcodes' },
                       ].map(a => (
                         <div key={a.label} onClick={() => router.push(a.href)}
-                          style={{ fontSize: '13px', color: TEXT2, cursor: 'pointer', padding: '7px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '500' }}
+                          style={{ fontSize: '13px', color: TEXT2, cursor: 'pointer', padding: '6px 8px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '500' }}
                           onMouseEnter={e => { e.currentTarget.style.background = TEAL_LIGHT; e.currentTarget.style.color = TEAL_DARK }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = TEXT2 }}>
                           {a.label}
@@ -346,8 +364,8 @@ export default function DashboardPage() {
 
           {/* Mobile upcoming */}
           {isMobile && (
-            <div style={{ marginTop: '28px' }}>
-              <SectionHeading label="Upcoming services" sub="Schedule" action="View all →" onAction={() => router.push('/dashboard/schedule')}/>
+            <div>
+              <div style={sectionLabel}>{sectionDash}Upcoming services</div>
               <div style={card}>
                 {upcoming.length === 0 ? (
                   <div style={{ padding: '28px 16px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>No upcoming services.</div>
@@ -355,7 +373,7 @@ export default function DashboardPage() {
                   const days = getDays(job.next_service_date)
                   const u = urgency(days)
                   return (
-                    <div key={job.id} style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                    <div key={job.id} style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}>
                       <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: u.dot, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
