@@ -15,7 +15,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#1A1A1A'
+const HEADER_BG = '#111111'
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
@@ -386,11 +386,11 @@ export default function DashboardPage() {
               gridTemplateColumns: isMobile ? '1fr' : '1fr',
               gap: '14px',
               alignItems: 'stretch',
-              borderBottom: `1px solid ${BORDER}`,
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
             }}
           >
             <div>
-              <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '5px', fontWeight: 500 }}>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.68)', marginBottom: '5px', fontWeight: 500 }}>
                 {todayStr}
               </div>
 
@@ -400,7 +400,7 @@ export default function DashboardPage() {
                   lineHeight: 1,
                   letterSpacing: '-0.04em',
                   fontWeight: 900,
-                  color: TEXT,
+                  color: '#FFFFFF',
                   marginBottom: '8px',
                 }}
               >
@@ -411,7 +411,7 @@ export default function DashboardPage() {
                 style={{
                   fontSize: isMobile ? '14px' : '14px',
                   lineHeight: 1.5,
-                  color: TEXT3,
+                  color: 'rgba(255,255,255,0.72)',
                   maxWidth: '760px',
                 }}
               >
