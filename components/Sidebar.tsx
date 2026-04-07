@@ -47,32 +47,48 @@ const bottomTabs = [
 
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor"/>
-      <rect x="10" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.35"/>
-      <rect x="1" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.35"/>
-      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.6"/>
+    <svg width="18" height="18" viewBox="-30 -30 60 60" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="-26" y="-26" width="22" height="14" rx="4"/>
+      <rect x="4"   y="-26" width="22" height="30" rx="4"/>
+      <rect x="-26" y="-8"  width="22" height="30" rx="4"/>
+      <rect x="4"   y="8"   width="22" height="14" rx="4"/>
     </svg>
   ),
   '/dashboard/customers': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="7" cy="5" r="3" fill="currentColor"/>
-      <path d="M1 16c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      <circle cx="14" cy="6" r="2" fill="currentColor" opacity="0.45"/>
-      <path d="M14 11.5c1.7.5 3 1.8 3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.45"/>
+    <svg width="18" height="18" viewBox="-32 -28 64 42" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="0" cy="-18" r="8"/>
+      <path d="M-14,6 C-14,-4 14,-4 14,6"/>
+      <circle cx="-20" cy="-8" r="6" opacity="0.5"/>
+      <path d="M-30,10 C-30,3 -10,3 -10,10" opacity="0.5"/>
+      <circle cx="20" cy="-8" r="6" opacity="0.5"/>
+      <path d="M10,10 C10,3 30,3 30,10" opacity="0.5"/>
     </svg>
   ),
   '/dashboard/leads': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M2 3.5A1.5 1.5 0 013.5 2h11A1.5 1.5 0 0116 3.5v9a1.5 1.5 0 01-1.5 1.5H10l-3 3v-3H3.5A1.5 1.5 0 012 12.5v-9Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M6 7h6M6 10h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="-30 -30 60 60" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="0" cy="0" r="26"/>
+      <circle cx="0" cy="0" r="17"/>
+      <line x1="0"   y1="-26" x2="0"   y2="-21"/>
+      <line x1="0"   y1="21"  x2="0"   y2="26"/>
+      <line x1="-26" y1="0"   x2="-21" y2="0"/>
+      <line x1="21"  y1="0"   x2="26"  y2="0"/>
+      <circle cx="0" cy="-4" r="5"/>
+      <path d="M-7,10 C-7,4 7,4 7,10"/>
     </svg>
   ),
   '/dashboard/jobs': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M2 8.5L9 2l7 6.5V16.5H2V8.5Z" fill="currentColor" opacity="0.2"/>
-      <path d="M2 8.5L9 2l7 6.5V16.5H2V8.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-      <path d="M9 10v4M7 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="-28 -34 60 60" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="-24" y="-30" width="30" height="36" rx="4"/>
+      <line x1="-19" y1="-20" x2="-1"  y2="-20"/>
+      <line x1="-19" y1="-12" x2="-1"  y2="-12"/>
+      <line x1="-19" y1="-4"  x2="-8"  y2="-4"/>
+      <circle cx="12" cy="16" r="12"/>
+      <line x1="12" y1="9"  x2="12" y2="23"/>
+      <line x1="5"  y1="16" x2="19" y2="16"/>
     </svg>
   ),
   '/dashboard/quotes': (
