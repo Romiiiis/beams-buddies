@@ -260,6 +260,7 @@ export default function DashboardPage() {
     borderRadius: '16px',
     boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
+    height: '100%',
   }
 
   const sectionLabel: React.CSSProperties = {
@@ -268,10 +269,11 @@ export default function DashboardPage() {
     color: TEXT3,
     textTransform: 'uppercase',
     letterSpacing: '0.14em',
-    marginBottom: '10px',
+    marginBottom: '12px',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    minHeight: '12px',
   }
 
   const sectionDash = (
@@ -301,6 +303,18 @@ export default function DashboardPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+  }
+
+  const statRowStyle: React.CSSProperties = {
+    borderRadius: '12px',
+    padding: '12px 14px',
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    minHeight: '68px',
   }
 
   const filteredRecent = useMemo(() => {
@@ -461,7 +475,7 @@ export default function DashboardPage() {
           {/* BODY */}
           <div
             style={{
-              padding: isMobile ? '14px' : '16px 24px 20px',
+              padding: isMobile ? '14px' : '18px 24px 22px',
               background: BG,
               display: 'flex',
               flexDirection: 'column',
@@ -476,7 +490,7 @@ export default function DashboardPage() {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))',
-                  gap: '10px',
+                  gap: '12px',
                 }}
               >
                 {kpis.map(item => (
@@ -484,24 +498,26 @@ export default function DashboardPage() {
                     key={item.label}
                     style={{
                       ...shellCard,
-                      padding: isMobile ? '14px' : '15px',
+                      padding: isMobile ? '14px' : '16px',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
+                      justifyContent: 'space-between',
+                      gap: '16px',
+                      minHeight: isMobile ? '158px' : '172px',
                     }}
                   >
                     <div
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         justifyContent: 'space-between',
                         gap: '10px',
                       }}
                     >
                       <div
                         style={{
-                          width: '36px',
-                          height: '36px',
+                          width: '38px',
+                          height: '38px',
                           borderRadius: '12px',
                           background: '#F8FAFC',
                           color: item.accent,
@@ -509,6 +525,7 @@ export default function DashboardPage() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           border: `1px solid ${BORDER}`,
+                          flexShrink: 0,
                         }}
                       >
                         {item.icon}
@@ -521,6 +538,8 @@ export default function DashboardPage() {
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
                           color: TEXT3,
+                          lineHeight: 1,
+                          paddingTop: '3px',
                         }}
                       >
                         Live
@@ -528,13 +547,13 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '6px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '8px' }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: item.accent, lineHeight: 1, letterSpacing: '-0.05em', marginBottom: '6px' }}>
+                      <div style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: item.accent, lineHeight: 1, letterSpacing: '-0.05em', marginBottom: '8px', minHeight: isMobile ? '24px' : '28px' }}>
                         {item.value}
                       </div>
-                      <div style={{ fontSize: '12px', color: TEXT3, lineHeight: 1.45 }}>
+                      <div style={{ fontSize: '12px', color: TEXT3, lineHeight: 1.45, minHeight: '34px' }}>
                         {item.sub}
                       </div>
                     </div>
@@ -548,12 +567,12 @@ export default function DashboardPage() {
               style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr' : '1.1fr 1fr 0.95fr',
-                gap: '10px',
-                alignItems: 'start',
+                gap: '12px',
+                alignItems: 'stretch',
               }}
             >
               {/* Revenue snapshot */}
-              <div style={{ ...shellCard, padding: '14px' }}>
+              <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                 <div style={sectionLabel}>{sectionDash}Revenue snapshot</div>
 
                 <div
@@ -563,35 +582,41 @@ export default function DashboardPage() {
                     background: WHITE,
                     border: `1px solid ${BORDER}`,
                     marginBottom: '10px',
+                    minHeight: '162px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Collected vs outstanding</div>
-                    <div style={{ color: TEAL_DARK }}>
-                      <IconRevenue />
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Collected vs outstanding</div>
+                      <div style={{ color: TEAL_DARK }}>
+                        <IconRevenue />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '6px' }}>
+                          Collected
+                        </div>
+                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.1 }}>
+                          ${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '6px' }}>
+                          Outstanding
+                        </div>
+                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.1 }}>
+                          ${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
-                        Collected
-                      </div>
-                      <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
-                        ${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
-                        Outstanding
-                      </div>
-                      <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
-                        ${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '14px' }}>
+                  <div style={{ marginTop: '16px' }}>
                     <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '999px', overflow: 'hidden' }}>
                       <div
                         style={{
@@ -608,7 +633,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'Paid', value: invoiceStats.paidCount },
                     { label: 'Overdue', value: invoiceStats.overdueCount },
@@ -618,15 +643,19 @@ export default function DashboardPage() {
                       key={item.label}
                       style={{
                         borderRadius: '12px',
-                        padding: '10px',
+                        padding: '12px 10px',
                         background: WHITE,
                         border: `1px solid ${BORDER}`,
+                        minHeight: '78px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3 }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.1, marginTop: '10px' }}>
                         {item.value}
                       </div>
                     </div>
@@ -635,38 +664,26 @@ export default function DashboardPage() {
               </div>
 
               {/* Service pipeline */}
-              <div style={{ ...shellCard, padding: '14px' }}>
+              <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                 <div style={sectionLabel}>{sectionDash}Service pipeline</div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ display: 'grid', gap: '8px', flex: 1 }}>
                   {[
                     { label: 'Overdue', value: stats.overdue },
                     { label: 'Due in 30 days', value: dueSoonCount },
                     { label: 'Good standing', value: goodStandingCount },
                     { label: 'New jobs this month', value: stats.jobsThisMonth },
                   ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        borderRadius: '12px',
-                        padding: '12px 14px',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '3px' }}>
+                    <div key={item.label} style={statRowStyle}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '4px' }}>
                           {item.label}
                         </div>
-                        <div style={{ fontSize: '11px', color: TEXT3 }}>
+                        <div style={{ fontSize: '11px', color: TEXT3, lineHeight: 1.35 }}>
                           Current live status
                         </div>
                       </div>
-                      <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', flexShrink: 0, minWidth: '34px', textAlign: 'right' }}>
                         {item.value}
                       </div>
                     </div>
@@ -675,7 +692,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Today's priorities */}
-              <div style={{ ...shellCard, padding: '14px' }}>
+              <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                 <div style={sectionLabel}>{sectionDash}Today’s priorities</div>
 
                 {priorityItems.length === 0 ? (
@@ -688,12 +705,16 @@ export default function DashboardPage() {
                       textAlign: 'center',
                       fontSize: '14px',
                       color: TEXT3,
+                      minHeight: '354px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
                     Nothing urgent right now.
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gap: '8px' }}>
+                  <div style={{ display: 'grid', gap: '8px', flex: 1 }}>
                     {priorityItems.map(job => {
                       const days = job.next_service_date ? getDays(job.next_service_date) : 9999
                       const u = urgency(days)
@@ -702,30 +723,23 @@ export default function DashboardPage() {
                           key={job.id}
                           onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                           style={{
-                            borderRadius: '12px',
-                            padding: '12px 14px',
-                            background: WHITE,
-                            border: `1px solid ${BORDER}`,
+                            ...statRowStyle,
                             cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: '10px',
                           }}
                         >
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {job.customers?.first_name} {job.customers?.last_name}
                             </div>
                             <div style={{ fontSize: '11px', color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                             </div>
                           </div>
-                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 900, color: u.val }}>
+                          <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '48px' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 900, color: u.val, lineHeight: 1.1 }}>
                               {u.text}
                             </div>
-                            <div style={{ fontSize: '10px', color: TEXT3 }}>
+                            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '4px', lineHeight: 1.1 }}>
                               {u.label}
                             </div>
                           </div>
@@ -742,12 +756,12 @@ export default function DashboardPage() {
               style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr' : '1.3fr 0.85fr',
-                gap: '10px',
-                alignItems: 'start',
+                gap: '12px',
+                alignItems: 'stretch',
               }}
             >
               {/* Recent customers */}
-              <div style={{ ...shellCard, padding: '14px' }}>
+              <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -755,7 +769,8 @@ export default function DashboardPage() {
                     justifyContent: 'space-between',
                     gap: '10px',
                     flexDirection: isMobile ? 'column' : 'row',
-                    marginBottom: '10px',
+                    marginBottom: '14px',
+                    minHeight: '34px',
                   }}
                 >
                   <div style={sectionLabel}>{sectionDash}Recent customers</div>
@@ -776,6 +791,7 @@ export default function DashboardPage() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
+                      flexShrink: 0,
                     }}
                   >
                     View all
@@ -793,12 +809,16 @@ export default function DashboardPage() {
                       textAlign: 'center',
                       color: TEXT3,
                       fontSize: '14px',
+                      minHeight: '240px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
                     No matching recent customers.
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gap: '8px' }}>
+                  <div style={{ display: 'grid', gap: '8px', flex: 1 }}>
                     {filteredRecent.map((job, i) => {
                       const av = avColors[i % avColors.length]
                       const s = statusPill(job.next_service_date)
@@ -814,9 +834,10 @@ export default function DashboardPage() {
                             padding: '12px 14px',
                             display: 'grid',
                             gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) minmax(0,0.9fr) auto',
-                            gap: '10px',
+                            gap: '12px',
                             alignItems: 'center',
                             cursor: 'pointer',
+                            minHeight: isMobile ? 'auto' : '76px',
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
@@ -842,7 +863,7 @@ export default function DashboardPage() {
                               <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.first_name} {job.customers?.last_name}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.suburb || 'No suburb'}
                               </div>
                             </div>
@@ -853,7 +874,7 @@ export default function DashboardPage() {
                               <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px' }}>
+                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px' }}>
                                 {job.next_service_date
                                   ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                   : 'No next service date'}
@@ -891,9 +912,9 @@ export default function DashboardPage() {
               </div>
 
               {/* Right rail */}
-              <div style={{ display: 'grid', gap: '10px' }}>
+              <div style={{ display: 'grid', gap: '12px', alignContent: 'start' }}>
                 {/* Upcoming */}
-                <div style={{ ...shellCard, padding: '14px' }}>
+                <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                   <div style={sectionLabel}>{sectionDash}Upcoming services</div>
 
                   {upcoming.length === 0 ? (
@@ -906,6 +927,10 @@ export default function DashboardPage() {
                         textAlign: 'center',
                         color: TEXT3,
                         fontSize: '14px',
+                        minHeight: '160px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
                       No upcoming services.
@@ -921,14 +946,7 @@ export default function DashboardPage() {
                             key={job.id}
                             onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                             style={{
-                              borderRadius: '12px',
-                              padding: '12px 14px',
-                              background: WHITE,
-                              border: `1px solid ${BORDER}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '10px',
+                              ...statRowStyle,
                               cursor: 'pointer',
                             }}
                           >
@@ -946,16 +964,16 @@ export default function DashboardPage() {
                                 <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {job.customers?.first_name} {job.customers?.last_name}
                                 </div>
-                                <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <div style={{ fontSize: '11px', color: TEXT3, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                                 </div>
                               </div>
                             </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: 900, color: u.val }}>
+                            <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '48px' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 900, color: u.val, lineHeight: 1.1 }}>
                                 {u.text}
                               </div>
-                              <div style={{ fontSize: '10px', color: TEXT3 }}>
+                              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '4px', lineHeight: 1.1 }}>
                                 {u.label}
                               </div>
                             </div>
@@ -967,7 +985,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Activity */}
-                <div style={{ ...shellCard, padding: '14px' }}>
+                <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                   <div style={sectionLabel}>{sectionDash}Activity</div>
 
                   <div style={{ display: 'grid', gap: '8px' }}>
@@ -975,13 +993,9 @@ export default function DashboardPage() {
                       <div
                         key={`${item}-${index}`}
                         style={{
-                          borderRadius: '12px',
-                          padding: '10px 12px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
+                          ...statRowStyle,
+                          justifyContent: 'flex-start',
+                          minHeight: '62px',
                         }}
                       >
                         <div
@@ -1009,7 +1023,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Quick actions */}
-                <div style={{ ...shellCard, padding: '14px' }}>
+                <div style={{ ...shellCard, padding: '16px', display: 'flex', flexDirection: 'column' }}>
                   <div style={sectionLabel}>{sectionDash}Quick actions</div>
 
                   <div style={{ display: 'grid', gap: '8px' }}>
@@ -1023,8 +1037,8 @@ export default function DashboardPage() {
                         key={a.label}
                         onClick={() => router.push(a.href)}
                         style={{
-                          height: '40px',
-                          borderRadius: '10px',
+                          height: '44px',
+                          borderRadius: '12px',
                           border: `1px solid ${BORDER}`,
                           background: '#FFFFFF',
                           color: TEXT2,
@@ -1039,7 +1053,7 @@ export default function DashboardPage() {
                         }}
                       >
                         <span>{a.label}</span>
-                        <span style={{ color: TEAL_DARK }}>
+                        <span style={{ color: TEAL_DARK, display: 'flex', alignItems: 'center' }}>
                           <IconArrow />
                         </span>
                       </button>
