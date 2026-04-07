@@ -16,6 +16,68 @@ const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const HEADER_BG = '#111111'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+
+const TYPE = {
+  label: {
+    fontSize: '10px',
+    fontWeight: 800,
+    letterSpacing: '0.08em' as const,
+    textTransform: 'uppercase' as const,
+    color: TEXT3,
+  },
+  section: {
+    fontSize: '10px',
+    fontWeight: 800,
+    letterSpacing: '0.14em' as const,
+    textTransform: 'uppercase' as const,
+    color: TEXT3,
+  },
+  bodySm: {
+    fontSize: '11px',
+    fontWeight: 500,
+    color: TEXT3,
+    lineHeight: 1.45,
+  },
+  body: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: TEXT2,
+    lineHeight: 1.45,
+  },
+  titleSm: {
+    fontSize: '12px',
+    fontWeight: 800,
+    color: TEXT,
+    lineHeight: 1.3,
+  },
+  title: {
+    fontSize: '13px',
+    fontWeight: 700,
+    color: TEXT2,
+    lineHeight: 1.35,
+  },
+  valueLg: {
+    fontSize: '28px',
+    fontWeight: 900,
+    letterSpacing: '-0.05em' as const,
+    lineHeight: 1,
+  },
+  valueMd: {
+    fontSize: '20px',
+    fontWeight: 900,
+    color: TEXT,
+    letterSpacing: '-0.04em' as const,
+    lineHeight: 1,
+  },
+  valueSm: {
+    fontSize: '16px',
+    fontWeight: 900,
+    color: TEXT,
+    letterSpacing: '-0.04em' as const,
+    lineHeight: 1,
+  },
+}
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
@@ -263,11 +325,7 @@ export default function DashboardPage() {
   }
 
   const sectionLabel: React.CSSProperties = {
-    fontSize: '10px',
-    fontWeight: 800,
-    color: TEXT3,
-    textTransform: 'uppercase',
-    letterSpacing: '0.14em',
+    ...TYPE.section,
     marginBottom: '10px',
     display: 'flex',
     alignItems: 'center',
@@ -294,10 +352,10 @@ export default function DashboardPage() {
     borderRadius: '10px',
     height: '38px',
     padding: '0 14px',
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: 700,
     cursor: 'pointer',
-    fontFamily: 'inherit',
+    fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
@@ -364,7 +422,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: BG, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+      <div style={{ display: 'flex', height: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard" />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>
           Loading dashboard...
@@ -378,7 +436,7 @@ export default function DashboardPage() {
       style={{
         display: 'flex',
         height: '100vh',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: FONT,
         background: BG,
         overflow: 'hidden',
       }}
@@ -399,7 +457,7 @@ export default function DashboardPage() {
             }}
           >
             <div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.68)', marginBottom: '5px', fontWeight: 500 }}>
+              <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
                 {todayStr}
               </div>
 
@@ -418,7 +476,8 @@ export default function DashboardPage() {
 
               <div
                 style={{
-                  fontSize: isMobile ? '14px' : '14px',
+                  fontSize: '14px',
+                  fontWeight: 500,
                   lineHeight: 1.5,
                   color: 'rgba(255,255,255,0.72)',
                   maxWidth: '760px',
@@ -525,13 +584,13 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '6px' }}>
+                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: item.accent, lineHeight: 1, letterSpacing: '-0.05em', marginBottom: '6px' }}>
+                      <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '24px' : TYPE.valueLg.fontSize, color: item.accent, marginBottom: '6px' }}>
                         {item.value}
                       </div>
-                      <div style={{ fontSize: '12px', color: TEXT3, lineHeight: 1.45 }}>
+                      <div style={TYPE.body}>
                         {item.sub}
                       </div>
                     </div>
@@ -568,7 +627,7 @@ export default function DashboardPage() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Collected vs outstanding</div>
+                      <div style={TYPE.title}>Collected vs outstanding</div>
                       <div style={iconWrap(TEAL_DARK)}>
                         <IconRevenue size={18} />
                       </div>
@@ -576,18 +635,18 @@ export default function DashboardPage() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
-                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>
                           Collected
                         </div>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                        <div style={TYPE.valueMd}>
                           ${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>
                           Outstanding
                         </div>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                        <div style={TYPE.valueMd}>
                           ${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
                         </div>
                       </div>
@@ -625,10 +684,10 @@ export default function DashboardPage() {
                           border: `1px solid ${BORDER}`,
                         }}
                       >
-                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>
                           {item.label}
                         </div>
-                        <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                        <div style={TYPE.valueSm}>
                           {item.value}
                         </div>
                       </div>
@@ -666,14 +725,14 @@ export default function DashboardPage() {
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '3px' }}>
+                          <div style={TYPE.titleSm}>
                             {item.label}
                           </div>
-                          <div style={{ fontSize: '11px', color: TEXT3 }}>
+                          <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
                             Current live status
                           </div>
                         </div>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>
+                        <div style={TYPE.valueMd}>
                           {item.value}
                         </div>
                       </div>
@@ -701,6 +760,7 @@ export default function DashboardPage() {
                         border: `1px solid ${BORDER}`,
                         textAlign: 'center',
                         fontSize: '14px',
+                        fontWeight: 500,
                         color: TEXT3,
                       }}
                     >
@@ -728,18 +788,18 @@ export default function DashboardPage() {
                             }}
                           >
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.titleSm, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.first_name} {job.customers?.last_name}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                               </div>
                             </div>
                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: 900, color: u.val }}>
+                              <div style={{ fontSize: '12px', fontWeight: 900, color: u.val, lineHeight: 1 }}>
                                 {u.text}
                               </div>
-                              <div style={{ fontSize: '10px', color: TEXT3 }}>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
                                 {u.label}
                               </div>
                             </div>
@@ -779,7 +839,7 @@ export default function DashboardPage() {
                           fontSize: '12px',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          fontFamily: 'inherit',
+                          fontFamily: FONT,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -841,7 +901,7 @@ export default function DashboardPage() {
                       fontWeight: 700,
                       padding: '0 12px',
                       cursor: 'pointer',
-                      fontFamily: 'inherit',
+                      fontFamily: FONT,
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
@@ -862,6 +922,7 @@ export default function DashboardPage() {
                       textAlign: 'center',
                       color: TEXT3,
                       fontSize: '14px',
+                      fontWeight: 500,
                     }}
                   >
                     No matching recent customers.
@@ -908,10 +969,10 @@ export default function DashboardPage() {
                             </div>
 
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.first_name} {job.customers?.last_name}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.suburb || 'No suburb'}
                               </div>
                             </div>
@@ -919,10 +980,10 @@ export default function DashboardPage() {
 
                           {!isMobile && (
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.title, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px' }}>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
                                 {job.next_service_date
                                   ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                   : 'No next service date'}
@@ -941,6 +1002,7 @@ export default function DashboardPage() {
                                 fontWeight: 800,
                                 whiteSpace: 'nowrap',
                                 display: 'inline-block',
+                                letterSpacing: '0.02em',
                               }}
                             >
                               {s.label}
@@ -948,7 +1010,7 @@ export default function DashboardPage() {
                           </div>
 
                           {isMobile && (
-                            <div style={{ gridColumn: '1 / -1', fontSize: '11px', color: TEXT3 }}>
+                            <div style={{ gridColumn: '1 / -1', ...TYPE.bodySm }}>
                               {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                             </div>
                           )}
@@ -978,6 +1040,7 @@ export default function DashboardPage() {
                       textAlign: 'center',
                       color: TEXT3,
                       fontSize: '14px',
+                      fontWeight: 500,
                     }}
                   >
                     No upcoming services.
@@ -1015,19 +1078,19 @@ export default function DashboardPage() {
                               }}
                             />
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.first_name} {job.customers?.last_name}
                               </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                               </div>
                             </div>
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 900, color: u.val }}>
+                            <div style={{ fontSize: '12px', fontWeight: 900, color: u.val, lineHeight: 1 }}>
                               {u.text}
                             </div>
-                            <div style={{ fontSize: '10px', color: TEXT3 }}>
+                            <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
                               {u.label}
                             </div>
                           </div>
