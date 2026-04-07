@@ -92,26 +92,56 @@ const icons: Record<string, React.ReactElement> = {
     </svg>
   ),
   '/dashboard/quotes': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M11 1.5H4.5A1.5 1.5 0 003 3v12a1.5 1.5 0 001.5 1.5H13.5A1.5 1.5 0 0015 15V5.5L11 1.5Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M11 1.5V5.5H15" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M6 9.5h6M6 12.5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="-34 -34 68 68" fill="none"
+      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
+      {/* back document */}
+      <rect x="-22" y="-28" width="26" height="34" rx="5" opacity="0.35"/>
+      {/* front document */}
+      <rect x="-6" y="-20" width="26" height="34" rx="5"/>
+      {/* coin */}
+      <circle cx="6" cy="-4" r="11"/>
+      <circle cx="6" cy="-4" r="6"/>
+      {/* text lines */}
+      <line x1="-1" y1="14" x2="15" y2="14"/>
+      <line x1="-1" y1="20" x2="13" y2="20"/>
     </svg>
   ),
   '/dashboard/invoices': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M3 2h12v13l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L3 15V2Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M9 5v8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M7 6.5C7 5.7 7.9 5 9 5s2 .7 2 1.5S10.1 8 9 8s-2 .8-2 1.5S7.9 11 9 11s2-.7 2-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+    <svg width="18" height="18" viewBox="-30 -34 64 72" fill="none"
+      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
+      {/* receipt body — straight sides, curled bottom */}
+      <path d="M-20,-30 L22,-30 L22,20 Q14,26 6,20 Q-2,14 -10,20 Q-18,26 -20,20 Z"/>
+      {/* bullet + line rows */}
+      <circle cx="-12" cy="-12" r="3"/>
+      <line x1="-5" y1="-12" x2="14" y2="-12"/>
+      <circle cx="-12" cy="-1" r="3"/>
+      <line x1="-5" y1="-1" x2="14" y2="-1"/>
+      <circle cx="-12" cy="10" r="3"/>
+      <line x1="-5" y1="10" x2="10" y2="10"/>
+      {/* dollar coin top-right */}
+      <circle cx="22" cy="-26" r="14"/>
+      <text x="22" y="-20" textAnchor="middle" fontSize="16" fontWeight="bold" stroke="currentColor" strokeWidth="1" fill="currentColor">$</text>
     </svg>
   ),
   '/dashboard/revenue': (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="1" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.35"/>
-      <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.6"/>
-      <rect x="13" y="3" width="4" height="14" rx="1" fill="currentColor"/>
-      <path d="M1.5 10L5 7l3 2 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M12 4h4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="18" height="18" viewBox="-34 -38 72 72" fill="none"
+      stroke="currentColor" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round">
+      {/* hand */}
+      <path d="M-30,10 Q-20,28 0,26 Q20,24 32,10 Q24,6 16,14 Q8,6 0,10"/>
+      <rect x="-30" y="0" width="10" height="18" rx="3"/>
+      {/* coin stack */}
+      <ellipse cx="16" cy="-4" rx="14" ry="5"/>
+      <ellipse cx="16" cy="-11" rx="14" ry="5"/>
+      <ellipse cx="16" cy="-18" rx="14" ry="5"/>
+      <ellipse cx="16" cy="-25" rx="14" ry="5"/>
+      <line x1="2"  y1="-4"  x2="2"  y2="-25"/>
+      <line x1="30" y1="-4"  x2="30" y2="-25"/>
+      {/* dollar coin front */}
+      <circle cx="2" cy="2" r="13"/>
+      <text x="2" y="8" textAnchor="middle" fontSize="14" fontWeight="bold" stroke="currentColor" strokeWidth="1" fill="currentColor">$</text>
+      {/* up arrow */}
+      <line x1="-14" y1="-10" x2="-14" y2="-32"/>
+      <polyline points="-22,-24 -14,-34 -6,-24"/>
     </svg>
   ),
   '/dashboard/schedule': (
