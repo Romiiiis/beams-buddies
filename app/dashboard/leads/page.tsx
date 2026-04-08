@@ -9,6 +9,7 @@ const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
+const BLUE = '#1E3A8A'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -23,13 +24,6 @@ const TYPE = {
     fontSize: '10px',
     fontWeight: 800,
     letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
@@ -63,8 +57,8 @@ const TYPE = {
     letterSpacing: '-0.05em' as const,
     lineHeight: 1,
   },
-  valueMd: {
-    fontSize: '20px',
+  valueSm: {
+    fontSize: '16px',
     fontWeight: 900,
     color: TEXT,
     letterSpacing: '-0.04em' as const,
@@ -132,6 +126,14 @@ function IconArrow({ size = 15 }: { size?: number }) {
   )
 }
 
+function IconFilter({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
     booked: { bg: '#DCFCE7', color: '#166534', label: 'Booked' },
@@ -140,13 +142,15 @@ function StatusBadge({ status }: { status: string }) {
     wrong_number: { bg: '#FEE2E2', color: '#7F1D1D', label: 'Wrong number' },
     converted: { bg: '#DBEAFE', color: '#1E3A8A', label: 'Converted' },
   }
+
   const s = map[status] || { bg: '#F1F5F9', color: TEXT3, label: status }
+
   return (
     <span
       style={{
         background: s.bg,
         color: s.color,
-        padding: '5px 9px',
+        padding: '6px 10px',
         borderRadius: '999px',
         fontSize: '10px',
         fontWeight: 800,
@@ -168,13 +172,15 @@ function JobTypeBadge({ type }: { type: string }) {
     quote: { bg: '#FEF3C7', color: '#78350F' },
     site_visit: { bg: '#DBEAFE', color: '#1E3A8A' },
   }
+
   const s = map[type] || { bg: '#F1F5F9', color: TEXT3 }
+
   return (
     <span
       style={{
         background: s.bg,
         color: s.color,
-        padding: '5px 9px',
+        padding: '6px 10px',
         borderRadius: '999px',
         fontSize: '10px',
         fontWeight: 800,
@@ -201,17 +207,32 @@ export default function LeadsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
-      if (!userData) return
+      const { data: userData } = await supabase
+        .from('users')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!userData) {
+        setLoading(false)
+        return
+      }
+
       setBusinessId(userData.business_id)
 
-      const { data } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false })
 
       setLeads(data || [])
       setLoading(false)
@@ -225,6 +246,7 @@ export default function LeadsPage() {
       const matchSearch = search
         ? `${l.customer_name} ${l.phone_number} ${l.suburb} ${l.job_type}`.toLowerCase().includes(search.toLowerCase())
         : true
+
       const matchStatus = filterStatus === 'all' ? true : l.status === filterStatus
       return matchSearch && matchStatus
     })
@@ -237,14 +259,16 @@ export default function LeadsPage() {
     try {
       const { data: customer, error: custErr } = await supabase
         .from('customers')
-        .insert([{
-          business_id: businessId,
-          first_name: lead.customer_name?.split(' ')[0] || lead.customer_name,
-          last_name: lead.customer_name?.split(' ').slice(1).join(' ') || '',
-          phone: lead.phone_number,
-          address: lead.address,
-          suburb: lead.suburb,
-        }])
+        .insert([
+          {
+            business_id: businessId,
+            first_name: lead.customer_name?.split(' ')[0] || lead.customer_name,
+            last_name: lead.customer_name?.split(' ').slice(1).join(' ') || '',
+            phone: lead.phone_number,
+            address: lead.address,
+            suburb: lead.suburb,
+          },
+        ])
         .select()
         .single()
 
@@ -252,20 +276,22 @@ export default function LeadsPage() {
 
       const { error: jobErr } = await supabase
         .from('jobs')
-        .insert([{
-          business_id: businessId,
-          customer_id: customer.id,
-          equipment_type: 'other',
-          brand: 'TBC',
-          install_date: lead.preferred_date || new Date().toISOString().split('T')[0],
-          notes: `${lead.job_type} — ${lead.issue_summary}. Booked: ${lead.preferred_date} at ${lead.preferred_start_time}.`,
-        }])
+        .insert([
+          {
+            business_id: businessId,
+            customer_id: customer.id,
+            equipment_type: 'other',
+            brand: 'TBC',
+            install_date: lead.preferred_date || new Date().toISOString().split('T')[0],
+            notes: `${lead.job_type} — ${lead.issue_summary}. Booked: ${lead.preferred_date} at ${lead.preferred_start_time}.`,
+          },
+        ])
 
       if (jobErr) throw jobErr
 
       await supabase.from('leads').update({ status: 'converted' }).eq('id', lead.id)
 
-      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: 'converted' } : l))
+      setLeads(prev => prev.map(l => (l.id === lead.id ? { ...l, status: 'converted' } : l)))
     } catch (err) {
       console.error('Convert error:', err)
       alert('Failed to convert lead. Check console.')
@@ -289,26 +315,17 @@ export default function LeadsPage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: '16px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -324,11 +341,12 @@ export default function LeadsPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '34px',
-    height: '34px',
+    width: '36px',
+    height: '36px',
     borderRadius: '11px',
     background: '#F8FAFC',
     color,
@@ -340,6 +358,33 @@ export default function LeadsPage() {
   })
 
   const statuses = ['all', 'booked', 'pending', 'incomplete', 'converted', 'wrong_number']
+
+  const overviewCards = [
+    {
+      label: 'Booked',
+      value: leads.filter(l => l.status === 'booked').length,
+      sub: 'Ready to convert',
+      icon: <IconCalendar size={18} />,
+      accent: '#166534',
+      tag: 'Live pipeline',
+    },
+    {
+      label: 'Pending',
+      value: leads.filter(l => l.status === 'pending').length,
+      sub: 'Need follow-up',
+      icon: <IconPhone size={18} />,
+      accent: AMBER,
+      tag: 'Needs action',
+    },
+    {
+      label: 'Converted',
+      value: leads.filter(l => l.status === 'converted').length,
+      sub: 'Moved into jobs',
+      icon: <IconUsers size={18} />,
+      accent: BLUE,
+      tag: 'Completed flow',
+    },
+  ]
 
   return (
     <div
@@ -353,488 +398,612 @@ export default function LeadsPage() {
     >
       <Sidebar active="/dashboard/leads" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Leads
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Track inbound calls from Chloe and move qualified bookings into live jobs.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/jobs')}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                }}
-              >
-                <IconSpark size={16} />
-                Open jobs
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
-          <div>
-            <div style={sectionLabel}>{sectionDash}Overview</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'Booked',
-                  value: leads.filter(l => l.status === 'booked').length,
-                  sub: 'Ready to convert',
-                  icon: <IconCalendar size={17} />,
-                  accent: '#166534',
-                  span: 'span 4',
-                },
-                {
-                  label: 'Pending',
-                  value: leads.filter(l => l.status === 'pending').length,
-                  sub: 'Need follow-up',
-                  icon: <IconPhone size={17} />,
-                  accent: AMBER,
-                  span: 'span 4',
-                },
-                {
-                  label: 'Converted',
-                  value: leads.filter(l => l.status === 'converted').length,
-                  sub: 'Moved into jobs',
-                  icon: <IconUsers size={17} />,
-                  accent: '#1E3A8A',
-                  span: 'span 4',
-                },
-              ].map(item => (
-                <div
-                  key={item.label}
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Leads
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Track inbound calls from Chloe and move qualified bookings into live jobs.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  onClick={() => router.push('/dashboard/jobs')}
                   style={{
-                    ...shellCard,
-                    padding: isMobile ? '12px' : '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    gridColumn: isMobile ? 'span 1' : item.span,
-                    minHeight: '124px',
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div style={iconWrap(item.accent)}>
-                      {item.icon}
-                    </div>
+                  <IconSpark size={16} />
+                  Open jobs
+                </button>
+              </div>
+            </div>
+          </div>
 
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: TEXT3,
-                      }}
-                    >
-                      Live
-                    </div>
-                  </div>
-
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+            }}
+          >
+            {overviewCards.map(item => (
+              <div
+                key={item.label}
+                style={{
+                  ...panelCard,
+                  gridColumn: isMobile ? 'span 1' : 'span 4',
+                  minHeight: 148,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
                       {item.label}
                     </div>
-                    <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
-                      {item.value}
-                    </div>
-                    <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                      {item.sub}
-                    </div>
+                  </div>
+
+                  <div style={iconWrap(item.accent)}>
+                    {item.icon}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
+                    {item.value}
+                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
+                    {item.sub}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name, phone, suburb..."
-              style={{
-                width: '100%',
-                maxWidth: '320px',
-                height: '38px',
-                padding: '0 12px',
-                borderRadius: '10px',
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                fontSize: '12px',
-                color: TEXT,
-                outline: 'none',
-                fontFamily: FONT,
-              }}
-            />
-
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {statuses.map(s => (
-                <button
-                  key={s}
-                  onClick={() => setFilterStatus(s)}
-                  style={{
-                    height: '34px',
-                    padding: '0 14px',
-                    borderRadius: '999px',
-                    border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
-                    background: filterStatus === s ? TEAL : WHITE,
-                    color: filterStatus === s ? WHITE : TEXT2,
-                    fontSize: '12px',
-                    fontWeight: filterStatus === s ? 700 : 600,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {s === 'all' ? 'All' : s.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ ...shellCard, padding: '14px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+              alignItems: 'start',
+            }}
+          >
             <div
               style={{
-                display: 'flex',
-                alignItems: isMobile ? 'flex-start' : 'center',
-                justifyContent: 'space-between',
-                gap: '10px',
-                flexDirection: isMobile ? 'column' : 'row',
-                marginBottom: '12px',
+                ...panelCard,
+                gridColumn: isMobile ? 'span 1' : 'span 8',
               }}
             >
-              <div style={sectionLabel}>{sectionDash}Inbound calls</div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '10px',
+                  marginBottom: '14px',
+                }}
+              >
+                <div>
+                  <div style={sectionLabel}>Inbound calls</div>
+                  <div style={{ ...TYPE.bodySm }}>
+                    Search, filter, and convert qualified leads into jobs.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '7px 10px',
+                    borderRadius: '999px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    color: TEXT3,
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  <IconFilter size={14} />
+                  {filtered.length} shown
+                </div>
+              </div>
 
               <div
                 style={{
-                  height: '34px',
-                  borderRadius: '10px',
-                  border: `1px solid ${BORDER}`,
-                  background: '#F8FAFC',
-                  color: TEXT2,
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  padding: '0 12px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontFamily: FONT,
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 320px) 1fr',
+                  gap: '10px',
+                  marginBottom: '14px',
                 }}
               >
-                {filtered.length} shown
-              </div>
-            </div>
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by name, phone, suburb..."
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: '#FCFCFD',
+                    fontSize: '12px',
+                    color: TEXT,
+                    outline: 'none',
+                    fontFamily: FONT,
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+                  }}
+                />
 
-            {loading ? (
-              <div
-                style={{
-                  borderRadius: '12px',
-                  padding: '26px 16px',
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  textAlign: 'center',
-                  color: TEXT3,
-                  fontSize: '14px',
-                  fontWeight: 500,
-                }}
-              >
-                Loading...
-              </div>
-            ) : filtered.length === 0 ? (
-              <div
-                style={{
-                  borderRadius: '12px',
-                  padding: '26px 16px',
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  textAlign: 'center',
-                  color: TEXT3,
-                  fontSize: '14px',
-                  fontWeight: 500,
-                }}
-              >
-                No leads yet. Calls from Chloe will appear here.
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '14px' }}>
-                {filtered.map(lead => {
-                  const statusAccent =
-                    lead.status === 'booked'
-                      ? '#166534'
-                      : lead.status === 'pending'
-                      ? '#92400E'
-                      : lead.status === 'converted'
-                      ? '#1E3A8A'
-                      : lead.status === 'wrong_number'
-                      ? '#B91C1C'
-                      : '#64748B'
-
-                  return (
-                    <div
-                      key={lead.id}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {statuses.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setFilterStatus(s)}
                       style={{
-                        borderRadius: '16px',
-                        border: `1px solid ${BORDER}`,
-                        background: WHITE,
-                        boxShadow: '0 10px 24px rgba(15,23,42,0.06)',
-                        overflow: 'hidden',
+                        height: '36px',
+                        padding: '0 14px',
+                        borderRadius: '999px',
+                        border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
+                        background: filterStatus === s ? TEAL : WHITE,
+                        color: filterStatus === s ? WHITE : TEXT2,
+                        fontSize: '12px',
+                        fontWeight: filterStatus === s ? 700 : 600,
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        textTransform: 'capitalize',
+                        boxShadow: filterStatus === s ? '0 6px 14px rgba(31,158,148,0.16)' : 'none',
                       }}
                     >
+                      {s === 'all' ? 'All' : s.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {loading ? (
+                <div
+                  style={{
+                    borderRadius: '12px',
+                    padding: '26px 16px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    textAlign: 'center',
+                    color: TEXT3,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  Loading...
+                </div>
+              ) : filtered.length === 0 ? (
+                <div
+                  style={{
+                    borderRadius: '12px',
+                    padding: '26px 16px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    textAlign: 'center',
+                    color: TEXT3,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  No leads yet. Calls from Chloe will appear here.
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {filtered.map(lead => {
+                    const statusAccent =
+                      lead.status === 'booked'
+                        ? '#166534'
+                        : lead.status === 'pending'
+                        ? '#92400E'
+                        : lead.status === 'converted'
+                        ? '#1E3A8A'
+                        : lead.status === 'wrong_number'
+                        ? '#B91C1C'
+                        : '#64748B'
+
+                    return (
                       <div
+                        key={lead.id}
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: isMobile ? '1fr' : '6px 1fr',
-                          minHeight: isMobile ? 'auto' : '100%',
+                          borderRadius: '16px',
+                          border: `1px solid ${BORDER}`,
+                          background: WHITE,
+                          boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+                          overflow: 'hidden',
                         }}
                       >
-                        {!isMobile && (
-                          <div
-                            style={{
-                              background: statusAccent,
-                            }}
-                          />
-                        )}
-
-                        <div style={{ padding: '16px' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: isMobile ? 'flex-start' : 'center',
-                              justifyContent: 'space-between',
-                              gap: '12px',
-                              flexDirection: isMobile ? 'column' : 'row',
-                              paddingBottom: '12px',
-                              borderBottom: `1px solid ${BORDER}`,
-                              marginBottom: '14px',
-                            }}
-                          >
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ ...TYPE.label, marginBottom: '6px', color: statusAccent }}>
-                                Inbound call
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '15px',
-                                  fontWeight: 800,
-                                  color: TEXT,
-                                  lineHeight: 1.2,
-                                  marginBottom: '4px',
-                                }}
-                              >
-                                {lead.customer_name}
-                              </div>
-                              <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>
-                                {lead.phone_number}
-                              </div>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <JobTypeBadge type={lead.job_type} />
-                              <StatusBadge status={lead.status} />
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
-                              gap: '12px',
-                              alignItems: 'stretch',
-                            }}
-                          >
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: isMobile ? '1fr' : '6px 1fr',
+                            minHeight: isMobile ? 'auto' : '100%',
+                          }}
+                        >
+                          {!isMobile && (
                             <div
                               style={{
-                                background: '#F8FAFC',
-                                border: `1px solid ${BORDER}`,
-                                borderRadius: '12px',
-                                padding: '12px',
+                                background: statusAccent,
                               }}
-                            >
-                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Suburb</div>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
-                                {lead.suburb || 'No suburb'}
-                              </div>
-                            </div>
+                            />
+                          )}
 
-                            <div
-                              style={{
-                                background: '#F8FAFC',
-                                border: `1px solid ${BORDER}`,
-                                borderRadius: '12px',
-                                padding: '12px',
-                              }}
-                            >
-                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Preferred date</div>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
-                                {lead.preferred_date || 'No date'}
-                              </div>
-                            </div>
-
-                            <div
-                              style={{
-                                background: '#F8FAFC',
-                                border: `1px solid ${BORDER}`,
-                                borderRadius: '12px',
-                                padding: '12px',
-                              }}
-                            >
-                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Preferred time</div>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
-                                {lead.preferred_start_time || 'No time'}
-                              </div>
-                            </div>
-
+                          <div style={{ padding: '16px' }}>
                             <div
                               style={{
                                 display: 'flex',
-                                flexDirection: isMobile ? 'row' : 'column',
-                                alignItems: isMobile ? 'center' : 'stretch',
-                                gap: '8px',
-                                justifyContent: 'center',
+                                alignItems: isMobile ? 'flex-start' : 'center',
+                                justifyContent: 'space-between',
+                                gap: '12px',
+                                flexDirection: isMobile ? 'column' : 'row',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${BORDER}`,
+                                marginBottom: '14px',
                               }}
                             >
-                              {lead.status === 'booked' && (
-                                <button
-                                  onClick={() => convertToJob(lead)}
-                                  disabled={converting === lead.id}
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ ...TYPE.label, marginBottom: '6px', color: statusAccent }}>
+                                  Inbound call
+                                </div>
+                                <div
                                   style={{
-                                    height: '40px',
-                                    borderRadius: '10px',
-                                    border: 'none',
-                                    background: TEAL,
-                                    color: WHITE,
-                                    fontSize: '12px',
+                                    fontSize: '15px',
                                     fontWeight: 800,
-                                    padding: '0 14px',
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '7px',
-                                    opacity: converting === lead.id ? 0.6 : 1,
-                                    minWidth: isMobile ? 'auto' : '168px',
+                                    color: TEXT,
+                                    lineHeight: 1.2,
+                                    marginBottom: '4px',
                                   }}
                                 >
-                                  {converting === lead.id ? 'Converting...' : 'Convert to job'}
-                                  <IconArrow size={14} />
-                                </button>
-                              )}
+                                  {lead.customer_name}
+                                </div>
+                                <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>
+                                  {lead.phone_number}
+                                </div>
+                              </div>
 
-                              {lead.status === 'converted' && (
-                                <span
-                                  style={{
-                                    height: '40px',
-                                    borderRadius: '10px',
-                                    border: `1px solid ${BORDER}`,
-                                    background: '#F8FAFC',
-                                    color: TEXT2,
-                                    fontSize: '12px',
-                                    fontWeight: 800,
-                                    padding: '0 14px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minWidth: isMobile ? 'auto' : '168px',
-                                  }}
-                                >
-                                  Converted
-                                </span>
-                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <JobTypeBadge type={lead.job_type} />
+                                <StatusBadge status={lead.status} />
+                              </div>
                             </div>
-                          </div>
 
-                          <div
-                            style={{
-                              marginTop: '14px',
-                              background: '#FCFCFD',
-                              border: `1px solid ${BORDER}`,
-                              borderRadius: '12px',
-                              padding: '13px 14px',
-                            }}
-                          >
-                            <div style={{ ...TYPE.label, marginBottom: '6px' }}>Call summary</div>
-                            <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2, lineHeight: 1.7 }}>
-                              {lead.issue_summary || 'No summary'}
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                                gap: '10px',
+                                alignItems: 'stretch',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  borderRadius: '12px',
+                                  padding: '12px',
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '6px' }}>Suburb</div>
+                                <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
+                                  {lead.suburb || 'No suburb'}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  borderRadius: '12px',
+                                  padding: '12px',
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '6px' }}>Preferred date</div>
+                                <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
+                                  {lead.preferred_date || 'No date'}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  borderRadius: '12px',
+                                  padding: '12px',
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '6px' }}>Preferred time</div>
+                                <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
+                                  {lead.preferred_start_time || 'No time'}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                                  display: 'flex',
+                                  flexDirection: isMobile ? 'row' : 'column',
+                                  alignItems: isMobile ? 'center' : 'stretch',
+                                  gap: '8px',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                {lead.status === 'booked' && (
+                                  <button
+                                    onClick={() => convertToJob(lead)}
+                                    disabled={converting === lead.id}
+                                    style={{
+                                      height: '40px',
+                                      borderRadius: '10px',
+                                      border: 'none',
+                                      background: TEAL,
+                                      color: WHITE,
+                                      fontSize: '12px',
+                                      fontWeight: 800,
+                                      padding: '0 14px',
+                                      cursor: 'pointer',
+                                      fontFamily: FONT,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '7px',
+                                      opacity: converting === lead.id ? 0.6 : 1,
+                                      width: '100%',
+                                      boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                                    }}
+                                  >
+                                    {converting === lead.id ? 'Converting...' : 'Convert to job'}
+                                    <IconArrow size={14} />
+                                  </button>
+                                )}
+
+                                {lead.status === 'converted' && (
+                                  <span
+                                    style={{
+                                      height: '40px',
+                                      borderRadius: '10px',
+                                      border: `1px solid ${BORDER}`,
+                                      background: '#F8FAFC',
+                                      color: TEXT2,
+                                      fontSize: '12px',
+                                      fontWeight: 800,
+                                      padding: '0 14px',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '100%',
+                                    }}
+                                  >
+                                    Converted
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div
+                              style={{
+                                marginTop: '14px',
+                                background: '#FCFCFD',
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: '12px',
+                                padding: '13px 14px',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Call summary</div>
+                              <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2, lineHeight: 1.7 }}>
+                                {lead.issue_summary || 'No summary'}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                gridColumn: isMobile ? 'span 1' : 'span 4',
+                display: 'grid',
+                gap: '12px',
+              }}
+            >
+              <div style={panelCard}>
+                <div style={sectionLabel}>Pipeline summary</div>
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <div
+                    style={{
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      padding: '12px',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Total leads</div>
+                    <div style={{ ...TYPE.valueSm }}>{leads.length}</div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      All inbound leads in this workspace
                     </div>
-                  )
-                })}
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      padding: '12px',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Shown now</div>
+                    <div style={{ ...TYPE.valueSm }}>{filtered.length}</div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      Based on your current search and filter
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      padding: '12px',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Booked to convert</div>
+                    <div style={{ ...TYPE.valueSm }}>{leads.filter(l => l.status === 'booked').length}</div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      Ready to move into active jobs
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
+
+              <div style={panelCard}>
+                <div style={sectionLabel}>Actions</div>
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={{
+                      ...quickActionStyle,
+                      width: '100%',
+                      justifyContent: 'center',
+                      background: TEAL,
+                      color: '#FFFFFF',
+                      border: 'none',
+                      boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                    }}
+                  >
+                    <IconSpark size={16} />
+                    Open jobs
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterStatus('all')
+                    }}
+                    style={{
+                      ...quickActionStyle,
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    Reset filters
+                  </button>
+                </div>
+              </div>
+
+              <div style={panelCard}>
+                <div style={sectionLabel}>Notes</div>
+
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {[
+                    'Booked leads can be converted directly into jobs.',
+                    'Converted leads stay visible for tracking history.',
+                    'Search checks customer name, phone, suburb, and job type.',
+                  ].map(item => (
+                    <div
+                      key={item}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          marginTop: '5px',
+                          borderRadius: '999px',
+                          background: TEAL,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
