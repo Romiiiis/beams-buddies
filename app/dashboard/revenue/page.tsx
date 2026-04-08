@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
@@ -8,6 +8,7 @@ import { Sidebar } from '@/components/Sidebar'
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
+const AMBER = '#92400E'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -22,13 +23,6 @@ const TYPE = {
     fontSize: '10px',
     fontWeight: 800,
     letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
@@ -78,6 +72,7 @@ function useIsMobile() {
     function check() {
       setIsMobile(window.innerWidth < 768)
     }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -112,15 +107,46 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconChart({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+type InvoiceRow = {
+  id: string
+  status: string
+  total: number | null
+  amount_paid: number | null
+  created_at: string
+  paid_at?: string | null
+  customer_id?: string | null
+  customers?: {
+    first_name?: string | null
+    last_name?: string | null
+  } | null
+}
+
+type TopCustomer = {
+  name: string
+  total: number
+  count: number
+}
+
 export default function RevenuePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
-  const [invoices, setInvoices] = useState<any[]>([])
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
@@ -132,7 +158,10 @@ export default function RevenuePage() {
         .eq('id', session.user.id)
         .single()
 
-      if (!userData) return
+      if (!userData) {
+        setLoading(false)
+        return
+      }
 
       const { data } = await supabase
         .from('invoices')
@@ -140,7 +169,7 @@ export default function RevenuePage() {
         .eq('business_id', userData.business_id)
         .order('created_at', { ascending: false })
 
-      setInvoices(data || [])
+      setInvoices((data || []) as InvoiceRow[])
       setLoading(false)
     }
 
@@ -150,11 +179,15 @@ export default function RevenuePage() {
   const paid = invoices.filter(i => i.status === 'paid')
   const outstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue')
   const overdue = invoices.filter(i => i.status === 'overdue')
+  const drafts = invoices.filter(i => i.status === 'draft')
 
-  const totalRevenue = paid.reduce((s, i) => s + i.total, 0)
-  const totalOutstanding = outstanding.reduce((s, i) => s + (i.total - i.amount_paid), 0)
-  const totalOverdue = overdue.reduce((s, i) => s + i.total, 0)
-  const totalInvoiced = invoices.reduce((s, i) => s + i.total, 0)
+  const totalRevenue = paid.reduce((sum, i) => sum + Number(i.total || 0), 0)
+  const totalOutstanding = outstanding.reduce(
+    (sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)),
+    0
+  )
+  const totalOverdue = overdue.reduce((sum, i) => sum + Number(i.total || 0), 0)
+  const totalInvoiced = invoices.reduce((sum, i) => sum + Number(i.total || 0), 0)
 
   const last6 = Array.from({ length: 6 }, (_, i) => {
     const d = new Date()
@@ -162,6 +195,7 @@ export default function RevenuePage() {
     d.setMonth(d.getMonth() - (5 - i))
     return {
       label: d.toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }),
+      shortLabel: d.toLocaleDateString('en-AU', { month: 'short' }),
       month: d.getMonth(),
       year: d.getFullYear(),
     }
@@ -173,23 +207,34 @@ export default function RevenuePage() {
         const d = new Date(i.paid_at || i.created_at)
         return d.getMonth() === m.month && d.getFullYear() === m.year
       })
-      .reduce((s, i) => s + i.total, 0)
+      .reduce((sum, i) => sum + Number(i.total || 0), 0)
+
     return { ...m, total }
   })
 
   const maxMonthly = Math.max(...monthlyRevenue.map(m => m.total), 1)
 
-  const customerRevenue: Record<string, { name: string; total: number; count: number }> = {}
+  const customerRevenue: Record<string, TopCustomer> = {}
   paid.forEach(inv => {
-    const id = inv.customer_id
-    const name = `${inv.customers?.first_name || ''} ${inv.customers?.last_name || ''}`.trim() || 'Unknown'
-    if (!customerRevenue[id]) customerRevenue[id] = { name, total: 0, count: 0 }
-    customerRevenue[id].total += inv.total
-    customerRevenue[id].count++
+    const id = inv.customer_id || 'unknown'
+    const first = inv.customers?.first_name || ''
+    const last = inv.customers?.last_name || ''
+    const name = `${first} ${last}`.trim() || 'Unknown'
+
+    if (!customerRevenue[id]) {
+      customerRevenue[id] = { name, total: 0, count: 0 }
+    }
+
+    customerRevenue[id].total += Number(inv.total || 0)
+    customerRevenue[id].count += 1
   })
 
-  const topCustomers = Object.values(customerRevenue).sort((a, b) => b.total - a.total).slice(0, 5)
-  const maxCustomer = topCustomers[0]?.total || 1
+  const topCustomers = Object.values(customerRevenue)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5)
+
+  const maxCustomer = topCustomers.length ? topCustomers[0].total : 1
+  const collectionRate = totalInvoiced > 0 ? Math.round((totalRevenue / totalInvoiced) * 100) : 0
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -206,26 +251,17 @@ export default function RevenuePage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: '16px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -241,11 +277,12 @@ export default function RevenuePage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '34px',
-    height: '34px',
+    width: '36px',
+    height: '36px',
     borderRadius: '11px',
     background: '#F8FAFC',
     color,
@@ -257,85 +294,98 @@ export default function RevenuePage() {
   })
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        fontFamily: FONT,
+        background: BG,
+        overflow: 'hidden',
+      }}
+    >
       <Sidebar active="/dashboard/revenue" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Revenue
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Track collected cash, outstanding balances, overdue invoices, and top-paying customers from one premium revenue dashboard.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/invoices')}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                }}
-              >
-                <IconSpark size={16} />
-                View invoices
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Revenue
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Track collected cash, outstanding balances, overdue invoices, and top-paying customers from one premium revenue dashboard.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  onClick={() => router.push('/dashboard/invoices')}
+                  style={{
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                  }}
+                >
+                  <IconSpark size={16} />
+                  View invoices
+                </button>
+              </div>
+            </div>
+          </div>
+
           {loading ? (
             <div
               style={{
@@ -353,150 +403,289 @@ export default function RevenuePage() {
             </div>
           ) : (
             <>
-              <div>
-                <div style={sectionLabel}>{sectionDash}Financial overview</div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                    gap: '10px',
-                  }}
-                >
-                  {[
-                    {
-                      label: 'Total collected',
-                      value: `$${totalRevenue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                      sub: 'Paid invoices',
-                      icon: <IconRevenue size={17} />,
-                      accent: '#166534',
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Outstanding',
-                      value: `$${totalOutstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                      sub: 'Awaiting payment',
-                      icon: <IconInvoice size={17} />,
-                      accent: '#1E3A8A',
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Overdue',
-                      value: `$${totalOverdue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                      sub: totalOverdue > 0 ? 'Needs follow-up' : 'All up to date',
-                      icon: <IconInvoice size={17} />,
-                      accent: totalOverdue > 0 ? RED : TEXT,
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Total invoiced',
-                      value: `$${totalInvoiced.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-                      sub: 'All invoices',
-                      icon: <IconRevenue size={17} />,
-                      accent: TEAL_DARK,
-                      span: 'span 3',
-                    },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        ...shellCard,
-                        padding: isMobile ? '12px' : '12px 14px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        gridColumn: isMobile ? 'span 1' : item.span,
-                        minHeight: '124px',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                        }}
-                      >
-                        <div style={iconWrap(item.accent)}>
-                          {item.icon}
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
-                            color: TEXT3,
-                          }}
-                        >
-                          Live
-                        </div>
-                      </div>
-
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                {[
+                  {
+                    label: 'Total collected',
+                    value: `$${totalRevenue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                    sub: 'Paid invoices',
+                    icon: <IconRevenue size={18} />,
+                    accent: '#166534',
+                    tag: 'Cash received',
+                  },
+                  {
+                    label: 'Outstanding',
+                    value: `$${totalOutstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                    sub: 'Awaiting payment',
+                    icon: <IconInvoice size={18} />,
+                    accent: '#1E3A8A',
+                    tag: 'Open balance',
+                  },
+                  {
+                    label: 'Overdue',
+                    value: `$${totalOverdue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                    sub: totalOverdue > 0 ? 'Needs follow-up' : 'All up to date',
+                    icon: <IconInvoice size={18} />,
+                    accent: totalOverdue > 0 ? RED : TEXT,
+                    tag: 'Past due',
+                  },
+                  {
+                    label: 'Total invoiced',
+                    value: `$${totalInvoiced.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+                    sub: 'All invoices',
+                    icon: <IconChart size={18} />,
+                    accent: TEAL_DARK,
+                    tag: 'Gross billed',
+                  },
+                ].map(item => (
+                  <div
+                    key={item.label}
+                    style={{
+                      ...panelCard,
+                      gridColumn: isMobile ? 'span 1' : 'span 3',
+                      minHeight: 148,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                       <div>
-                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>
+                        <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                        <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
                           {item.label}
                         </div>
-                        <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
-                          {item.value}
-                        </div>
-                        <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                          {item.sub}
-                        </div>
+                      </div>
+
+                      <div style={iconWrap(item.accent)}>
+                        {item.icon}
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div>
+                      <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '24px' : '30px', color: item.accent }}>
+                        {item.value}
+                      </div>
+                      <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
+                        {item.sub}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div>
-                <div style={sectionLabel}>{sectionDash}Trends</div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0,1fr))',
+                  gap: '12px',
+                  alignItems: 'start',
+                }}
+              >
                 <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-                    gap: '10px',
+                    ...panelCard,
+                    gridColumn: isMobile ? 'span 1' : 'span 8',
                   }}
                 >
-                  <div style={{ ...shellCard, padding: '14px' }}>
-                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>
-                      Monthly revenue
-                    </div>
-                    <div style={{ ...TYPE.bodySm, marginBottom: '10px' }}>
-                      Paid revenue over the last 6 months
+                  <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+                    <div>
+                      <div style={sectionLabel}>Monthly revenue</div>
+                      <div style={{ ...TYPE.bodySm }}>
+                        Paid revenue over the last 6 months
+                      </div>
                     </div>
 
-                    <div style={{ display: 'grid', gap: '10px' }}>
-                      {monthlyRevenue.map(m => (
-                        <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ ...TYPE.bodySm, width: '72px', textAlign: 'right', flexShrink: 0, fontWeight: 700 }}>
-                            {m.label}
-                          </div>
-                          <div style={{ flex: 1, height: '10px', background: '#F3F4F6', borderRadius: '5px', overflow: 'hidden' }}>
-                            <div
-                              style={{
-                                width: `${Math.round((m.total / maxMonthly) * 100)}%`,
-                                height: '100%',
-                                background: TEAL,
-                                borderRadius: '5px',
-                              }}
-                            />
-                          </div>
-                          <div style={{ ...TYPE.titleSm, width: '74px', textAlign: 'right', flexShrink: 0 }}>
-                            {m.total > 0 ? `$${m.total.toLocaleString('en-AU', { minimumFractionDigits: 0 })}` : '—'}
-                          </div>
-                        </div>
-                      ))}
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '7px 10px',
+                        borderRadius: '999px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                        color: TEXT3,
+                        fontSize: '11px',
+                        fontWeight: 800,
+                      }}
+                    >
+                      Collection rate {collectionRate}%
                     </div>
                   </div>
 
-                  <div style={{ ...shellCard, padding: '14px' }}>
-                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>
-                      Top customers
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? '1fr 1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
+                      gap: '10px',
+                      marginBottom: '14px',
+                    }}
+                  >
+                    {[
+                      { label: 'Paid invoices', value: paid.length },
+                      { label: 'Open invoices', value: outstanding.length },
+                      { label: 'Overdue count', value: overdue.length },
+                      { label: 'Top customers', value: topCustomers.length },
+                      { label: 'Collected', value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}` },
+                      { label: 'Outstanding', value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}` },
+                    ].map(item => (
+                      <div
+                        key={item.label}
+                        style={{
+                          borderRadius: '12px',
+                          background: '#F8FAFC',
+                          border: `1px solid ${BORDER}`,
+                          padding: '10px 12px',
+                        }}
+                      >
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
+                        <div
+                          style={{
+                            ...TYPE.valueMd,
+                            fontSize: typeof item.value === 'string' && item.value.length > 8 ? '16px' : '20px',
+                          }}
+                        >
+                          {item.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      height: isMobile ? 260 : 300,
+                      borderRadius: '14px',
+                      background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
+                      border: `1px solid ${BORDER}`,
+                      padding: '16px 16px 14px',
+                      display: 'grid',
+                      gridTemplateColumns: '42px 1fr',
+                      gap: '12px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        fontSize: '11px',
+                        color: TEXT3,
+                        paddingTop: '4px',
+                        paddingBottom: '24px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {[100, 75, 50, 25, 0].map(tick => (
+                        <span key={tick}>
+                          ${Math.round((maxMonthly * tick) / 100).toLocaleString('en-AU')}
+                        </span>
+                      ))}
                     </div>
-                    <div style={{ ...TYPE.bodySm, marginBottom: '10px' }}>
-                      Highest paid revenue by customer
+
+                    <div
+                      style={{
+                        position: 'relative',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+                        gap: '10px',
+                        alignItems: 'end',
+                        paddingTop: '6px',
+                      }}
+                    >
+                      {[0, 25, 50, 75, 100].map((top, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            right: 0,
+                            top: `${top}%`,
+                            borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
+                            zIndex: 0,
+                          }}
+                        />
+                      ))}
+
+                      {monthlyRevenue.map(m => {
+                        const height = Math.max(16, Math.round((m.total / maxMonthly) * (isMobile ? 140 : 170)))
+
+                        return (
+                          <div
+                            key={m.label}
+                            style={{
+                              position: 'relative',
+                              zIndex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: '8px',
+                              height: '100%',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                color: TEXT3,
+                                minHeight: '14px',
+                                textAlign: 'center',
+                              }}
+                            >
+                              {m.total > 0 ? `$${Math.round(m.total).toLocaleString('en-AU')}` : '$0'}
+                            </div>
+
+                            <div
+                              style={{
+                                width: '100%',
+                                maxWidth: '42px',
+                                height: isMobile ? '150px' : '182px',
+                                display: 'flex',
+                                alignItems: 'flex-end',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '30px',
+                                  height: `${height}px`,
+                                  borderRadius: '999px',
+                                  background:
+                                    m.total > 0
+                                      ? 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)'
+                                      : 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
+                                  boxShadow: m.total > 0 ? '0 4px 10px rgba(31,158,148,0.18)' : 'none',
+                                }}
+                              />
+                            </div>
+
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>
+                              {m.shortLabel}
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    gridColumn: isMobile ? 'span 1' : 'span 4',
+                    display: 'grid',
+                    gap: '12px',
+                  }}
+                >
+                  <div style={panelCard}>
+                    <div style={sectionLabel}>Top customers</div>
 
                     {topCustomers.length === 0 ? (
                       <div
@@ -515,85 +704,181 @@ export default function RevenuePage() {
                       </div>
                     ) : (
                       <div style={{ display: 'grid', gap: '10px' }}>
-                        {topCustomers.map(c => (
-                          <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ ...TYPE.bodySm, width: '100px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 700 }}>
-                              {c.name}
+                        {topCustomers.map((c, index) => (
+                          <div
+                            key={`${c.name}-${index}`}
+                            style={{
+                              borderRadius: '12px',
+                              padding: '12px 14px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    borderRadius: '10px',
+                                    background: '#E8F4F1',
+                                    color: '#0A4F4C',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '12px',
+                                    fontWeight: 800,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {index + 1}
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ ...TYPE.titleSm, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {c.name}
+                                  </div>
+                                  <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                    {c.count} paid invoice{c.count === 1 ? '' : 's'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>
+                                ${Math.round(c.total).toLocaleString('en-AU')}
+                              </div>
                             </div>
-                            <div style={{ flex: 1, height: '10px', background: '#F3F4F6', borderRadius: '5px', overflow: 'hidden' }}>
+
+                            <div style={{ width: '100%', height: '8px', background: '#EAEFF4', borderRadius: '999px', overflow: 'hidden' }}>
                               <div
                                 style={{
                                   width: `${Math.round((c.total / maxCustomer) * 100)}%`,
                                   height: '100%',
                                   background: TEAL,
-                                  borderRadius: '5px',
+                                  borderRadius: '999px',
                                 }}
                               />
-                            </div>
-                            <div style={{ ...TYPE.titleSm, width: '74px', textAlign: 'right', flexShrink: 0 }}>
-                              ${c.total.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
 
-              <div>
-                <div style={sectionLabel}>{sectionDash}Breakdown</div>
-                <div style={{ ...shellCard, padding: '14px' }}>
-                  <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>
-                    Invoice breakdown
-                  </div>
-                  <div style={{ ...TYPE.bodySm, marginBottom: '10px' }}>
-                    Revenue by invoice status
-                  </div>
+                  <div style={panelCard}>
+                    <div style={sectionLabel}>Breakdown</div>
 
-                  <div style={{ display: 'grid', gap: '8px' }}>
-                    {[
-                      { label: 'Paid invoices', value: paid.length, amount: totalRevenue, color: '#166534', bg: '#DCFCE7' },
-                      { label: 'Sent / awaiting payment', value: outstanding.filter(i => i.status === 'sent').length, amount: outstanding.filter(i => i.status === 'sent').reduce((s: number, i: any) => s + i.total, 0), color: '#1E3A8A', bg: '#DBEAFE' },
-                      { label: 'Overdue', value: overdue.length, amount: totalOverdue, color: '#7F1D1D', bg: '#FEE2E2' },
-                      { label: 'Draft', value: invoices.filter(i => i.status === 'draft').length, amount: invoices.filter(i => i.status === 'draft').reduce((s: number, i: any) => s + i.total, 0), color: TEXT3, bg: '#F1F5F9' },
-                    ].map(row => (
-                      <div
-                        key={row.label}
-                        style={{
-                          borderRadius: '12px',
-                          padding: '12px 14px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '12px',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                          <span
-                            style={{
-                              background: row.bg,
-                              color: row.color,
-                              padding: '4px 10px',
-                              borderRadius: '999px',
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              flexShrink: 0,
-                              letterSpacing: '0.02em',
-                            }}
-                          >
-                            {row.value}
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {[
+                        {
+                          label: 'Paid invoices',
+                          value: paid.length,
+                          amount: totalRevenue,
+                          color: '#166534',
+                          bg: '#DCFCE7',
+                        },
+                        {
+                          label: 'Sent / awaiting payment',
+                          value: outstanding.filter(i => i.status === 'sent').length,
+                          amount: outstanding
+                            .filter(i => i.status === 'sent')
+                            .reduce((sum, i) => sum + Number(i.total || 0), 0),
+                          color: '#1E3A8A',
+                          bg: '#DBEAFE',
+                        },
+                        {
+                          label: 'Overdue',
+                          value: overdue.length,
+                          amount: totalOverdue,
+                          color: '#7F1D1D',
+                          bg: '#FEE2E2',
+                        },
+                        {
+                          label: 'Draft',
+                          value: drafts.length,
+                          amount: drafts.reduce((sum, i) => sum + Number(i.total || 0), 0),
+                          color: TEXT3,
+                          bg: '#F1F5F9',
+                        },
+                      ].map(row => (
+                        <div
+                          key={row.label}
+                          style={{
+                            borderRadius: '12px',
+                            padding: '12px 14px',
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: '12px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                            <span
+                              style={{
+                                background: row.bg,
+                                color: row.color,
+                                padding: '4px 10px',
+                                borderRadius: '999px',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                                letterSpacing: '0.02em',
+                              }}
+                            >
+                              {row.value}
+                            </span>
+                            <span style={TYPE.titleSm}>{row.label}</span>
+                          </div>
+
+                          <span style={{ ...TYPE.titleSm, color: row.color, flexShrink: 0 }}>
+                            ${row.amount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
                           </span>
-                          <span style={TYPE.titleSm}>{row.label}</span>
                         </div>
+                      ))}
+                    </div>
+                  </div>
 
-                        <span style={{ ...TYPE.titleSm, color: row.color, flexShrink: 0 }}>
-                          ${row.amount.toLocaleString('en-AU', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    ))}
+                  <div style={panelCard}>
+                    <div style={sectionLabel}>Summary</div>
+
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {[
+                        {
+                          label: 'Collections',
+                          heading: collectionRate >= 80 ? 'Strong' : 'Needs attention',
+                          sub: `${collectionRate}% of invoiced value collected`,
+                          accent: collectionRate >= 80 ? '#10B981' : RED,
+                        },
+                        {
+                          label: 'Outstanding load',
+                          heading: totalOutstanding > 0 ? 'Follow-up recommended' : 'Clear',
+                          sub: `${outstanding.length} invoice${outstanding.length === 1 ? '' : 's'} still open`,
+                          accent: totalOutstanding > 0 ? AMBER : '#10B981',
+                        },
+                        {
+                          label: 'Overdue risk',
+                          heading: totalOverdue > 0 ? 'Immediate action suggested' : 'Stable',
+                          sub: `$${Math.round(totalOverdue).toLocaleString('en-AU')} overdue now`,
+                          accent: totalOverdue > 0 ? RED : '#10B981',
+                        },
+                      ].map(item => (
+                        <div
+                          key={item.label}
+                          style={{
+                            background: '#F9FAFB',
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: '12px',
+                            padding: '14px',
+                            borderLeft: `3px solid ${item.accent}`,
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.label}</div>
+                          <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>{item.heading}</div>
+                          <div style={TYPE.bodySm}>{item.sub}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
