@@ -91,34 +91,6 @@ function IconArrowLeft({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconUsers({ size = 17 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconTool({ size = 17 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.86l-6.01 6.01a1.5 1.5 0 1 0 2.12 2.12l6.01-6.01a4 4 0 0 0 5.86-5.4l-2.33 2.33-2.25-.45-.45-2.25 2.45-2.21Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconCalendar({ size = 17 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 export default function AddJobPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -256,19 +228,6 @@ export default function AddJobPage() {
     alignItems: 'center',
     gap: '8px',
   }
-
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '34px',
-    height: '34px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
-    flexShrink: 0,
-  })
 
   const input: React.CSSProperties = {
     height: '40px',
@@ -415,88 +374,6 @@ export default function AddJobPage() {
               {error}
             </div>
           )}
-
-          <div>
-            <div style={sectionLabel}>{sectionDash}Overview</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'Customer profile',
-                  sub: 'Contact details first',
-                  icon: <IconUsers size={17} />,
-                  accent: TEXT,
-                  span: 'span 4',
-                },
-                {
-                  label: 'Unit details',
-                  sub: 'Installation and equipment',
-                  icon: <IconTool size={17} />,
-                  accent: TEAL_DARK,
-                  span: 'span 4',
-                },
-                {
-                  label: 'Service schedule',
-                  sub: 'Automated follow-up timing',
-                  icon: <IconCalendar size={17} />,
-                  accent: AMBER,
-                  span: 'span 4',
-                },
-              ].map(item => (
-                <div
-                  key={item.label}
-                  style={{
-                    ...shellCard,
-                    padding: isMobile ? '12px' : '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    gridColumn: isMobile ? 'span 1' : item.span,
-                    minHeight: '118px',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div style={iconWrap(item.accent)}>
-                      {item.icon}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: TEXT3,
-                      }}
-                    >
-                      Step
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                      {item.sub}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           <form id="job-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ ...shellCard, padding: '14px' }}>
