@@ -227,7 +227,7 @@ export function Sidebar({ active }: { active: string }) {
           cursor: 'pointer',
           textAlign: 'left',
           boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
-          transition: 'background 0.15s ease, box-shadow 0.15s ease',
+          transition: 'background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
         }}
         onMouseEnter={e => {
           if (!isActive) e.currentTarget.style.background = '#F8FAFC'
@@ -249,6 +249,7 @@ export function Sidebar({ active }: { active: string }) {
             color: isActive ? WHITE : TEXT3,
             border: isActive ? 'none' : `1px solid ${BORDER}`,
             boxShadow: isActive ? '0 6px 14px rgba(31,158,148,0.20)' : 'none',
+            lineHeight: 0,
           }}
         >
           {icons[item.href]}
@@ -258,10 +259,14 @@ export function Sidebar({ active }: { active: string }) {
           <span
             style={{
               fontSize: 13,
-              fontWeight: isActive ? 800 : 700,
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-              color: isActive ? TEAL : undefined,
+              fontWeight: isActive ? 700 : 600,
+              letterSpacing: '-0.01em',
+              lineHeight: '18px',
+              color: isActive ? TEAL : TEXT2,
+              whiteSpace: 'nowrap',
+              textRendering: 'optimizeLegibility',
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale',
             }}
           >
             {item.label}
@@ -284,6 +289,7 @@ export function Sidebar({ active }: { active: string }) {
             padding: 10px 4px 8px;
             cursor: pointer;
             gap: 4px;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           }
           .mobile-tab-icon {
             width: 20px;
@@ -329,7 +335,19 @@ export function Sidebar({ active }: { active: string }) {
                 <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
                   {icons[tab.href]}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600 }}>{tab.label}</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: isActive ? 700 : 600,
+                    lineHeight: 1.1,
+                    letterSpacing: '-0.01em',
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
+                  }}
+                >
+                  {tab.label}
+                </span>
               </div>
             )
           })}
@@ -355,6 +373,14 @@ export function Sidebar({ active }: { active: string }) {
           display: none;
           width: 0;
           height: 0;
+        }
+
+        .sidebar-icon svg {
+          display: block;
+          width: 18px;
+          height: 18px;
+          stroke-width: 1.9;
+          shape-rendering: geometricPrecision;
         }
       `}</style>
 
@@ -384,7 +410,7 @@ export function Sidebar({ active }: { active: string }) {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             transition: 'width 0.2s ease',
           }}
         >
@@ -418,10 +444,13 @@ export function Sidebar({ active }: { active: string }) {
                 <div
                   style={{
                     fontSize: 15,
-                    fontWeight: 900,
+                    fontWeight: 800,
                     color: TEXT,
-                    letterSpacing: '-0.04em',
+                    letterSpacing: '-0.02em',
                     lineHeight: 1.1,
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
                   }}
                 >
                   Jobyra
@@ -429,11 +458,15 @@ export function Sidebar({ active }: { active: string }) {
                 <div
                   style={{
                     fontSize: 10,
-                    fontWeight: 800,
+                    fontWeight: 700,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     color: TEXT3,
                     marginTop: 3,
+                    lineHeight: 1.2,
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
                   }}
                 >
                   {loading ? 'Loading...' : business?.name || 'Trade CRM'}
@@ -460,11 +493,15 @@ export function Sidebar({ active }: { active: string }) {
               <div
                 style={{
                   fontSize: 10,
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
+                  fontWeight: 700,
+                  letterSpacing: '0.10em',
                   textTransform: 'uppercase',
                   color: TEXT3,
                   padding: '12px 10px 5px',
+                  lineHeight: 1.2,
+                  textRendering: 'optimizeLegibility',
+                  WebkitFontSmoothing: 'antialiased',
+                  MozOsxFontSmoothing: 'grayscale',
                 }}
               >
                 Finance
@@ -477,11 +514,15 @@ export function Sidebar({ active }: { active: string }) {
               <div
                 style={{
                   fontSize: 10,
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
+                  fontWeight: 700,
+                  letterSpacing: '0.10em',
                   textTransform: 'uppercase',
                   color: TEXT3,
                   padding: '12px 10px 5px',
+                  lineHeight: 1.2,
+                  textRendering: 'optimizeLegibility',
+                  WebkitFontSmoothing: 'antialiased',
+                  MozOsxFontSmoothing: 'grayscale',
                 }}
               >
                 Manage
@@ -560,8 +601,9 @@ export function Sidebar({ active }: { active: string }) {
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: 13,
-                      fontWeight: 800,
+                      fontWeight: 700,
                       flexShrink: 0,
+                      letterSpacing: '-0.01em',
                     }}
                   >
                     {initials}
@@ -573,12 +615,16 @@ export function Sidebar({ active }: { active: string }) {
                     <div
                       style={{
                         fontSize: 13,
-                        fontWeight: 800,
+                        fontWeight: 700,
                         color: TEXT,
                         lineHeight: 1.15,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        letterSpacing: '-0.01em',
+                        textRendering: 'optimizeLegibility',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale',
                       }}
                     >
                       {loading ? 'Loading...' : business?.full_name || 'Owner'}
@@ -589,6 +635,11 @@ export function Sidebar({ active }: { active: string }) {
                         color: TEXT3,
                         marginTop: 3,
                         fontWeight: 600,
+                        lineHeight: 1.2,
+                        letterSpacing: '-0.01em',
+                        textRendering: 'optimizeLegibility',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale',
                       }}
                     >
                       {loading ? '' : business?.role_title || 'Owner'}
@@ -614,9 +665,12 @@ export function Sidebar({ active }: { active: string }) {
                   justifyContent: 'center',
                   boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
                   marginLeft: 0,
+                  lineHeight: 0,
                 }}
               >
-                <LogoutIcon />
+                <span className="sidebar-icon">
+                  <LogoutIcon />
+                </span>
               </button>
             </div>
           </div>
