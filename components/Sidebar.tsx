@@ -51,7 +51,7 @@ const iconBase = {
   viewBox: '0 0 24 24',
   fill: 'none' as const,
   stroke: 'currentColor',
-  strokeWidth: 1.7,
+  strokeWidth: 1.8,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   style: {
@@ -65,97 +65,81 @@ const iconBase = {
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': (
     <svg {...iconBase}>
-      <rect x="3" y="3" width="8" height="8" rx="2" />
-      <rect x="13" y="3" width="8" height="5" rx="2" />
-      <rect x="13" y="10" width="8" height="11" rx="2" />
-      <rect x="3" y="13" width="8" height="8" rx="2" />
+      <rect x="3" y="3" width="8" height="8" rx="2"/>
+      <rect x="13" y="3" width="8" height="5" rx="2"/>
+      <rect x="13" y="10" width="8" height="11" rx="2"/>
+      <rect x="3" y="13" width="8" height="8" rx="2"/>
     </svg>
   ),
   '/dashboard/customers': (
     <svg {...iconBase}>
-      <path d="M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4" />
-      <circle cx="12" cy="9" r="3" />
-      <path d="M6 19c0-1.5.7-2.8 1.8-3.7" />
-      <path d="M18 19c0-1.5-.7-2.8-1.8-3.7" />
+      <circle cx="12" cy="7" r="3"/>
+      <path d="M5 20c1.5-3 4-5 7-5s5.5 2 7 5"/>
     </svg>
   ),
   '/dashboard/leads': (
     <svg {...iconBase}>
-      <circle cx="11" cy="11" r="6.5" />
-      <circle cx="11" cy="11" r="2.5" />
-      <path d="M16 16l4 4" />
+      <circle cx="12" cy="12" r="8"/>
+      <circle cx="12" cy="12" r="3"/>
     </svg>
   ),
   '/dashboard/jobs': (
     <svg {...iconBase}>
-      <rect x="4" y="7" width="16" height="12" rx="2" />
-      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
-      <path d="M4 12h16" />
-      <path d="M12 10v4" />
-      <path d="M10 12h4" />
+      <path d="M6 3h8l4 4v14H6z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
     </svg>
   ),
   '/dashboard/quotes': (
     <svg {...iconBase}>
-      <path d="M8 4.5H17l3 3V19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" />
-      <path d="M17 4.5V7.5h3" />
-      <path d="M9.5 11h5" />
-      <path d="M9.5 15h5" />
-      <path d="M9.5 19h3.5" />
+      <path d="M6 3h9l3 3v15H6z"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="13" y2="16"/>
     </svg>
   ),
   '/dashboard/invoices': (
     <svg {...iconBase}>
-      <path d="M7 3h10v18l-2-1.4L13 21l-2-1.4L9 21l-2-1.4L5 21V5a2 2 0 0 1 2-2Z" />
-      <path d="M9 8h6" />
-      <path d="M9 12h6" />
-      <path d="M9 16h4" />
+      <path d="M6 2h12v20l-2-1-2 1-2-1-2 1-2-1-2 1z"/>
+      <line x1="8" y1="8" x2="16" y2="8"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
     </svg>
   ),
   '/dashboard/revenue': (
     <svg {...iconBase}>
-      <path d="M4 19h16" />
-      <path d="M7 15V11" />
-      <path d="M12 15V8" />
-      <path d="M17 15V5" />
-      <path d="M6 8.5l3.5-3.5 3 2.5 5-5" />
+      <path d="M4 20V10"/>
+      <path d="M10 20V6"/>
+      <path d="M16 20V13"/>
+      <path d="M22 20V4"/>
     </svg>
   ),
   '/dashboard/schedule': (
     <svg {...iconBase}>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M8 3v4" />
-      <path d="M16 3v4" />
-      <path d="M3 10h18" />
-      <path d="M9 15l2 2 4-4" />
+      <rect x="3" y="5" width="18" height="16" rx="2"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <circle cx="12" cy="15" r="2"/>
     </svg>
   ),
   '/dashboard/qrcodes': (
     <svg {...iconBase}>
-      <rect x="3" y="3" width="6" height="6" rx="1.2" />
-      <rect x="15" y="3" width="6" height="6" rx="1.2" />
-      <rect x="3" y="15" width="6" height="6" rx="1.2" />
-      <path d="M15 15h2v2h-2z" />
-      <path d="M19 15h2v2h-2z" />
-      <path d="M15 19h2v2h-2z" />
-      <path d="M19 19h2v2h-2z" />
-      <path d="M17 9v3" />
-      <path d="M21 11h-3" />
+      <rect x="3" y="3" width="6" height="6" rx="1.2"/>
+      <rect x="15" y="3" width="6" height="6" rx="1.2"/>
+      <rect x="3" y="15" width="6" height="6" rx="1.2"/>
+      <path d="M15 15h2v2h-2z"/>
+      <path d="M19 15h2v2h-2z"/>
+      <path d="M15 19h2v2h-2z"/>
+      <path d="M19 19h2v2h-2z"/>
     </svg>
   ),
   '/dashboard/reports': (
     <svg {...iconBase}>
-      <path d="M4 19h16" />
-      <path d="M7 16v-3" />
-      <path d="M12 16V9" />
-      <path d="M17 16V6" />
-      <path d="M6 10l4-3 3 2 5-4" />
+      <polyline points="4,14 9,9 13,13 20,6"/>
+      <line x1="4" y1="20" x2="20" y2="20"/>
     </svg>
   ),
   '/dashboard/settings': (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.8 1.8 0 0 1 0 2.5 1.8 1.8 0 0 1-2.5 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.8 1.8 0 0 1-1.8 1.8h-.8A1.8 1.8 0 0 1 11 20v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.8 1.8 0 0 1-2.5 0 1.8 1.8 0 0 1 0-2.5l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5.8A1.8 1.8 0 0 1 4 13.6v-.8A1.8 1.8 0 0 1 5.8 11H6a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.8 1.8 0 0 1 0-2.5 1.8 1.8 0 0 1 2.5 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4.8A1.8 1.8 0 0 1 12.8 3h.8A1.8 1.8 0 0 1 15.4 4.8V5a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1.8 1.8 0 0 1 2.5 0 1.8 1.8 0 0 1 0 2.5l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2A1.8 1.8 0 0 1 22 12.8v.8A1.8 1.8 0 0 1 20.2 15H20a1 1 0 0 0-.6.0Z" />
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19 12a7 7 0 0 0-.2-1.7l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2.9-1.7L13 2h-2l-.5 2.6a7 7 0 0 0-2.9 1.7l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .6.1 1.2.2 1.7l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2.9 1.7L11 22h2l.5-2.6a7 7 0 0 0 2.9-1.7l2.4 1 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/>
     </svg>
   ),
 }
