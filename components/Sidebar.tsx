@@ -7,6 +7,7 @@ import { useBusinessData } from '@/lib/business-context'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_SOFT = '#E8F7F5'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -15,7 +16,9 @@ const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 
 const SIDEBAR_WIDTH = 248
+const SIDEBAR_COLLAPSED_WIDTH = 88
 const SIDEBAR_SHELL_WIDTH = 272
+const SIDEBAR_SHELL_COLLAPSED_WIDTH = 112
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -148,15 +151,6 @@ const icons: Record<string, React.ReactElement> = {
   ),
 }
 
-function HomeIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M4 11.5 12 5l8 6.5" />
-      <path d="M7 10.5V20h10v-9.5" />
-    </svg>
-  )
-}
-
 function LogoutIcon() {
   return (
     <svg {...iconBase}>
@@ -167,10 +161,23 @@ function LogoutIcon() {
   )
 }
 
+function CollapseIcon({ collapsed }: { collapsed: boolean }) {
+  return collapsed ? (
+    <svg {...iconBase}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  ) : (
+    <svg {...iconBase}>
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
 export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
     function check() {
@@ -207,15 +214,16 @@ export function Sidebar({ active }: { active: string }) {
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          gap: isCollapsed ? 0 : 12,
           border: 'none',
-          background: isActive ? '#F8FAFC' : 'transparent',
-          color: isActive ? TEXT : TEXT2,
+          background: isActive ? TEAL_SOFT : 'transparent',
+          color: isActive ? TEAL : TEXT2,
           borderRadius: 12,
-          padding: '8px 10px',
+          padding: isCollapsed ? '8px' : '8px 10px',
           cursor: 'pointer',
           textAlign: 'left',
-          boxShadow: isActive ? 'inset 0 0 0 1px #E2E8F0' : 'none',
+          boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
           transition: 'background 0.15s ease, box-shadow 0.15s ease',
         }}
         onMouseEnter={e => {
@@ -243,16 +251,19 @@ export function Sidebar({ active }: { active: string }) {
           {icons[item.href]}
         </span>
 
-        <span
-          style={{
-            fontSize: 13,
-            fontWeight: isActive ? 800 : 700,
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}
-        >
-          {item.label}
-        </span>
+        {!isCollapsed && (
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: isActive ? 800 : 700,
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              color: isActive ? TEAL : undefined,
+            }}
+          >
+            {item.label}
+          </span>
+        )}
       </button>
     )
   }
@@ -324,14 +335,18 @@ export function Sidebar({ active }: { active: string }) {
     )
   }
 
+  const shellWidth = isCollapsed ? SIDEBAR_SHELL_COLLAPSED_WIDTH : SIDEBAR_SHELL_WIDTH
+  const sidebarWidth = isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
+
   return (
     <div
       style={{
-        width: SIDEBAR_SHELL_WIDTH,
-        minWidth: SIDEBAR_SHELL_WIDTH,
+        width: shellWidth,
+        minWidth: shellWidth,
         position: 'relative',
         flexShrink: 0,
         background: BG,
+        transition: 'width 0.2s ease, min-width 0.2s ease',
       }}
     >
       <div
@@ -339,7 +354,7 @@ export function Sidebar({ active }: { active: string }) {
           position: 'fixed',
           top: 16,
           left: 16,
-          width: SIDEBAR_WIDTH,
+          width: sidebarWidth,
           height: 'calc(100vh - 32px)',
           background: WHITE,
           border: `1px solid ${BORDER}`,
@@ -351,56 +366,121 @@ export function Sidebar({ active }: { active: string }) {
           flexDirection: 'column',
           overflow: 'hidden',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          transition: 'width 0.2s ease',
         }}
       >
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
+            justifyContent: isCollapsed ? 'center' : 'space-between',
+            gap: 8,
             padding: '8px 8px 12px',
             borderBottom: `1px solid ${BORDER}`,
             marginBottom: 10,
           }}
         >
-          <img
-            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-            alt="Jobyra"
+          <div
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              objectFit: 'cover',
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              minWidth: 0,
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
+              flex: 1,
             }}
-          />
-          <div style={{ minWidth: 0 }}>
-            <div
+          >
+            <img
+              src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+              alt="Jobyra"
               style={{
-                fontSize: 15,
-                fontWeight: 900,
-                color: TEXT,
-                letterSpacing: '-0.04em',
-                lineHeight: 1.1,
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                objectFit: 'cover',
+                background: WHITE,
+                border: `1px solid ${BORDER}`,
+                flexShrink: 0,
               }}
-            >
-              Jobyra
-            </div>
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: TEXT3,
-                marginTop: 3,
-              }}
-            >
-              {loading ? 'Loading...' : business?.name || 'Trade CRM'}
-            </div>
+            />
+
+            {!isCollapsed && (
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: '-0.04em',
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Jobyra
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: TEXT3,
+                    marginTop: 3,
+                  }}
+                >
+                  {loading ? 'Loading...' : business?.name || 'Trade CRM'}
+                </div>
+              </div>
+            )}
           </div>
+
+          {!isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(true)}
+              title="Collapse sidebar"
+              style={{
+                width: 32,
+                height: 32,
+                minWidth: 32,
+                borderRadius: 10,
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
+                color: TEXT3,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+              }}
+            >
+              <CollapseIcon collapsed={false} />
+            </button>
+          )}
+
+          {isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(false)}
+              title="Expand sidebar"
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 12,
+                width: 32,
+                height: 32,
+                minWidth: 32,
+                borderRadius: 10,
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
+                color: TEXT3,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+              }}
+            >
+              <CollapseIcon collapsed />
+            </button>
+          )}
         </div>
 
         <div
@@ -415,33 +495,37 @@ export function Sidebar({ active }: { active: string }) {
         >
           {navMain.map(renderNavItem)}
 
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: TEXT3,
-              padding: '14px 10px 6px',
-            }}
-          >
-            Finance
-          </div>
+          {!isCollapsed && (
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: TEXT3,
+                padding: '14px 10px 6px',
+              }}
+            >
+              Finance
+            </div>
+          )}
 
           {navFinance.map(renderNavItem)}
 
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: TEXT3,
-              padding: '14px 10px 6px',
-            }}
-          >
-            Manage
-          </div>
+          {!isCollapsed && (
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: TEXT3,
+                padding: '14px 10px 6px',
+              }}
+            >
+              Manage
+            </div>
+          )}
 
           {navManage.map(renderNavItem)}
 
@@ -459,116 +543,104 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
-              padding: '10px 12px',
+              gap: isCollapsed ? 0 : 10,
+              justifyContent: isCollapsed ? 'center' : 'space-between',
+              padding: isCollapsed ? '10px 8px' : '10px 12px',
               background: '#F8FAFC',
               border: `1px solid ${BORDER}`,
               borderRadius: 12,
             }}
           >
-            {loading ? (
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: BG,
-                  flexShrink: 0,
-                }}
-              />
-            ) : business?.logo_url ? (
-              <img
-                src={business.logo_url}
-                alt="Logo"
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  objectFit: 'contain',
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  flexShrink: 0,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
-                  color: WHITE,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 13,
-                  fontWeight: 800,
-                  flexShrink: 0,
-                }}
-              >
-                {initials}
-              </div>
-            )}
-
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: TEXT,
-                  lineHeight: 1.15,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {loading ? 'Loading...' : business?.full_name || 'Owner'}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: TEXT3,
-                  marginTop: 3,
-                  fontWeight: 600,
-                }}
-              >
-                {loading ? '' : business?.role_title || 'Owner'}
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-              marginTop: 8,
-            }}
-          >
-            <button
-              onClick={() => router.push('/dashboard')}
-              title="Dashboard"
+            <div
               style={{
-                height: 40,
-                borderRadius: 10,
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT3,
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+                gap: isCollapsed ? 0 : 10,
+                minWidth: 0,
+                flex: 1,
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
               }}
             >
-              <HomeIcon />
-            </button>
+              {loading ? (
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    background: BG,
+                    flexShrink: 0,
+                  }}
+                />
+              ) : business?.logo_url ? (
+                <img
+                  src={business.logo_url}
+                  alt="Logo"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    objectFit: 'contain',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+                    color: WHITE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 13,
+                    fontWeight: 800,
+                    flexShrink: 0,
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
+
+              {!isCollapsed && (
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: TEXT,
+                      lineHeight: 1.15,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {loading ? 'Loading...' : business?.full_name || 'Owner'}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: TEXT3,
+                      marginTop: 3,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {loading ? '' : business?.role_title || 'Owner'}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={signOut}
               title="Sign out"
               style={{
+                width: 40,
                 height: 40,
+                minWidth: 40,
                 borderRadius: 10,
                 border: `1px solid ${BORDER}`,
                 background: WHITE,
@@ -578,6 +650,7 @@ export function Sidebar({ active }: { active: string }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+                marginLeft: isCollapsed ? 0 : 8,
               }}
             >
               <LogoutIcon />
