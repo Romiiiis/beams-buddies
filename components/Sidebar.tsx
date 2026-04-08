@@ -6,16 +6,16 @@ import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 
 const TEAL = '#2AA198'
-const TEAL_DARK = '#1E8C84'
-const TEXT = '#0A0A0A'
-const TEXT2 = '#2D2D2D'
-const TEXT3 = '#6B7280'
+const TEAL_SOFT = '#E7F7F5'
+const TEXT = '#0F172A'
+const TEXT2 = '#334155'
+const TEXT3 = '#64748B'
 const BORDER = '#E5E7EB'
-const BG = '#F4F4F2'
+const BG = '#F6F7F8'
 const WHITE = '#FFFFFF'
 
-const SIDEBAR_COLLAPSED = 60
-const SIDEBAR_EXPANDED = 224
+const SIDEBAR_WIDTH = 248
+const SIDEBAR_SHELL_WIDTH = 276
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -51,7 +51,7 @@ const iconBase = {
   viewBox: '0 0 24 24',
   fill: 'none' as const,
   stroke: 'currentColor',
-  strokeWidth: 1.8,
+  strokeWidth: 1.9,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   style: {
@@ -65,83 +65,106 @@ const iconBase = {
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': (
     <svg {...iconBase}>
-      <rect x="3" y="3" width="8" height="8" rx="2"/>
-      <rect x="13" y="3" width="8" height="5" rx="2"/>
-      <rect x="13" y="10" width="8" height="11" rx="2"/>
-      <rect x="3" y="13" width="8" height="8" rx="2"/>
+      <rect x="3" y="3" width="8" height="8" rx="2" />
+      <rect x="13" y="3" width="8" height="5" rx="2" />
+      <rect x="13" y="10" width="8" height="11" rx="2" />
+      <rect x="3" y="13" width="8" height="8" rx="2" />
     </svg>
   ),
   '/dashboard/customers': (
     <svg {...iconBase}>
-      <circle cx="12" cy="7" r="3"/>
-      <path d="M5 20c1.5-3 4-5 7-5s5.5 2 7 5"/>
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M5 19c1.7-3 4.3-4.8 7-4.8s5.3 1.8 7 4.8" />
     </svg>
   ),
   '/dashboard/leads': (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="8"/>
-      <circle cx="12" cy="12" r="3"/>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M20 20l-3.5-3.5" />
     </svg>
   ),
   '/dashboard/jobs': (
     <svg {...iconBase}>
-      <path d="M6 3h8l4 4v14H6z"/>
-      <line x1="12" y1="11" x2="12" y2="17"/>
-      <line x1="9" y1="14" x2="15" y2="14"/>
+      <rect x="4" y="6" width="16" height="13" rx="2.5" />
+      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" />
     </svg>
   ),
   '/dashboard/quotes': (
     <svg {...iconBase}>
-      <path d="M6 3h9l3 3v15H6z"/>
-      <line x1="9" y1="12" x2="15" y2="12"/>
-      <line x1="9" y1="16" x2="13" y2="16"/>
+      <path d="M7 3.5h7l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7.5 3.5Z" />
+      <path d="M14 3.5V8h4" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
     </svg>
   ),
   '/dashboard/invoices': (
     <svg {...iconBase}>
-      <path d="M6 2h12v20l-2-1-2 1-2-1-2 1-2-1-2 1z"/>
-      <line x1="8" y1="8" x2="16" y2="8"/>
-      <line x1="8" y1="12" x2="16" y2="12"/>
+      <path d="M7 2.8h10v18.4l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2V2.8Z" />
+      <path d="M9 8h6" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
     </svg>
   ),
   '/dashboard/revenue': (
     <svg {...iconBase}>
-      <path d="M4 20V10"/>
-      <path d="M10 20V6"/>
-      <path d="M16 20V13"/>
-      <path d="M22 20V4"/>
+      <path d="M4 20V12" />
+      <path d="M10 20V8" />
+      <path d="M16 20V14" />
+      <path d="M22 20V5" />
     </svg>
   ),
   '/dashboard/schedule': (
     <svg {...iconBase}>
-      <rect x="3" y="5" width="18" height="16" rx="2"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-      <circle cx="12" cy="15" r="2"/>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M16 3v4" />
+      <path d="M8 3v4" />
+      <path d="M3 10h18" />
     </svg>
   ),
   '/dashboard/qrcodes': (
     <svg {...iconBase}>
-      <rect x="3" y="3" width="6" height="6" rx="1.2"/>
-      <rect x="15" y="3" width="6" height="6" rx="1.2"/>
-      <rect x="3" y="15" width="6" height="6" rx="1.2"/>
-      <path d="M15 15h2v2h-2z"/>
-      <path d="M19 15h2v2h-2z"/>
-      <path d="M15 19h2v2h-2z"/>
-      <path d="M19 19h2v2h-2z"/>
+      <rect x="3" y="3" width="6" height="6" rx="1.2" />
+      <rect x="15" y="3" width="6" height="6" rx="1.2" />
+      <rect x="3" y="15" width="6" height="6" rx="1.2" />
+      <path d="M15 15h2v2h-2z" />
+      <path d="M19 15h2v2h-2z" />
+      <path d="M15 19h2v2h-2z" />
+      <path d="M19 19h2v2h-2z" />
     </svg>
   ),
   '/dashboard/reports': (
     <svg {...iconBase}>
-      <polyline points="4,14 9,9 13,13 20,6"/>
-      <line x1="4" y1="20" x2="20" y2="20"/>
+      <path d="M4 19.5h16" />
+      <path d="M7 16V10" />
+      <path d="M12 16V6" />
+      <path d="M17 16v-3" />
     </svg>
   ),
   '/dashboard/settings': (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19 12a7 7 0 0 0-.2-1.7l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2.9-1.7L13 2h-2l-.5 2.6a7 7 0 0 0-2.9 1.7l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .6.1 1.2.2 1.7l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2.9 1.7L11 22h2l.5-2.6a7 7 0 0 0 2.9-1.7l2.4 1 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19 12a7 7 0 0 0-.2-1.7l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2.9-1.7L13 2h-2l-.5 2.6a7 7 0 0 0-2.9 1.7l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .6.1 1.2.2 1.7l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2.9 1.7L11 22h2l.5-2.6a7 7 0 0 0 2.9-1.7l2.4 1 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z" />
     </svg>
   ),
+}
+
+function HomeIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M4 11.5 12 5l8 6.5" />
+      <path d="M7 10.5V20h10v-9.5" />
+    </svg>
+  )
+}
+
+function LogoutIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M10 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4" />
+      <path d="M14 16l4-4-4-4" />
+      <path d="M18 12H9" />
+    </svg>
+  )
 }
 
 export function Sidebar({ active }: { active: string }) {
@@ -150,19 +173,89 @@ export function Sidebar({ active }: { active: string }) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    function check() { setIsMobile(window.innerWidth < 768) }
+    function check() {
+      setIsMobile(window.innerWidth < 768)
+    }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
 
   const initials = business?.full_name
-    ? business.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-    : ''
+    ? business.full_name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'J'
 
   async function signOut() {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  function renderNavItem(item: { label: string; href: string }) {
+    const isActive = item.href === active
+
+    return (
+      <button
+        key={item.href}
+        onClick={() => router.push(item.href)}
+        title={item.label}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          border: 'none',
+          background: isActive ? '#F2F5FF' : 'transparent',
+          color: isActive ? TEXT : TEXT2,
+          borderRadius: 18,
+          padding: '10px 12px',
+          cursor: 'pointer',
+          textAlign: 'left',
+          boxShadow: isActive ? 'inset 0 0 0 1px rgba(148,163,184,0.10)' : 'none',
+          transition: 'background 0.15s ease, transform 0.15s ease',
+        }}
+        onMouseEnter={e => {
+          if (!isActive) e.currentTarget.style.background = '#F8FAFC'
+        }}
+        onMouseLeave={e => {
+          if (!isActive) e.currentTarget.style.background = 'transparent'
+        }}
+      >
+        <span
+          style={{
+            width: 34,
+            height: 34,
+            minWidth: 34,
+            borderRadius: '50%',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: isActive ? '#89A7FF' : '#FFFFFF',
+            color: isActive ? '#FFFFFF' : TEXT3,
+            boxShadow: isActive
+              ? '0 10px 20px rgba(137,167,255,0.22)'
+              : 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+          }}
+        >
+          {icons[item.href]}
+        </span>
+
+        <span
+          style={{
+            fontSize: 15,
+            fontWeight: isActive ? 700 : 600,
+            letterSpacing: '-0.2px',
+            lineHeight: 1,
+          }}
+        >
+          {item.label}
+        </span>
+      </button>
+    )
   }
 
   if (isMobile) {
@@ -194,15 +287,25 @@ export function Sidebar({ active }: { active: string }) {
             height: 20px;
           }
         `}</style>
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-          background: WHITE, borderTop: `1px solid ${BORDER}`,
-          display: 'flex', alignItems: 'stretch',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
-        }}>
+
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            background: WHITE,
+            borderTop: `1px solid ${BORDER}`,
+            display: 'flex',
+            alignItems: 'stretch',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
+          }}
+        >
           {bottomTabs.map(tab => {
             const isActive = tab.href === active
+
             return (
               <div
                 key={tab.href}
@@ -213,7 +316,7 @@ export function Sidebar({ active }: { active: string }) {
                 <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
                   {icons[tab.href]}
                 </span>
-                <span style={{ fontSize: '10px', fontWeight: isActive ? '700' : '400' }}>{tab.label}</span>
+                <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>{tab.label}</span>
               </div>
             )
           })}
@@ -222,318 +325,226 @@ export function Sidebar({ active }: { active: string }) {
     )
   }
 
-  const css = `
-    .jobyra-sidebar {
-      width: ${SIDEBAR_COLLAPSED}px;
-      transition: width 0.2s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow 0.2s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: none;
-    }
-    .jobyra-sidebar:hover {
-      width: ${SIDEBAR_EXPANDED}px;
-      box-shadow: 4px 0 24px rgba(0,0,0,0.07);
-    }
-    .jobyra-sidebar .nav-label {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
-      white-space: nowrap;
-    }
-    .jobyra-sidebar:hover .nav-label {
-      opacity: 1;
-      max-width: 200px;
-    }
-    .jobyra-sidebar .nav-item {
-      padding: 8px 0;
-      justify-content: center;
-      gap: 0;
-      transition: background 0.12s, padding 0.2s cubic-bezier(0.4,0,0.2,1), gap 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .jobyra-sidebar:hover .nav-item {
-      padding: 8px 10px;
-      justify-content: flex-start;
-      gap: 10px;
-    }
-    .jobyra-sidebar .nav-item:hover:not(.nav-active) {
-      background: ${BG};
-    }
-    .jobyra-sidebar .section-label {
-      padding: 14px 0 5px;
-      text-align: center;
-      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .jobyra-sidebar:hover .section-label {
-      padding: 14px 10px 5px;
-      text-align: left;
-    }
-    .jobyra-sidebar .section-dot { opacity: 0.4; }
-    .jobyra-sidebar .section-text { display: none; }
-    .jobyra-sidebar:hover .section-dot { display: none; }
-    .jobyra-sidebar:hover .section-text { display: inline; }
-    .jobyra-sidebar .header-text {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .jobyra-sidebar:hover .header-text {
-      opacity: 1;
-      max-width: 160px;
-    }
-    .jobyra-sidebar .nav-body {
-      padding: 6px 6px;
-      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .jobyra-sidebar:hover .nav-body {
-      padding: 6px 8px;
-    }
-    .jobyra-sidebar .footer-row {
-      padding: 8px 0;
-      justify-content: center;
-      gap: 0;
-      transition: padding 0.2s cubic-bezier(0.4,0,0.2,1), gap 0.2s cubic-bezier(0.4,0,0.2,1), background 0.12s;
-    }
-    .jobyra-sidebar:hover .footer-row {
-      padding: 8px;
-      justify-content: flex-start;
-      gap: 10px;
-    }
-    .jobyra-sidebar .footer-row:hover {
-      background: ${BG};
-    }
-    .jobyra-sidebar .footer-text {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
-      flex: 1;
-      min-width: 0;
-    }
-    .jobyra-sidebar:hover .footer-text {
-      opacity: 1;
-      max-width: 120px;
-    }
-    .jobyra-sidebar .signout-btn {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      transition: opacity 0.15s ease, max-width 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .jobyra-sidebar:hover .signout-btn {
-      opacity: 1;
-      max-width: 60px;
-    }
-    .jobyra-sidebar .nav-icon {
-      width: 20px;
-      height: 20px;
-      min-width: 20px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      line-height: 0;
-    }
-    .jobyra-sidebar .nav-icon svg {
-      display: block;
-      width: 20px;
-      height: 20px;
-    }
-  `
-
   return (
-    <>
-      <style>{css}</style>
+    <div
+      style={{
+        width: SIDEBAR_SHELL_WIDTH,
+        minWidth: SIDEBAR_SHELL_WIDTH,
+        position: 'relative',
+        flexShrink: 0,
+      }}
+    >
       <div
-        className="jobyra-sidebar"
         style={{
-          flexShrink: 0,
-          background: WHITE,
-          borderRight: `1px solid ${BORDER}`,
+          position: 'fixed',
+          top: 18,
+          left: 18,
+          width: SIDEBAR_WIDTH,
+          height: 'calc(100vh - 36px)',
+          background: 'linear-gradient(180deg, #FBFBFC 0%, #F4F5F7 100%)',
+          border: '1px solid rgba(255,255,255,0.8)',
+          borderRadius: 34,
+          boxShadow: `
+            0 22px 50px rgba(15,23,42,0.08),
+            0 8px 20px rgba(15,23,42,0.04),
+            inset 0 1px 0 rgba(255,255,255,0.95)
+          `,
+          padding: 14,
+          zIndex: 60,
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
           overflow: 'hidden',
-          zIndex: 50,
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         }}
       >
-        <div style={{
-          padding: '18px 10px 16px',
-          borderBottom: `1px solid ${BORDER}`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          minHeight: '72px',
-          overflow: 'hidden',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '8px 8px 12px',
+          }}
+        >
           <img
             src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
             alt="Jobyra"
-            style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 16,
+              objectFit: 'cover',
+              background: '#FFFFFF',
+              boxShadow: '0 8px 20px rgba(15,23,42,0.08)',
+            }}
           />
-          <div className="header-text">
-            <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT, letterSpacing: '-0.3px' }}>Jobyra</div>
-            {loading ? (
-              <div style={{ width: '70px', height: '9px', background: BG, borderRadius: '4px', marginTop: '4px' }}/>
-            ) : (
-              <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: '600' }}>
-                {business?.name || 'Trade CRM'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="nav-body" style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <span className="section-dot">·</span>
-            <span className="section-text">Overview</span>
-          </div>
-          {navMain.map(item => {
-            const isActive = item.href === active
-            return (
-              <div
-                key={item.href}
-                onClick={() => router.push(item.href)}
-                className={`nav-item${isActive ? ' nav-active' : ''}`}
-                title={item.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '9px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: isActive ? '600' : '500',
-                  color: isActive ? WHITE : TEXT2,
-                  background: isActive ? TEAL : 'transparent',
-                  marginBottom: '1px',
-                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
-                  {icons[item.href]}
-                </span>
-                <span className="nav-label">{item.label}</span>
-              </div>
-            )
-          })}
-
-          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <span className="section-dot">·</span>
-            <span className="section-text">Finance</span>
-          </div>
-          {navFinance.map(item => {
-            const isActive = item.href === active
-            return (
-              <div
-                key={item.href}
-                onClick={() => router.push(item.href)}
-                className={`nav-item${isActive ? ' nav-active' : ''}`}
-                title={item.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '9px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: isActive ? '600' : '500',
-                  color: isActive ? WHITE : TEXT2,
-                  background: isActive ? TEAL : 'transparent',
-                  marginBottom: '1px',
-                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
-                  {icons[item.href]}
-                </span>
-                <span className="nav-label">{item.label}</span>
-              </div>
-            )
-          })}
-
-          <div className="section-label" style={{ fontSize: '10px', fontWeight: '700', color: TEXT3, letterSpacing: '0.8px', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <span className="section-dot">·</span>
-            <span className="section-text">Manage</span>
-          </div>
-          {navManage.map(item => {
-            const isActive = item.href === active
-            return (
-              <div
-                key={item.href}
-                onClick={() => router.push(item.href)}
-                className={`nav-item${isActive ? ' nav-active' : ''}`}
-                title={item.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '9px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: isActive ? '600' : '500',
-                  color: isActive ? WHITE : TEXT2,
-                  background: isActive ? TEAL : 'transparent',
-                  marginBottom: '1px',
-                  boxShadow: isActive ? '0 2px 8px rgba(42,161,152,0.28)' : 'none',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span className="nav-icon" style={{ color: isActive ? 'rgba(255,255,255,0.92)' : TEXT3 }}>
-                  {icons[item.href]}
-                </span>
-                <span className="nav-label">{item.label}</span>
-              </div>
-            )
-          })}
-
-          <div style={{ flex: 1 }}/>
-
-          <div style={{ padding: '8px 2px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
-            <div className="footer-row" style={{ display: 'flex', alignItems: 'center', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden' }}>
-              {loading ? (
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: BG, flexShrink: 0 }}/>
-              ) : (
-                <>
-                  {business?.logo_url ? (
-                    <img src={business.logo_url} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0, border: `1px solid ${BORDER}` }}/>
-                  ) : (
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: `linear-gradient(135deg, #33B5AC, ${TEAL_DARK})`, color: WHITE, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0 }}>
-                      {initials}
-                    </div>
-                  )}
-                  <div className="footer-text">
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>{business?.full_name || ''}</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', fontWeight: '500' }}>{business?.role_title || 'Owner'}</div>
-                  </div>
-                  <button
-                    className="signout-btn"
-                    onClick={e => { e.stopPropagation(); signOut() }}
-                    style={{ fontSize: '11px', color: TEXT3, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', flexShrink: 0, fontWeight: '500', whiteSpace: 'nowrap' }}
-                    onMouseEnter={e => e.currentTarget.style.color = TEXT}
-                    onMouseLeave={e => e.currentTarget.style.color = TEXT3}
-                  >
-                    Sign out
-                  </button>
-                </>
-              )}
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 800,
+                color: TEXT,
+                letterSpacing: '-0.45px',
+                lineHeight: 1.1,
+              }}
+            >
+              Jobyra
             </div>
           </div>
         </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '2px 4px 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
+          {navMain.map(renderNavItem)}
+          {navFinance.map(renderNavItem)}
+          {navManage.map(renderNavItem)}
+
+          <div style={{ flex: 1 }} />
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            paddingTop: 10,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 12px',
+              background: 'rgba(255,255,255,0.58)',
+              borderRadius: 22,
+              boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
+            }}
+          >
+            {loading ? (
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  background: BG,
+                  flexShrink: 0,
+                }}
+              />
+            ) : business?.logo_url ? (
+              <img
+                src={business.logo_url}
+                alt="Logo"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  objectFit: 'contain',
+                  background: '#FFFFFF',
+                  border: `1px solid ${BORDER}`,
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${TEAL}, #1E8C84)`,
+                  color: WHITE,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  flexShrink: 0,
+                }}
+              >
+                {initials}
+              </div>
+            )}
+
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: TEXT,
+                  lineHeight: 1.15,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {loading ? 'Loading...' : business?.full_name || 'Owner'}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: TEXT3,
+                  marginTop: 3,
+                  fontWeight: 500,
+                }}
+              >
+                {loading ? '' : business?.role_title || 'Owner'}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 10,
+              marginTop: 10,
+            }}
+          >
+            <button
+              onClick={() => router.push('/dashboard')}
+              title="Dashboard"
+              style={{
+                height: 48,
+                borderRadius: 18,
+                border: 'none',
+                background: 'rgba(255,255,255,0.72)',
+                color: TEXT3,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+              }}
+            >
+              <HomeIcon />
+            </button>
+
+            <button
+              onClick={signOut}
+              title="Sign out"
+              style={{
+                height: 48,
+                borderRadius: 18,
+                border: 'none',
+                background: 'rgba(255,255,255,0.72)',
+                color: TEXT3,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+              }}
+            >
+              <LogoutIcon />
+            </button>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   )
 }
