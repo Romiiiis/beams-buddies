@@ -5,17 +5,17 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 
-const TEAL = '#2AA198'
-const TEAL_SOFT = '#E7F7F5'
-const TEXT = '#0F172A'
-const TEXT2 = '#334155'
-const TEXT3 = '#64748B'
-const BORDER = '#E5E7EB'
-const BG = '#F6F7F8'
+const TEAL = '#1F9E94'
+const TEAL_DARK = '#177A72'
+const TEXT = '#0B1220'
+const TEXT2 = '#1F2937'
+const TEXT3 = '#475569'
+const BORDER = '#E2E8F0'
+const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 
 const SIDEBAR_WIDTH = 248
-const SIDEBAR_SHELL_WIDTH = 276
+const SIDEBAR_SHELL_WIDTH = 272
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -46,8 +46,8 @@ const bottomTabs = [
 ]
 
 const iconBase = {
-  width: 20,
-  height: 20,
+  width: 18,
+  height: 18,
   viewBox: '0 0 24 24',
   fill: 'none' as const,
   stroke: 'currentColor',
@@ -209,14 +209,14 @@ export function Sidebar({ active }: { active: string }) {
           alignItems: 'center',
           gap: 12,
           border: 'none',
-          background: isActive ? '#F2F5FF' : 'transparent',
+          background: isActive ? '#F8FAFC' : 'transparent',
           color: isActive ? TEXT : TEXT2,
-          borderRadius: 18,
-          padding: '10px 12px',
+          borderRadius: 12,
+          padding: '8px 10px',
           cursor: 'pointer',
           textAlign: 'left',
-          boxShadow: isActive ? 'inset 0 0 0 1px rgba(148,163,184,0.10)' : 'none',
-          transition: 'background 0.15s ease, transform 0.15s ease',
+          boxShadow: isActive ? 'inset 0 0 0 1px #E2E8F0' : 'none',
+          transition: 'background 0.15s ease, box-shadow 0.15s ease',
         }}
         onMouseEnter={e => {
           if (!isActive) e.currentTarget.style.background = '#F8FAFC'
@@ -227,18 +227,17 @@ export function Sidebar({ active }: { active: string }) {
       >
         <span
           style={{
-            width: 34,
-            height: 34,
-            minWidth: 34,
-            borderRadius: '50%',
+            width: 32,
+            height: 32,
+            minWidth: 32,
+            borderRadius: 10,
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: isActive ? '#89A7FF' : '#FFFFFF',
-            color: isActive ? '#FFFFFF' : TEXT3,
-            boxShadow: isActive
-              ? '0 10px 20px rgba(137,167,255,0.22)'
-              : 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+            background: isActive ? TEAL : WHITE,
+            color: isActive ? WHITE : TEXT3,
+            border: isActive ? 'none' : `1px solid ${BORDER}`,
+            boxShadow: isActive ? '0 6px 14px rgba(31,158,148,0.20)' : 'none',
           }}
         >
           {icons[item.href]}
@@ -246,9 +245,9 @@ export function Sidebar({ active }: { active: string }) {
 
         <span
           style={{
-            fontSize: 15,
-            fontWeight: isActive ? 700 : 600,
-            letterSpacing: '-0.2px',
+            fontSize: 13,
+            fontWeight: isActive ? 800 : 700,
+            letterSpacing: '-0.02em',
             lineHeight: 1,
           }}
         >
@@ -300,7 +299,7 @@ export function Sidebar({ active }: { active: string }) {
             display: 'flex',
             alignItems: 'stretch',
             paddingBottom: 'env(safe-area-inset-bottom)',
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
+            boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
           }}
         >
           {bottomTabs.map(tab => {
@@ -316,7 +315,7 @@ export function Sidebar({ active }: { active: string }) {
                 <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
                   {icons[tab.href]}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>{tab.label}</span>
+                <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600 }}>{tab.label}</span>
               </div>
             )
           })}
@@ -332,24 +331,21 @@ export function Sidebar({ active }: { active: string }) {
         minWidth: SIDEBAR_SHELL_WIDTH,
         position: 'relative',
         flexShrink: 0,
+        background: BG,
       }}
     >
       <div
         style={{
           position: 'fixed',
-          top: 18,
-          left: 18,
+          top: 16,
+          left: 16,
           width: SIDEBAR_WIDTH,
-          height: 'calc(100vh - 36px)',
-          background: 'linear-gradient(180deg, #FBFBFC 0%, #F4F5F7 100%)',
-          border: '1px solid rgba(255,255,255,0.8)',
-          borderRadius: 34,
-          boxShadow: `
-            0 22px 50px rgba(15,23,42,0.08),
-            0 8px 20px rgba(15,23,42,0.04),
-            inset 0 1px 0 rgba(255,255,255,0.95)
-          `,
-          padding: 14,
+          height: 'calc(100vh - 32px)',
+          background: WHITE,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 16,
+          boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+          padding: 12,
           zIndex: 60,
           display: 'flex',
           flexDirection: 'column',
@@ -363,31 +359,46 @@ export function Sidebar({ active }: { active: string }) {
             alignItems: 'center',
             gap: 12,
             padding: '8px 8px 12px',
+            borderBottom: `1px solid ${BORDER}`,
+            marginBottom: 10,
           }}
         >
           <img
             src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
             alt="Jobyra"
             style={{
-              width: 46,
-              height: 46,
-              borderRadius: 16,
+              width: 40,
+              height: 40,
+              borderRadius: 12,
               objectFit: 'cover',
-              background: '#FFFFFF',
-              boxShadow: '0 8px 20px rgba(15,23,42,0.08)',
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              flexShrink: 0,
             }}
           />
           <div style={{ minWidth: 0 }}>
             <div
               style={{
-                fontSize: 17,
-                fontWeight: 800,
+                fontSize: 15,
+                fontWeight: 900,
                 color: TEXT,
-                letterSpacing: '-0.45px',
+                letterSpacing: '-0.04em',
                 lineHeight: 1.1,
               }}
             >
               Jobyra
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: TEXT3,
+                marginTop: 3,
+              }}
+            >
+              {loading ? 'Loading...' : business?.name || 'Trade CRM'}
             </div>
           </div>
         </div>
@@ -396,14 +407,42 @@ export function Sidebar({ active }: { active: string }) {
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '2px 4px 0',
+            padding: '0 2px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
+            gap: 2,
           }}
         >
           {navMain.map(renderNavItem)}
+
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: TEXT3,
+              padding: '14px 10px 6px',
+            }}
+          >
+            Finance
+          </div>
+
           {navFinance.map(renderNavItem)}
+
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: TEXT3,
+              padding: '14px 10px 6px',
+            }}
+          >
+            Manage
+          </div>
+
           {navManage.map(renderNavItem)}
 
           <div style={{ flex: 1 }} />
@@ -411,7 +450,8 @@ export function Sidebar({ active }: { active: string }) {
 
         <div
           style={{
-            marginTop: 12,
+            marginTop: 10,
+            borderTop: `1px solid ${BORDER}`,
             paddingTop: 10,
           }}
         >
@@ -419,18 +459,18 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
-              padding: '12px 12px',
-              background: 'rgba(255,255,255,0.58)',
-              borderRadius: 22,
-              boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
+              gap: 10,
+              padding: '10px 12px',
+              background: '#F8FAFC',
+              border: `1px solid ${BORDER}`,
+              borderRadius: 12,
             }}
           >
             {loading ? (
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   borderRadius: '50%',
                   background: BG,
                   flexShrink: 0,
@@ -441,11 +481,11 @@ export function Sidebar({ active }: { active: string }) {
                 src={business.logo_url}
                 alt="Logo"
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   borderRadius: '50%',
                   objectFit: 'contain',
-                  background: '#FFFFFF',
+                  background: WHITE,
                   border: `1px solid ${BORDER}`,
                   flexShrink: 0,
                 }}
@@ -453,15 +493,15 @@ export function Sidebar({ active }: { active: string }) {
             ) : (
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${TEAL}, #1E8C84)`,
+                  background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
                   color: WHITE,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 800,
                   flexShrink: 0,
                 }}
@@ -473,8 +513,8 @@ export function Sidebar({ active }: { active: string }) {
             <div style={{ minWidth: 0, flex: 1 }}>
               <div
                 style={{
-                  fontSize: 14,
-                  fontWeight: 700,
+                  fontSize: 13,
+                  fontWeight: 800,
                   color: TEXT,
                   lineHeight: 1.15,
                   whiteSpace: 'nowrap',
@@ -486,10 +526,10 @@ export function Sidebar({ active }: { active: string }) {
               </div>
               <div
                 style={{
-                  fontSize: 13,
+                  fontSize: 11,
                   color: TEXT3,
                   marginTop: 3,
-                  fontWeight: 500,
+                  fontWeight: 600,
                 }}
               >
                 {loading ? '' : business?.role_title || 'Owner'}
@@ -501,24 +541,24 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: 10,
-              marginTop: 10,
+              gap: 8,
+              marginTop: 8,
             }}
           >
             <button
               onClick={() => router.push('/dashboard')}
               title="Dashboard"
               style={{
-                height: 48,
-                borderRadius: 18,
-                border: 'none',
-                background: 'rgba(255,255,255,0.72)',
+                height: 40,
+                borderRadius: 10,
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
                 color: TEXT3,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
               }}
             >
               <HomeIcon />
@@ -528,16 +568,16 @@ export function Sidebar({ active }: { active: string }) {
               onClick={signOut}
               title="Sign out"
               style={{
-                height: 48,
-                borderRadius: 18,
-                border: 'none',
-                background: 'rgba(255,255,255,0.72)',
+                height: 40,
+                borderRadius: 10,
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
                 color: TEXT3,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.05)',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
               }}
             >
               <LogoutIcon />
