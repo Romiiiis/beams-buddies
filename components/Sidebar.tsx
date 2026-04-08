@@ -19,6 +19,7 @@ const SIDEBAR_WIDTH = 248
 const SIDEBAR_COLLAPSED_WIDTH = 88
 const SIDEBAR_SHELL_WIDTH = 272
 const SIDEBAR_SHELL_COLLAPSED_WIDTH = 112
+const AUTO_COLLAPSE_BREAKPOINT = 1200
 
 const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -161,18 +162,6 @@ function LogoutIcon() {
   )
 }
 
-function CollapseIcon({ collapsed }: { collapsed: boolean }) {
-  return collapsed ? (
-    <svg {...iconBase}>
-      <path d="M9 6l6 6-6 6" />
-    </svg>
-  ) : (
-    <svg {...iconBase}>
-      <path d="M15 6l-6 6 6 6" />
-    </svg>
-  )
-}
-
 export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
@@ -181,8 +170,13 @@ export function Sidebar({ active }: { active: string }) {
 
   useEffect(() => {
     function check() {
-      setIsMobile(window.innerWidth < 768)
+      const mobile = window.innerWidth < 768
+      const collapsed = window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
+
+      setIsMobile(mobile)
+      setIsCollapsed(!mobile && collapsed)
     }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -373,113 +367,53 @@ export function Sidebar({ active }: { active: string }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isCollapsed ? 'center' : 'space-between',
-            gap: 8,
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            gap: 12,
             padding: '8px 8px 12px',
             borderBottom: `1px solid ${BORDER}`,
             marginBottom: 10,
           }}
         >
-          <div
+          <img
+            src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+            alt="Jobyra"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              minWidth: 0,
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              flex: 1,
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              objectFit: 'cover',
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              flexShrink: 0,
             }}
-          >
-            <img
-              src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
-              alt="Jobyra"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                objectFit: 'cover',
-                background: WHITE,
-                border: `1px solid ${BORDER}`,
-                flexShrink: 0,
-              }}
-            />
-
-            {!isCollapsed && (
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 900,
-                    color: TEXT,
-                    letterSpacing: '-0.04em',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  Jobyra
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: TEXT3,
-                    marginTop: 3,
-                  }}
-                >
-                  {loading ? 'Loading...' : business?.name || 'Trade CRM'}
-                </div>
-              </div>
-            )}
-          </div>
+          />
 
           {!isCollapsed && (
-            <button
-              onClick={() => setIsCollapsed(true)}
-              title="Collapse sidebar"
-              style={{
-                width: 32,
-                height: 32,
-                minWidth: 32,
-                borderRadius: 10,
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT3,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-              }}
-            >
-              <CollapseIcon collapsed={false} />
-            </button>
-          )}
-
-          {isCollapsed && (
-            <button
-              onClick={() => setIsCollapsed(false)}
-              title="Expand sidebar"
-              style={{
-                position: 'absolute',
-                top: 16,
-                right: 12,
-                width: 32,
-                height: 32,
-                minWidth: 32,
-                borderRadius: 10,
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT3,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-              }}
-            >
-              <CollapseIcon collapsed />
-            </button>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 900,
+                  color: TEXT,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 1.1,
+                }}
+              >
+                Jobyra
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: TEXT3,
+                  marginTop: 3,
+                }}
+              >
+                {loading ? 'Loading...' : business?.name || 'Trade CRM'}
+              </div>
+            </div>
           )}
         </div>
 
@@ -542,10 +476,11 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               display: 'flex',
+              flexDirection: isCollapsed ? 'column' : 'row',
               alignItems: 'center',
-              gap: isCollapsed ? 0 : 10,
+              gap: isCollapsed ? 10 : 10,
               justifyContent: isCollapsed ? 'center' : 'space-between',
-              padding: isCollapsed ? '10px 8px' : '10px 12px',
+              padding: isCollapsed ? '12px 8px' : '10px 12px',
               background: '#F8FAFC',
               border: `1px solid ${BORDER}`,
               borderRadius: 12,
@@ -557,7 +492,8 @@ export function Sidebar({ active }: { active: string }) {
                 alignItems: 'center',
                 gap: isCollapsed ? 0 : 10,
                 minWidth: 0,
-                flex: 1,
+                width: isCollapsed ? '100%' : 'auto',
+                flex: isCollapsed ? '0 0 auto' : 1,
                 justifyContent: isCollapsed ? 'center' : 'flex-start',
               }}
             >
@@ -650,7 +586,7 @@ export function Sidebar({ active }: { active: string }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-                marginLeft: isCollapsed ? 0 : 8,
+                marginLeft: 0,
               }}
             >
               <LogoutIcon />
