@@ -385,8 +385,8 @@ export default function DashboardPage() {
 
     return base.map(item => ({
       ...item,
-      totalHeight: Math.max(14, (item.total / max) * 150),
-      completedHeight: Math.max(item.completed > 0 ? 10 : 0, (item.completed / max) * 150),
+      totalHeight: Math.max(16, (item.total / max) * 154),
+      completedHeight: Math.max(item.completed > 0 ? 12 : 0, (item.completed / max) * 154),
     }))
   }, [allJobs])
 
@@ -456,6 +456,10 @@ export default function DashboardPage() {
     return `conic-gradient(${parts.join(', ')})`
   }, [revenueDistribution])
 
+  const strongestRevenueSource = useMemo(() => {
+    return [...revenueDistribution].sort((a, b) => b.percent - a.percent)[0]
+  }, [revenueDistribution])
+
   const topCards = [
     {
       label: 'Customers',
@@ -464,9 +468,6 @@ export default function DashboardPage() {
       icon: <IconUsers size={18} />,
       accent: TEXT,
       tag: 'CRM total',
-      detailLabel: 'Tracked units',
-      detailValue: stats.units.toLocaleString('en-AU'),
-      note: 'Live customer base',
     },
     {
       label: 'New jobs',
@@ -475,9 +476,6 @@ export default function DashboardPage() {
       icon: <IconJob size={18} />,
       accent: TEAL_DARK,
       tag: 'Monthly flow',
-      detailLabel: 'Due soon',
-      detailValue: dueSoonCount.toLocaleString('en-AU'),
-      note: 'Fresh workload added',
     },
     {
       label: 'Revenue',
@@ -486,9 +484,6 @@ export default function DashboardPage() {
       icon: <IconRevenue size={18} />,
       accent: TEXT,
       tag: 'Paid total',
-      detailLabel: 'Outstanding',
-      detailValue: `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      note: 'Money already collected',
     },
     {
       label: 'Overdue services',
@@ -497,9 +492,6 @@ export default function DashboardPage() {
       icon: <IconAlert size={18} />,
       accent: stats.overdue > 0 ? RED : TEAL_DARK,
       tag: 'Action needed',
-      detailLabel: 'Status',
-      detailValue: stats.overdue > 0 ? 'Follow up' : 'Healthy',
-      note: stats.overdue > 0 ? 'Units overdue right now' : 'Nothing overdue',
     },
   ]
 
@@ -648,7 +640,7 @@ export default function DashboardPage() {
                 style={{
                   ...panelCard,
                   gridColumn: isMobile ? 'span 1' : 'span 3',
-                  minHeight: 170,
+                  minHeight: 148,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -675,42 +667,6 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
                     {item.sub}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '14px',
-                    paddingTop: '12px',
-                    borderTop: `1px solid ${BORDER}`,
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto',
-                    gap: '10px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>
-                      {item.detailLabel}
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>
-                      {item.detailValue}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '7px 10px',
-                      borderRadius: '999px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {item.note}
                   </div>
                 </div>
               </div>
@@ -748,7 +704,7 @@ export default function DashboardPage() {
                   }}
                 >
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: '#E6EBF0' }} />
+                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: '#E6EBF0', border: '1px solid #D6DDE6' }} />
                     Total jobs
                   </span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
@@ -789,14 +745,14 @@ export default function DashboardPage() {
 
               <div
                 style={{
-                  height: 300,
+                  height: 312,
                   borderRadius: '14px',
-                  background: '#FCFCFD',
+                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
                   border: `1px solid ${BORDER}`,
                   padding: '16px 16px 14px',
                   display: 'grid',
-                  gridTemplateColumns: '40px 1fr',
-                  gap: '10px',
+                  gridTemplateColumns: '42px 1fr',
+                  gap: '12px',
                 }}
               >
                 <div
@@ -808,7 +764,8 @@ export default function DashboardPage() {
                     fontSize: '11px',
                     color: TEXT3,
                     paddingTop: '4px',
-                    paddingBottom: '22px',
+                    paddingBottom: '24px',
+                    fontWeight: 700,
                   }}
                 >
                   {chartTicks.map((tick, i) => (
@@ -823,9 +780,10 @@ export default function DashboardPage() {
                     gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
                     gap: '10px',
                     alignItems: 'end',
+                    paddingTop: '6px',
                   }}
                 >
-                  {[20, 40, 60, 80].map((top, i) => (
+                  {[0, 25, 50, 75, 100].map((top, i) => (
                     <div
                       key={i}
                       style={{
@@ -833,7 +791,7 @@ export default function DashboardPage() {
                         left: 0,
                         right: 0,
                         top: `${top}%`,
-                        borderTop: '1px dashed #E5E7EB',
+                        borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
                         zIndex: 0,
                       }}
                     />
@@ -856,7 +814,7 @@ export default function DashboardPage() {
                       <div
                         style={{
                           fontSize: '10px',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           color: TEXT3,
                           minHeight: '14px',
                         }}
@@ -867,8 +825,8 @@ export default function DashboardPage() {
                       <div
                         style={{
                           width: '100%',
-                          maxWidth: '38px',
-                          height: '180px',
+                          maxWidth: '40px',
+                          height: '184px',
                           display: 'flex',
                           alignItems: 'flex-end',
                           justifyContent: 'center',
@@ -879,25 +837,27 @@ export default function DashboardPage() {
                           style={{
                             position: 'absolute',
                             bottom: 0,
-                            width: '28px',
+                            width: '30px',
                             height: `${item.totalHeight}px`,
                             borderRadius: '999px',
-                            background: '#E6EBF0',
+                            background: 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
                           }}
                         />
                         <div
                           style={{
                             position: 'absolute',
                             bottom: 0,
-                            width: '28px',
+                            width: '30px',
                             height: `${item.completedHeight}px`,
                             borderRadius: '999px',
-                            background: TEAL,
+                            background: 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)',
+                            boxShadow: '0 4px 10px rgba(31,158,148,0.18)',
                           }}
                         />
                       </div>
 
-                      <div style={{ fontSize: '11px', color: TEXT3 }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
                         {item.label}
                       </div>
                     </div>
@@ -938,6 +898,7 @@ export default function DashboardPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
                     }}
                   >
                     <div
@@ -948,12 +909,26 @@ export default function DashboardPage() {
                         background: WHITE,
                         border: `1px solid ${BORDER}`,
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: TEAL_DARK,
+                        boxShadow: '0 8px 18px rgba(15,23,42,0.04)',
                       }}
                     >
                       <IconRevenue size={24} />
+                      <div
+                        style={{
+                          marginTop: '6px',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: TEXT3,
+                        }}
+                      >
+                        Mix
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -969,23 +944,27 @@ export default function DashboardPage() {
                         gap: '10px',
                         fontSize: '12px',
                         color: TEXT2,
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        background: '#FCFCFD',
+                        border: `1px solid ${BORDER}`,
                       }}
                     >
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                         <span
                           style={{
-                            width: '8px',
-                            height: '8px',
+                            width: '9px',
+                            height: '9px',
                             borderRadius: '50%',
                             background: item.color,
                             flexShrink: 0,
                           }}
                         />
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 700 }}>
                           {item.label}
                         </span>
                       </div>
-                      <span style={{ fontWeight: 700 }}>{item.percent}%</span>
+                      <span style={{ fontWeight: 800 }}>{item.percent}%</span>
                     </div>
                   ))}
                 </div>
@@ -1000,7 +979,7 @@ export default function DashboardPage() {
                     color: TEXT3,
                   }}
                 >
-                  Your strongest workflow this month is <span style={{ color: TEXT, fontWeight: 700 }}>{revenueDistribution[0]?.label || 'Service'}</span>.
+                  Your strongest workflow this month is <span style={{ color: TEXT, fontWeight: 700 }}>{strongestRevenueSource?.label || 'Service'}</span>.
                 </div>
               </div>
             </div>
