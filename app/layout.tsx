@@ -55,6 +55,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <BusinessContext.Provider value={{ business, loading, refresh }}>
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: #F1F5F9; }
+      `}</style>
       {children}
     </BusinessContext.Provider>
   )
