@@ -1,12 +1,15 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const RED = '#B91C1C'
+const AMBER = '#92400E'
+const BLUE = '#2563EB'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -68,10 +71,18 @@ const TYPE = {
     letterSpacing: '-0.04em' as const,
     lineHeight: 1,
   },
+  valueSm: {
+    fontSize: '16px',
+    fontWeight: 900,
+    color: TEXT,
+    letterSpacing: '-0.04em' as const,
+    lineHeight: 1,
+  },
 }
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
     function check() {
       setIsMobile(window.innerWidth < 768)
@@ -80,6 +91,7 @@ function useIsMobile() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
   return isMobile
 }
 
@@ -129,6 +141,15 @@ function IconArrow({ size = 15 }: { size?: number }) {
   )
 }
 
+function IconSpark({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function SchedulePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -143,16 +164,28 @@ export default function SchedulePage() {
         router.push('/login')
         return
       }
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
-      if (!userData) return
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!userData) {
+        setLoading(false)
+        return
+      }
+
       const { data } = await supabase
         .from('jobs')
         .select('*, customers(first_name, last_name, email, phone, suburb)')
         .eq('business_id', userData.business_id)
         .order('next_service_date', { ascending: true })
+
       setJobs(data || [])
       setLoading(false)
     }
+
     load()
   }, [router])
 
@@ -162,12 +195,11 @@ export default function SchedulePage() {
 
   function getUrgency(d: string) {
     const days = getDays(d)
+
     if (days < 0) {
       return {
         status: 'overdue',
-        dot: '#EF4444',
-        bar: '#EF4444',
-        valColor: '#B91C1C',
+        valColor: RED,
         pillBg: '#FEE2E2',
         pillColor: '#7F1D1D',
         label: 'Overdue',
@@ -175,12 +207,11 @@ export default function SchedulePage() {
         dateLabel: `Was due ${new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`,
       }
     }
+
     if (days <= 30) {
       return {
         status: 'due_soon',
-        dot: '#F59E0B',
-        bar: '#F59E0B',
-        valColor: '#92400E',
+        valColor: AMBER,
         pillBg: '#FEF3C7',
         pillColor: '#78350F',
         label: 'Due soon',
@@ -188,11 +219,10 @@ export default function SchedulePage() {
         dateLabel: `Due ${new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`,
       }
     }
+
     return {
       status: 'good',
-      dot: TEAL,
-      bar: TEAL,
-      valColor: '#0D6E69',
+      valColor: TEAL_DARK,
       pillBg: '#DCFCE7',
       pillColor: '#166534',
       label: 'Good',
@@ -201,21 +231,30 @@ export default function SchedulePage() {
     }
   }
 
-  const counts = {
+  const counts = useMemo(() => ({
     all: jobs.length,
     overdue: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length,
     due_soon: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30).length,
     good: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) > 30).length,
-  }
+  }), [jobs])
 
-  const filtered = jobs.filter(j => {
-    if (filter === 'all') return true
-    if (!j.next_service_date) return false
-    return getUrgency(j.next_service_date).status === filter
-  })
+  const filtered = useMemo(() => {
+    return jobs.filter(j => {
+      if (filter === 'all') return true
+      if (!j.next_service_date) return false
+      return getUrgency(j.next_service_date).status === filter
+    })
+  }, [jobs, filter])
 
-  const overdueJobs = jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0)
-  const dueSoonJobs = jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30)
+  const overdueJobs = useMemo(
+    () => jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0),
+    [jobs]
+  )
+
+  const dueSoonJobs = useMemo(
+    () => jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30),
+    [jobs]
+  )
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -232,26 +271,17 @@ export default function SchedulePage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: '16px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -267,11 +297,12 @@ export default function SchedulePage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '34px',
-    height: '34px',
+    width: '36px',
+    height: '36px',
     borderRadius: '11px',
     background: '#F8FAFC',
     color,
@@ -282,6 +313,41 @@ export default function SchedulePage() {
     flexShrink: 0,
   })
 
+  const topCards = [
+    {
+      label: 'Scheduled units',
+      value: counts.all,
+      sub: 'With service tracking',
+      icon: <IconCalendar size={18} />,
+      accent: TEXT,
+      tag: 'Service total',
+    },
+    {
+      label: 'Overdue services',
+      value: counts.overdue,
+      sub: counts.overdue > 0 ? 'Needs attention now' : 'All clear',
+      icon: <IconCalendar size={18} />,
+      accent: counts.overdue > 0 ? RED : TEXT,
+      tag: 'Action needed',
+    },
+    {
+      label: 'Due soon',
+      value: counts.due_soon,
+      sub: 'Within 30 days',
+      icon: <IconUsers size={18} />,
+      accent: AMBER,
+      tag: 'Next window',
+    },
+    {
+      label: 'Upcoming later',
+      value: counts.good,
+      sub: 'More than 30 days',
+      icon: <IconCalendar size={18} />,
+      accent: BLUE,
+      tag: 'On track',
+    },
+  ]
+
   const filterTabs = [
     { key: 'all', label: `All (${counts.all})` },
     { key: 'overdue', label: `Overdue (${counts.overdue})` },
@@ -290,193 +356,161 @@ export default function SchedulePage() {
   ]
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        fontFamily: FONT,
+        background: BG,
+        overflow: 'hidden',
+      }}
+    >
       <Sidebar active="/dashboard/schedule" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Service schedule
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Monitor overdue, due soon, and upcoming services with a clean scheduling view built for fast follow-up.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/customers')}
-                style={quickActionStyle}
-              >
-                View customers
-              </button>
-
-              <button
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                }}
-              >
-                Send all reminders
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
-          <div>
-            <div style={sectionLabel}>{sectionDash}Overview</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'All scheduled units',
-                  value: counts.all,
-                  sub: 'With service tracking',
-                  icon: <IconCalendar size={17} />,
-                  accent: TEXT,
-                  span: 'span 3',
-                },
-                {
-                  label: 'Overdue services',
-                  value: counts.overdue,
-                  sub: counts.overdue > 0 ? 'Need attention' : 'All up to date',
-                  icon: <IconCalendar size={17} />,
-                  accent: counts.overdue > 0 ? '#B91C1C' : TEXT,
-                  span: 'span 3',
-                },
-                {
-                  label: 'Due soon',
-                  value: counts.due_soon,
-                  sub: 'Within 30 days',
-                  icon: <IconCalendar size={17} />,
-                  accent: '#92400E',
-                  span: 'span 3',
-                },
-                {
-                  label: 'Upcoming later',
-                  value: counts.good,
-                  sub: 'More than 30 days',
-                  icon: <IconCalendar size={17} />,
-                  accent: '#1E3A8A',
-                  span: 'span 3',
-                },
-              ].map(item => (
-                <div
-                  key={item.label}
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Service schedule
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Monitor overdue, due soon, and upcoming services with a clean scheduling view built for fast follow-up.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  onClick={() => router.push('/dashboard/customers')}
                   style={{
-                    ...shellCard,
-                    padding: isMobile ? '12px' : '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    gridColumn: isMobile ? 'span 1' : item.span,
-                    minHeight: '124px',
+                    ...quickActionStyle,
+                    background: 'rgba(255,255,255,0.06)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    boxShadow: 'none',
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div style={iconWrap(item.accent)}>
-                      {item.icon}
-                    </div>
+                  <IconUsers size={16} />
+                  View customers
+                </button>
 
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: TEXT3,
-                      }}
-                    >
-                      Live
-                    </div>
-                  </div>
+                <button
+                  style={{
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                  }}
+                >
+                  <IconSpark size={16} />
+                  Send all reminders
+                </button>
+              </div>
+            </div>
+          </div>
 
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+            }}
+          >
+            {topCards.map(item => (
+              <div
+                key={item.label}
+                style={{
+                  ...panelCard,
+                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                  minHeight: 148,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
                       {item.label}
                     </div>
-                    <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
-                      {item.value}
-                    </div>
-                    <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                      {item.sub}
-                    </div>
+                  </div>
+
+                  <div style={iconWrap(item.accent)}>
+                    {item.icon}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
+                    {item.value}
+                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
+                    {item.sub}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {overdueJobs.length > 0 && (
             <div
               style={{
+                ...shellCard,
                 background: '#FFF9F9',
                 border: '1px solid #FECACA',
-                borderRadius: '16px',
-                overflow: 'hidden',
                 boxShadow: '0 6px 18px rgba(239,68,68,0.06), 0 1px 4px rgba(239,68,68,0.04)',
               }}
             >
@@ -493,7 +527,7 @@ export default function SchedulePage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }} />
                   <span style={{ fontSize: '14px', fontWeight: 700, color: '#7F1D1D' }}>
-                    Overdue services — action required
+                    Overdue services - action required
                   </span>
                 </div>
 
@@ -508,13 +542,15 @@ export default function SchedulePage() {
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0,1fr))' }}>
                 {overdueJobs.slice(0, 4).map((job, i) => {
                   const days = Math.abs(getDays(job.next_service_date))
+                  const isLastRow = i >= overdueJobs.slice(0, 4).length - (isMobile ? 1 : 2)
+
                   return (
                     <div
                       key={job.id}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{
                         padding: '14px 18px',
-                        borderBottom: i < Math.min(overdueJobs.slice(0, 4).length - 1, 3) ? '1px solid #FECACA' : 'none',
+                        borderBottom: isLastRow ? 'none' : '1px solid #FECACA',
                         borderRight: !isMobile && i % 2 === 0 ? '1px solid #FECACA' : 'none',
                         cursor: 'pointer',
                         display: 'flex',
@@ -523,12 +559,12 @@ export default function SchedulePage() {
                         gap: '12px',
                       }}
                     >
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#7F1D1D' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#7F1D1D', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {job.customers?.first_name} {job.customers?.last_name}
                         </div>
-                        <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px' }}>
-                          {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} • {job.customers?.suburb || '—'}
+                        <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} • {job.customers?.suburb || '-'}
                         </div>
                       </div>
 
@@ -572,12 +608,17 @@ export default function SchedulePage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-              gap: '10px',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
               alignItems: 'start',
             }}
           >
-            <div style={{ ...shellCard, padding: '14px' }}>
+            <div
+              style={{
+                ...panelCard,
+                gridColumn: isMobile ? 'span 1' : 'span 8',
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
@@ -585,10 +626,15 @@ export default function SchedulePage() {
                   justifyContent: 'space-between',
                   gap: '10px',
                   flexDirection: isMobile ? 'column' : 'row',
-                  marginBottom: '10px',
+                  marginBottom: '12px',
                 }}
               >
-                <div style={sectionLabel}>{sectionDash}Scheduled services</div>
+                <div>
+                  <div style={sectionLabel}>Scheduled services</div>
+                  <div style={{ ...TYPE.bodySm }}>
+                    Filter, review, and action every service date from one streamlined list.
+                  </div>
+                </div>
 
                 <div
                   style={{
@@ -644,11 +690,12 @@ export default function SchedulePage() {
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {filtered.map(job => {
                     const u = job.next_service_date ? getUrgency(job.next_service_date) : null
+
                     return (
                       <div
                         key={job.id}
                         style={{
-                          borderRadius: '12px',
+                          borderRadius: '14px',
                           border: `1px solid ${BORDER}`,
                           background: WHITE,
                           padding: '12px 14px',
@@ -662,9 +709,10 @@ export default function SchedulePage() {
                       >
                         <div style={{ minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                            <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <div style={{ ...TYPE.titleSm, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {job.customers?.first_name} {job.customers?.last_name}
                             </div>
+
                             {u && (
                               <span
                                 style={{
@@ -688,7 +736,7 @@ export default function SchedulePage() {
                             {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type ? `• ${String(job.equipment_type).replace('_', ' ')}` : ''}
                           </div>
                           <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.suburb || '—'}
+                            {job.customers?.suburb || '-'}
                           </div>
                         </div>
 
@@ -698,7 +746,7 @@ export default function SchedulePage() {
                               {u?.sub || 'No date set'}
                             </div>
                             <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
-                              {u?.dateLabel || '—'}
+                              {u?.dateLabel || '-'}
                             </div>
                           </div>
                         )}
@@ -742,6 +790,7 @@ export default function SchedulePage() {
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '6px',
+                              boxShadow: '0 4px 10px rgba(31,158,148,0.14)',
                             }}
                           >
                             <IconSms size={14} />
@@ -751,7 +800,7 @@ export default function SchedulePage() {
 
                         {isMobile && (
                           <div style={{ gridColumn: '1 / -1', ...TYPE.bodySm }}>
-                            {u?.sub || 'No date set'} • {u?.dateLabel || '—'}
+                            {u?.sub || 'No date set'} • {u?.dateLabel || '-'}
                           </div>
                         )}
                       </div>
@@ -762,9 +811,15 @@ export default function SchedulePage() {
             </div>
 
             {!isMobile && (
-              <div style={{ display: 'grid', gap: '10px' }}>
-                <div style={{ ...shellCard, padding: '14px' }}>
-                  <div style={sectionLabel}>{sectionDash}Next 5 due</div>
+              <div
+                style={{
+                  gridColumn: 'span 4',
+                  display: 'grid',
+                  gap: '12px',
+                }}
+              >
+                <div style={panelCard}>
+                  <div style={sectionLabel}>Next 5 due</div>
 
                   {dueSoonJobs.length === 0 ? (
                     <div
@@ -785,6 +840,7 @@ export default function SchedulePage() {
                     <div style={{ display: 'grid', gap: '8px' }}>
                       {dueSoonJobs.slice(0, 5).map(job => {
                         const u = getUrgency(job.next_service_date)
+
                         return (
                           <div
                             key={job.id}
@@ -801,11 +857,11 @@ export default function SchedulePage() {
                             }}
                             onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                           >
-                            <div>
-                              <div style={TYPE.titleSm}>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.customers?.first_name} {job.customers?.last_name}
                               </div>
-                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
                               </div>
                             </div>
@@ -825,8 +881,8 @@ export default function SchedulePage() {
                   )}
                 </div>
 
-                <div style={{ ...shellCard, padding: '14px' }}>
-                  <div style={sectionLabel}>{sectionDash}Quick actions</div>
+                <div style={panelCard}>
+                  <div style={sectionLabel}>Quick actions</div>
 
                   <div style={{ display: 'grid', gap: '8px' }}>
                     {[
@@ -858,13 +914,14 @@ export default function SchedulePage() {
                   </div>
                 </div>
 
-                <div style={{ ...shellCard, padding: '14px' }}>
-                  <div style={sectionLabel}>{sectionDash}Snapshot</div>
+                <div style={panelCard}>
+                  <div style={sectionLabel}>Snapshot</div>
+
                   <div style={{ display: 'grid', gap: '8px' }}>
                     {[
-                      { label: 'Overdue now', value: counts.overdue, color: counts.overdue > 0 ? '#B91C1C' : TEXT },
-                      { label: 'Due soon', value: counts.due_soon, color: '#92400E' },
-                      { label: 'Later upcoming', value: counts.good, color: '#1E3A8A' },
+                      { label: 'Overdue now', value: counts.overdue, color: counts.overdue > 0 ? RED : TEXT },
+                      { label: 'Due soon', value: counts.due_soon, color: AMBER },
+                      { label: 'Later upcoming', value: counts.good, color: BLUE },
                     ].map(item => (
                       <div
                         key={item.label}
