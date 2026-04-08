@@ -570,7 +570,7 @@ export default function LeadsPage() {
                 justifyContent: 'space-between',
                 gap: '10px',
                 flexDirection: isMobile ? 'column' : 'row',
-                marginBottom: '10px',
+                marginBottom: '12px',
               }}
             >
               <div style={sectionLabel}>{sectionDash}Inbound calls</div>
@@ -626,103 +626,160 @@ export default function LeadsPage() {
                 No leads yet. Calls from Chloe will appear here.
               </div>
             ) : (
-              <div style={{ display: 'grid', gap: '8px' }}>
-                {filtered.map(lead => (
-                  <div
-                    key={lead.id}
-                    style={{
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      padding: '12px 14px',
-                      display: 'grid',
-                      gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.1fr) minmax(0,1fr) auto',
-                      gap: '10px',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ ...TYPE.titleSm, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {lead.customer_name}
-                      </div>
-                      <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {lead.phone_number}
-                      </div>
-                    </div>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {filtered.map(lead => {
+                  const statusAccent =
+                    lead.status === 'booked'
+                      ? '#166534'
+                      : lead.status === 'pending'
+                      ? '#92400E'
+                      : lead.status === 'converted'
+                      ? '#1E3A8A'
+                      : lead.status === 'wrong_number'
+                      ? '#B91C1C'
+                      : TEXT3
 
-                    {!isMobile && (
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                          <JobTypeBadge type={lead.job_type} />
-                          <StatusBadge status={lead.status} />
-                        </div>
-                        <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {lead.suburb || 'No suburb'} • {lead.preferred_date || 'No date'} • {lead.preferred_start_time || 'No time'}
-                        </div>
-                      </div>
-                    )}
-
-                    <div style={{ justifySelf: isMobile ? 'start' : 'end', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      {isMobile && (
-                        <>
-                          <JobTypeBadge type={lead.job_type} />
-                          <StatusBadge status={lead.status} />
-                        </>
-                      )}
-
-                      {lead.status === 'booked' && (
-                        <button
-                          onClick={() => convertToJob(lead)}
-                          disabled={converting === lead.id}
-                          style={{
-                            height: '34px',
-                            borderRadius: '10px',
-                            border: `1px solid ${BORDER}`,
-                            background: '#F8FAFC',
-                            color: TEXT2,
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            padding: '0 12px',
-                            cursor: 'pointer',
-                            fontFamily: FONT,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '7px',
-                            opacity: converting === lead.id ? 0.6 : 1,
-                          }}
-                        >
-                          {converting === lead.id ? 'Converting...' : 'Convert to job'}
-                          <IconArrow size={14} />
-                        </button>
-                      )}
-
-                      {lead.status === 'converted' && (
-                        <span style={{ ...TYPE.bodySm, fontWeight: 700 }}>
-                          Converted
-                        </span>
-                      )}
-                    </div>
-
-                    {isMobile && (
-                      <div style={{ gridColumn: '1 / -1', ...TYPE.bodySm }}>
-                        {lead.suburb || 'No suburb'} • {lead.preferred_date || 'No date'} • {lead.preferred_start_time || 'No time'}
-                      </div>
-                    )}
-
+                  return (
                     <div
+                      key={lead.id}
                       style={{
-                        gridColumn: '1 / -1',
-                        borderRadius: '10px',
-                        background: '#FCFCFD',
+                        borderRadius: '14px',
                         border: `1px solid ${BORDER}`,
-                        padding: '10px 12px',
-                        ...TYPE.bodySm,
+                        background: WHITE,
+                        overflow: 'hidden',
+                        boxShadow: '0 2px 10px rgba(15,23,42,0.04)',
                       }}
                     >
-                      {lead.issue_summary || 'No summary'}
+                      <div style={{ height: '3px', background: statusAccent }} />
+
+                      <div
+                        style={{
+                          padding: '14px',
+                          display: 'grid',
+                          gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) minmax(0,1fr) auto',
+                          gap: '14px',
+                          alignItems: 'start',
+                        }}
+                      >
+                        <div
+                          style={{
+                            minWidth: 0,
+                            padding: '12px',
+                            borderRadius: '12px',
+                            background: '#FCFCFD',
+                            border: `1px solid ${BORDER}`,
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '6px' }}>Caller</div>
+                          <div style={{ ...TYPE.titleSm, fontSize: '13px', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {lead.customer_name}
+                          </div>
+                          <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {lead.phone_number}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            minWidth: 0,
+                            padding: '12px',
+                            borderRadius: '12px',
+                            background: '#FCFCFD',
+                            border: `1px solid ${BORDER}`,
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '8px' }}>Call details</div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                            <JobTypeBadge type={lead.job_type} />
+                            <StatusBadge status={lead.status} />
+                          </div>
+
+                          <div style={{ ...TYPE.bodySm, color: TEXT2, lineHeight: 1.6 }}>
+                            <div><strong style={{ color: TEXT }}>Suburb:</strong> {lead.suburb || 'No suburb'}</div>
+                            <div><strong style={{ color: TEXT }}>Date:</strong> {lead.preferred_date || 'No date'}</div>
+                            <div><strong style={{ color: TEXT }}>Time:</strong> {lead.preferred_start_time || 'No time'}</div>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            justifySelf: isMobile ? 'stretch' : 'end',
+                            display: 'flex',
+                            flexDirection: isMobile ? 'row' : 'column',
+                            alignItems: isMobile ? 'center' : 'stretch',
+                            gap: '8px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          {lead.status === 'booked' && (
+                            <button
+                              onClick={() => convertToJob(lead)}
+                              disabled={converting === lead.id}
+                              style={{
+                                height: '36px',
+                                borderRadius: '10px',
+                                border: 'none',
+                                background: TEAL,
+                                color: WHITE,
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                padding: '0 14px',
+                                cursor: 'pointer',
+                                fontFamily: FONT,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '7px',
+                                opacity: converting === lead.id ? 0.6 : 1,
+                                width: isMobile ? 'fit-content' : '170px',
+                              }}
+                            >
+                              {converting === lead.id ? 'Converting...' : 'Convert to job'}
+                              <IconArrow size={14} />
+                            </button>
+                          )}
+
+                          {lead.status === 'converted' && (
+                            <span
+                              style={{
+                                height: '36px',
+                                borderRadius: '10px',
+                                border: `1px solid ${BORDER}`,
+                                background: '#F8FAFC',
+                                color: TEXT2,
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                padding: '0 14px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: isMobile ? 'fit-content' : '170px',
+                              }}
+                            >
+                              Converted
+                            </span>
+                          )}
+                        </div>
+
+                        <div
+                          style={{
+                            gridColumn: '1 / -1',
+                            borderRadius: '12px',
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            padding: '12px 14px',
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '6px' }}>Call summary</div>
+                          <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2, lineHeight: 1.65 }}>
+                            {lead.issue_summary || 'No summary'}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
