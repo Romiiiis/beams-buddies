@@ -95,17 +95,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconQr({ size = 17 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="15" y="3" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="3" y="15" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M15 15h2v2h-2zM19 15h2v6h-2M15 19h4M11 11h2v2h-2z" fill="currentColor" />
-    </svg>
-  )
-}
-
 function IconDownload({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -231,19 +220,6 @@ export default function QRCodesPage() {
     gap: '8px',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '34px',
-    height: '34px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
-    flexShrink: 0,
-  })
-
   const cols = isMobile ? '1fr 1fr' : 'repeat(3, minmax(0, 1fr))'
 
   return (
@@ -334,94 +310,6 @@ export default function QRCodesPage() {
             flex: 1,
           }}
         >
-          <div>
-            <div style={sectionLabel}>{sectionDash}Overview</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'All units',
-                  value: jobs.length,
-                  sub: 'QR codes generated',
-                  icon: <IconQr size={17} />,
-                  accent: TEXT,
-                  span: 'span 4',
-                },
-                {
-                  label: 'Ready to save',
-                  value: Object.keys(qrUrls).length,
-                  sub: 'Available for download',
-                  icon: <IconDownload size={17} />,
-                  accent: TEAL_DARK,
-                  span: 'span 4',
-                },
-                {
-                  label: 'Service access',
-                  value: loading ? '...' : 'Live',
-                  sub: 'Registration links active',
-                  icon: <IconPrint size={17} />,
-                  accent: '#1E3A8A',
-                  span: 'span 4',
-                },
-              ].map(item => (
-                <div
-                  key={item.label}
-                  style={{
-                    ...shellCard,
-                    padding: isMobile ? '12px' : '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    gridColumn: isMobile ? 'span 1' : item.span,
-                    minHeight: '124px',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div style={iconWrap(item.accent)}>
-                      {item.icon}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: TEXT3,
-                      }}
-                    >
-                      Live
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
-                      {item.value}
-                    </div>
-                    <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                      {item.sub}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div style={{ ...shellCard, padding: '14px' }}>
             <div
               style={{
