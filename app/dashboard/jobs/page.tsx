@@ -8,7 +8,7 @@ import { createCustomer, createJob } from '@/lib/queries'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
-const AMBER = '#92400E'
+const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -57,6 +57,13 @@ const TYPE = {
     color: TEXT2,
     lineHeight: 1.35,
   },
+  valueSm: {
+    fontSize: '16px',
+    fontWeight: 900,
+    color: TEXT,
+    letterSpacing: '-0.04em' as const,
+    lineHeight: 1,
+  },
 }
 
 function useIsMobile() {
@@ -91,12 +98,63 @@ function IconArrowLeft({ size = 15 }: { size?: number }) {
   )
 }
 
+function IconUsers({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconJob({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconCalendar({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+type FormState = {
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  address: string
+  suburb: string
+  postcode: string
+  equipment_type: string
+  brand: string
+  model: string
+  capacity_kw: string
+  serial_number: string
+  install_location: string
+  warranty_expiry: string
+  install_date: string
+  service_interval_months: string
+  reminder_lead_days: string
+  notes: string
+}
+
 export default function AddJobPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState({
+
+  const [form, setForm] = useState<FormState>({
     first_name: '',
     last_name: '',
     email: '',
@@ -117,7 +175,7 @@ export default function AddJobPage() {
     notes: '',
   })
 
-  function set(field: string, value: string) {
+  function set<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
@@ -127,7 +185,10 @@ export default function AddJobPage() {
     setError('')
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
@@ -139,7 +200,9 @@ export default function AddJobPage() {
         .eq('id', session.user.id)
         .single()
 
-      if (!userData) throw new Error('User profile not found.')
+      if (!userData) {
+        throw new Error('User profile not found.')
+      }
 
       const customer = await createCustomer({
         business_id: userData.business_id,
@@ -164,14 +227,14 @@ export default function AddJobPage() {
         install_location: form.install_location,
         warranty_expiry: form.warranty_expiry || null,
         install_date: form.install_date,
-        service_interval_months: parseInt(form.service_interval_months),
-        reminder_lead_days: parseInt(form.reminder_lead_days),
+        service_interval_months: parseInt(form.service_interval_months, 10),
+        reminder_lead_days: parseInt(form.reminder_lead_days, 10),
         notes: form.notes,
       })
 
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.message)
+      setError(err?.message || 'Something went wrong.')
     } finally {
       setLoading(false)
     }
@@ -192,26 +255,24 @@ export default function AddJobPage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: isMobile ? '16px' : '18px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
+
+  const miniStatCard: React.CSSProperties = {
+    borderRadius: '12px',
+    background: '#F8FAFC',
+    border: `1px solid ${BORDER}`,
+    padding: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -227,19 +288,7 @@ export default function AddJobPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-  }
-
-  const input: React.CSSProperties = {
-    height: '40px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    width: '100%',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
   const label: React.CSSProperties = {
@@ -248,263 +297,558 @@ export default function AddJobPage() {
     display: 'block',
   }
 
+  const input: React.CSSProperties = {
+    height: '42px',
+    padding: '0 12px',
+    borderRadius: '10px',
+    border: `1px solid ${BORDER}`,
+    background: '#FCFCFD',
+    color: TEXT,
+    fontFamily: FONT,
+    fontSize: '13px',
+    outline: 'none',
+    width: '100%',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+  }
+
+  const textarea: React.CSSProperties = {
+    minHeight: '96px',
+    padding: '12px',
+    borderRadius: '10px',
+    border: `1px solid ${BORDER}`,
+    background: '#FCFCFD',
+    color: TEXT,
+    fontFamily: FONT,
+    fontSize: '13px',
+    outline: 'none',
+    width: '100%',
+    resize: 'vertical',
+    lineHeight: 1.5,
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+  }
+
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        fontFamily: FONT,
+        background: BG,
+        overflow: 'hidden',
+      }}
+    >
       <Sidebar active="/dashboard/jobs" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <button
-              onClick={() => router.push('/dashboard')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                margin: 0,
-                color: 'rgba(255,255,255,0.68)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '7px',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: FONT,
-                marginBottom: '8px',
-              }}
-            >
-              <IconArrowLeft size={14} />
-              Dashboard
-            </button>
-
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Add new job
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Capture customer details, installation information, and service reminders in one clean workflow.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard')}
-                style={quickActionStyle}
-              >
-                Cancel
-              </button>
-
-              <button
-                form="job-form"
-                type="submit"
-                disabled={loading}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                }}
-              >
-                <IconSpark size={16} />
-                {loading ? 'Saving...' : isMobile ? 'Save job' : 'Save & generate QR'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
-          {error && (
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0,
+                  color: 'rgba(255,255,255,0.68)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  marginBottom: '8px',
+                }}
+              >
+                <IconArrowLeft size={14} />
+                Dashboard
+              </button>
+
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Add new job
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Capture customer details, installation information, and service reminders in one clean workflow.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  style={{
+                    ...quickActionStyle,
+                    background: 'rgba(255,255,255,0.06)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    boxShadow: 'none',
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  form="job-form"
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                    opacity: loading ? 0.8 : 1,
+                  }}
+                >
+                  <IconSpark size={16} />
+                  {loading ? 'Saving...' : isMobile ? 'Save job' : 'Save & generate QR'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {error ? (
             <div
               style={{
                 background: '#FFF9F9',
-                color: '#7F1D1D',
+                color: RED,
                 padding: '12px 16px',
                 borderRadius: '12px',
                 fontSize: '14px',
                 border: '1px solid #FECACA',
-                fontWeight: 500,
+                fontWeight: 600,
               }}
             >
               {error}
             </div>
-          )}
+          ) : null}
 
-          <form id="job-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ ...shellCard, padding: '14px' }}>
-              <div style={sectionLabel}>{sectionDash}Step 1 • Customer details</div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+              alignItems: 'start',
+            }}
+          >
+            <div
+              style={{
+                ...panelCard,
+                gridColumn: isMobile ? 'span 1' : 'span 8',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
                 <div>
-                  <label style={label}>First name *</label>
-                  <input required style={input} value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="James" />
+                  <div style={sectionLabel}>New job workflow</div>
+                  <div style={{ ...TYPE.bodySm }}>
+                    Add the customer, installation details, and reminder timing in one pass.
+                  </div>
                 </div>
 
-                <div>
-                  <label style={label}>Last name *</label>
-                  <input required style={input} value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Moretti" />
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 10px',
+                    borderRadius: '999px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    color: TEXT3,
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  Live form
+                </div>
+              </div>
+
+              <form id="job-form" onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
+                <div
+                  style={{
+                    borderRadius: '14px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    padding: isMobile ? '14px' : '16px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '11px',
+                        background: '#F8FAFC',
+                        color: TEAL_DARK,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `1px solid ${BORDER}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconUsers size={18} />
+                    </div>
+
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
+                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Customer details</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>First name *</label>
+                      <input required style={input} value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="James" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Last name *</label>
+                      <input required style={input} value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Moretti" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Email</label>
+                      <input type="email" style={input} value={form.email} onChange={e => set('email', e.target.value)} placeholder="james@email.com" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Phone</label>
+                      <input style={input} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="0412 345 678" />
+                    </div>
+
+                    <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
+                      <label style={label}>Address</label>
+                      <input style={input} value={form.address} onChange={e => set('address', e.target.value)} placeholder="14 Blackwood St" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Suburb</label>
+                      <input style={input} value={form.suburb} onChange={e => set('suburb', e.target.value)} placeholder="Newtown" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Postcode</label>
+                      <input style={input} value={form.postcode} onChange={e => set('postcode', e.target.value)} placeholder="2042" />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label style={label}>Email</label>
-                  <input type="email" style={input} value={form.email} onChange={e => set('email', e.target.value)} placeholder="james@email.com" />
+                <div
+                  style={{
+                    borderRadius: '14px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    padding: isMobile ? '14px' : '16px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '11px',
+                        background: '#F8FAFC',
+                        color: TEXT,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `1px solid ${BORDER}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconJob size={18} />
+                    </div>
+
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
+                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Installation details</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Equipment type *</label>
+                      <select required style={input} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
+                        <option value="split_system">Split system</option>
+                        <option value="ducted">Ducted system</option>
+                        <option value="multi_head">Multi-head split</option>
+                        <option value="cassette">Cassette unit</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={label}>Brand *</label>
+                      <input required style={input} value={form.brand} onChange={e => set('brand', e.target.value)} placeholder="Daikin" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Model</label>
+                      <input style={input} value={form.model} onChange={e => set('model', e.target.value)} placeholder="FTXM71WVMA" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Capacity (kW)</label>
+                      <input style={input} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder="7.1" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Serial number</label>
+                      <input style={input} value={form.serial_number} onChange={e => set('serial_number', e.target.value)} placeholder="DKSP2024XXXXXX" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Warranty expiry</label>
+                      <input type="date" style={input} value={form.warranty_expiry} onChange={e => set('warranty_expiry', e.target.value)} />
+                    </div>
+
+                    <div>
+                      <label style={label}>Installation date *</label>
+                      <input required type="date" style={input} value={form.install_date} onChange={e => set('install_date', e.target.value)} />
+                    </div>
+
+                    <div>
+                      <label style={label}>Location in property</label>
+                      <input style={input} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder="Master bedroom" />
+                    </div>
+
+                    <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
+                      <label style={label}>Job notes</label>
+                      <textarea
+                        style={textarea}
+                        value={form.notes}
+                        onChange={e => set('notes', e.target.value)}
+                        placeholder="Any notes about the installation..."
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label style={label}>Phone</label>
-                  <input style={input} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="0412 345 678" />
-                </div>
+                <div
+                  style={{
+                    borderRadius: '14px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    padding: isMobile ? '14px' : '16px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '11px',
+                        background: '#F8FAFC',
+                        color: TEAL_DARK,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `1px solid ${BORDER}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconCalendar size={18} />
+                    </div>
 
-                <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                  <label style={label}>Address</label>
-                  <input style={input} value={form.address} onChange={e => set('address', e.target.value)} placeholder="14 Blackwood St" />
-                </div>
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
+                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Service schedule</div>
+                    </div>
+                  </div>
 
-                <div>
-                  <label style={label}>Suburb</label>
-                  <input style={input} value={form.suburb} onChange={e => set('suburb', e.target.value)} placeholder="Newtown" />
-                </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Service interval</label>
+                      <select style={input} value={form.service_interval_months} onChange={e => set('service_interval_months', e.target.value)}>
+                        <option value="6">Every 6 months</option>
+                        <option value="12">Every 12 months</option>
+                        <option value="18">Every 18 months</option>
+                        <option value="24">Every 24 months</option>
+                      </select>
+                    </div>
 
-                <div>
-                  <label style={label}>Postcode</label>
-                  <input style={input} value={form.postcode} onChange={e => set('postcode', e.target.value)} placeholder="2042" />
+                    <div>
+                      <label style={label}>Reminder lead time</label>
+                      <select style={input} value={form.reminder_lead_days} onChange={e => set('reminder_lead_days', e.target.value)}>
+                        <option value="14">2 weeks before</option>
+                        <option value="28">4 weeks before</option>
+                        <option value="42">6 weeks before</option>
+                        <option value="56">8 weeks before</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div
+              style={{
+                gridColumn: isMobile ? 'span 1' : 'span 4',
+                display: 'grid',
+                gap: '12px',
+              }}
+            >
+              <div style={panelCard}>
+                <div style={sectionLabel}>Workflow summary</div>
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <div style={miniStatCard}>
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Customer</div>
+                    <div style={{ ...TYPE.valueSm }}>
+                      {form.first_name || form.last_name ? `${form.first_name} ${form.last_name}`.trim() : 'Not added'}
+                    </div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      {form.phone || form.email || 'Phone or email will appear here'}
+                    </div>
+                  </div>
+
+                  <div style={miniStatCard}>
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Unit</div>
+                    <div style={{ ...TYPE.valueSm }}>
+                      {form.brand || 'Brand'} {form.capacity_kw ? `${form.capacity_kw}kW` : ''}
+                    </div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      {form.equipment_type.replace('_', ' ')}
+                    </div>
+                  </div>
+
+                  <div style={miniStatCard}>
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Schedule</div>
+                    <div style={{ ...TYPE.valueSm }}>
+                      Every {form.service_interval_months} months
+                    </div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                      Reminder {form.reminder_lead_days} days before
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={panelCard}>
+                <div style={sectionLabel}>Before saving</div>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {[
+                    'Customer name is required',
+                    'Brand and installation date are required',
+                    'Saving creates both the customer and the job',
+                  ].map(item => (
+                    <div
+                      key={item}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          marginTop: '5px',
+                          borderRadius: '999px',
+                          background: TEAL,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={panelCard}>
+                <div style={sectionLabel}>Quick actions</div>
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    style={{
+                      ...quickActionStyle,
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    Back to dashboard
+                  </button>
+
+                  <button
+                    form="job-form"
+                    type="submit"
+                    disabled={loading}
+                    style={{
+                      ...quickActionStyle,
+                      width: '100%',
+                      justifyContent: 'center',
+                      background: TEAL,
+                      color: '#FFFFFF',
+                      border: 'none',
+                      boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                      opacity: loading ? 0.8 : 1,
+                    }}
+                  >
+                    <IconSpark size={16} />
+                    {loading ? 'Saving...' : 'Save job'}
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div style={{ ...shellCard, padding: '14px' }}>
-              <div style={sectionLabel}>{sectionDash}Step 2 • Installation details</div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                <div>
-                  <label style={label}>Equipment type *</label>
-                  <select required style={input} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
-                    <option value="split_system">Split system</option>
-                    <option value="ducted">Ducted system</option>
-                    <option value="multi_head">Multi-head split</option>
-                    <option value="cassette">Cassette unit</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={label}>Brand *</label>
-                  <input required style={input} value={form.brand} onChange={e => set('brand', e.target.value)} placeholder="Daikin" />
-                </div>
-
-                <div>
-                  <label style={label}>Model</label>
-                  <input style={input} value={form.model} onChange={e => set('model', e.target.value)} placeholder="FTXM71WVMA" />
-                </div>
-
-                <div>
-                  <label style={label}>Capacity (kW)</label>
-                  <input style={input} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder="7.1" />
-                </div>
-
-                <div>
-                  <label style={label}>Serial number</label>
-                  <input style={input} value={form.serial_number} onChange={e => set('serial_number', e.target.value)} placeholder="DKSP2024XXXXXX" />
-                </div>
-
-                <div>
-                  <label style={label}>Warranty expiry</label>
-                  <input type="date" style={input} value={form.warranty_expiry} onChange={e => set('warranty_expiry', e.target.value)} />
-                </div>
-
-                <div>
-                  <label style={label}>Installation date *</label>
-                  <input required type="date" style={input} value={form.install_date} onChange={e => set('install_date', e.target.value)} />
-                </div>
-
-                <div>
-                  <label style={label}>Location in property</label>
-                  <input style={input} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder="Master bedroom" />
-                </div>
-
-                <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                  <label style={label}>Job notes</label>
-                  <textarea
-                    style={{ ...input, height: '88px', padding: '10px 12px', resize: 'none' as const }}
-                    value={form.notes}
-                    onChange={e => set('notes', e.target.value)}
-                    placeholder="Any notes about the installation..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div style={{ ...shellCard, padding: '14px' }}>
-              <div style={sectionLabel}>{sectionDash}Step 3 • Service schedule</div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                <div>
-                  <label style={label}>Service interval</label>
-                  <select style={input} value={form.service_interval_months} onChange={e => set('service_interval_months', e.target.value)}>
-                    <option value="6">Every 6 months</option>
-                    <option value="12">Every 12 months</option>
-                    <option value="18">Every 18 months</option>
-                    <option value="24">Every 24 months</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={label}>Reminder lead time</label>
-                  <select style={input} value={form.reminder_lead_days} onChange={e => set('reminder_lead_days', e.target.value)}>
-                    <option value="14">2 weeks before</option>
-                    <option value="28">4 weeks before</option>
-                    <option value="42">6 weeks before</option>
-                    <option value="56">8 weeks before</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
