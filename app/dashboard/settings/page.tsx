@@ -9,6 +9,7 @@ import { useBusinessData } from '@/lib/business-context'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -68,6 +69,13 @@ const TYPE = {
     fontSize: '28px',
     fontWeight: 900,
     letterSpacing: '-0.05em' as const,
+    lineHeight: 1,
+  },
+  valueMd: {
+    fontSize: '20px',
+    fontWeight: 900,
+    color: TEXT,
+    letterSpacing: '-0.04em' as const,
     lineHeight: 1,
   },
 }
@@ -137,6 +145,53 @@ function IconSpark({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconBusiness({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 21h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M5 21V7.5A1.5 1.5 0 0 1 6.5 6H10v15" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M10 21V4.5A1.5 1.5 0 0 1 11.5 3h6A1.5 1.5 0 0 1 19 4.5V21" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M8 10h.01M8 13h.01M13 7h.01M16 7h.01M13 10h.01M16 10h.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconUser({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconInvoice({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconStar({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6.01L12 16.77 6.6 19.6l1.03-6.01L3.27 9.35l6.03-.88L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconPercent({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
+      <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
     </svg>
   )
 }
@@ -411,6 +466,18 @@ export default function SettingsPage() {
     outline: 'none',
   }
 
+  const textArea: React.CSSProperties = {
+    ...input,
+    height: '88px',
+    padding: '10px 12px',
+    resize: 'none',
+  }
+
+  const selectStyle: React.CSSProperties = {
+    ...input,
+    appearance: 'none',
+  }
+
   const label: React.CSSProperties = {
     ...TYPE.label,
     marginBottom: '6px',
@@ -430,26 +497,17 @@ export default function SettingsPage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: '16px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -465,402 +523,542 @@ export default function SettingsPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const sHead = (labelText: string, sub: string) => (
-    <div style={{ padding: isMobile ? '14px' : '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
-      <div style={{ ...TYPE.section, color: TEAL, marginBottom: '2px' }}>{labelText}</div>
-      <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT }}>{sub}</div>
+  const iconWrap = (color: string): React.CSSProperties => ({
+    width: '36px',
+    height: '36px',
+    borderRadius: '11px',
+    background: '#F8FAFC',
+    color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `1px solid ${BORDER}`,
+    flexShrink: 0,
+  })
+
+  const topCards = [
+    {
+      label: 'Profile',
+      value: userProfile.full_name ? 'Ready' : 'Pending',
+      sub: 'Owner and role details',
+      icon: <IconUser size={18} />,
+      accent: userProfile.full_name ? TEAL_DARK : TEXT,
+      tag: 'Account',
+    },
+    {
+      label: 'Branding',
+      value: business.logo_url ? 'Set' : 'Open',
+      sub: business.logo_url ? 'Logo uploaded' : 'Logo not added',
+      icon: <IconBusiness size={18} />,
+      accent: business.logo_url ? TEAL_DARK : TEXT,
+      tag: 'Business',
+    },
+    {
+      label: 'Invoices',
+      value: bankDetails.bank_name ? 'Ready' : 'Open',
+      sub: bankDetails.bank_name ? 'Bank details added' : 'Payment details missing',
+      icon: <IconInvoice size={18} />,
+      accent: bankDetails.bank_name ? TEAL_DARK : RED,
+      tag: 'Billing',
+    },
+    {
+      label: 'Reviews',
+      value: form.review_discount_enabled ? 'Live' : 'Off',
+      sub: 'Platforms and discount settings',
+      icon: <IconStar size={18} />,
+      accent: form.review_discount_enabled ? TEAL_DARK : TEXT,
+      tag: 'Customer flow',
+    },
+  ]
+
+  const sectionHeader = (title: string, description: string) => (
+    <div style={{ marginBottom: '14px' }}>
+      <div style={sectionLabel}>{title}</div>
+      <div style={TYPE.bodySm}>{description}</div>
     </div>
   )
 
-  const sBody: React.CSSProperties = {
-    padding: isMobile ? '14px' : '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  }
-
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        fontFamily: FONT,
+        background: BG,
+        overflow: 'hidden',
+      }}
+    >
       <Sidebar active="/dashboard/settings" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Settings
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              {saved && (
-                <span
-                  style={{
-                    height: '38px',
-                    padding: '0 14px',
-                    borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.12)',
-                    color: '#FFFFFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                  }}
-                >
-                  Saved
-                </span>
-              )}
-
-              <button
-                form="settings-form"
-                type="submit"
-                disabled={saving || uploadingLogo}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                  opacity: saving || uploadingLogo ? 0.7 : 1,
-                  cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <IconSpark size={16} />
-                {saving ? 'Saving...' : 'Save changes'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Settings
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {saved && (
+                  <span
+                    style={{
+                      height: '38px',
+                      padding: '0 14px',
+                      borderRadius: '10px',
+                      background: 'rgba(255,255,255,0.12)',
+                      color: '#FFFFFF',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Saved
+                  </span>
+                )}
+
+                <button
+                  form="settings-form"
+                  type="submit"
+                  disabled={saving || uploadingLogo}
+                  style={{
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                    opacity: saving || uploadingLogo ? 0.7 : 1,
+                    cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <IconSpark size={16} />
+                  {saving ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+            }}
+          >
+            {topCards.map(item => (
+              <div
+                key={item.label}
+                style={{
+                  ...panelCard,
+                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                  minHeight: 148,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                  <div>
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
+                      {item.label}
+                    </div>
+                  </div>
+
+                  <div style={iconWrap(item.accent)}>
+                    {item.icon}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
+                    {item.value}
+                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
+                    {item.sub}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {loading ? (
             <div
               style={{
-                ...shellCard,
-                padding: '48px',
+                ...panelCard,
                 textAlign: 'center',
                 color: TEXT3,
                 fontSize: '14px',
+                fontWeight: 500,
+                padding: '40px 20px',
               }}
             >
               Loading...
             </div>
           ) : (
-            <form id="settings-form" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <div style={sectionLabel}>{sectionDash}Account</div>
-                <div style={shellCard}>
-                  {sHead('Profile', 'Your profile')}
-                  <div style={sBody}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                      <div>
-                        <label style={label}>Your name</label>
-                        <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
-                        <p style={hint}>Shown in the bottom left of the sidebar</p>
-                      </div>
+            <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gap: '12px',
+                  alignItems: 'start',
+                }}
+              >
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 6' }}>
+                  {sectionHeader('Your profile', 'Update the details shown on your account and sidebar.')}
 
-                      <div>
-                        <label style={label}>Your title</label>
-                        <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
-                        <p style={hint}>Shown below your name in the sidebar</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div style={sectionLabel}>{sectionDash}Business</div>
-                <div style={shellCard}>
-                  {sHead('Branding', 'Business profile')}
-                  <div style={sBody}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                      <div>
-                        <label style={label}>Business name</label>
-                        <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
-                        <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
-                      </div>
-
-                      <div>
-                        <label style={label}>Phone</label>
-                        <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
-                      </div>
-
-                      <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                        <label style={label}>Email</label>
-                        <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
-                      </div>
-                    </div>
-
-                    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                      <div style={{ height: '3px', background: TEAL }} />
-                      <div
-                        style={{
-                          padding: isMobile ? '16px' : '18px 20px',
-                          display: 'flex',
-                          flexDirection: isMobile ? 'column' : 'row',
-                          alignItems: isMobile ? 'stretch' : 'center',
-                          gap: '14px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '72px',
-                            height: '72px',
-                            borderRadius: '50%',
-                            background: WHITE,
-                            border: `1px solid ${BORDER}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {business.logo_url ? (
-                            <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
-                          )}
-                        </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
-                          <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <label
-                            htmlFor="logo-upload"
-                            style={{
-                              height: '38px',
-                              padding: '0 16px',
-                              borderRadius: '8px',
-                              border: `1px solid ${BORDER}`,
-                              background: WHITE,
-                              color: TEXT2,
-                              fontSize: '12px',
-                              cursor: uploadingLogo ? 'not-allowed' : 'pointer',
-                              fontFamily: FONT,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              opacity: uploadingLogo ? 0.7 : 1,
-                              fontWeight: 700,
-                            }}
-                          >
-                            {uploadingLogo ? 'Uploading...' : 'Upload image'}
-                          </label>
-
-                          <input
-                            id="logo-upload"
-                            type="file"
-                            accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                            style={{ display: 'none' }}
-                            disabled={uploadingLogo}
-                            onChange={async e => {
-                              const file = e.target.files?.[0]
-                              if (!file) return
-                              setUploadError('')
-                              setSelectedFileName(file.name)
-                              const reader = new FileReader()
-                              reader.onload = () => {
-                                setSelectedImage(reader.result as string)
-                                setCrop({ x: 0, y: 0 })
-                                setZoom(1)
-                                setShowCropper(true)
-                              }
-                              reader.readAsDataURL(file)
-                              e.currentTarget.value = ''
-                            }}
-                          />
-
-                          {business.logo_url && (
-                            <button
-                              type="button"
-                              onClick={removeLogo}
-                              style={{
-                                height: '38px',
-                                padding: '0 16px',
-                                borderRadius: '8px',
-                                border: `1px solid ${BORDER}`,
-                                background: WHITE,
-                                color: '#B91C1C',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                fontFamily: FONT,
-                                fontWeight: 700,
-                              }}
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {uploadError ? (
-                      <p style={{ ...hint, color: '#B91C1C' }}>{uploadError}</p>
-                    ) : (
-                      <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div style={sectionLabel}>{sectionDash}Invoicing</div>
-                <div style={shellCard}>
-                  {sHead('Bank details', 'Payment & bank details')}
-                  <div style={sBody}>
-                    <div
-                      style={{
-                        padding: '14px 16px',
-                        background: '#F0F9F8',
-                        borderRadius: '10px',
-                        border: '1px solid #CCEFED',
-                        fontSize: '13px',
-                        color: TEXT2,
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      These details are printed on invoices sent to customers. Keep them accurate so payments land correctly.
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                      <div>
-                        <label style={label}>Bank name</label>
-                        <input style={input} value={bankDetails.bank_name} onChange={e => setBank('bank_name', e.target.value)} placeholder="e.g. Commonwealth Bank" />
-                      </div>
-
-                      <div>
-                        <label style={label}>Account name</label>
-                        <input style={input} value={bankDetails.account_name} onChange={e => setBank('account_name', e.target.value)} placeholder="e.g. Romis Arib Pty Ltd" />
-                      </div>
-
-                      <div>
-                        <label style={label}>BSB</label>
-                        <input style={input} value={bankDetails.bsb} onChange={e => setBank('bsb', e.target.value)} placeholder="062-000" />
-                        <p style={hint}>6 digits, format: XXX-XXX</p>
-                      </div>
-
-                      <div>
-                        <label style={label}>Account number</label>
-                        <input style={input} value={bankDetails.account_number} onChange={e => setBank('account_number', e.target.value)} placeholder="12345678" />
-                      </div>
-
-                      <div>
-                        <label style={label}>Payment terms (days)</label>
-                        <select style={input} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
-                          <option value="7">7 days</option>
-                          <option value="14">14 days</option>
-                          <option value="21">21 days</option>
-                          <option value="30">30 days</option>
-                        </select>
-                        <p style={hint}>Shown on invoice as "Due within X days"</p>
-                      </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Your name</label>
+                      <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
+                      <p style={hint}>Shown in the bottom left of the sidebar</p>
                     </div>
 
                     <div>
+                      <label style={label}>Your title</label>
+                      <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
+                      <p style={hint}>Shown below your name in the sidebar</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 6' }}>
+                  {sectionHeader('Business profile', 'Set your core business details and brand identity.')}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Business name</label>
+                      <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
+                      <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
+                    </div>
+
+                    <div>
+                      <label style={label}>Phone</label>
+                      <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
+                    </div>
+
+                    <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
+                      <label style={label}>Email</label>
+                      <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: '16px',
+                      borderRadius: '14px',
+                      background: '#FCFCFD',
+                      border: `1px solid ${BORDER}`,
+                      padding: isMobile ? '16px' : '18px',
+                      display: 'flex',
+                      flexDirection: isMobile ? 'column' : 'row',
+                      alignItems: isMobile ? 'stretch' : 'center',
+                      gap: '14px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '50%',
+                        background: WHITE,
+                        border: `1px solid ${BORDER}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {business.logo_url ? (
+                        <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
+                      <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <label
+                        htmlFor="logo-upload"
+                        style={{
+                          height: '38px',
+                          padding: '0 16px',
+                          borderRadius: '8px',
+                          border: `1px solid ${BORDER}`,
+                          background: WHITE,
+                          color: TEXT2,
+                          fontSize: '12px',
+                          cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                          fontFamily: FONT,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: uploadingLogo ? 0.7 : 1,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {uploadingLogo ? 'Uploading...' : 'Upload image'}
+                      </label>
+
+                      <input
+                        id="logo-upload"
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                        style={{ display: 'none' }}
+                        disabled={uploadingLogo}
+                        onChange={async e => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          setUploadError('')
+                          setSelectedFileName(file.name)
+                          const reader = new FileReader()
+                          reader.onload = () => {
+                            setSelectedImage(reader.result as string)
+                            setCrop({ x: 0, y: 0 })
+                            setZoom(1)
+                            setShowCropper(true)
+                          }
+                          reader.readAsDataURL(file)
+                          e.currentTarget.value = ''
+                        }}
+                      />
+
+                      {business.logo_url && (
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          style={{
+                            height: '38px',
+                            padding: '0 16px',
+                            borderRadius: '8px',
+                            border: `1px solid ${BORDER}`,
+                            background: WHITE,
+                            color: RED,
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            fontFamily: FONT,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {uploadError ? (
+                    <p style={{ ...hint, color: RED }}>{uploadError}</p>
+                  ) : (
+                    <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gap: '12px',
+                  alignItems: 'start',
+                }}
+              >
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 7' }}>
+                  {sectionHeader('Payment & bank details', 'These details are printed on invoices sent to customers.')}
+
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      background: '#F0F9F8',
+                      borderRadius: '10px',
+                      border: '1px solid #CCEFED',
+                      fontSize: '13px',
+                      color: TEXT2,
+                      lineHeight: 1.6,
+                      marginBottom: '16px',
+                    }}
+                  >
+                    Keep these accurate so payments land correctly and invoice terms stay clear.
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={label}>Bank name</label>
+                      <input style={input} value={bankDetails.bank_name} onChange={e => setBank('bank_name', e.target.value)} placeholder="e.g. Commonwealth Bank" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Account name</label>
+                      <input style={input} value={bankDetails.account_name} onChange={e => setBank('account_name', e.target.value)} placeholder="e.g. Ramiz Arib Pty Ltd" />
+                    </div>
+
+                    <div>
+                      <label style={label}>BSB</label>
+                      <input style={input} value={bankDetails.bsb} onChange={e => setBank('bsb', e.target.value)} placeholder="062-000" />
+                      <p style={hint}>6 digits, format: XXX-XXX</p>
+                    </div>
+
+                    <div>
+                      <label style={label}>Account number</label>
+                      <input style={input} value={bankDetails.account_number} onChange={e => setBank('account_number', e.target.value)} placeholder="12345678" />
+                    </div>
+
+                    <div>
+                      <label style={label}>Payment terms (days)</label>
+                      <select style={selectStyle} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
+                        <option value="7">7 days</option>
+                        <option value="14">14 days</option>
+                        <option value="21">21 days</option>
+                        <option value="30">30 days</option>
+                      </select>
+                      <p style={hint}>Shown on invoice as "Due within X days"</p>
+                    </div>
+
+                    <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
                       <label style={label}>Default invoice notes</label>
                       <textarea
-                        style={{ ...input, height: '80px', padding: '10px 12px', resize: 'none' as const }}
+                        style={textArea}
                         value={bankDetails.invoice_notes}
                         onChange={e => setBank('invoice_notes', e.target.value)}
                         placeholder="e.g. Please include invoice number as reference. Thank you for your business!"
                       />
                       <p style={hint}>Printed at the bottom of every invoice</p>
                     </div>
-
-                    {(bankDetails.bsb || bankDetails.account_number) && (
-                      <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                        <div style={{ height: '3px', background: TEAL }} />
-                        <div style={{ padding: '16px 18px' }}>
-                          <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '10px' }}>Preview — invoice payment section</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
-                            {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
-                            {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
-                            {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
-                            {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
+                </div>
+
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 5' }}>
+                  {sectionHeader('Invoice preview', 'Preview how your payment section will appear.')}
+
+                  {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
+                    <div
+                      style={{
+                        borderRadius: '14px',
+                        background: '#FCFCFD',
+                        border: `1px solid ${BORDER}`,
+                        padding: '16px 18px',
+                      }}
+                    >
+                      <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '12px' }}>Invoice payment section</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
+                        {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
+                        {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
+                        {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
+                        {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
+                        {bankDetails.invoice_notes && <div style={{ marginTop: '6px', fontSize: '12px', color: TEXT2, lineHeight: 1.6 }}>{bankDetails.invoice_notes}</div>}
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        borderRadius: '12px',
+                        padding: '26px 16px',
+                        background: WHITE,
+                        border: `1px solid ${BORDER}`,
+                        textAlign: 'center',
+                        color: TEXT3,
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Add bank details to preview your invoice payment section.
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div>
-                <div style={sectionLabel}>{sectionDash}Reviews</div>
-                <div style={shellCard}>
-                  {sHead('Platforms', 'Review platforms')}
-                  <div style={sBody}>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        color: TEXT2,
-                        lineHeight: 1.6,
-                        padding: '14px 16px',
-                        background: '#F0F9F8',
-                        borderRadius: '10px',
-                        border: '1px solid #CCEFED',
-                      }}
-                    >
-                      Add your review page links below. These appear on the customer registration page after each installation.
-                    </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gap: '12px',
+                  alignItems: 'start',
+                }}
+              >
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 7' }}>
+                  {sectionHeader('Review platforms', 'Add the links shown to customers after each installation.')}
 
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: TEXT2,
+                      lineHeight: 1.6,
+                      padding: '14px 16px',
+                      background: '#F0F9F8',
+                      borderRadius: '10px',
+                      border: '1px solid #CCEFED',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    Add your review page links below. These appear on the customer registration page after each installation.
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '14px' }}>
                     <div>
                       <label style={label}>Google review link</label>
                       <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
@@ -881,7 +1079,7 @@ export default function SettingsPage() {
                             key={p.id}
                             style={{
                               display: 'grid',
-                              gridTemplateColumns: isMobile ? '1fr auto' : '1fr 2fr auto',
+                              gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr auto',
                               gap: '10px',
                               alignItems: 'center',
                               padding: '12px',
@@ -903,7 +1101,7 @@ export default function SettingsPage() {
                                 borderRadius: '8px',
                                 border: `1px solid ${BORDER}`,
                                 background: WHITE,
-                                color: '#B91C1C',
+                                color: RED,
                                 cursor: 'pointer',
                                 fontSize: '16px',
                                 display: 'flex',
@@ -943,85 +1141,89 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <div style={sectionLabel}>{sectionDash}Discount</div>
-                <div style={shellCard}>
-                  {sHead('Discount', 'Review discount')}
-                  <div style={sBody}>
+                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 5' }}>
+                  {sectionHeader('Review discount', 'Control the offer shown after customers leave reviews.')}
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '14px',
+                      padding: '16px',
+                      background: '#F9FAFB',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      marginBottom: '14px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
+                      <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
+                    </div>
+
                     <div
+                      onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '14px',
-                        padding: '16px',
-                        background: '#F9FAFB',
-                        borderRadius: '10px',
-                        border: `1px solid ${BORDER}`,
+                        width: '44px',
+                        height: '24px',
+                        borderRadius: '12px',
+                        background: form.review_discount_enabled ? TEAL : '#D1D5DB',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        flexShrink: 0,
                       }}
                     >
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
-                        <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '3px',
+                          left: form.review_discount_enabled ? '23px' : '3px',
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          background: WHITE,
+                          transition: 'left 0.15s',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {form.review_discount_enabled && (
+                    <div style={{ display: 'grid', gap: '14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                        <div>
+                          <label style={label}>Discount per review ($)</label>
+                          <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10" />
+                          <p style={hint}>Amount off their next service per review left</p>
+                        </div>
+
+                        <div>
+                          <label style={label}>Maximum discount ($)</label>
+                          <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30" />
+                          <p style={hint}>Cap on total discount across all platforms</p>
+                        </div>
                       </div>
 
                       <div
-                        onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
                         style={{
-                          width: '44px',
-                          height: '24px',
-                          borderRadius: '12px',
-                          background: form.review_discount_enabled ? TEAL : '#D1D5DB',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          flexShrink: 0,
+                          borderRadius: '14px',
+                          background: '#FCFCFD',
+                          border: `1px solid ${BORDER}`,
+                          padding: '16px 18px',
                         }}
                       >
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '3px',
-                            left: form.review_discount_enabled ? '23px' : '3px',
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            background: WHITE,
-                            transition: 'left 0.15s',
-                          }}
-                        />
+                        <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <IconPercent size={16} />
+                          Customer preview
+                        </div>
+                        <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
+                          For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
+                        </div>
                       </div>
                     </div>
-
-                    {form.review_discount_enabled && (
-                      <>
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                          <div>
-                            <label style={label}>Discount per review ($)</label>
-                            <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10" />
-                            <p style={hint}>Amount off their next service per review left</p>
-                          </div>
-
-                          <div>
-                            <label style={label}>Maximum discount ($)</label>
-                            <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30" />
-                            <p style={hint}>Cap on total discount across all platforms</p>
-                          </div>
-                        </div>
-
-                        <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                          <div style={{ height: '3px', background: TEAL }} />
-                          <div style={{ padding: '16px 18px' }}>
-                            <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '6px' }}>Preview — what customers will see</div>
-                            <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
-                              For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </form>
