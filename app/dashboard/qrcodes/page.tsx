@@ -79,6 +79,17 @@ function useIsMobile() {
   return isMobile
 }
 
+function formatDate(date?: string | null) {
+  if (!date) return 'No date'
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+  return parsed.toLocaleDateString('en-AU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -101,14 +112,6 @@ function IconPrint({ size = 15 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <rect x="7" y="14" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
-}
-
-function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -244,6 +247,7 @@ export default function QRCodesPage() {
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '8px',
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
@@ -266,7 +270,7 @@ export default function QRCodesPage() {
   const latestInstall = useMemo(() => {
     const withDates = jobs.filter(job => job.install_date)
     if (!withDates.length) return 'No date'
-    return withDates[0].install_date
+    return formatDate(withDates[0].install_date)
   }, [jobs])
 
   return (
@@ -533,13 +537,13 @@ export default function QRCodesPage() {
                 >
                   {jobs.map(job => {
                     const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                    const qrSize = isMobile ? 118 : 148
+                    const qrSize = isMobile ? 132 : 152
 
                     return (
                       <div
                         key={job.id}
                         style={{
-                          borderRadius: '16px',
+                          borderRadius: '18px',
                           border: `1px solid ${BORDER}`,
                           background: WHITE,
                           boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
@@ -549,31 +553,53 @@ export default function QRCodesPage() {
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : '176px 1fr',
+                            gridTemplateColumns: isMobile ? '1fr' : '200px minmax(0, 1fr)',
                             minHeight: '100%',
                           }}
                         >
                           <div
                             style={{
-                              background: '#FCFCFD',
+                              background:
+                                'linear-gradient(180deg, #FCFCFD 0%, #F8FAFC 100%)',
                               borderRight: isMobile ? 'none' : `1px solid ${BORDER}`,
                               borderBottom: isMobile ? `1px solid ${BORDER}` : 'none',
+                              padding: isMobile ? '18px 16px' : '18px',
                               display: 'flex',
+                              flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              padding: isMobile ? '18px 16px' : '20px 16px',
+                              gap: '10px',
+                              position: 'relative',
                             }}
                           >
-                            {qrUrls[job.id] ? (
-                              <div
-                                style={{
-                                  padding: '10px',
-                                  background: WHITE,
-                                  borderRadius: '12px',
-                                  border: `1px solid ${BORDER}`,
-                                  boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
-                                }}
-                              >
+                            <div
+                              style={{
+                                position: 'absolute',
+                                inset: '12px',
+                                borderRadius: '16px',
+                                background:
+                                  'radial-gradient(circle at top left, rgba(31,158,148,0.07), transparent 45%)',
+                                pointerEvents: 'none',
+                              }}
+                            />
+
+                            <div
+                              style={{
+                                position: 'relative',
+                                width: isMobile ? '100%' : '164px',
+                                maxWidth: '164px',
+                                aspectRatio: '1 / 1',
+                                borderRadius: '18px',
+                                border: `1px solid ${BORDER}`,
+                                background: WHITE,
+                                boxShadow: '0 8px 18px rgba(15,23,42,0.06)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '12px',
+                              }}
+                            >
+                              {qrUrls[job.id] ? (
                                 <img
                                   src={qrUrls[job.id]}
                                   alt="QR code"
@@ -581,31 +607,57 @@ export default function QRCodesPage() {
                                     width: qrSize,
                                     height: qrSize,
                                     display: 'block',
-                                    borderRadius: '4px',
+                                    borderRadius: '8px',
                                   }}
                                 />
-                              </div>
-                            ) : (
-                              <div
-                                style={{
-                                  width: qrSize,
-                                  height: qrSize,
-                                  background: BG,
-                                  borderRadius: '12px',
-                                  border: `1px solid ${BORDER}`,
-                                }}
-                              />
-                            )}
+                              ) : (
+                                <div
+                                  style={{
+                                    width: qrSize,
+                                    height: qrSize,
+                                    background: BG,
+                                    borderRadius: '12px',
+                                    border: `1px solid ${BORDER}`,
+                                  }}
+                                />
+                              )}
+                            </div>
+
+                            <div
+                              style={{
+                                position: 'relative',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '6px 10px',
+                                borderRadius: '999px',
+                                background: '#E8F4F1',
+                                border: '1px solid rgba(31,158,148,0.12)',
+                                color: '#0A4F4C',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                letterSpacing: '0.02em',
+                              }}
+                            >
+                              Ready to scan
+                            </div>
                           </div>
 
-                          <div style={{ padding: '16px' }}>
+                          <div
+                            style={{
+                              padding: '16px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              gap: '14px',
+                            }}
+                          >
                             <div
                               style={{
                                 display: 'flex',
                                 alignItems: 'flex-start',
                                 justifyContent: 'space-between',
                                 gap: '12px',
-                                marginBottom: '14px',
                                 flexWrap: 'wrap',
                               }}
                             >
@@ -615,7 +667,7 @@ export default function QRCodesPage() {
                                 </div>
                                 <div
                                   style={{
-                                    fontSize: '15px',
+                                    fontSize: '16px',
                                     fontWeight: 800,
                                     color: TEXT,
                                     lineHeight: 1.2,
@@ -631,8 +683,8 @@ export default function QRCodesPage() {
 
                               <span
                                 style={{
-                                  background: '#E8F4F1',
-                                  color: '#0A4F4C',
+                                  background: '#F8FAFC',
+                                  color: TEXT2,
                                   padding: '6px 10px',
                                   borderRadius: '999px',
                                   fontSize: '10px',
@@ -640,9 +692,10 @@ export default function QRCodesPage() {
                                   whiteSpace: 'nowrap',
                                   display: 'inline-block',
                                   letterSpacing: '0.02em',
+                                  border: `1px solid ${BORDER}`,
                                 }}
                               >
-                                QR ready
+                                Job linked
                               </span>
                             </div>
 
@@ -680,7 +733,7 @@ export default function QRCodesPage() {
                               >
                                 <div style={{ ...TYPE.label, marginBottom: '6px' }}>Install date</div>
                                 <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>
-                                  {job.install_date || 'No date'}
+                                  {formatDate(job.install_date)}
                                 </div>
                                 <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
                                   Customer registration link embedded
@@ -690,7 +743,6 @@ export default function QRCodesPage() {
 
                             <div
                               style={{
-                                marginTop: '14px',
                                 display: 'flex',
                                 gap: '8px',
                                 flexWrap: 'wrap',
@@ -703,6 +755,7 @@ export default function QRCodesPage() {
                                   height: '36px',
                                   padding: '0 12px',
                                   borderRadius: '10px',
+                                  flex: isMobile ? '1 1 100%' : '0 0 auto',
                                 }}
                               >
                                 <IconDownload size={14} />
@@ -720,6 +773,7 @@ export default function QRCodesPage() {
                                   color: WHITE,
                                   border: 'none',
                                   boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                                  flex: isMobile ? '1 1 100%' : '0 0 auto',
                                 }}
                               >
                                 <IconPrint size={14} />
