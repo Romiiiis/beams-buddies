@@ -162,25 +162,44 @@ function LogoutIcon() {
   )
 }
 
+function CollapseIcon({ collapsed }: { collapsed: boolean }) {
+  return collapsed ? (
+    <svg {...iconBase}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  ) : (
+    <svg {...iconBase}>
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
 export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isManualCollapse, setIsManualCollapse] = useState(false)
 
   useEffect(() => {
     function check() {
       const mobile = window.innerWidth < 768
-      const collapsed = window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
+      const autoCollapsed = window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
 
       setIsMobile(mobile)
-      setIsCollapsed(!mobile && collapsed)
+
+      if (mobile) {
+        setIsCollapsed(false)
+        return
+      }
+
+      setIsCollapsed(isManualCollapse || autoCollapsed)
     }
 
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
-  }, [])
+  }, [isManualCollapse])
 
   const initials = business?.full_name
     ? business.full_name
@@ -194,6 +213,14 @@ export function Sidebar({ active }: { active: string }) {
   async function signOut() {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  function handleManualCollapseToggle() {
+    if (isMobile) return
+
+    const nextManualState = !isCollapsed
+    setIsManualCollapse(nextManualState)
+    setIsCollapsed(nextManualState)
   }
 
   function renderNavItem(item: { label: string; href: string }) {
@@ -382,6 +409,7 @@ export function Sidebar({ active }: { active: string }) {
         >
           <div
             style={{
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
@@ -391,6 +419,56 @@ export function Sidebar({ active }: { active: string }) {
               marginBottom: 10,
             }}
           >
+            {!isCollapsed && (
+              <button
+                onClick={handleManualCollapseToggle}
+                title="Collapse sidebar"
+                style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: 6,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 9,
+                  border: `1px solid ${BORDER}`,
+                  background: WHITE,
+                  color: TEXT3,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+                }}
+              >
+                <CollapseIcon collapsed={false} />
+              </button>
+            )}
+
+            {isCollapsed && (
+              <button
+                onClick={handleManualCollapseToggle}
+                title="Expand sidebar"
+                style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: 6,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 9,
+                  border: `1px solid ${BORDER}`,
+                  background: WHITE,
+                  color: TEXT3,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+                }}
+              >
+                <CollapseIcon collapsed />
+              </button>
+            )}
+
             <img
               src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
               alt="Jobyra"
@@ -406,7 +484,7 @@ export function Sidebar({ active }: { active: string }) {
             />
 
             {!isCollapsed && (
-              <div style={{ minWidth: 0 }}>
+              <div style={{ minWidth: 0, paddingRight: 30 }}>
                 <div
                   style={{
                     fontSize: 15,
