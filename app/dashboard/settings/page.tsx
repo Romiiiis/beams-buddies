@@ -141,42 +141,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconBuilding({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 21V7l8-4 8 4v14M9 21v-4h6v4M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconCard({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M3 10h18" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
-}
-
-function IconStar({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 2.8 5.7L21 9.6l-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 export default function SettingsPage() {
   const router = useRouter()
   const { refresh } = useBusinessData()
@@ -434,11 +398,6 @@ export default function SettingsPage() {
     year: 'numeric',
   })
 
-  const allPlatformCount =
-    (form.google_review_url ? 1 : 0) +
-    (form.facebook_review_url ? 1 : 0) +
-    platforms.filter(p => p.url).length
-
   const input: React.CSSProperties = {
     width: '100%',
     height: '42px',
@@ -639,104 +598,6 @@ export default function SettingsPage() {
             </div>
           ) : (
             <form id="settings-form" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <div style={sectionLabel}>{sectionDash}Overview</div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                    gap: '10px',
-                  }}
-                >
-                  {[
-                    {
-                      label: 'Account profile',
-                      value: userProfile.full_name ? 'Ready' : 'Setup',
-                      sub: 'Sidebar identity',
-                      icon: <IconUsers size={17} />,
-                      accent: TEXT,
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Business profile',
-                      value: business.name ? 'Ready' : 'Setup',
-                      sub: 'Brand details added',
-                      icon: <IconBuilding size={17} />,
-                      accent: TEAL_DARK,
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Payment details',
-                      value: bankDetails.account_number ? 'Ready' : 'Missing',
-                      sub: 'Invoice payout setup',
-                      icon: <IconCard size={17} />,
-                      accent: '#1E3A8A',
-                      span: 'span 3',
-                    },
-                    {
-                      label: 'Review platforms',
-                      value: `${allPlatformCount}`,
-                      sub: 'Active links configured',
-                      icon: <IconStar size={17} />,
-                      accent: '#92400E',
-                      span: 'span 3',
-                    },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        ...shellCard,
-                        padding: isMobile ? '12px' : '12px 14px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        gridColumn: isMobile ? 'span 1' : item.span,
-                        minHeight: '124px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <div
-                          style={{
-                            width: '34px',
-                            height: '34px',
-                            borderRadius: '11px',
-                            background: '#F8FAFC',
-                            color: item.accent,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: `1px solid ${BORDER}`,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {item.icon}
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
-                            color: TEXT3,
-                          }}
-                        >
-                          Live
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                        <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '24px', color: item.accent, marginBottom: '5px' }}>
-                          {item.value}
-                        </div>
-                        <div style={{ ...TYPE.body, fontSize: '11px' }}>{item.sub}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div>
                 <div style={sectionLabel}>{sectionDash}Account</div>
                 <div style={shellCard}>
@@ -1156,16 +1017,6 @@ export default function SettingsPage() {
                             <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
                               For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
                             </div>
-                            {allPlatformCount > 0 && (
-                              <div style={{ marginTop: '10px', fontSize: '12px', color: TEXT3 }}>
-                                {allPlatformCount} platform{allPlatformCount !== 1 ? 's' : ''} configured • max discount = $
-                                {Math.min(
-                                  allPlatformCount * parseFloat(form.review_discount_amount || '10'),
-                                  parseFloat(form.review_discount_max || '30')
-                                )}{' '}
-                                if all reviews left
-                              </div>
-                            )}
                           </div>
                         </div>
                       </>
