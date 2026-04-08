@@ -209,12 +209,13 @@ export function Sidebar({ active }: { active: string }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'flex-start',
-          gap: isCollapsed ? 0 : 12,
+          gap: isCollapsed ? 0 : 10,
           border: 'none',
           background: isActive ? TEAL_SOFT : 'transparent',
           color: isActive ? TEAL : TEXT2,
           borderRadius: 12,
-          padding: isCollapsed ? '8px' : '8px 10px',
+          padding: isCollapsed ? '6px' : '6px 10px',
+          minHeight: isCollapsed ? 44 : 42,
           cursor: 'pointer',
           textAlign: 'left',
           boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
@@ -229,9 +230,9 @@ export function Sidebar({ active }: { active: string }) {
       >
         <span
           style={{
-            width: 32,
-            height: 32,
-            minWidth: 32,
+            width: 30,
+            height: 30,
+            minWidth: 30,
             borderRadius: 10,
             display: 'inline-flex',
             alignItems: 'center',
@@ -442,7 +443,7 @@ export function Sidebar({ active }: { active: string }) {
               padding: '0 2px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 2,
+              gap: 1,
             }}
           >
             {navMain.map(renderNavItem)}
@@ -455,7 +456,7 @@ export function Sidebar({ active }: { active: string }) {
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   color: TEXT3,
-                  padding: '14px 10px 6px',
+                  padding: '12px 10px 5px',
                 }}
               >
                 Finance
@@ -472,7 +473,7 @@ export function Sidebar({ active }: { active: string }) {
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   color: TEXT3,
-                  padding: '14px 10px 6px',
+                  padding: '12px 10px 5px',
                 }}
               >
                 Manage
