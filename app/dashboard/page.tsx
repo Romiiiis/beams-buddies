@@ -7,75 +7,79 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_SOFT = '#E8F4F1'
 const RED = '#B91C1C'
+const RED_SOFT = '#FEE2E2'
 const AMBER = '#92400E'
-const BLUE = '#2563EB'
+const AMBER_SOFT = '#FEF3C7'
+const BLUE_SOFT = '#E9F2FF'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
+const MUTED = '#64748B'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
-const WHITE = '#FFFFFF'
+const PANEL = '#FFFFFF'
+const SUBTLE = '#F8FAFC'
 const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
-  label: {
+  overline: {
     fontSize: '10px',
     fontWeight: 800,
-    letterSpacing: '0.08em' as const,
+    letterSpacing: '0.12em' as const,
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
-    textTransform: 'uppercase' as const,
+  label: {
+    fontSize: '11px',
+    fontWeight: 700,
     color: TEXT3,
   },
   bodySm: {
-    fontSize: '11px',
+    fontSize: '12px',
     fontWeight: 500,
     color: TEXT3,
     lineHeight: 1.45,
   },
   body: {
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 500,
     color: TEXT2,
     lineHeight: 1.45,
   },
   titleSm: {
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 800,
     color: TEXT,
-    lineHeight: 1.3,
+    lineHeight: 1.35,
   },
   title: {
-    fontSize: '13px',
-    fontWeight: 700,
-    color: TEXT2,
-    lineHeight: 1.35,
+    fontSize: '15px',
+    fontWeight: 800,
+    color: TEXT,
+    lineHeight: 1.25,
   },
   valueLg: {
     fontSize: '28px',
     fontWeight: 900,
     letterSpacing: '-0.05em' as const,
+    color: TEXT,
     lineHeight: 1,
   },
   valueMd: {
-    fontSize: '20px',
+    fontSize: '22px',
     fontWeight: 900,
-    color: TEXT,
     letterSpacing: '-0.04em' as const,
+    color: TEXT,
     lineHeight: 1,
   },
   valueSm: {
     fontSize: '16px',
     fontWeight: 900,
+    letterSpacing: '-0.03em' as const,
     color: TEXT,
-    letterSpacing: '-0.04em' as const,
     lineHeight: 1,
   },
 }
@@ -106,18 +110,10 @@ function useIsMobile() {
 function IconUsers({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/>
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconTool({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.86l-6.01 6.01a1.5 1.5 0 1 0 2.12 2.12l6.01-6.01a4 4 0 0 0 5.86-5.4l-2.33 2.33-2.25-.45-.45-2.25 2.45-2.21Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -125,9 +121,9 @@ function IconTool({ size = 18 }: { size?: number }) {
 function IconAlert({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
-      <circle cx="12" cy="16.5" r="0.9" fill="currentColor"/>
-      <path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
+      <path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -135,8 +131,8 @@ function IconAlert({ size = 18 }: { size?: number }) {
 function IconInvoice({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/>
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -144,7 +140,7 @@ function IconInvoice({ size = 18 }: { size?: number }) {
 function IconRevenue({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -152,8 +148,8 @@ function IconRevenue({ size = 18 }: { size?: number }) {
 function IconCalendar({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/>
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -161,7 +157,7 @@ function IconCalendar({ size = 18 }: { size?: number }) {
 function IconArrow({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -169,8 +165,8 @@ function IconArrow({ size = 15 }: { size?: number }) {
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/>
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
+      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -187,9 +183,29 @@ function IconJob({ size = 16 }: { size?: number }) {
 function IconPhone({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
+}
+
+function IconCheck({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconCircle({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function formatCurrency(amount: number) {
+  return `$${amount.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
 
 export default function DashboardPage() {
@@ -200,7 +216,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0 })
   const [upcoming, setUpcoming] = useState<any[]>([])
   const [recent, setRecent] = useState<any[]>([])
-  const [invoiceStats, setInvoiceStats] = useState({ collected: 0, outstanding: 0, paidCount: 0, overdueCount: 0 })
+  const [invoiceStats, setInvoiceStats] = useState({ collected: 0, outstanding: 0, paidCount: 0, overdueCount: 0, sentCount: 0 })
   const [allJobs, setAllJobs] = useState<any[]>([])
 
   useEffect(() => {
@@ -255,7 +271,7 @@ export default function DashboardPage() {
       setUpcoming(
         jobs
           .filter(j => j.next_service_date && new Date(j.next_service_date) >= today)
-          .slice(0, 3)
+          .slice(0, 4)
       )
       setRecent(
         [...jobs]
@@ -272,6 +288,7 @@ export default function DashboardPage() {
           .reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
         paidCount: invoices.filter(i => i.status === 'paid').length,
         overdueCount: invoices.filter(i => i.status === 'overdue').length,
+        sentCount: invoices.filter(i => i.status === 'sent').length,
       })
 
       setLoading(false)
@@ -285,16 +302,16 @@ export default function DashboardPage() {
   }
 
   function urgency(days: number) {
-    if (days < 0) return { dot: '#EF4444', val: RED, label: 'Overdue', text: `${Math.abs(days)}d late` }
-    if (days <= 30) return { dot: '#F59E0B', val: AMBER, label: 'Due soon', text: `${days}d left` }
-    return { dot: TEAL, val: TEAL_DARK, label: 'On track', text: `${days}d left` }
+    if (days < 0) return { val: RED, bg: RED_SOFT, label: 'Overdue', text: `${Math.abs(days)}d late` }
+    if (days <= 30) return { val: AMBER, bg: AMBER_SOFT, label: 'Due soon', text: `${days}d left` }
+    return { val: TEAL_DARK, bg: TEAL_SOFT, label: 'On track', text: `${days}d left` }
   }
 
   function statusPill(nextServiceDate: string | null) {
     if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
     const days = getDays(nextServiceDate)
-    if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
-    if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
+    if (days < 0) return { label: 'Overdue', bg: RED_SOFT, color: '#7F1D1D' }
+    if (days <= 30) return { label: 'Due soon', bg: AMBER_SOFT, color: '#78350F' }
     return { label: 'Good', bg: '#DCFCE7', color: '#166534' }
   }
 
@@ -314,58 +331,42 @@ export default function DashboardPage() {
   })
 
   const shellCard: React.CSSProperties = {
-    background: WHITE,
+    background: PANEL,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+    borderRadius: '18px',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
   const panelCard: React.CSSProperties = {
     ...shellCard,
-    padding: '16px',
+    padding: isMobile ? '16px' : '18px',
   }
 
-  const sectionLabel: React.CSSProperties = {
+  const sectionTitle: React.CSSProperties = {
     ...TYPE.title,
-    fontSize: '13px',
-    fontWeight: 800,
-    marginBottom: '12px',
+    margin: 0,
   }
 
-  const quickActionStyle: React.CSSProperties = {
+  const buttonStyle: React.CSSProperties = {
+    height: '40px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
-    background: WHITE,
+    background: PANEL,
     color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 700,
+    padding: '0 14px',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
-
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
-    flexShrink: 0,
-  })
 
   const monthlyAppointments = useMemo(() => {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const base = monthNames.map((label, i) => ({ label, total: 0, completed: 0, month: i }))
+    const base = monthNames.map(label => ({ label, total: 0, completed: 0 }))
 
     allJobs.forEach(job => {
       const created = job.created_at ? new Date(job.created_at) : null
@@ -385,113 +386,114 @@ export default function DashboardPage() {
 
     return base.map(item => ({
       ...item,
-      totalHeight: Math.max(16, (item.total / max) * 154),
-      completedHeight: Math.max(item.completed > 0 ? 12 : 0, (item.completed / max) * 154),
+      totalHeight: Math.max(18, (item.total / max) * 150),
+      completedHeight: Math.max(item.completed > 0 ? 12 : 0, (item.completed / max) * 150),
     }))
   }, [allJobs])
 
-  const chartMax = useMemo(() => {
-    return Math.max(...monthlyAppointments.map(item => Math.max(item.total, item.completed)), 1)
-  }, [monthlyAppointments])
+  const performanceScore = useMemo(() => {
+    const totalUnits = Math.max(stats.units, 1)
+    const overduePenalty = (stats.overdue / totalUnits) * 45
+    const dueSoonPenalty = (dueSoonCount / totalUnits) * 20
+    const unpaidPenalty = invoiceStats.outstanding > 0 ? 12 : 0
+    const raw = 100 - overduePenalty - dueSoonPenalty - unpaidPenalty
+    return Math.max(42, Math.min(98, Math.round(raw)))
+  }, [stats.units, stats.overdue, dueSoonCount, invoiceStats.outstanding])
 
-  const chartTicks = useMemo(() => {
-    const top = Math.max(4, chartMax)
-    return [top, Math.round(top * 0.75), Math.round(top * 0.5), Math.round(top * 0.25), 0]
-  }, [chartMax])
+  const performanceTasks = [
+    {
+      label: 'Keep overdue services under control',
+      complete: stats.overdue === 0,
+      accent: TEAL,
+      meta: stats.overdue === 0 ? 'On track' : `${stats.overdue} open`,
+    },
+    {
+      label: 'Convert sent invoices into paid',
+      complete: invoiceStats.sentCount === 0 && invoiceStats.outstanding === 0,
+      accent: '#8AB4F8',
+      meta: invoiceStats.sentCount > 0 ? `${invoiceStats.sentCount} awaiting payment` : 'Clear',
+    },
+    {
+      label: 'Schedule units due in next 30 days',
+      complete: dueSoonCount === 0,
+      accent: '#B2D97E',
+      meta: dueSoonCount > 0 ? `${dueSoonCount} due soon` : 'Up to date',
+    },
+  ]
 
-  const revenueDistribution = useMemo(() => {
-    const buckets = {
-      Service: 0,
-      Installation: 0,
-      Quote: 0,
-      Repair: 0,
-      Other: 0,
-    }
+  const gaugeBackground = useMemo(() => {
+    const tealStop = Math.min(40, performanceScore * 0.45)
+    const blueStop = Math.min(76, tealStop + 26)
+    const amberStop = 90
+    return `conic-gradient(
+      from 220deg,
+      ${TEAL} 0deg ${tealStop * 1.8}deg,
+      #7DA8F7 ${tealStop * 1.8}deg ${blueStop * 1.8}deg,
+      #E9C46A ${blueStop * 1.8}deg ${amberStop * 1.8}deg,
+      #E5E7EB ${amberStop * 1.8}deg 360deg
+    )`
+  }, [performanceScore])
 
-    allJobs.forEach(job => {
-      const value = 1
-      const type = String(job.job_type || '').toLowerCase()
-
-      if (type.includes('service')) buckets.Service += value
-      else if (type.includes('install')) buckets.Installation += value
-      else if (type.includes('quote')) buckets.Quote += value
-      else if (type.includes('repair')) buckets.Repair += value
-      else buckets.Other += value
-    })
-
-    if (Object.values(buckets).every(v => v === 0)) {
-      buckets.Service = 4
-      buckets.Installation = 3
-      buckets.Quote = 2
-      buckets.Repair = 2
-      buckets.Other = 1
-    }
-
-    const colors = {
-      Service: '#C7B8FF',
-      Installation: '#A9D79A',
-      Quote: '#8EC5FF',
-      Repair: '#F3C87B',
-      Other: '#E5E7EB',
-    }
-
-    const total = Object.values(buckets).reduce((sum, value) => sum + value, 0)
-
-    return Object.entries(buckets).map(([label, value]) => ({
-      label,
-      value,
-      percent: Math.round((value / total) * 100),
-      color: colors[label as keyof typeof colors],
-    }))
-  }, [allJobs])
-
-  const donutBackground = useMemo(() => {
-    let current = 0
-    const parts = revenueDistribution.map(item => {
-      const start = current
-      const end = current + item.percent
-      current = end
-      return `${item.color} ${start}% ${end}%`
-    })
-    return `conic-gradient(${parts.join(', ')})`
-  }, [revenueDistribution])
-
-  const strongestRevenueSource = useMemo(() => {
-    return [...revenueDistribution].sort((a, b) => b.percent - a.percent)[0]
-  }, [revenueDistribution])
-
-  const topCards = [
+  const revenueCards = [
     {
       label: 'Customers',
       value: stats.customers.toLocaleString('en-AU'),
-      sub: 'Registered in your CRM',
       icon: <IconUsers size={18} />,
-      accent: TEXT,
-      tag: 'CRM total',
+      accent: TEAL,
+      chipBg: TEAL_SOFT,
+      chipColor: TEAL_DARK,
+      sub: 'Active clients',
     },
     {
       label: 'New jobs',
-      value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`,
-      sub: 'Created this month',
+      value: stats.jobsThisMonth.toLocaleString('en-AU'),
       icon: <IconJob size={18} />,
-      accent: TEAL_DARK,
-      tag: 'Monthly flow',
+      accent: '#7DA8F7',
+      chipBg: BLUE_SOFT,
+      chipColor: '#2156B5',
+      sub: 'This month',
     },
     {
       label: 'Revenue',
-      value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      sub: 'Collected invoices',
+      value: formatCurrency(invoiceStats.collected),
       icon: <IconRevenue size={18} />,
-      accent: TEXT,
-      tag: 'Paid total',
+      accent: TEAL_DARK,
+      chipBg: TEAL_SOFT,
+      chipColor: TEAL_DARK,
+      sub: 'Collected invoices',
     },
     {
-      label: 'Overdue services',
+      label: 'Overdue',
       value: stats.overdue.toLocaleString('en-AU'),
-      sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear',
       icon: <IconAlert size={18} />,
       accent: stats.overdue > 0 ? RED : TEAL_DARK,
-      tag: 'Action needed',
+      chipBg: stats.overdue > 0 ? RED_SOFT : TEAL_SOFT,
+      chipColor: stats.overdue > 0 ? RED : TEAL_DARK,
+      sub: stats.overdue > 0 ? 'Needs attention' : 'All clear',
+    },
+  ]
+
+  const sideTasks = [
+    {
+      title: stats.overdue > 0 ? 'Follow up overdue services' : 'Overdue services cleared',
+      date: stats.overdue > 0 ? `${stats.overdue} units need action` : 'Nothing pending',
+      toneBg: stats.overdue > 0 ? RED_SOFT : TEAL_SOFT,
+      toneColor: stats.overdue > 0 ? RED : TEAL_DARK,
+      toneLabel: stats.overdue > 0 ? 'High' : 'Good',
+    },
+    {
+      title: invoiceStats.outstanding > 0 ? 'Outstanding invoices to collect' : 'Invoices collected',
+      date: invoiceStats.outstanding > 0 ? formatCurrency(invoiceStats.outstanding) : 'No outstanding balance',
+      toneBg: invoiceStats.outstanding > 0 ? AMBER_SOFT : TEAL_SOFT,
+      toneColor: invoiceStats.outstanding > 0 ? AMBER : TEAL_DARK,
+      toneLabel: invoiceStats.outstanding > 0 ? 'Medium' : 'Good',
+    },
+    {
+      title: dueSoonCount > 0 ? 'Upcoming service reminders' : 'Upcoming services under control',
+      date: dueSoonCount > 0 ? `${dueSoonCount} due within 30 days` : 'No near-term service risk',
+      toneBg: dueSoonCount > 0 ? BLUE_SOFT : TEAL_SOFT,
+      toneColor: dueSoonCount > 0 ? '#2156B5' : TEAL_DARK,
+      toneLabel: dueSoonCount > 0 ? 'Planned' : 'Good',
     },
   ]
 
@@ -524,72 +526,81 @@ export default function DashboardPage() {
             minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
+            gap: '14px',
+            padding: isMobile ? '14px' : '18px',
             background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
           }}
         >
           <div
             style={{
               ...shellCard,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
+              padding: isMobile ? '18px 16px 16px' : '22px 24px',
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
-                }}
-              >
-                {todayStr}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.68)',
+                    marginBottom: '6px',
+                  }}
+                >
+                  {todayStr}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: isMobile ? '30px' : '34px',
+                    lineHeight: 1,
+                    letterSpacing: '-0.04em',
+                    fontWeight: 900,
+                    color: '#FFFFFF',
+                    marginBottom: '8px',
+                  }}
+                >
+                  Dashboard
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    lineHeight: 1.5,
+                    color: 'rgba(255,255,255,0.72)',
+                    maxWidth: '760px',
+                  }}
+                >
+                  Track customers, service due dates, invoices, and jobs from one premium control centre built for fast daily decisions.
+                </div>
               </div>
 
               <div
                 style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
-                }}
-              >
-                Dashboard
-              </div>
-
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Track customers, service due dates, invoices, and jobs from one premium control centre built for fast daily decisions.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
                   display: 'flex',
-                  gap: '8px',
                   flexWrap: 'wrap',
+                  gap: '8px',
                 }}
               >
                 <button
                   onClick={() => router.push('/dashboard/jobs')}
                   style={{
-                    ...quickActionStyle,
+                    ...buttonStyle,
                     background: TEAL,
                     color: '#FFFFFF',
                     border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                    boxShadow: '0 8px 18px rgba(31,158,148,0.20)',
                   }}
                 >
                   <IconSpark size={16} />
@@ -599,11 +610,10 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/dashboard/quotes')}
                   style={{
-                    ...quickActionStyle,
+                    ...buttonStyle,
                     background: 'rgba(255,255,255,0.06)',
                     color: '#FFFFFF',
                     border: '1px solid rgba(255,255,255,0.10)',
-                    boxShadow: 'none',
                   }}
                 >
                   <IconInvoice size={16} />
@@ -613,11 +623,10 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/dashboard/schedule')}
                   style={{
-                    ...quickActionStyle,
+                    ...buttonStyle,
                     background: 'rgba(255,255,255,0.06)',
                     color: '#FFFFFF',
                     border: '1px solid rgba(255,255,255,0.10)',
-                    boxShadow: 'none',
                   }}
                 >
                   <IconCalendar size={16} />
@@ -631,43 +640,62 @@ export default function DashboardPage() {
             style={{
               display: 'grid',
               gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
+              gap: '14px',
             }}
           >
-            {topCards.map(item => (
+            {revenueCards.map(card => (
               <div
-                key={item.label}
+                key={card.label}
                 style={{
                   ...panelCard,
                   gridColumn: isMobile ? 'span 1' : 'span 3',
-                  minHeight: 148,
+                  minHeight: 138,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>
-                      {item.tag}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <div
+                      style={{
+                        width: '34px',
+                        height: '34px',
+                        borderRadius: '10px',
+                        background: SUBTLE,
+                        border: `1px solid ${BORDER}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: card.accent,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {card.icon}
                     </div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                      {item.label}
-                    </div>
+                    <div style={{ ...TYPE.label, fontSize: '12px', color: TEXT2 }}>{card.label}</div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>
-                    {item.icon}
+                  <div
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '999px',
+                      background: card.chipBg,
+                      color: card.chipColor,
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Live
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
-                    {item.value}
+                  <div style={{ ...TYPE.valueLg, fontSize: card.label === 'Revenue' ? '26px' : '30px', marginBottom: '8px' }}>
+                    {card.value}
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
-                    {item.sub}
-                  </div>
+                  <div style={{ ...TYPE.bodySm }}>{card.sub}</div>
                 </div>
               </div>
             ))}
@@ -677,79 +705,162 @@ export default function DashboardPage() {
             style={{
               display: 'grid',
               gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
-              alignItems: 'start',
+              gap: '14px',
+              alignItems: 'stretch',
             }}
           >
             <div
               style={{
                 ...panelCard,
                 gridColumn: isMobile ? 'span 1' : 'span 8',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
                 <div>
-                  <div style={sectionLabel}>Total appointments</div>
-                  <div style={{ ...TYPE.bodySm }}>
-                    Dark bars show completed service events. Light bars show total job activity by month.
+                  <h3 style={sectionTitle}>Revenues and performance</h3>
+                  <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                    Your body layout now follows the cleaner dashboard style, while keeping your original palette and data.
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: '#E6EBF0', border: '1px solid #D6DDE6' }} />
-                    Total jobs
-                  </span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: TEAL }} />
-                    Completed services
-                  </span>
-                </div>
+                <button style={buttonStyle}>
+                  This year
+                  <span style={{ fontSize: '11px', color: MUTED }}>▼</span>
+                </button>
               </div>
 
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))',
-                  gap: '8px',
-                  marginBottom: '14px',
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                  gap: '12px',
                 }}
               >
-                {[
-                  { label: 'Jobs this month', value: stats.jobsThisMonth },
-                  { label: 'Overdue', value: stats.overdue },
-                  { label: 'Due soon', value: dueSoonCount },
-                  { label: 'Units tracked', value: stats.units },
-                ].map(item => (
-                  <div
-                    key={item.label}
-                    style={{
-                      borderRadius: '12px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      padding: '10px 12px',
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                    <div style={{ ...TYPE.valueSm }}>{item.value}</div>
+                <div
+                  style={{
+                    borderRadius: '14px',
+                    background: SUBTLE,
+                    border: `1px solid ${BORDER}`,
+                    padding: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: '34px',
+                        height: '34px',
+                        borderRadius: '10px',
+                        background: BLUE_SOFT,
+                        color: '#2156B5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconRevenue size={16} />
+                    </div>
+                    <div>
+                      <div style={{ ...TYPE.label, color: TEXT2 }}>Revenue</div>
+                      <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>Paid invoices</div>
+                    </div>
                   </div>
-                ))}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ ...TYPE.valueSm, fontSize: '18px' }}>{formatCurrency(invoiceStats.collected)}</div>
+                    <div
+                      style={{
+                        marginTop: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '5px 8px',
+                        borderRadius: '999px',
+                        background: TEAL_SOFT,
+                        color: TEAL_DARK,
+                        fontSize: '11px',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {invoiceStats.paidCount} paid
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    borderRadius: '14px',
+                    background: SUBTLE,
+                    border: `1px solid ${BORDER}`,
+                    padding: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: '34px',
+                        height: '34px',
+                        borderRadius: '10px',
+                        background: AMBER_SOFT,
+                        color: AMBER,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconInvoice size={16} />
+                    </div>
+                    <div>
+                      <div style={{ ...TYPE.label, color: TEXT2 }}>Outstanding</div>
+                      <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>Uncollected invoices</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ ...TYPE.valueSm, fontSize: '18px' }}>{formatCurrency(invoiceStats.outstanding)}</div>
+                    <div
+                      style={{
+                        marginTop: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '5px 8px',
+                        borderRadius: '999px',
+                        background: invoiceStats.outstanding > 0 ? AMBER_SOFT : TEAL_SOFT,
+                        color: invoiceStats.outstanding > 0 ? AMBER : TEAL_DARK,
+                        fontSize: '11px',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {invoiceStats.overdueCount} overdue
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div
                 style={{
-                  height: 312,
-                  borderRadius: '14px',
-                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
+                  height: 300,
+                  borderRadius: '16px',
+                  background: PANEL,
                   border: `1px solid ${BORDER}`,
-                  padding: '16px 16px 14px',
+                  padding: '16px',
                   display: 'grid',
                   gridTemplateColumns: '42px 1fr',
                   gap: '12px',
@@ -761,15 +872,14 @@ export default function DashboardPage() {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
-                    fontSize: '11px',
                     color: TEXT3,
-                    paddingTop: '4px',
-                    paddingBottom: '24px',
+                    fontSize: '11px',
                     fontWeight: 700,
+                    paddingBottom: '24px',
                   }}
                 >
-                  {chartTicks.map((tick, i) => (
-                    <span key={i}>{tick}</span>
+                  {[4, 3, 2, 1, 0].map(tick => (
+                    <span key={tick}>${tick}k</span>
                   ))}
                 </div>
 
@@ -780,10 +890,10 @@ export default function DashboardPage() {
                     gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
                     gap: '10px',
                     alignItems: 'end',
-                    paddingTop: '6px',
+                    height: '100%',
                   }}
                 >
-                  {[0, 25, 50, 75, 100].map((top, i) => (
+                  {[12, 35, 58, 81].map((top, i) => (
                     <div
                       key={i}
                       style={{
@@ -791,7 +901,7 @@ export default function DashboardPage() {
                         left: 0,
                         right: 0,
                         top: `${top}%`,
-                        borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
+                        borderTop: '1px solid #EEF2F7',
                         zIndex: 0,
                       }}
                     />
@@ -803,63 +913,48 @@ export default function DashboardPage() {
                       style={{
                         position: 'relative',
                         zIndex: 1,
+                        height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
                         justifyContent: 'flex-end',
+                        alignItems: 'center',
                         gap: '8px',
-                        height: '100%',
                       }}
                     >
                       <div
                         style={{
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          color: TEXT3,
-                          minHeight: '14px',
-                        }}
-                      >
-                        {item.total > 0 ? item.total : ''}
-                      </div>
-
-                      <div
-                        style={{
                           width: '100%',
                           maxWidth: '40px',
-                          height: '184px',
+                          height: '190px',
+                          position: 'relative',
                           display: 'flex',
                           alignItems: 'flex-end',
                           justifyContent: 'center',
-                          position: 'relative',
                         }}
                       >
                         <div
                           style={{
                             position: 'absolute',
                             bottom: 0,
-                            width: '30px',
+                            width: '12px',
                             height: `${item.totalHeight}px`,
                             borderRadius: '999px',
-                            background: 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
-                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
+                            background: 'linear-gradient(180deg, #B7CCF8 0%, #7EA5EA 100%)',
                           }}
                         />
                         <div
                           style={{
                             position: 'absolute',
-                            bottom: 0,
-                            width: '30px',
-                            height: `${item.completedHeight}px`,
+                            bottom: `${item.totalHeight + 8 > 182 ? 8 : item.totalHeight + 8}px`,
+                            width: '12px',
+                            height: `${Math.max(10, item.completedHeight * 0.5)}px`,
                             borderRadius: '999px',
-                            background: 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)',
-                            boxShadow: '0 4px 10px rgba(31,158,148,0.18)',
+                            background: 'linear-gradient(180deg, #B9DD7C 0%, #A8D167 100%)',
                           }}
                         />
                       </div>
 
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                        {item.label}
-                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{item.label}</div>
                     </div>
                   ))}
                 </div>
@@ -870,164 +965,154 @@ export default function DashboardPage() {
               style={{
                 ...panelCard,
                 gridColumn: isMobile ? 'span 1' : 'span 4',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '18px',
               }}
             >
-              <div style={sectionLabel}>Revenue source distribution</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <h3 style={sectionTitle}>Your performance</h3>
+                <button style={{ ...buttonStyle, height: '36px', padding: '0 12px' }}>
+                  View all
+                  <IconArrow size={14} />
+                </button>
+              </div>
 
               <div
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingTop: '4px',
                 }}
               >
                 <div
                   style={{
+                    width: isMobile ? 210 : 230,
+                    height: isMobile ? 210 : 230,
+                    borderRadius: '50%',
+                    background: gaugeBackground,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '10px 0 2px',
+                    position: 'relative',
+                    clipPath: 'inset(0 0 44% 0)',
                   }}
                 >
                   <div
                     style={{
-                      width: isMobile ? 220 : 230,
-                      height: isMobile ? 220 : 230,
+                      position: 'absolute',
+                      width: '58%',
+                      height: '58%',
                       borderRadius: '50%',
-                      background: donutBackground,
+                      background: PANEL,
+                      border: `1px solid ${BORDER}`,
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
+                      boxShadow: '0 8px 18px rgba(15,23,42,0.04)',
+                      top: '21%',
                     }}
                   >
-                    <div
-                      style={{
-                        width: '54%',
-                        height: '54%',
-                        borderRadius: '50%',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: TEAL_DARK,
-                        boxShadow: '0 8px 18px rgba(15,23,42,0.04)',
-                      }}
-                    >
-                      <IconRevenue size={24} />
-                      <div
-                        style={{
-                          marginTop: '6px',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
-                          color: TEXT3,
-                        }}
-                      >
-                        Mix
-                      </div>
-                    </div>
+                    <div style={{ ...TYPE.valueLg, fontSize: '26px' }}>{performanceScore}%</div>
+                    <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Success</div>
                   </div>
                 </div>
+              </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {revenueDistribution.map(item => (
-                    <div
-                      key={item.label}
+              <div style={{ display: 'grid', gap: '12px', marginTop: '-12px' }}>
+                {performanceTasks.map(task => (
+                  <div
+                    key={task.label}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr auto',
+                      alignItems: 'center',
+                      gap: '10px',
+                    }}
+                  >
+                    <span
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto',
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: task.accent,
+                        display: 'inline-block',
+                      }}
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ ...TYPE.body, fontWeight: 700 }}>{task.label}</div>
+                      <div style={{ ...TYPE.bodySm, marginTop: '2px' }}>{task.meta}</div>
+                    </div>
+                    <div
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        border: `1.5px solid ${task.complete ? '#84CC16' : '#CBD5E1'}`,
+                        color: task.complete ? '#65A30D' : '#CBD5E1',
+                        display: 'flex',
                         alignItems: 'center',
-                        gap: '10px',
-                        fontSize: '12px',
-                        color: TEXT2,
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
+                        justifyContent: 'center',
+                        flexShrink: 0,
                       }}
                     >
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <span
-                          style={{
-                            width: '9px',
-                            height: '9px',
-                            borderRadius: '50%',
-                            background: item.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 700 }}>
-                          {item.label}
-                        </span>
-                      </div>
-                      <span style={{ fontWeight: 800 }}>{item.percent}%</span>
+                      {task.complete ? <IconCheck size={14} /> : <IconCircle size={14} />}
                     </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    padding: '10px 12px',
-                    fontSize: '12px',
-                    color: TEXT3,
-                  }}
-                >
-                  Your strongest workflow this month is <span style={{ color: TEXT, fontWeight: 700 }}>{strongestRevenueSource?.label || 'Service'}</span>.
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div style={{ ...panelCard }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
-              <div style={sectionLabel}>Upcoming jobs</div>
-
-              <button
-                onClick={() => router.push('/dashboard/schedule')}
-                style={{
-                  height: '34px',
-                  borderRadius: '10px',
-                  border: `1px solid ${BORDER}`,
-                  background: '#FFFFFF',
-                  color: TEXT2,
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  padding: '0 12px',
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-                }}
-              >
-                View all
-                <IconArrow size={15} />
-              </button>
-            </div>
-
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '14px',
+              alignItems: 'start',
+            }}
+          >
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))',
-                gap: '10px',
+                ...panelCard,
+                gridColumn: isMobile ? 'span 1' : 'span 8',
               }}
             >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  marginBottom: '14px',
+                }}
+              >
+                <div>
+                  <h3 style={sectionTitle}>Upcoming schedule</h3>
+                  <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                    Upcoming service work laid out in a cleaner table-style body.
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => router.push('/dashboard/schedule')}
+                  style={{ ...buttonStyle, height: '38px' }}
+                >
+                  View all
+                  <IconArrow size={14} />
+                </button>
+              </div>
+
               {upcoming.length === 0 ? (
                 <div
                   style={{
-                    gridColumn: '1 / -1',
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
+                    borderRadius: '14px',
                     border: `1px solid ${BORDER}`,
+                    background: SUBTLE,
+                    padding: '28px 18px',
                     textAlign: 'center',
                     color: TEXT3,
                     fontSize: '14px',
@@ -1037,244 +1122,297 @@ export default function DashboardPage() {
                   No upcoming jobs.
                 </div>
               ) : (
-                upcoming.map((job, i) => {
-                  const av = avColors[i % avColors.length]
-                  const days = job.next_service_date ? getDays(job.next_service_date) : 999
-                  const u = urgency(days)
-
-                  return (
+                <div style={{ overflowX: 'auto' }}>
+                  <div style={{ minWidth: isMobile ? 0 : 720 }}>
                     <div
-                      key={job.id}
-                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{
-                        borderRadius: '14px',
-                        padding: '14px',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
                         display: 'grid',
-                        gap: '12px',
+                        gridTemplateColumns: isMobile ? '1.2fr 1fr 0.9fr' : '1.35fr 1fr 1fr 0.75fr',
+                        gap: '14px',
+                        padding: '0 12px 10px',
+                        color: MUTED,
+                        fontSize: '12px',
+                        fontWeight: 700,
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                        <div
-                          style={{
-                            width: '42px',
-                            height: '42px',
-                            borderRadius: '12px',
-                            background: av.bg,
-                            color: av.color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
-                        </div>
-
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.first_name} {job.customers?.last_name}
-                          </div>
-                          <div style={{ ...TYPE.bodySm, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: TEXT3, fontSize: '11px', fontWeight: 500 }}>
-                          <IconCalendar size={14} />
-                          <span>
-                            {job.next_service_date
-                              ? new Date(job.next_service_date).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-                              : 'No scheduled date'}
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                          <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.suburb || 'No suburb'}
-                          </div>
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: u.val }}>
-                            {u.text}
-                          </div>
-                        </div>
-                      </div>
+                      <div>Client</div>
+                      <div>{isMobile ? 'Date' : 'Next service'}</div>
+                      <div>{isMobile ? 'Status' : 'Location'}</div>
+                      {!isMobile && <div>Status</div>}
                     </div>
-                  )
-                })
+
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {upcoming.map((job, i) => {
+                        const av = avColors[i % avColors.length]
+                        const days = job.next_service_date ? getDays(job.next_service_date) : 999
+                        const u = urgency(days)
+
+                        return (
+                          <div
+                            key={job.id}
+                            onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: isMobile ? '1.2fr 1fr 0.9fr' : '1.35fr 1fr 1fr 0.75fr',
+                              gap: '14px',
+                              alignItems: 'center',
+                              padding: '14px 12px',
+                              borderRadius: '14px',
+                              border: `1px solid ${BORDER}`,
+                              background: PANEL,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                              <div
+                                style={{
+                                  width: '42px',
+                                  height: '42px',
+                                  borderRadius: '12px',
+                                  background: av.bg,
+                                  color: av.color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px',
+                                  fontWeight: 800,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
+                              </div>
+
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ ...TYPE.titleSm, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {job.customers?.first_name} {job.customers?.last_name}
+                                </div>
+                                <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.body, fontWeight: 700 }}>
+                                {job.next_service_date
+                                  ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                                  : 'Not scheduled'}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                {job.next_service_date
+                                  ? new Date(job.next_service_date).toLocaleDateString('en-AU', { weekday: 'short' })
+                                  : ''}
+                              </div>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.body, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {isMobile ? u.text : (job.customers?.suburb || 'No suburb')}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                {isMobile ? (job.customers?.suburb || 'No suburb') : u.text}
+                              </div>
+                            </div>
+
+                            {!isMobile && (
+                              <div>
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '8px 11px',
+                                    borderRadius: '999px',
+                                    background: u.bg,
+                                    color: u.val,
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {u.label}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
-          </div>
 
-          <div style={{ ...panelCard }}>
-            <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '12px' }}>
-              <div>
-                <div style={sectionLabel}>Recent customers</div>
-                <div style={{ ...TYPE.bodySm }}>
-                  Most recently added customers and their current service status.
+            <div
+              style={{
+                gridColumn: isMobile ? 'span 1' : 'span 4',
+                display: 'grid',
+                gap: '14px',
+              }}
+            >
+              <div style={panelCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px' }}>
+                  <h3 style={sectionTitle}>Pending tasks</h3>
+                  <button style={{ ...buttonStyle, height: '36px', padding: '0 12px' }}>
+                    View all
+                    <IconArrow size={14} />
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {sideTasks.map((task, index) => (
+                    <div
+                      key={task.title}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto 1fr auto',
+                        gap: '12px',
+                        alignItems: 'center',
+                        padding: '12px 0',
+                        borderTop: index === 0 ? 'none' : `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '50%',
+                          background: task.toneBg,
+                          color: task.toneColor,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {index === 0 ? <IconAlert size={18} /> : index === 1 ? <IconInvoice size={18} /> : <IconCalendar size={18} />}
+                      </div>
+
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ ...TYPE.body, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {task.title}
+                        </div>
+                        <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{task.date}</div>
+                      </div>
+
+                      <span
+                        style={{
+                          padding: '8px 11px',
+                          borderRadius: '999px',
+                          background: task.toneBg,
+                          color: task.toneColor,
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {task.toneLabel}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <button
-                onClick={() => router.push('/dashboard/customers')}
-                style={{
-                  height: '34px',
-                  borderRadius: '10px',
-                  border: `1px solid ${BORDER}`,
-                  background: '#FFFFFF',
-                  color: TEXT2,
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  padding: '0 12px',
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-                }}
-              >
-                View all
-                <IconArrow size={15} />
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gap: '10px' }}>
-              {recent.length === 0 ? (
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
-                >
-                  No recent customers yet.
+              <div style={panelCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px' }}>
+                  <h3 style={sectionTitle}>Recent customers</h3>
+                  <button
+                    onClick={() => router.push('/dashboard/customers')}
+                    style={{ ...buttonStyle, height: '36px', padding: '0 12px' }}
+                  >
+                    View all
+                    <IconArrow size={14} />
+                  </button>
                 </div>
-              ) : (
-                recent.slice(0, 5).map((job, i) => {
-                  const av = avColors[(i + 1) % avColors.length]
-                  const status = statusPill(job.next_service_date)
 
-                  return (
-                    <div
-                      key={job.id}
-                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{
-                        borderRadius: '14px',
-                        padding: isMobile ? '14px' : '14px 16px',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) auto',
-                        gap: '12px',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                {recent.length === 0 ? (
+                  <div
+                    style={{
+                      borderRadius: '14px',
+                      border: `1px solid ${BORDER}`,
+                      background: SUBTLE,
+                      padding: '24px 16px',
+                      textAlign: 'center',
+                      color: TEXT3,
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    No recent customers yet.
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                    {recent.slice(0, 4).map((job, i) => {
+                      const av = avColors[(i + 1) % avColors.length]
+                      const status = statusPill(job.next_service_date)
+
+                      return (
                         <div
+                          key={job.id}
+                          onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                           style={{
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '13px',
-                            background: av.bg,
-                            color: av.color,
-                            display: 'flex',
+                            display: 'grid',
+                            gridTemplateColumns: 'auto 1fr auto',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            flexShrink: 0,
+                            gap: '12px',
+                            padding: '12px 0',
+                            borderTop: i === 0 ? 'none' : `1px solid ${BORDER}`,
+                            cursor: 'pointer',
                           }}
                         >
-                          {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
-                        </div>
-
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ ...TYPE.titleSm, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.first_name} {job.customers?.last_name}
-                          </div>
-                          <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.suburb || 'No suburb'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ ...TYPE.label, marginBottom: '4px' }}>Unit</div>
-                        <div style={{ ...TYPE.body, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
-                        </div>
-                      </div>
-
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
-                        <div style={{ ...TYPE.body, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {job.next_service_date
-                            ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                            : 'Not scheduled'}
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          justifySelf: isMobile ? 'start' : 'end',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        {job.customers?.phone ? (
-                          <span
+                          <div
                             style={{
-                              display: 'inline-flex',
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '50%',
+                              background: av.bg,
+                              color: av.color,
+                              display: 'flex',
                               alignItems: 'center',
-                              gap: '6px',
-                              padding: '7px 9px',
-                              borderRadius: '999px',
-                              background: '#F8FAFC',
-                              border: `1px solid ${BORDER}`,
-                              color: TEXT3,
-                              fontSize: '11px',
-                              fontWeight: 700,
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                              flexShrink: 0,
                             }}
                           >
-                            <IconPhone size={12} />
-                            {job.customers.phone}
-                          </span>
-                        ) : null}
+                            {(job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')}
+                          </div>
 
-                        <span
-                          style={{
-                            background: status.bg,
-                            color: status.color,
-                            padding: '7px 10px',
-                            borderRadius: '999px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            whiteSpace: 'nowrap',
-                            display: 'inline-block',
-                            letterSpacing: '0.02em',
-                          }}
-                        >
-                          {status.label}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ ...TYPE.body, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {job.customers?.first_name} {job.customers?.last_name}
+                            </div>
+                            <div style={{ ...TYPE.bodySm, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              {job.customers?.phone ? (
+                                <>
+                                  <IconPhone size={12} />
+                                  <span>{job.customers.phone}</span>
+                                </>
+                              ) : (
+                                <span>{job.customers?.suburb || 'No suburb'}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <span
+                            style={{
+                              padding: '7px 10px',
+                              borderRadius: '999px',
+                              background: status.bg,
+                              color: status.color,
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {status.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
