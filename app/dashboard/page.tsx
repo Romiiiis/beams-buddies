@@ -428,11 +428,11 @@ export default function DashboardPage() {
     }
 
     const colors = {
-      Service: '#C7B8FF',
-      Installation: '#A9D79A',
-      Quote: '#8EC5FF',
-      Repair: '#F3C87B',
-      Other: '#E5E7EB',
+      Service: '#A78BFA',
+      Installation: '#34D399',
+      Quote: '#60A5FA',
+      Repair: '#F59E0B',
+      Other: '#CBD5E1',
     }
 
     const total = Object.values(buckets).reduce((sum, value) => sum + value, 0)
@@ -685,13 +685,23 @@ export default function DashboardPage() {
               style={{
                 ...panelCard,
                 gridColumn: isMobile ? 'span 1' : 'span 8',
+                padding: isMobile ? '16px' : '18px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '12px',
+                  marginBottom: '16px',
+                }}
+              >
                 <div>
                   <div style={sectionLabel}>Total appointments</div>
-                  <div style={{ ...TYPE.bodySm }}>
-                    Dark bars show completed service events. Light bars show total job activity by month.
+                  <div style={{ ...TYPE.bodySm, maxWidth: '560px' }}>
+                    A cleaner monthly view of created jobs versus completed service activity.
                   </div>
                 </div>
 
@@ -699,16 +709,58 @@ export default function DashboardPage() {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     flexWrap: 'wrap',
                   }}
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: '#E6EBF0', border: '1px solid #D6DDE6' }} />
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 10px',
+                      borderRadius: '999px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '999px',
+                        background: '#DCE3EB',
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
+                      }}
+                    />
                     Total jobs
                   </span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '999px', background: TEAL }} />
+
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 10px',
+                      borderRadius: '999px',
+                      background: '#ECFDF8',
+                      border: '1px solid rgba(31,158,148,0.16)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: TEAL_DARK,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '999px',
+                        background: 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)',
+                      }}
+                    />
                     Completed services
                   </span>
                 </div>
@@ -717,151 +769,211 @@ export default function DashboardPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))',
-                  gap: '8px',
-                  marginBottom: '14px',
+                  gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))',
+                  gap: '10px',
+                  marginBottom: '16px',
                 }}
               >
                 {[
-                  { label: 'Jobs this month', value: stats.jobsThisMonth },
-                  { label: 'Overdue', value: stats.overdue },
-                  { label: 'Due soon', value: dueSoonCount },
-                  { label: 'Units tracked', value: stats.units },
+                  { label: 'Jobs this month', value: stats.jobsThisMonth, tone: TEXT },
+                  { label: 'Completed', value: monthlyAppointments.reduce((sum, item) => sum + item.completed, 0), tone: TEAL_DARK },
+                  { label: 'Due soon', value: dueSoonCount, tone: AMBER },
+                  { label: 'Overdue', value: stats.overdue, tone: stats.overdue > 0 ? RED : TEXT },
                 ].map(item => (
                   <div
                     key={item.label}
                     style={{
-                      borderRadius: '12px',
-                      background: '#F8FAFC',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
                       border: `1px solid ${BORDER}`,
-                      padding: '10px 12px',
+                      padding: '12px 13px',
+                      boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                    <div style={{ ...TYPE.valueSm }}>{item.value}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '7px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.valueSm, color: item.tone, fontSize: '18px' }}>{item.value}</div>
                   </div>
                 ))}
               </div>
 
               <div
                 style={{
-                  height: 312,
-                  borderRadius: '14px',
-                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
+                  borderRadius: '18px',
                   border: `1px solid ${BORDER}`,
-                  padding: '16px 16px 14px',
-                  display: 'grid',
-                  gridTemplateColumns: '42px 1fr',
-                  gap: '12px',
+                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FBFCFD 100%)',
+                  padding: isMobile ? '14px' : '18px',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
                 }}
               >
                 <div
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: isMobile ? 'flex-start' : 'center',
                     justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    fontSize: '11px',
-                    color: TEXT3,
-                    paddingTop: '4px',
-                    paddingBottom: '24px',
-                    fontWeight: 700,
+                    flexDirection: isMobile ? 'column' : 'row',
+                    gap: '12px',
+                    marginBottom: '16px',
                   }}
                 >
-                  {chartTicks.map((tick, i) => (
-                    <span key={i}>{tick}</span>
-                  ))}
+                  <div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '4px' }}>
+                      Monthly activity
+                    </div>
+                    <div style={{ ...TYPE.bodySm }}>
+                      Comparing all job creation against completed service dates across the year.
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 10px',
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                    }}
+                  >
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Peak month</div>
+                      <div style={{ ...TYPE.titleSm, fontSize: '12px' }}>
+                        {[...monthlyAppointments].sort((a, b) => b.total - a.total)[0]?.label || 'Jan'}
+                      </div>
+                    </div>
+                    <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Year total</div>
+                      <div style={{ ...TYPE.titleSm, fontSize: '12px' }}>
+                        {monthlyAppointments.reduce((sum, item) => sum + item.total, 0)} jobs
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div
                   style={{
-                    position: 'relative',
+                    height: 320,
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
-                    gap: '10px',
-                    alignItems: 'end',
-                    paddingTop: '6px',
+                    gridTemplateColumns: '42px 1fr',
+                    gap: '12px',
                   }}
                 >
-                  {[0, 25, 50, 75, 100].map((top, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        top: `${top}%`,
-                        borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
-                        zIndex: 0,
-                      }}
-                    />
-                  ))}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      fontSize: '11px',
+                      color: TEXT3,
+                      paddingTop: '6px',
+                      paddingBottom: '28px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {chartTicks.map((tick, i) => (
+                      <span key={i}>{tick}</span>
+                    ))}
+                  </div>
 
-                  {monthlyAppointments.map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        gap: '8px',
-                        height: '100%',
-                      }}
-                    >
+                  <div
+                    style={{
+                      position: 'relative',
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
+                      gap: isMobile ? '8px' : '10px',
+                      alignItems: 'end',
+                      paddingTop: '8px',
+                    }}
+                  >
+                    {[0, 25, 50, 75, 100].map((top, i) => (
                       <div
+                        key={i}
                         style={{
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          color: TEXT3,
-                          minHeight: '14px',
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          top: `${top}%`,
+                          borderTop: i === 4 ? 'none' : '1px solid #EEF2F6',
+                          zIndex: 0,
                         }}
-                      >
-                        {item.total > 0 ? item.total : ''}
-                      </div>
+                      />
+                    ))}
 
+                    {monthlyAppointments.map(item => (
                       <div
+                        key={item.label}
                         style={{
-                          width: '100%',
-                          maxWidth: '40px',
-                          height: '184px',
-                          display: 'flex',
-                          alignItems: 'flex-end',
-                          justifyContent: 'center',
                           position: 'relative',
+                          zIndex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          gap: '10px',
+                          height: '100%',
                         }}
                       >
                         <div
                           style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            width: '30px',
-                            height: `${item.totalHeight}px`,
-                            borderRadius: '999px',
-                            background: 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
-                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
+                            minHeight: '14px',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            color: TEXT3,
                           }}
-                        />
+                        >
+                          {item.total > 0 ? item.total : ''}
+                        </div>
+
                         <div
                           style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            width: '30px',
-                            height: `${item.completedHeight}px`,
-                            borderRadius: '999px',
-                            background: 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)',
-                            boxShadow: '0 4px 10px rgba(31,158,148,0.18)',
+                            width: '100%',
+                            maxWidth: isMobile ? '30px' : '36px',
+                            height: '198px',
+                            position: 'relative',
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center',
                           }}
-                        />
-                      </div>
+                        >
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              width: isMobile ? '22px' : '26px',
+                              height: `${item.totalHeight}px`,
+                              borderRadius: '999px',
+                              background: 'linear-gradient(180deg, #F1F5F9 0%, #DDE5EE 100%)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.95)',
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              width: isMobile ? '22px' : '26px',
+                              height: `${item.completedHeight}px`,
+                              borderRadius: '999px',
+                              background: 'linear-gradient(180deg, #30C1B1 0%, #1F9E94 100%)',
+                              boxShadow: '0 8px 18px rgba(31,158,148,0.22)',
+                            }}
+                          />
+                        </div>
 
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                        {item.label}
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            color: TEXT3,
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          {item.label}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -870,116 +982,214 @@ export default function DashboardPage() {
               style={{
                 ...panelCard,
                 gridColumn: isMobile ? 'span 1' : 'span 4',
+                padding: isMobile ? '16px' : '18px',
               }}
             >
-              <div style={sectionLabel}>Revenue source distribution</div>
-
               <div
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '10px',
+                  marginBottom: '14px',
+                }}
+              >
+                <div>
+                  <div style={sectionLabel}>Revenue source distribution</div>
+                  <div style={{ ...TYPE.bodySm }}>
+                    Job mix by service type, presented in a cleaner breakdown.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: '7px 10px',
+                    borderRadius: '999px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: TEXT3,
+                  }}
+                >
+                  {revenueDistribution.reduce((sum, item) => sum + item.value, 0)} total jobs
+                </div>
+              </div>
+
+              <div
+                style={{
+                  borderRadius: '18px',
+                  border: `1px solid ${BORDER}`,
+                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FBFCFD 100%)',
+                  padding: isMobile ? '14px' : '18px',
                 }}
               >
                 <div
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '10px 0 2px',
+                    flexDirection: 'column',
+                    gap: '18px',
                   }}
                 >
                   <div
                     style={{
-                      width: isMobile ? 220 : 230,
-                      height: isMobile ? 220 : 230,
-                      borderRadius: '50%',
-                      background: donutBackground,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
+                      paddingTop: '4px',
                     }}
                   >
                     <div
                       style={{
-                        width: '54%',
-                        height: '54%',
+                        position: 'relative',
+                        width: isMobile ? 216 : 230,
+                        height: isMobile ? 216 : 230,
                         borderRadius: '50%',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
+                        background: donutBackground,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: TEAL_DARK,
-                        boxShadow: '0 8px 18px rgba(15,23,42,0.04)',
+                        boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.04)',
                       }}
                     >
-                      <IconRevenue size={24} />
                       <div
                         style={{
-                          marginTop: '6px',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
-                          color: TEXT3,
+                          width: '58%',
+                          height: '58%',
+                          borderRadius: '50%',
+                          background: '#FFFFFF',
+                          border: `1px solid ${BORDER}`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          boxShadow: '0 10px 22px rgba(15,23,42,0.05)',
+                          padding: '10px',
                         }}
                       >
-                        Mix
+                        <div
+                          style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: '#F0FDFA',
+                            color: TEAL_DARK,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '8px',
+                            border: '1px solid rgba(31,158,148,0.10)',
+                          }}
+                        >
+                          <IconRevenue size={22} />
+                        </div>
+
+                        <div style={{ ...TYPE.label, marginBottom: '4px' }}>Top source</div>
+                        <div style={{ ...TYPE.titleSm, fontSize: '14px', marginBottom: '4px' }}>
+                          {strongestRevenueSource?.label || 'Service'}
+                        </div>
+                        <div style={{ ...TYPE.valueSm, color: TEAL_DARK, fontSize: '18px' }}>
+                          {strongestRevenueSource?.percent || 0}%
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {revenueDistribution.map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto',
-                        alignItems: 'center',
-                        gap: '10px',
-                        fontSize: '12px',
-                        color: TEXT2,
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <span
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                    {revenueDistribution.map(item => (
+                      <div
+                        key={item.label}
+                        style={{
+                          borderRadius: '14px',
+                          padding: '12px 12px',
+                          background: '#FFFFFF',
+                          border: `1px solid ${BORDER}`,
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto',
+                          gap: '12px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                background: item.color,
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+
+                          <div
+                            style={{
+                              height: '8px',
+                              borderRadius: '999px',
+                              background: '#EEF2F6',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${item.percent}%`,
+                                height: '100%',
+                                borderRadius: '999px',
+                                background: item.color,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div
                           style={{
-                            width: '9px',
-                            height: '9px',
-                            borderRadius: '50%',
-                            background: item.color,
-                            flexShrink: 0,
+                            textAlign: 'right',
+                            minWidth: '58px',
                           }}
-                        />
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 700 }}>
-                          {item.label}
-                        </span>
+                        >
+                          <div style={{ ...TYPE.titleSm, fontSize: '13px' }}>{item.percent}%</div>
+                          <div style={{ ...TYPE.bodySm, marginTop: '2px' }}>{item.value} jobs</div>
+                        </div>
                       </div>
-                      <span style={{ fontWeight: 800 }}>{item.percent}%</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    padding: '10px 12px',
-                    fontSize: '12px',
-                    color: TEXT3,
-                  }}
-                >
-                  Your strongest workflow this month is <span style={{ color: TEXT, fontWeight: 700 }}>{strongestRevenueSource?.label || 'Service'}</span>.
+                  <div
+                    style={{
+                      borderRadius: '14px',
+                      padding: '12px 13px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Insight</div>
+                    <div style={{ ...TYPE.body, fontWeight: 600 }}>
+                      {strongestRevenueSource?.label || 'Service'} is currently your strongest workflow channel at{' '}
+                      <span style={{ color: TEXT, fontWeight: 800 }}>{strongestRevenueSource?.percent || 0}%</span> of total job volume.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
