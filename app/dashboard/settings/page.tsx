@@ -65,19 +65,6 @@ const TYPE = {
     color: TEXT2,
     lineHeight: 1.35,
   },
-  valueLg: {
-    fontSize: '28px',
-    fontWeight: 900,
-    letterSpacing: '-0.05em' as const,
-    lineHeight: 1,
-  },
-  valueMd: {
-    fontSize: '20px',
-    fontWeight: 900,
-    color: TEXT,
-    letterSpacing: '-0.04em' as const,
-    lineHeight: 1,
-  },
 }
 
 function useIsMobile() {
@@ -145,23 +132,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconInvoice({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconStar({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6.01L12 16.77 6.6 19.6l1.03-6.01L3.27 9.35l6.03-.88L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -479,7 +449,8 @@ export default function SettingsPage() {
 
   const panelCard: React.CSSProperties = {
     ...shellCard,
-    padding: '16px',
+    padding: isMobile ? '16px' : '18px',
+    height: '100%',
   }
 
   const sectionLabel: React.CSSProperties = {
@@ -507,7 +478,7 @@ export default function SettingsPage() {
   }
 
   const sectionHeader = (title: string, description: string) => (
-    <div style={{ marginBottom: '14px' }}>
+    <div style={{ marginBottom: '16px' }}>
       <div style={sectionLabel}>{title}</div>
       <div style={TYPE.bodySm}>{description}</div>
     </div>
@@ -647,15 +618,15 @@ export default function SettingsPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 0.95fr) minmax(0, 1.05fr)',
                   gap: '12px',
-                  alignItems: 'start',
+                  alignItems: 'stretch',
                 }}
               >
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 6' }}>
+                <div style={panelCard}>
                   {sectionHeader('Your profile', 'Update the details shown on your account and sidebar.')}
 
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                  <div style={{ display: 'grid', gap: '14px' }}>
                     <div>
                       <label style={label}>Your name</label>
                       <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
@@ -670,7 +641,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 6' }}>
+                <div style={panelCard}>
                   {sectionHeader('Business profile', 'Set your core business details and brand identity.')}
 
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
@@ -698,9 +669,9 @@ export default function SettingsPage() {
                       background: '#FCFCFD',
                       border: `1px solid ${BORDER}`,
                       padding: isMobile ? '16px' : '18px',
-                      display: 'flex',
-                      flexDirection: isMobile ? 'column' : 'row',
-                      alignItems: isMobile ? 'stretch' : 'center',
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? '1fr' : '72px minmax(0,1fr) auto',
+                      alignItems: 'center',
                       gap: '14px',
                     }}
                   >
@@ -715,7 +686,6 @@ export default function SettingsPage() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         overflow: 'hidden',
-                        flexShrink: 0,
                       }}
                     >
                       {business.logo_url ? (
@@ -725,7 +695,7 @@ export default function SettingsPage() {
                       )}
                     </div>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
                       <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
                     </div>
@@ -810,12 +780,12 @@ export default function SettingsPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
                   gap: '12px',
-                  alignItems: 'start',
+                  alignItems: 'stretch',
                 }}
               >
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 7' }}>
+                <div style={panelCard}>
                   {sectionHeader('Payment & bank details', 'These details are printed on invoices sent to customers.')}
 
                   <div
@@ -879,56 +849,60 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 5' }}>
+                <div style={panelCard}>
                   {sectionHeader('Invoice preview', 'Preview how your payment section will appear.')}
 
-                  {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
-                    <div
-                      style={{
-                        borderRadius: '14px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
-                        padding: '16px 18px',
-                      }}
-                    >
-                      <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '12px' }}>Invoice payment section</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
-                        {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
-                        {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
-                        {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
-                        {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
-                        {bankDetails.invoice_notes && <div style={{ marginTop: '6px', fontSize: '12px', color: TEXT2, lineHeight: 1.6 }}>{bankDetails.invoice_notes}</div>}
+                  <div
+                    style={{
+                      borderRadius: '14px',
+                      background: '#FCFCFD',
+                      border: `1px solid ${BORDER}`,
+                      padding: '16px 18px',
+                      minHeight: isMobile ? 'auto' : '100%',
+                    }}
+                  >
+                    {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
+                      <>
+                        <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '12px' }}>Invoice payment section</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
+                          {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
+                          {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
+                          {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
+                          {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
+                          {bankDetails.invoice_notes && <div style={{ marginTop: '6px', fontSize: '12px', color: TEXT2, lineHeight: 1.6 }}>{bankDetails.invoice_notes}</div>}
+                        </div>
+                      </>
+                    ) : (
+                      <div
+                        style={{
+                          height: '100%',
+                          minHeight: '220px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          color: TEXT3,
+                          fontSize: '14px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        Add bank details to preview your invoice payment section.
                       </div>
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        borderRadius: '12px',
-                        padding: '26px 16px',
-                        background: WHITE,
-                        border: `1px solid ${BORDER}`,
-                        textAlign: 'center',
-                        color: TEXT3,
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      Add bank details to preview your invoice payment section.
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
                   gap: '12px',
-                  alignItems: 'start',
+                  alignItems: 'stretch',
                 }}
               >
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 7' }}>
+                <div style={panelCard}>
                   {sectionHeader('Review platforms', 'Add the links shown to customers after each installation.')}
 
                   <div
@@ -960,7 +934,7 @@ export default function SettingsPage() {
                     </div>
 
                     {platforms.length > 0 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ display: 'grid', gap: '10px' }}>
                         <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
                         {platforms.map(p => (
                           <div
@@ -1018,7 +992,7 @@ export default function SettingsPage() {
                         fontSize: '12px',
                         cursor: 'pointer',
                         fontFamily: FONT,
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
                         gap: '7px',
                         width: 'fit-content',
@@ -1030,7 +1004,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 5' }}>
+                <div style={panelCard}>
                   {sectionHeader('Review discount', 'Control the offer shown after customers leave reviews.')}
 
                   <div
