@@ -149,26 +149,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconBusiness({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 21h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M5 21V7.5A1.5 1.5 0 0 1 6.5 6H10v15" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M10 21V4.5A1.5 1.5 0 0 1 11.5 3h6A1.5 1.5 0 0 1 19 4.5V21" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 10h.01M8 13h.01M13 7h.01M16 7h.01M13 10h.01M16 10h.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconUser({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function IconInvoice({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -526,54 +506,6 @@ export default function SettingsPage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
-    flexShrink: 0,
-  })
-
-  const topCards = [
-    {
-      label: 'Profile',
-      value: userProfile.full_name ? 'Ready' : 'Pending',
-      sub: 'Owner and role details',
-      icon: <IconUser size={18} />,
-      accent: userProfile.full_name ? TEAL_DARK : TEXT,
-      tag: 'Account',
-    },
-    {
-      label: 'Branding',
-      value: business.logo_url ? 'Set' : 'Open',
-      sub: business.logo_url ? 'Logo uploaded' : 'Logo not added',
-      icon: <IconBusiness size={18} />,
-      accent: business.logo_url ? TEAL_DARK : TEXT,
-      tag: 'Business',
-    },
-    {
-      label: 'Invoices',
-      value: bankDetails.bank_name ? 'Ready' : 'Open',
-      sub: bankDetails.bank_name ? 'Bank details added' : 'Payment details missing',
-      icon: <IconInvoice size={18} />,
-      accent: bankDetails.bank_name ? TEAL_DARK : RED,
-      tag: 'Billing',
-    },
-    {
-      label: 'Reviews',
-      value: form.review_discount_enabled ? 'Live' : 'Off',
-      sub: 'Platforms and discount settings',
-      icon: <IconStar size={18} />,
-      accent: form.review_discount_enabled ? TEAL_DARK : TEXT,
-      tag: 'Customer flow',
-    },
-  ]
-
   const sectionHeader = (title: string, description: string) => (
     <div style={{ marginBottom: '14px' }}>
       <div style={sectionLabel}>{title}</div>
@@ -695,50 +627,6 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
-            }}
-          >
-            {topCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...panelCard,
-                  gridColumn: isMobile ? 'span 1' : 'span 3',
-                  minHeight: 148,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                      {item.label}
-                    </div>
-                  </div>
-
-                  <div style={iconWrap(item.accent)}>
-                    {item.icon}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
-                    {item.value}
-                  </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
-                    {item.sub}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
 
           {loading ? (
