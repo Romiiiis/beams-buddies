@@ -9,6 +9,8 @@ const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
+const GREEN = '#166534'
+const BLUE = '#1E3A8A'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -23,13 +25,6 @@ const TYPE = {
     fontSize: '10px',
     fontWeight: 800,
     letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
@@ -168,6 +163,26 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconUsers({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconQuote({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export default function ReportsPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -179,7 +194,10 @@ export default function ReportsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
@@ -191,13 +209,32 @@ export default function ReportsPage() {
         .eq('id', session.user.id)
         .single()
 
-      if (!userData) return
+      if (!userData) {
+        setLoading(false)
+        return
+      }
 
       const [jobsRes, invoicesRes, quotesRes, customersRes] = await Promise.all([
-        supabase.from('jobs').select('id, created_at, install_date, next_service_date, brand, capacity_kw, customer_id').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
-        supabase.from('invoices').select('id, created_at, status, total, amount_paid').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
-        supabase.from('quotes').select('id, created_at, status, total').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
-        supabase.from('customers').select('id, created_at, suburb').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
+        supabase
+          .from('jobs')
+          .select('id, created_at, install_date, next_service_date, brand, capacity_kw, customer_id')
+          .eq('business_id', userData.business_id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('invoices')
+          .select('id, created_at, status, total, amount_paid')
+          .eq('business_id', userData.business_id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('quotes')
+          .select('id, created_at, status, total')
+          .eq('business_id', userData.business_id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('customers')
+          .select('id, created_at, suburb')
+          .eq('business_id', userData.business_id)
+          .order('created_at', { ascending: false }),
       ])
 
       setJobs((jobsRes.data || []) as Job[])
@@ -211,6 +248,7 @@ export default function ReportsPage() {
   }, [router])
 
   const today = new Date()
+
   const todayStr = today.toLocaleDateString('en-AU', {
     weekday: 'long',
     day: 'numeric',
@@ -222,20 +260,32 @@ export default function ReportsPage() {
     const currentMonth = today
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
 
-    const revenueCollected = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (Number(i.total) || 0), 0)
-    const outstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((sum, i) => sum + ((Number(i.total) || 0) - (Number(i.amount_paid) || 0)), 0)
-    const quotesAcceptedValue = quotes.filter(q => q.status === 'accepted').reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+    const revenueCollected = invoices
+      .filter(i => i.status === 'paid')
+      .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
+
+    const outstanding = invoices
+      .filter(i => i.status === 'sent' || i.status === 'overdue')
+      .reduce((sum, i) => sum + ((Number(i.total) || 0) - (Number(i.amount_paid) || 0)), 0)
+
+    const quotesAcceptedValue = quotes
+      .filter(q => q.status === 'accepted')
+      .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+
     const jobsThisMonth = jobs.filter(j => isSameMonth(j.created_at, currentMonth)).length
     const jobsLastMonth = jobs.filter(j => isSameMonth(j.created_at, previousMonth)).length
     const newCustomersThisMonth = customers.filter(c => isSameMonth(c.created_at, currentMonth)).length
     const invoicesThisMonth = invoices.filter(i => isSameMonth(i.created_at, currentMonth)).length
     const quotesThisMonth = quotes.filter(q => isSameMonth(q.created_at, currentMonth)).length
+
     const overdueServices = jobs.filter(j => j.next_service_date && new Date(j.next_service_date) < today).length
+
     const dueSoonServices = jobs.filter(j => {
       if (!j.next_service_date) return false
       const diff = Math.floor((new Date(j.next_service_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
       return diff >= 0 && diff <= 30
     }).length
+
     const acceptedQuotes = quotes.filter(q => q.status === 'accepted').length
     const sentQuotes = quotes.filter(q => q.status === 'sent').length
     const acceptanceRate = quotes.length > 0 ? Math.round((acceptedQuotes / quotes.length) * 100) : 0
@@ -245,6 +295,7 @@ export default function ReportsPage() {
       const total = invoices
         .filter(i => i.status === 'paid' && isSameMonth(i.created_at, monthDate))
         .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
+
       return { label: monthLabelFromOffset(today, offset), total }
     })
 
@@ -293,26 +344,17 @@ export default function ReportsPage() {
     overflow: 'hidden',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.section,
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  const panelCard: React.CSSProperties = {
+    ...shellCard,
+    padding: '16px',
   }
 
-  const sectionDash = (
-    <span
-      style={{
-        width: '12px',
-        height: '2px',
-        background: TEAL,
-        borderRadius: '999px',
-        display: 'inline-block',
-        flexShrink: 0,
-      }}
-    />
-  )
+  const sectionLabel: React.CSSProperties = {
+    ...TYPE.title,
+    fontSize: '13px',
+    fontWeight: 800,
+    marginBottom: '12px',
+  }
 
   const quickActionStyle: React.CSSProperties = {
     border: `1px solid ${BORDER}`,
@@ -328,13 +370,37 @@ export default function ReportsPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
+
+  const iconWrap = (color: string): React.CSSProperties => ({
+    width: '36px',
+    height: '36px',
+    borderRadius: '11px',
+    background: '#F8FAFC',
+    color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `1px solid ${BORDER}`,
+    flexShrink: 0,
+  })
 
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard/reports" />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: TEXT3,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
           Loading reports...
         </div>
       </div>
@@ -353,263 +419,370 @@ export default function ReportsPage() {
     >
       <Sidebar active="/dashboard/reports" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div
           style={{
-            background: HEADER_BG,
-            padding: isMobile ? '18px 16px 16px' : '20px 24px 18px',
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: '14px',
-            alignItems: 'stretch',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: '#FFFFFF',
-                marginBottom: '8px',
-              }}
-            >
-              Reports
-            </div>
-
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Review revenue, activity, service workload, and customer trends from one premium reporting centre.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => window.print()}
-                style={quickActionStyle}
-              >
-                Print report
-              </button>
-
-              <button
-                onClick={() => router.push('/dashboard/invoices')}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: '#FFFFFF',
-                  border: 'none',
-                }}
-              >
-                <IconSpark size={16} />
-                View invoices
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 24px 20px',
-            background: BG,
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
-            flex: 1,
+            background: BG,
+            padding: isMobile ? '14px' : '16px',
+            gap: '12px',
           }}
         >
-          <div>
-            <div style={sectionLabel}>{sectionDash}Financial overview</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(12, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'Revenue collected',
-                  value: formatMoney(report.revenueCollected),
-                  sub: 'Paid invoices',
-                  icon: <IconRevenue size={17} />,
-                  accent: '#166534',
-                  span: 'span 3',
-                },
-                {
-                  label: 'Outstanding',
-                  value: formatMoney(report.outstanding),
-                  sub: 'Awaiting payment',
-                  icon: <IconInvoice size={17} />,
-                  accent: '#1E3A8A',
-                  span: 'span 3',
-                },
-                {
-                  label: 'Accepted quote value',
-                  value: formatMoney(report.quotesAcceptedValue),
-                  sub: 'Approved quotes',
-                  icon: <IconRevenue size={17} />,
-                  accent: TEAL_DARK,
-                  span: 'span 3',
-                },
-                {
-                  label: 'Overdue services',
-                  value: String(report.overdueServices),
-                  sub: report.overdueServices > 0 ? 'Needs action' : 'All clear',
-                  icon: <IconCalendar size={17} />,
-                  accent: report.overdueServices > 0 ? RED : TEXT,
-                  span: 'span 3',
-                },
-              ].map(item => (
-                <div
-                  key={item.label}
+          <div
+            style={{
+              ...shellCard,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.68)',
+                  marginBottom: '6px',
+                }}
+              >
+                {todayStr}
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? '28px' : '34px',
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  fontWeight: 900,
+                  color: '#FFFFFF',
+                  marginBottom: '8px',
+                }}
+              >
+                Reports
+              </div>
+
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: 'rgba(255,255,255,0.72)',
+                  maxWidth: '760px',
+                }}
+              >
+                Review revenue, activity, service workload, and customer trends from one premium reporting centre.
+              </div>
+
+              <div
+                style={{
+                  marginTop: '14px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button onClick={() => window.print()} style={quickActionStyle}>
+                  Print report
+                </button>
+
+                <button
+                  onClick={() => router.push('/dashboard/invoices')}
                   style={{
-                    ...shellCard,
-                    padding: isMobile ? '12px' : '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    gridColumn: isMobile ? 'span 1' : item.span,
-                    minHeight: '124px',
+                    ...quickActionStyle,
+                    background: TEAL,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '34px',
-                        height: '34px',
-                        borderRadius: '11px',
-                        background: '#F8FAFC',
-                        color: item.accent,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: `1px solid ${BORDER}`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.icon}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: TEXT3,
-                      }}
-                    >
-                      Live
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '23px' : '26px', color: item.accent, marginBottom: '5px' }}>
-                      {item.value}
-                    </div>
-                    <div style={{ ...TYPE.body, fontSize: '11px' }}>
-                      {item.sub}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <IconSpark size={16} />
+                  View invoices
+                </button>
+              </div>
             </div>
           </div>
 
           <div
             style={{
               display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gap: '12px',
+            }}
+          >
+            {[
+              {
+                label: 'Revenue collected',
+                value: formatMoney(report.revenueCollected),
+                sub: 'Paid invoices',
+                icon: <IconRevenue size={18} />,
+                accent: GREEN,
+                tag: 'Financials',
+              },
+              {
+                label: 'Outstanding',
+                value: formatMoney(report.outstanding),
+                sub: 'Awaiting payment',
+                icon: <IconInvoice size={18} />,
+                accent: BLUE,
+                tag: 'Receivables',
+              },
+              {
+                label: 'Accepted quote value',
+                value: formatMoney(report.quotesAcceptedValue),
+                sub: 'Approved quotes',
+                icon: <IconQuote size={18} />,
+                accent: TEAL_DARK,
+                tag: 'Quote value',
+              },
+              {
+                label: 'Overdue services',
+                value: String(report.overdueServices),
+                sub: report.overdueServices > 0 ? 'Needs action now' : 'All clear',
+                icon: <IconCalendar size={18} />,
+                accent: report.overdueServices > 0 ? RED : TEXT,
+                tag: 'Service load',
+              },
+            ].map(item => (
+              <div
+                key={item.label}
+                style={{
+                  ...panelCard,
+                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                  minHeight: 148,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                  <div>
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
+                      {item.label}
+                    </div>
+                  </div>
+
+                  <div style={iconWrap(item.accent)}>
+                    {item.icon}
+                  </div>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      ...TYPE.valueLg,
+                      fontSize: item.label === 'Accepted quote value' && isMobile ? '24px' : '30px',
+                      color: item.accent,
+                    }}
+                  >
+                    {item.value}
+                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
               gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0,1fr))',
-              gap: '10px',
+              gap: '12px',
               alignItems: 'start',
             }}
           >
             <div
               style={{
-                ...shellCard,
-                padding: '14px',
+                ...panelCard,
                 gridColumn: isMobile ? 'span 1' : 'span 7',
               }}
             >
-              <div style={sectionLabel}>{sectionDash}Revenue trend</div>
-              <div style={{ ...TYPE.bodySm, marginBottom: '14px' }}>
-                Paid invoice totals across the last 6 months
+              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+                <div>
+                  <div style={sectionLabel}>Revenue trend</div>
+                  <div style={{ ...TYPE.bodySm }}>
+                    Paid invoice totals across the last 6 months
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '7px 10px',
+                    borderRadius: '999px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    color: TEXT3,
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  6 month view
+                </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: isMobile ? '180px' : '220px' }}>
-                {report.monthlyRevenue.map(item => {
-                  const height = Math.max(12, Math.round((item.total / report.maxRevenue) * (isMobile ? 140 : 170)))
-                  return (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr 1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
+                  gap: '10px',
+                  marginBottom: '14px',
+                }}
+              >
+                {[
+                  { label: 'Jobs this month', value: report.jobsThisMonth },
+                  { label: 'Last month', value: report.jobsLastMonth },
+                  { label: 'New customers', value: report.newCustomersThisMonth },
+                  { label: 'Invoices', value: report.invoicesThisMonth },
+                  { label: 'Quotes', value: report.quotesThisMonth },
+                  { label: 'Due soon', value: report.dueSoonServices },
+                ].map(item => (
+                  <div
+                    key={item.label}
+                    style={{
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      padding: '10px 12px',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
+                    <div style={TYPE.valueMd}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  height: isMobile ? 260 : 300,
+                  borderRadius: '14px',
+                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
+                  border: `1px solid ${BORDER}`,
+                  padding: '16px 16px 14px',
+                  display: 'grid',
+                  gridTemplateColumns: '42px 1fr',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    fontSize: '11px',
+                    color: TEXT3,
+                    paddingTop: '4px',
+                    paddingBottom: '24px',
+                    fontWeight: 700,
+                  }}
+                >
+                  {[100, 75, 50, 25, 0].map(tick => (
+                    <span key={tick}>
+                      {formatMoney(Math.round((report.maxRevenue * tick) / 100))}
+                    </span>
+                  ))}
+                </div>
+
+                <div
+                  style={{
+                    position: 'relative',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+                    gap: '10px',
+                    alignItems: 'end',
+                    paddingTop: '6px',
+                  }}
+                >
+                  {[0, 25, 50, 75, 100].map((top, i) => (
                     <div
-                      key={item.label}
+                      key={i}
                       style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        gap: '8px',
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: `${top}%`,
+                        borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
+                        zIndex: 0,
                       }}
-                    >
-                      <div style={{ ...TYPE.bodySm, fontWeight: 700 }}>
-                        {item.total > 0 ? formatMoney(item.total) : '$0'}
-                      </div>
+                    />
+                  ))}
+
+                  {report.monthlyRevenue.map(item => {
+                    const height = Math.max(16, Math.round((item.total / report.maxRevenue) * (isMobile ? 140 : 170)))
+
+                    return (
                       <div
+                        key={item.label}
                         style={{
-                          width: '100%',
-                          maxWidth: '52px',
-                          height: `${height}px`,
-                          background: item.total > 0 ? TEAL : '#E5E7EB',
-                          borderRadius: '10px 10px 4px 4px',
+                          position: 'relative',
+                          zIndex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          gap: '8px',
+                          height: '100%',
                         }}
-                      />
-                      <div style={{ ...TYPE.label }}>
-                        {item.label}
+                      >
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            color: TEXT3,
+                            minHeight: '14px',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {item.total > 0 ? formatMoney(item.total) : '$0'}
+                        </div>
+
+                        <div
+                          style={{
+                            width: '100%',
+                            maxWidth: '42px',
+                            height: isMobile ? '150px' : '182px',
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '30px',
+                              height: `${height}px`,
+                              borderRadius: '999px',
+                              background: item.total > 0
+                                ? 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)'
+                                : 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
+                              boxShadow: item.total > 0 ? '0 4px 10px rgba(31,158,148,0.18)' : 'none',
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
+                          {item.label}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
             </div>
 
             <div
               style={{
-                display: 'grid',
-                gap: '10px',
                 gridColumn: isMobile ? 'span 1' : 'span 5',
+                display: 'grid',
+                gap: '12px',
               }}
             >
-              <div style={{ ...shellCard, padding: '14px' }}>
-                <div style={sectionLabel}>{sectionDash}This month</div>
+              <div style={panelCard}>
+                <div style={sectionLabel}>This month</div>
 
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {[
@@ -624,7 +797,7 @@ export default function ReportsPage() {
                       style={{
                         borderRadius: '12px',
                         padding: '12px 14px',
-                        background: WHITE,
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -642,8 +815,8 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div style={{ ...shellCard, padding: '14px' }}>
-                <div style={sectionLabel}>{sectionDash}Quote performance</div>
+              <div style={panelCard}>
+                <div style={sectionLabel}>Quote performance</div>
 
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {[
@@ -656,7 +829,7 @@ export default function ReportsPage() {
                       style={{
                         borderRadius: '12px',
                         padding: '12px 14px',
-                        background: WHITE,
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -673,16 +846,61 @@ export default function ReportsPage() {
                   ))}
                 </div>
               </div>
+
+              <div style={panelCard}>
+                <div style={sectionLabel}>Snapshot</div>
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {[
+                    {
+                      label: 'Jobs trend',
+                      heading: report.jobsThisMonth >= report.jobsLastMonth ? 'Up or steady' : 'Down from last month',
+                      sub: `${report.jobsThisMonth} this month vs ${report.jobsLastMonth} last month`,
+                      accent: report.jobsThisMonth >= report.jobsLastMonth ? GREEN : AMBER,
+                    },
+                    {
+                      label: 'Service workload',
+                      heading: `${report.overdueServices + report.dueSoonServices} upcoming actions`,
+                      sub: `${report.overdueServices} overdue • ${report.dueSoonServices} due soon`,
+                      accent: report.overdueServices > 0 ? RED : TEAL,
+                    },
+                    {
+                      label: 'Cash flow',
+                      heading: report.outstanding > 0 ? 'Follow-up recommended' : 'Healthy',
+                      sub: `${formatMoney(report.outstanding)} outstanding right now`,
+                      accent: report.outstanding > 0 ? AMBER : GREEN,
+                    },
+                  ].map(s => (
+                    <div
+                      key={s.label}
+                      style={{
+                        background: '#F9FAFB',
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: '12px',
+                        padding: '14px',
+                        borderLeft: `3px solid ${s.accent}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>{s.label}</div>
+                      <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>{s.heading}</div>
+                      <div style={TYPE.bodySm}>{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           <div>
-            <div style={sectionLabel}>{sectionDash}Breakdown</div>
+            <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }}>
+              Breakdown
+            </div>
+
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-                gap: '10px',
+                gap: '12px',
               }}
             >
               {[
@@ -703,7 +921,7 @@ export default function ReportsPage() {
                   empty: 'No brand data yet.',
                 },
               ].map(section => (
-                <div key={section.title} style={{ ...shellCard, padding: '14px' }}>
+                <div key={section.title} style={panelCard}>
                   <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>
                     {section.title}
                   </div>
@@ -767,54 +985,6 @@ export default function ReportsPage() {
                       ))}
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ ...shellCard, padding: '14px' }}>
-            <div style={sectionLabel}>{sectionDash}Summary</div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0,1fr))',
-                gap: '10px',
-              }}
-            >
-              {[
-                {
-                  label: 'Jobs trend',
-                  heading: report.jobsThisMonth >= report.jobsLastMonth ? 'Up or steady' : 'Down from last month',
-                  sub: `${report.jobsThisMonth} this month vs ${report.jobsLastMonth} last month`,
-                  accent: report.jobsThisMonth >= report.jobsLastMonth ? '#10B981' : AMBER,
-                },
-                {
-                  label: 'Service workload',
-                  heading: `${report.overdueServices + report.dueSoonServices} upcoming actions`,
-                  sub: `${report.overdueServices} overdue • ${report.dueSoonServices} due soon`,
-                  accent: report.overdueServices > 0 ? RED : TEAL,
-                },
-                {
-                  label: 'Cash flow snapshot',
-                  heading: report.outstanding > 0 ? 'Follow-up recommended' : 'Healthy',
-                  sub: `${formatMoney(report.outstanding)} outstanding right now`,
-                  accent: report.outstanding > 0 ? AMBER : '#10B981',
-                },
-              ].map(s => (
-                <div
-                  key={s.label}
-                  style={{
-                    background: '#F9FAFB',
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: '12px',
-                    padding: '16px',
-                    borderLeft: `3px solid ${s.accent}`,
-                  }}
-                >
-                  <div style={{ ...TYPE.label, marginBottom: '6px' }}>{s.label}</div>
-                  <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>{s.heading}</div>
-                  <div style={TYPE.bodySm}>{s.sub}</div>
                 </div>
               ))}
             </div>
