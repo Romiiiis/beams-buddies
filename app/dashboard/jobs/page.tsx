@@ -70,16 +70,13 @@ const EQUIPMENT_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
-// ── Job Drawer ────────────────────────────────────────────────────────────────
-
 function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; isMobile: boolean }) {
   const router = useRouter()
   const customer = job.customers
   const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown'
 
   const fieldBox: React.CSSProperties = {
-    background: '#F8FAFC', border: `1px solid ${BORDER}`,
-    borderRadius: '12px', padding: '12px 14px',
+    background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '12px 14px',
   }
 
   const days = (() => {
@@ -93,10 +90,7 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
   const isDueSoon = days !== null && days >= 0 && days <= 30
   const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL
   const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : '#E6F6F5'
-  const serviceLabel = isOverdue
-    ? `Overdue by ${Math.abs(days!)} days`
-    : isDueSoon ? `Due in ${days} days`
-    : days !== null ? `${days} days away` : '—'
+  const serviceLabel = isOverdue ? `Overdue by ${Math.abs(days!)} days` : isDueSoon ? `Due in ${days} days` : days !== null ? `${days} days away` : '—'
 
   const nextServiceDate = (() => {
     if (!job.install_date) return '—'
@@ -108,18 +102,9 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.35)', zIndex: 200, backdropFilter: 'blur(2px)' }} />
-      <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0,
-        width: isMobile ? '100vw' : '480px',
-        background: WHITE, zIndex: 201,
-        display: 'flex', flexDirection: 'column',
-        boxShadow: '-8px 0 40px rgba(11,18,32,0.12)',
-        overflow: 'hidden',
-        animation: 'slideIn 0.22s cubic-bezier(0.22,1,0.36,1)',
-      }}>
+      <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: isMobile ? '100vw' : '480px', background: WHITE, zIndex: 201, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(11,18,32,0.12)', overflow: 'hidden', animation: 'slideIn 0.22s cubic-bezier(0.22,1,0.36,1)' }}>
         <style>{`@keyframes slideIn { from { transform: translateX(100%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }`}</style>
 
-        {/* Header */}
         <div style={{ padding: '20px 22px 18px', borderBottom: `1px solid ${BORDER}`, background: HEADER_BG, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
             <div>
@@ -127,16 +112,12 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
                 {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
               </div>
               <div style={{ fontSize: '18px', fontWeight: 900, color: WHITE, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
-              {customer?.phone && (
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{customer.phone}</div>
-              )}
+              {customer?.phone && <div style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{customer.phone}</div>}
             </div>
             <button onClick={onClose} style={{ width: '34px', height: '34px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <IconClose size={16} />
             </button>
           </div>
-
-          {/* Service status pill */}
           <div style={{ marginTop: '14px' }}>
             <span style={{ background: serviceBg, color: serviceColor, padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
               <IconCalendar size={12} /> {serviceLabel}
@@ -144,18 +125,16 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
           </div>
         </div>
 
-        {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px' }}>
 
-          {/* Customer details */}
           <div style={{ marginBottom: '22px' }}>
             <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Customer</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
-                { label: 'Name',     value: name },
-                { label: 'Phone',    value: customer?.phone || '—' },
-                { label: 'Suburb',   value: customer?.suburb || '—' },
-                { label: 'Address',  value: customer?.address || '—' },
+                { label: 'Name',    value: name },
+                { label: 'Phone',   value: customer?.phone || '—' },
+                { label: 'Suburb',  value: customer?.suburb || '—' },
+                { label: 'Address', value: customer?.address || '—' },
               ].map(({ label, value }) => (
                 <div key={label} style={fieldBox}>
                   <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
@@ -165,7 +144,6 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
             </div>
           </div>
 
-          {/* Unit details */}
           <div style={{ marginBottom: '22px' }}>
             <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Unit</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -185,7 +163,6 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
             </div>
           </div>
 
-          {/* Service schedule */}
           <div style={{ marginBottom: '22px' }}>
             <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Service schedule</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -204,23 +181,16 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
             </div>
           </div>
 
-          {/* Notes */}
           {job.notes && (
             <div style={{ marginBottom: '22px' }}>
               <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Notes</div>
-              <div style={{ ...fieldBox, fontSize: '13px', fontWeight: 500, color: TEXT2, lineHeight: 1.7 }}>
-                {job.notes}
-              </div>
+              <div style={{ ...fieldBox, fontSize: '13px', fontWeight: 500, color: TEXT2, lineHeight: 1.7 }}>{job.notes}</div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '14px 22px 20px', borderTop: `1px solid ${BORDER}`, background: WHITE, flexShrink: 0, display: 'grid', gap: '8px' }}>
-          <button
-            onClick={() => router.push('/dashboard/jobs/add')}
-            style={{ height: '44px', borderRadius: '12px', border: 'none', background: TEAL, color: WHITE, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}
-          >
+          <button onClick={() => router.push('/dashboard/jobs/add')} style={{ height: '44px', borderRadius: '12px', border: 'none', background: TEAL, color: WHITE, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
             <IconPlus size={15} /> Add another job
           </button>
           {customer?.phone && (
@@ -233,8 +203,6 @@ function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; 
     </>
   )
 }
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function JobsPage() {
   const router = useRouter()
@@ -290,7 +258,6 @@ export default function JobsPage() {
   }
 
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
   const shellCard: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)', overflow: 'hidden' }
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
@@ -310,7 +277,6 @@ export default function JobsPage() {
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
         <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', background: BG, padding: isMobile ? '14px' : '16px', gap: '12px' }}>
 
-          {/* Header */}
           <div style={{ ...shellCard, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '28px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Jobs</div>
@@ -322,7 +288,6 @@ export default function JobsPage() {
             </div>
           </div>
 
-          {/* Overview cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px' }}>
             {overviewCards.map(item => (
               <div key={item.label} style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 4', minHeight: 140, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -341,9 +306,7 @@ export default function JobsPage() {
             ))}
           </div>
 
-          {/* List + sidebar */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px', alignItems: 'start' }}>
-
             <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 8' }}>
               <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
                 <div>
@@ -356,9 +319,16 @@ export default function JobsPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 300px) 1fr', gap: '10px', marginBottom: '14px' }}>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, pointerEvents: 'none' }}><IconSearch size={14} /></span>
-                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, brand, suburb..." style={{ width: '100%', height: '40px', padding: '0 12px 0 34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: '#FCFCFD', fontSize: '12px', color: TEXT, outline: 'none', fontFamily: FONT, boxSizing: 'border-box', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)' }} />
+                <div style={{ position: 'relative', height: '40px' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+                    <IconSearch size={14} />
+                  </span>
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search by name, brand, suburb..."
+                    style={{ width: '100%', height: '40px', padding: '0 12px 0 34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: '#FCFCFD', fontSize: '12px', color: TEXT, outline: 'none', fontFamily: FONT, boxSizing: 'border-box', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)' }}
+                  />
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {equipmentTypes.map(t => (
@@ -436,7 +406,6 @@ export default function JobsPage() {
               )}
             </div>
 
-            {/* Right sidebar */}
             <div style={{ gridColumn: isMobile ? 'span 1' : 'span 4', display: 'grid', gap: '12px' }}>
               <div style={panelCard}>
                 <div style={sectionLabel}>Quick actions</div>
@@ -453,9 +422,9 @@ export default function JobsPage() {
                 <div style={sectionLabel}>Service status</div>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {[
-                    { label: 'Overdue',        value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d < 0 }).length,              color: '#B91C1C', bg: '#FEE2E2' },
-                    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length,  color: '#92400E', bg: '#FEF3C7' },
-                    { label: 'Up to date',     value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d > 30 }).length,               color: TEAL,      bg: '#E6F6F5' },
+                    { label: 'Overdue',        value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d < 0 }).length,             color: '#B91C1C', bg: '#FEE2E2' },
+                    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length, color: '#92400E', bg: '#FEF3C7' },
+                    { label: 'Up to date',     value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d > 30 }).length,              color: TEAL,      bg: '#E6F6F5' },
                   ].map(item => (
                     <div key={item.label} style={{ borderRadius: '12px', background: item.bg, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</div>
