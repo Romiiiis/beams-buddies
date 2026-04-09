@@ -25,7 +25,7 @@ const navMain = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Customers', href: '/dashboard/customers' },
   { label: 'Leads', href: '/dashboard/leads' },
-  { label: 'Job', href: '/dashboard/jobs' },
+  { label: 'Jobs', href: '/dashboard/jobs' },
 ]
 
 const navFinance = [
