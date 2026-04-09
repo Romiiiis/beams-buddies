@@ -1,14 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
-import { createCustomer, createJob } from '@/lib/queries'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
-const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -26,30 +24,11 @@ const TYPE = {
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
   bodySm: {
     fontSize: '11px',
     fontWeight: 500,
     color: TEXT3,
     lineHeight: 1.45,
-  },
-  body: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: TEXT2,
-    lineHeight: 1.45,
-  },
-  titleSm: {
-    fontSize: '12px',
-    fontWeight: 800,
-    color: TEXT,
-    lineHeight: 1.3,
   },
   title: {
     fontSize: '13px',
@@ -68,43 +47,28 @@ const TYPE = {
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
-
   useEffect(() => {
-    function check() {
-      setIsMobile(window.innerWidth < 768)
-    }
+    function check() { setIsMobile(window.innerWidth < 768) }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
-
   return isMobile
 }
 
-function IconSpark({ size = 16 }: { size?: number }) {
+function IconPlus({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   )
 }
 
-function IconArrowLeft({ size = 15 }: { size?: number }) {
+function IconSearch({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -118,7 +82,7 @@ function IconJob({ size = 18 }: { size?: number }) {
   )
 }
 
-function IconCalendar({ size = 18 }: { size?: number }) {
+function IconCalendar({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
@@ -127,124 +91,93 @@ function IconCalendar({ size = 18 }: { size?: number }) {
   )
 }
 
-type FormState = {
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
-  address: string
-  suburb: string
-  postcode: string
-  equipment_type: string
-  brand: string
-  model: string
-  capacity_kw: string
-  serial_number: string
-  install_location: string
-  warranty_expiry: string
-  install_date: string
-  service_interval_months: string
-  reminder_lead_days: string
-  notes: string
+function IconFilter({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
 }
 
-export default function AddJobPage() {
+function IconArrow({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconUsers({ size = 17 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+const EQUIPMENT_LABELS: Record<string, string> = {
+  split_system: 'Split system',
+  ducted: 'Ducted',
+  multi_head: 'Multi-head',
+  cassette: 'Cassette',
+  other: 'Other',
+}
+
+export default function JobsPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [jobs, setJobs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [filterType, setFilterType] = useState('all')
 
-  const [form, setForm] = useState<FormState>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    address: '',
-    suburb: '',
-    postcode: '',
-    equipment_type: 'split_system',
-    brand: '',
-    model: '',
-    capacity_kw: '',
-    serial_number: '',
-    install_location: '',
-    warranty_expiry: '',
-    install_date: '',
-    service_interval_months: '12',
-    reminder_lead_days: '14',
-    notes: '',
-  })
-
-  function set<K extends keyof FormState>(field: K, value: FormState[K]) {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!session) {
-        router.push('/login')
-        return
-      }
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
 
       const { data: userData } = await supabase
-        .from('users')
-        .select('business_id')
-        .eq('id', session.user.id)
-        .single()
+        .from('users').select('business_id').eq('id', session.user.id).single()
 
-      if (!userData) {
-        throw new Error('User profile not found.')
-      }
+      if (!userData) { setLoading(false); return }
 
-      const customer = await createCustomer({
-        business_id: userData.business_id,
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        phone: form.phone,
-        address: form.address,
-        suburb: form.suburb,
-        postcode: form.postcode,
-      })
+      const { data } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone,
+            suburb,
+            address
+          )
+        `)
+        .eq('business_id', userData.business_id)
+        .order('install_date', { ascending: false })
 
-      await createJob({
-        business_id: userData.business_id,
-        customer_id: customer.id,
-        installed_by: session.user.id,
-        equipment_type: form.equipment_type,
-        brand: form.brand,
-        model: form.model,
-        capacity_kw: form.capacity_kw ? parseFloat(form.capacity_kw) : null,
-        serial_number: form.serial_number,
-        install_location: form.install_location,
-        warranty_expiry: form.warranty_expiry || null,
-        install_date: form.install_date,
-        service_interval_months: parseInt(form.service_interval_months, 10),
-        reminder_lead_days: parseInt(form.reminder_lead_days, 10),
-        notes: form.notes,
-      })
-
-      router.push('/dashboard')
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong.')
-    } finally {
+      setJobs(data || [])
       setLoading(false)
     }
-  }
+    load()
+  }, [router])
+
+  const equipmentTypes = ['all', 'split_system', 'ducted', 'multi_head', 'cassette', 'other']
+
+  const filtered = useMemo(() => {
+    return jobs.filter(j => {
+      const name = `${j.customers?.first_name || ''} ${j.customers?.last_name || ''}`.trim()
+      const matchSearch = search
+        ? `${name} ${j.brand} ${j.model} ${j.customers?.suburb} ${j.customers?.phone}`.toLowerCase().includes(search.toLowerCase())
+        : true
+      const matchType = filterType === 'all' ? true : j.equipment_type === filterType
+      return matchSearch && matchType
+    })
+  }, [jobs, search, filterType])
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
 
   const shellCard: React.CSSProperties = {
@@ -254,597 +187,248 @@ export default function AddJobPage() {
     boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
-
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
-    padding: isMobile ? '16px' : '18px',
-  }
-
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
-    fontWeight: 800,
-    marginBottom: '12px',
-  }
-
-  const miniStatCard: React.CSSProperties = {
-    borderRadius: '12px',
-    background: '#F8FAFC',
-    border: `1px solid ${BORDER}`,
-    padding: '12px',
-  }
-
+  const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
+  const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
   const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+    border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2,
+    borderRadius: '10px', height: '38px', padding: '0 14px',
+    fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
+    display: 'inline-flex', alignItems: 'center', gap: '8px',
+  }
+  const iconWrap = (color: string): React.CSSProperties => ({
+    width: '36px', height: '36px', borderRadius: '11px',
+    background: '#F8FAFC', color,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: `1px solid ${BORDER}`, flexShrink: 0,
+  })
+
+  function nextService(installDate: string, intervalMonths: number) {
+    if (!installDate) return null
+    const d = new Date(installDate)
+    d.setMonth(d.getMonth() + intervalMonths)
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
-  const label: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
+  function daysUntil(installDate: string, intervalMonths: number) {
+    if (!installDate) return null
+    const d = new Date(installDate)
+    d.setMonth(d.getMonth() + intervalMonths)
+    return Math.ceil((d.getTime() - Date.now()) / 86400000)
   }
 
-  const input: React.CSSProperties = {
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: '#FCFCFD',
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    width: '100%',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
-  }
-
-  const textarea: React.CSSProperties = {
-    minHeight: '96px',
-    padding: '12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: '#FCFCFD',
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    width: '100%',
-    resize: 'vertical',
-    lineHeight: 1.5,
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
-  }
+  const overviewCards = [
+    { label: 'Total jobs', value: jobs.length, sub: 'All jobs in workspace', icon: <IconJob size={18} />, accent: TEAL, tag: 'All time' },
+    {
+      label: 'Due this month',
+      value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length,
+      sub: 'Service due within 30 days', icon: <IconCalendar size={18} />, accent: '#92400E', tag: 'Upcoming',
+    },
+    {
+      label: 'Customers',
+      value: new Set(jobs.map(j => j.customer_id)).size,
+      sub: 'Unique customers with jobs', icon: <IconUsers size={18} />, accent: '#1E3A8A', tag: 'Unique',
+    },
+  ]
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100vh',
-        fontFamily: FONT,
-        background: BG,
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
       <Sidebar active="/dashboard/jobs" />
 
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
-        <div
-          style={{
-            minHeight: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
-          }}
-        >
-          <div
-            style={{
-              ...shellCard,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            <div>
+        <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', background: BG, padding: isMobile ? '14px' : '16px', gap: '12px' }}>
+
+          {/* Header */}
+          <div style={{ ...shellCard, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
+            <div style={{ fontSize: isMobile ? '28px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Jobs</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
+              All installations, service history, and upcoming maintenance in one place.
+            </div>
+            <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
-                onClick={() => router.push('/dashboard')}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  margin: 0,
-                  color: 'rgba(255,255,255,0.68)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  marginBottom: '8px',
-                }}
+                onClick={() => router.push('/dashboard/jobs/add')}
+                style={{ ...quickActionStyle, background: TEAL, color: WHITE, border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}
               >
-                <IconArrowLeft size={14} />
-                Dashboard
+                <IconPlus size={16} /> Add new job
               </button>
-
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
-                }}
-              >
-                {todayStr}
-              </div>
-
-              <div
-                style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
-                }}
-              >
-                Add new job
-              </div>
-
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Capture customer details, installation information, and service reminders in one clean workflow.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  style={{
-                    ...quickActionStyle,
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    boxShadow: 'none',
-                  }}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  form="job-form"
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                    opacity: loading ? 0.8 : 1,
-                  }}
-                >
-                  <IconSpark size={16} />
-                  {loading ? 'Saving...' : isMobile ? 'Save job' : 'Save & generate QR'}
-                </button>
-              </div>
             </div>
           </div>
 
-          {error ? (
-            <div
-              style={{
-                background: '#FFF9F9',
-                color: RED,
-                padding: '12px 16px',
-                borderRadius: '12px',
-                fontSize: '14px',
-                border: '1px solid #FECACA',
-                fontWeight: 600,
-              }}
-            >
-              {error}
-            </div>
-          ) : null}
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
-              alignItems: 'start',
-            }}
-          >
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 8',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
+          {/* Overview cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px' }}>
+            {overviewCards.map(item => (
+              <div key={item.label} style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 4', minHeight: 140, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                  <div>
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
+                  </div>
+                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                </div>
                 <div>
-                  <div style={sectionLabel}>New job workflow</div>
-                  <div style={{ ...TYPE.bodySm }}>
-                    Add the customer, installation details, and reminder timing in one pass.
-                  </div>
+                  <div style={{ fontSize: '30px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
                 </div>
+              </div>
+            ))}
+          </div>
 
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
-                    fontSize: '11px',
-                    fontWeight: 800,
-                  }}
-                >
-                  Live form
+          {/* Jobs list + sidebar */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px', alignItems: 'start' }}>
+
+            <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 8' }}>
+              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+                <div>
+                  <div style={sectionLabel}>All jobs</div>
+                  <div style={{ ...TYPE.bodySm }}>Click a job to view full details.</div>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 10px', borderRadius: '999px', background: '#F8FAFC', border: `1px solid ${BORDER}`, color: TEXT3, fontSize: '11px', fontWeight: 800 }}>
+                  <IconFilter size={14} /> {filtered.length} shown
                 </div>
               </div>
 
-              <form id="job-form" onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
-                <div
-                  style={{
-                    borderRadius: '14px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    padding: isMobile ? '14px' : '16px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '11px',
-                        background: '#F8FAFC',
-                        color: TEAL_DARK,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: `1px solid ${BORDER}`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <IconUsers size={18} />
-                    </div>
-
-                    <div>
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
-                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Customer details</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>First name *</label>
-                      <input required style={input} value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="James" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Last name *</label>
-                      <input required style={input} value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Moretti" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Email</label>
-                      <input type="email" style={input} value={form.email} onChange={e => set('email', e.target.value)} placeholder="james@email.com" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Phone</label>
-                      <input style={input} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="0412 345 678" />
-                    </div>
-
-                    <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                      <label style={label}>Address</label>
-                      <input style={input} value={form.address} onChange={e => set('address', e.target.value)} placeholder="14 Blackwood St" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Suburb</label>
-                      <input style={input} value={form.suburb} onChange={e => set('suburb', e.target.value)} placeholder="Newtown" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Postcode</label>
-                      <input style={input} value={form.postcode} onChange={e => set('postcode', e.target.value)} placeholder="2042" />
-                    </div>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 300px) 1fr', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, pointerEvents: 'none' }}>
+                    <IconSearch size={14} />
+                  </span>
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search by name, brand, suburb..."
+                    style={{ width: '100%', height: '40px', padding: '0 12px 0 34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: '#FCFCFD', fontSize: '12px', color: TEXT, outline: 'none', fontFamily: FONT, boxSizing: 'border-box', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)' }}
+                  />
                 </div>
-
-                <div
-                  style={{
-                    borderRadius: '14px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    padding: isMobile ? '14px' : '16px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '11px',
-                        background: '#F8FAFC',
-                        color: TEXT,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: `1px solid ${BORDER}`,
-                        flexShrink: 0,
-                      }}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {equipmentTypes.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setFilterType(t)}
+                      style={{ height: '36px', padding: '0 12px', borderRadius: '999px', border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`, background: filterType === t ? TEAL : WHITE, color: filterType === t ? WHITE : TEXT2, fontSize: '11px', fontWeight: filterType === t ? 700 : 600, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', boxShadow: filterType === t ? '0 4px 10px rgba(31,158,148,0.16)' : 'none' }}
                     >
-                      <IconJob size={18} />
-                    </div>
-
-                    <div>
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
-                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Installation details</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Equipment type *</label>
-                      <select required style={input} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
-                        <option value="split_system">Split system</option>
-                        <option value="ducted">Ducted system</option>
-                        <option value="multi_head">Multi-head split</option>
-                        <option value="cassette">Cassette unit</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={label}>Brand *</label>
-                      <input required style={input} value={form.brand} onChange={e => set('brand', e.target.value)} placeholder="Daikin" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Model</label>
-                      <input style={input} value={form.model} onChange={e => set('model', e.target.value)} placeholder="FTXM71WVMA" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Capacity (kW)</label>
-                      <input style={input} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder="7.1" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Serial number</label>
-                      <input style={input} value={form.serial_number} onChange={e => set('serial_number', e.target.value)} placeholder="DKSP2024XXXXXX" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Warranty expiry</label>
-                      <input type="date" style={input} value={form.warranty_expiry} onChange={e => set('warranty_expiry', e.target.value)} />
-                    </div>
-
-                    <div>
-                      <label style={label}>Installation date *</label>
-                      <input required type="date" style={input} value={form.install_date} onChange={e => set('install_date', e.target.value)} />
-                    </div>
-
-                    <div>
-                      <label style={label}>Location in property</label>
-                      <input style={input} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder="Master bedroom" />
-                    </div>
-
-                    <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                      <label style={label}>Job notes</label>
-                      <textarea
-                        style={textarea}
-                        value={form.notes}
-                        onChange={e => set('notes', e.target.value)}
-                        placeholder="Any notes about the installation..."
-                      />
-                    </div>
-                  </div>
+                      {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                <div
-                  style={{
-                    borderRadius: '14px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    padding: isMobile ? '14px' : '16px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '11px',
-                        background: '#F8FAFC',
-                        color: TEAL_DARK,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: `1px solid ${BORDER}`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <IconCalendar size={18} />
-                    </div>
-
-                    <div>
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
-                      <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Service schedule</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Service interval</label>
-                      <select style={input} value={form.service_interval_months} onChange={e => set('service_interval_months', e.target.value)}>
-                        <option value="6">Every 6 months</option>
-                        <option value="12">Every 12 months</option>
-                        <option value="18">Every 18 months</option>
-                        <option value="24">Every 24 months</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={label}>Reminder lead time</label>
-                      <select style={input} value={form.reminder_lead_days} onChange={e => set('reminder_lead_days', e.target.value)}>
-                        <option value="14">2 weeks before</option>
-                        <option value="28">4 weeks before</option>
-                        <option value="42">6 weeks before</option>
-                        <option value="56">8 weeks before</option>
-                      </select>
-                    </div>
-                  </div>
+              {loading ? (
+                <div style={{ padding: '32px', textAlign: 'center', color: TEXT3, fontSize: '14px' }}>Loading jobs...</div>
+              ) : filtered.length === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center', borderRadius: '14px', border: `1.5px dashed ${BORDER}`, background: '#FAFBFC' }}>
+                  <div style={{ fontSize: '28px', marginBottom: '10px' }}>🔧</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, marginBottom: '6px' }}>No jobs yet</div>
+                  <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '16px' }}>Add your first job or convert a lead to get started.</div>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs/add')}
+                    style={{ height: '38px', padding: '0 18px', borderRadius: '10px', background: TEAL, color: WHITE, border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px' }}
+                  >
+                    <IconPlus size={14} /> Add new job
+                  </button>
                 </div>
-              </form>
+              ) : (
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {filtered.map(job => {
+                    const customer = job.customers
+                    const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
+                    const days = daysUntil(job.install_date, job.service_interval_months)
+                    const next = nextService(job.install_date, job.service_interval_months)
+                    const isDueSoon = days !== null && days >= 0 && days <= 30
+                    const isOverdue = days !== null && days < 0
+                    const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL
+                    const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : '#E6F6F5'
+                    const serviceLabel = isOverdue ? `Overdue ${Math.abs(days!)} days` : isDueSoon ? `Due in ${days} days` : next ? `Next: ${next}` : '—'
+
+                    return (
+                      <div
+                        key={job.id}
+                        style={{ borderRadius: '14px', border: `1px solid ${BORDER}`, background: WHITE, boxShadow: '0 4px 14px rgba(15,23,42,0.04)', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.12s' }}
+                        onMouseEnter={e => { ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(15,23,42,0.09)'; ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
+                        onMouseLeave={e => { ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 14px rgba(15,23,42,0.04)'; ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
+                      >
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '6px 1fr' }}>
+                          {!isMobile && <div style={{ background: serviceColor }} />}
+                          <div style={{ padding: '14px 16px' }}>
+                            <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '12px', flexDirection: isMobile ? 'column' : 'row', paddingBottom: '10px', borderBottom: `1px solid ${BORDER}`, marginBottom: '10px' }}>
+                              <div>
+                                <div style={{ ...TYPE.label, marginBottom: '5px', color: serviceColor }}>{EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}</div>
+                                <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '3px' }}>{name}</div>
+                                <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>{customer?.phone || '—'}{customer?.suburb ? ` · ${customer.suburb}` : ''}</div>
+                              </div>
+                              <div style={{ background: serviceBg, color: serviceColor, padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <IconCalendar size={12} />{serviceLabel}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>🔧 {job.brand}{job.model ? ` ${job.model}` : ''}{job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}</div>
+                              {job.install_date && <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>📅 Installed {new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</div>}
+                              {job.install_location && <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>📍 {job.install_location}</div>}
+                              <div style={{ marginLeft: 'auto', flexShrink: 0, fontSize: '11px', fontWeight: 700, color: TEAL, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                View details <IconArrow size={12} />
+                              </div>
+                            </div>
+                            {job.notes && (
+                              <div style={{ marginTop: '10px', padding: '10px 12px', background: '#F8FAFC', borderRadius: '10px', border: `1px solid ${BORDER}`, fontSize: '12px', fontWeight: 500, color: TEXT3, lineHeight: 1.6 }}>
+                                {job.notes}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
-            <div
-              style={{
-                gridColumn: isMobile ? 'span 1' : 'span 4',
-                display: 'grid',
-                gap: '12px',
-              }}
-            >
+            {/* Right sidebar */}
+            <div style={{ gridColumn: isMobile ? 'span 1' : 'span 4', display: 'grid', gap: '12px' }}>
               <div style={panelCard}>
-                <div style={sectionLabel}>Workflow summary</div>
-
+                <div style={sectionLabel}>Quick actions</div>
                 <div style={{ display: 'grid', gap: '8px' }}>
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Customer</div>
-                    <div style={{ ...TYPE.valueSm }}>
-                      {form.first_name || form.last_name ? `${form.first_name} ${form.last_name}`.trim() : 'Not added'}
-                    </div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
-                      {form.phone || form.email || 'Phone or email will appear here'}
-                    </div>
-                  </div>
-
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Unit</div>
-                    <div style={{ ...TYPE.valueSm }}>
-                      {form.brand || 'Brand'} {form.capacity_kw ? `${form.capacity_kw}kW` : ''}
-                    </div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
-                      {form.equipment_type.replace('_', ' ')}
-                    </div>
-                  </div>
-
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Schedule</div>
-                    <div style={{ ...TYPE.valueSm }}>
-                      Every {form.service_interval_months} months
-                    </div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
-                      Reminder {form.reminder_lead_days} days before
-                    </div>
-                  </div>
+                  <button onClick={() => router.push('/dashboard/jobs/add')} style={{ ...quickActionStyle, width: '100%', justifyContent: 'center', background: TEAL, color: WHITE, border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
+                    <IconPlus size={15} /> Add new job
+                  </button>
+                  <button onClick={() => router.push('/dashboard/leads')} style={{ ...quickActionStyle, width: '100%', justifyContent: 'center' }}>View leads</button>
+                  <button onClick={() => { setSearch(''); setFilterType('all') }} style={{ ...quickActionStyle, width: '100%', justifyContent: 'center' }}>Reset filters</button>
                 </div>
               </div>
 
               <div style={panelCard}>
-                <div style={sectionLabel}>Before saving</div>
-                <div style={{ display: 'grid', gap: '10px' }}>
+                <div style={sectionLabel}>Service status</div>
+                <div style={{ display: 'grid', gap: '8px' }}>
                   {[
-                    'Customer name is required',
-                    'Brand and installation date are required',
-                    'Saving creates both the customer and the job',
+                    { label: 'Overdue', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d < 0 }).length, color: '#B91C1C', bg: '#FEE2E2' },
+                    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length, color: '#92400E', bg: '#FEF3C7' },
+                    { label: 'Up to date', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d > 30 }).length, color: TEAL, bg: '#E6F6F5' },
                   ].map(item => (
-                    <div
-                      key={item}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          marginTop: '5px',
-                          borderRadius: '999px',
-                          background: TEAL,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>{item}</span>
+                    <div key={item.label} style={{ borderRadius: '12px', background: item.bg, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</div>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: item.color }}>{item.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div style={panelCard}>
-                <div style={sectionLabel}>Quick actions</div>
-
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard')}
-                    style={{
-                      ...quickActionStyle,
-                      width: '100%',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    Back to dashboard
-                  </button>
-
-                  <button
-                    form="job-form"
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      ...quickActionStyle,
-                      width: '100%',
-                      justifyContent: 'center',
-                      background: TEAL,
-                      color: '#FFFFFF',
-                      border: 'none',
-                      boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                      opacity: loading ? 0.8 : 1,
-                    }}
-                  >
-                    <IconSpark size={16} />
-                    {loading ? 'Saving...' : 'Save job'}
-                  </button>
+                <div style={sectionLabel}>Equipment breakdown</div>
+                <div style={{ display: 'grid', gap: '6px' }}>
+                  {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => {
+                    const count = jobs.filter(j => j.equipment_type === key).length
+                    if (count === 0) return null
+                    const pct = jobs.length ? Math.round((count / jobs.length) * 100) : 0
+                    return (
+                      <div key={key}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>{label}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{count}</span>
+                        </div>
+                        <div style={{ height: '5px', borderRadius: '999px', background: BORDER, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: TEAL, borderRadius: '999px', transition: 'width 0.4s' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
