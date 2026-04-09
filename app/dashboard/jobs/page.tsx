@@ -17,32 +17,10 @@ const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
-  label: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  bodySm: {
-    fontSize: '11px',
-    fontWeight: 500,
-    color: TEXT3,
-    lineHeight: 1.45,
-  },
-  title: {
-    fontSize: '13px',
-    fontWeight: 700,
-    color: TEXT2,
-    lineHeight: 1.35,
-  },
-  valueSm: {
-    fontSize: '16px',
-    fontWeight: 900,
-    color: TEXT,
-    letterSpacing: '-0.04em' as const,
-    lineHeight: 1,
-  },
+  label: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em' as const, textTransform: 'uppercase' as const, color: TEXT3 },
+  bodySm: { fontSize: '11px', fontWeight: 500, color: TEXT3, lineHeight: 1.45 },
+  title: { fontSize: '13px', fontWeight: 700, color: TEXT2, lineHeight: 1.35 },
+  valueSm: { fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' as const, lineHeight: 1 },
 }
 
 function useIsMobile() {
@@ -57,63 +35,31 @@ function useIsMobile() {
 }
 
 function IconPlus({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
 }
-
 function IconSearch({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" /><path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>
 }
-
 function IconJob({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" /><path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>
 }
-
 function IconCalendar({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" /><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>
 }
-
 function IconFilter({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>
 }
-
 function IconArrow({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
 }
-
 function IconUsers({ size = 17 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" /></svg>
+}
+function IconClose({ size = 18 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+}
+function IconPhone({ size = 15 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" /></svg>
 }
 
 const EQUIPMENT_LABELS: Record<string, string> = {
@@ -124,6 +70,172 @@ const EQUIPMENT_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
+// ── Job Drawer ────────────────────────────────────────────────────────────────
+
+function JobDrawer({ job, onClose, isMobile }: { job: any; onClose: () => void; isMobile: boolean }) {
+  const router = useRouter()
+  const customer = job.customers
+  const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown'
+
+  const fieldBox: React.CSSProperties = {
+    background: '#F8FAFC', border: `1px solid ${BORDER}`,
+    borderRadius: '12px', padding: '12px 14px',
+  }
+
+  const days = (() => {
+    if (!job.install_date) return null
+    const d = new Date(job.install_date)
+    d.setMonth(d.getMonth() + job.service_interval_months)
+    return Math.ceil((d.getTime() - Date.now()) / 86400000)
+  })()
+
+  const isOverdue = days !== null && days < 0
+  const isDueSoon = days !== null && days >= 0 && days <= 30
+  const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL
+  const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : '#E6F6F5'
+  const serviceLabel = isOverdue
+    ? `Overdue by ${Math.abs(days!)} days`
+    : isDueSoon ? `Due in ${days} days`
+    : days !== null ? `${days} days away` : '—'
+
+  const nextServiceDate = (() => {
+    if (!job.install_date) return '—'
+    const d = new Date(job.install_date)
+    d.setMonth(d.getMonth() + job.service_interval_months)
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+  })()
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.35)', zIndex: 200, backdropFilter: 'blur(2px)' }} />
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: isMobile ? '100vw' : '480px',
+        background: WHITE, zIndex: 201,
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '-8px 0 40px rgba(11,18,32,0.12)',
+        overflow: 'hidden',
+        animation: 'slideIn 0.22s cubic-bezier(0.22,1,0.36,1)',
+      }}>
+        <style>{`@keyframes slideIn { from { transform: translateX(100%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }`}</style>
+
+        {/* Header */}
+        <div style={{ padding: '20px 22px 18px', borderBottom: `1px solid ${BORDER}`, background: HEADER_BG, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '6px' }}>
+                {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: WHITE, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
+              {customer?.phone && (
+                <div style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{customer.phone}</div>
+              )}
+            </div>
+            <button onClick={onClose} style={{ width: '34px', height: '34px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <IconClose size={16} />
+            </button>
+          </div>
+
+          {/* Service status pill */}
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ background: serviceBg, color: serviceColor, padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <IconCalendar size={12} /> {serviceLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px' }}>
+
+          {/* Customer details */}
+          <div style={{ marginBottom: '22px' }}>
+            <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Customer</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {[
+                { label: 'Name',     value: name },
+                { label: 'Phone',    value: customer?.phone || '—' },
+                { label: 'Suburb',   value: customer?.suburb || '—' },
+                { label: 'Address',  value: customer?.address || '—' },
+              ].map(({ label, value }) => (
+                <div key={label} style={fieldBox}>
+                  <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Unit details */}
+          <div style={{ marginBottom: '22px' }}>
+            <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Unit</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {[
+                { label: 'Brand',         value: job.brand || '—' },
+                { label: 'Model',         value: job.model || '—' },
+                { label: 'Capacity',      value: job.capacity_kw ? `${job.capacity_kw} kW` : '—' },
+                { label: 'Serial number', value: job.serial_number || '—' },
+                { label: 'Location',      value: job.install_location || '—' },
+                { label: 'Type',          value: EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type },
+              ].map(({ label, value }) => (
+                <div key={label} style={fieldBox}>
+                  <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Service schedule */}
+          <div style={{ marginBottom: '22px' }}>
+            <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Service schedule</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {[
+                { label: 'Installed',       value: job.install_date ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '—' },
+                { label: 'Next service',    value: nextServiceDate },
+                { label: 'Interval',        value: job.service_interval_months ? `Every ${job.service_interval_months} months` : '—' },
+                { label: 'Reminder',        value: job.reminder_lead_days ? `${job.reminder_lead_days} days before` : '—' },
+                { label: 'Warranty expiry', value: job.warranty_expiry ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '—' },
+              ].map(({ label, value }) => (
+                <div key={label} style={fieldBox}>
+                  <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          {job.notes && (
+            <div style={{ marginBottom: '22px' }}>
+              <div style={{ ...TYPE.label, marginBottom: '10px', display: 'block' }}>Notes</div>
+              <div style={{ ...fieldBox, fontSize: '13px', fontWeight: 500, color: TEXT2, lineHeight: 1.7 }}>
+                {job.notes}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 22px 20px', borderTop: `1px solid ${BORDER}`, background: WHITE, flexShrink: 0, display: 'grid', gap: '8px' }}>
+          <button
+            onClick={() => router.push('/dashboard/jobs/add')}
+            style={{ height: '44px', borderRadius: '12px', border: 'none', background: TEAL, color: WHITE, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}
+          >
+            <IconPlus size={15} /> Add another job
+          </button>
+          {customer?.phone && (
+            <a href={`tel:${customer.phone}`} style={{ height: '44px', borderRadius: '12px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}>
+              <IconPhone size={15} /> Call {customer.first_name}
+            </a>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function JobsPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -131,32 +243,19 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState('all')
+  const [selectedJob, setSelectedJob] = useState<any | null>(null)
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
-
-      const { data: userData } = await supabase
-        .from('users').select('business_id').eq('id', session.user.id).single()
-
+      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
       if (!userData) { setLoading(false); return }
-
       const { data } = await supabase
         .from('jobs')
-        .select(`
-          *,
-          customers (
-            first_name,
-            last_name,
-            phone,
-            suburb,
-            address
-          )
-        `)
+        .select(`*, customers ( first_name, last_name, phone, suburb, address )`)
         .eq('business_id', userData.business_id)
         .order('install_date', { ascending: false })
-
       setJobs(data || [])
       setLoading(false)
     }
@@ -176,31 +275,12 @@ export default function JobsPage() {
     })
   }, [jobs, search, filterType])
 
-  const todayStr = new Date().toLocaleDateString('en-AU', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-
-  const shellCard: React.CSSProperties = {
-    background: WHITE,
-    border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
-    overflow: 'hidden',
+  function daysUntil(installDate: string, intervalMonths: number) {
+    if (!installDate) return null
+    const d = new Date(installDate)
+    d.setMonth(d.getMonth() + intervalMonths)
+    return Math.ceil((d.getTime() - Date.now()) / 86400000)
   }
-  const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
-  const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
-  const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2,
-    borderRadius: '10px', height: '38px', padding: '0 14px',
-    fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
-    display: 'inline-flex', alignItems: 'center', gap: '8px',
-  }
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px', height: '36px', borderRadius: '11px',
-    background: '#F8FAFC', color,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: `1px solid ${BORDER}`, flexShrink: 0,
-  })
 
   function nextService(installDate: string, intervalMonths: number) {
     if (!installDate) return null
@@ -209,25 +289,18 @@ export default function JobsPage() {
     return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
-  function daysUntil(installDate: string, intervalMonths: number) {
-    if (!installDate) return null
-    const d = new Date(installDate)
-    d.setMonth(d.getMonth() + intervalMonths)
-    return Math.ceil((d.getTime() - Date.now()) / 86400000)
-  }
+  const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+  const shellCard: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)', overflow: 'hidden' }
+  const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
+  const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
+  const quickActionStyle: React.CSSProperties = { border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }
+  const iconWrap = (color: string): React.CSSProperties => ({ width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', color, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 })
 
   const overviewCards = [
     { label: 'Total jobs', value: jobs.length, sub: 'All jobs in workspace', icon: <IconJob size={18} />, accent: TEAL, tag: 'All time' },
-    {
-      label: 'Due this month',
-      value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length,
-      sub: 'Service due within 30 days', icon: <IconCalendar size={18} />, accent: '#92400E', tag: 'Upcoming',
-    },
-    {
-      label: 'Customers',
-      value: new Set(jobs.map(j => j.customer_id)).size,
-      sub: 'Unique customers with jobs', icon: <IconUsers size={18} />, accent: '#1E3A8A', tag: 'Unique',
-    },
+    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length, sub: 'Service due within 30 days', icon: <IconCalendar size={18} />, accent: '#92400E', tag: 'Upcoming' },
+    { label: 'Customers', value: new Set(jobs.map(j => j.customer_id)).size, sub: 'Unique customers with jobs', icon: <IconUsers size={18} />, accent: '#1E3A8A', tag: 'Unique' },
   ]
 
   return (
@@ -241,14 +314,9 @@ export default function JobsPage() {
           <div style={{ ...shellCard, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '28px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Jobs</div>
-            <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
-              All installations, service history, and upcoming maintenance in one place.
-            </div>
+            <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>All installations, service history, and upcoming maintenance in one place.</div>
             <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => router.push('/dashboard/jobs/add')}
-                style={{ ...quickActionStyle, background: TEAL, color: WHITE, border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}
-              >
+              <button onClick={() => router.push('/dashboard/jobs/add')} style={{ ...quickActionStyle, background: TEAL, color: WHITE, border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
                 <IconPlus size={16} /> Add new job
               </button>
             </div>
@@ -273,7 +341,7 @@ export default function JobsPage() {
             ))}
           </div>
 
-          {/* Jobs list + sidebar */}
+          {/* List + sidebar */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px', alignItems: 'start' }}>
 
             <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 8' }}>
@@ -289,23 +357,12 @@ export default function JobsPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 300px) 1fr', gap: '10px', marginBottom: '14px' }}>
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, pointerEvents: 'none' }}>
-                    <IconSearch size={14} />
-                  </span>
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by name, brand, suburb..."
-                    style={{ width: '100%', height: '40px', padding: '0 12px 0 34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: '#FCFCFD', fontSize: '12px', color: TEXT, outline: 'none', fontFamily: FONT, boxSizing: 'border-box', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)' }}
-                  />
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, pointerEvents: 'none' }}><IconSearch size={14} /></span>
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, brand, suburb..." style={{ width: '100%', height: '40px', padding: '0 12px 0 34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: '#FCFCFD', fontSize: '12px', color: TEXT, outline: 'none', fontFamily: FONT, boxSizing: 'border-box', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)' }} />
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {equipmentTypes.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setFilterType(t)}
-                      style={{ height: '36px', padding: '0 12px', borderRadius: '999px', border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`, background: filterType === t ? TEAL : WHITE, color: filterType === t ? WHITE : TEXT2, fontSize: '11px', fontWeight: filterType === t ? 700 : 600, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', boxShadow: filterType === t ? '0 4px 10px rgba(31,158,148,0.16)' : 'none' }}
-                    >
+                    <button key={t} onClick={() => setFilterType(t)} style={{ height: '36px', padding: '0 12px', borderRadius: '999px', border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`, background: filterType === t ? TEAL : WHITE, color: filterType === t ? WHITE : TEXT2, fontSize: '11px', fontWeight: filterType === t ? 700 : 600, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', boxShadow: filterType === t ? '0 4px 10px rgba(31,158,148,0.16)' : 'none' }}>
                       {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
                     </button>
                   ))}
@@ -319,10 +376,7 @@ export default function JobsPage() {
                   <div style={{ fontSize: '28px', marginBottom: '10px' }}>🔧</div>
                   <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, marginBottom: '6px' }}>No jobs yet</div>
                   <div style={{ fontSize: '12px', color: TEXT3, marginBottom: '16px' }}>Add your first job or convert a lead to get started.</div>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs/add')}
-                    style={{ height: '38px', padding: '0 18px', borderRadius: '10px', background: TEAL, color: WHITE, border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px' }}
-                  >
+                  <button onClick={() => router.push('/dashboard/jobs/add')} style={{ height: '38px', padding: '0 18px', borderRadius: '10px', background: TEAL, color: WHITE, border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
                     <IconPlus size={14} /> Add new job
                   </button>
                 </div>
@@ -342,9 +396,10 @@ export default function JobsPage() {
                     return (
                       <div
                         key={job.id}
+                        onClick={() => setSelectedJob(job)}
                         style={{ borderRadius: '14px', border: `1px solid ${BORDER}`, background: WHITE, boxShadow: '0 4px 14px rgba(15,23,42,0.04)', overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.12s' }}
-                        onMouseEnter={e => { ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(15,23,42,0.09)'; ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
-                        onMouseLeave={e => { ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 14px rgba(15,23,42,0.04)'; ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(15,23,42,0.09)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 14px rgba(15,23,42,0.04)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
                       >
                         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '6px 1fr' }}>
                           {!isMobile && <div style={{ background: serviceColor }} />}
@@ -398,9 +453,9 @@ export default function JobsPage() {
                 <div style={sectionLabel}>Service status</div>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {[
-                    { label: 'Overdue', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d < 0 }).length, color: '#B91C1C', bg: '#FEE2E2' },
-                    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length, color: '#92400E', bg: '#FEF3C7' },
-                    { label: 'Up to date', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d > 30 }).length, color: TEAL, bg: '#E6F6F5' },
+                    { label: 'Overdue',        value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d < 0 }).length,              color: '#B91C1C', bg: '#FEE2E2' },
+                    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length,  color: '#92400E', bg: '#FEF3C7' },
+                    { label: 'Up to date',     value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d > 30 }).length,               color: TEAL,      bg: '#E6F6F5' },
                   ].map(item => (
                     <div key={item.label} style={{ borderRadius: '12px', background: item.bg, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</div>
@@ -435,6 +490,10 @@ export default function JobsPage() {
           </div>
         </div>
       </div>
+
+      {selectedJob && (
+        <JobDrawer job={selectedJob} onClose={() => setSelectedJob(null)} isMobile={isMobile} />
+      )}
     </div>
   )
 }
