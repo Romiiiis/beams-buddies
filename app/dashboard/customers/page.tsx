@@ -98,7 +98,7 @@ function useIsMobile() {
 function DashboardImageIcon({
   src,
   alt,
-  size = 22,
+  size = 28,
 }: {
   src: string
   alt: string
@@ -119,7 +119,7 @@ function DashboardImageIcon({
   )
 }
 
-function IconCustomers({ size = 22 }: { size?: number }) {
+function IconCustomers({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
       src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
@@ -129,7 +129,7 @@ function IconCustomers({ size = 22 }: { size?: number }) {
   )
 }
 
-function IconJobs({ size = 22 }: { size?: number }) {
+function IconJobs({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
       src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
@@ -139,7 +139,7 @@ function IconJobs({ size = 22 }: { size?: number }) {
   )
 }
 
-function IconService({ size = 22 }: { size?: number }) {
+function IconService({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
       src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
@@ -149,10 +149,10 @@ function IconService({ size = 22 }: { size?: number }) {
   )
 }
 
-function IconReports({ size = 22 }: { size?: number }) {
+function IconReports({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
       alt="Reports"
       size={size}
     />
@@ -359,16 +359,17 @@ export default function CustomersPage() {
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '40px',
-    height: '40px',
-    borderRadius: '12px',
-    background: '#F8FAFC',
+    width: '44px',
+    height: '44px',
+    borderRadius: '0px',
+    background: 'transparent',
     color,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
+    border: 'none',
     flexShrink: 0,
+    boxShadow: 'none',
   })
 
   const topCards = [
@@ -376,7 +377,7 @@ export default function CustomersPage() {
       label: 'Customers',
       value: stats.totalCustomers.toLocaleString('en-AU'),
       sub: 'Stored in your CRM',
-      icon: <IconCustomers size={22} />,
+      icon: <IconCustomers size={28} />,
       accent: TEXT,
       tag: 'Directory total',
     },
@@ -384,7 +385,7 @@ export default function CustomersPage() {
       label: 'Tracked units',
       value: stats.totalUnits.toLocaleString('en-AU'),
       sub: 'Linked to customer profiles',
-      icon: <IconJobs size={22} />,
+      icon: <IconJobs size={28} />,
       accent: TEAL_DARK,
       tag: 'Equipment count',
     },
@@ -392,7 +393,7 @@ export default function CustomersPage() {
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
       sub: 'Customers needing attention soon',
-      icon: <IconService size={22} />,
+      icon: <IconService size={28} />,
       accent: AMBER,
       tag: 'Service watch',
     },
@@ -400,7 +401,7 @@ export default function CustomersPage() {
       label: 'Review clicks',
       value: stats.totalReviewClicks.toLocaleString('en-AU'),
       sub: totalPlatforms > 0 ? `Across ${totalPlatforms} active platform${totalPlatforms === 1 ? '' : 's'}` : 'No review platforms connected',
-      icon: <IconReports size={22} />,
+      icon: <IconReports size={28} />,
       accent: stats.totalReviewClicks > 0 ? TEAL_DARK : TEXT,
       tag: 'Engagement',
     },
