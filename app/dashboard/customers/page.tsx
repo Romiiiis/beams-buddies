@@ -132,7 +132,7 @@ function IconCustomers({ size = 28 }: { size?: number }) {
 function IconJobs({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_4afce955c73b4057a4eb2d3957fa516d~mv2.png"
       alt="Jobs"
       size={size}
     />
@@ -142,7 +142,7 @@ function IconJobs({ size = 28 }: { size?: number }) {
 function IconService({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png"
       alt="Service"
       size={size}
     />
@@ -152,7 +152,7 @@ function IconService({ size = 28 }: { size?: number }) {
 function IconReports({ size = 28 }: { size?: number }) {
   return (
     <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png"
       alt="Reports"
       size={size}
     />
