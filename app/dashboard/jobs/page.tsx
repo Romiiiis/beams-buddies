@@ -62,6 +62,22 @@ function IconPhone({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" /></svg>
 }
 
+function StatImageIcon({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
 const EQUIPMENT_LABELS: Record<string, string> = {
   split_system: 'Split system',
   ducted: 'Ducted',
@@ -262,12 +278,32 @@ export default function JobsPage() {
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
   const quickActionStyle: React.CSSProperties = { border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }
-  const iconWrap = (color: string): React.CSSProperties => ({ width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', color, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 })
 
   const overviewCards = [
-    { label: 'Total jobs', value: jobs.length, sub: 'All jobs in workspace', icon: <IconJob size={18} />, accent: TEAL, tag: 'All time' },
-    { label: 'Due this month', value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length, sub: 'Service due within 30 days', icon: <IconCalendar size={18} />, accent: '#92400E', tag: 'Upcoming' },
-    { label: 'Customers', value: new Set(jobs.map(j => j.customer_id)).size, sub: 'Unique customers with jobs', icon: <IconUsers size={18} />, accent: '#1E3A8A', tag: 'Unique' },
+    {
+      label: 'Total jobs',
+      value: jobs.length,
+      sub: 'All jobs in workspace',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_997ef62d91654472ba257f2f31099e0c~mv2.png',
+      accent: TEAL,
+      tag: 'All time'
+    },
+    {
+      label: 'Due this month',
+      value: jobs.filter(j => { const d = daysUntil(j.install_date, j.service_interval_months); return d !== null && d >= 0 && d <= 30 }).length,
+      sub: 'Service due within 30 days',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png',
+      accent: '#92400E',
+      tag: 'Upcoming'
+    },
+    {
+      label: 'Customers',
+      value: new Set(jobs.map(j => j.customer_id)).size,
+      sub: 'Unique customers with jobs',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png',
+      accent: '#1E3A8A',
+      tag: 'Unique'
+    },
   ]
 
   return (
@@ -296,7 +332,7 @@ export default function JobsPage() {
                     <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
                   </div>
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
                 <div>
                   <div style={{ fontSize: '30px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>{item.value}</div>
