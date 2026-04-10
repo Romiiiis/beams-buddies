@@ -20,13 +20,6 @@ const WHITE = '#FFFFFF'
 const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
-const STAT_WIDGET_ICONS = [
-  'https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png',
-  'https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png',
-  'https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png',
-  'https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png',
-]
-
 const TYPE = {
   label: {
     fontSize: '10px',
@@ -135,29 +128,67 @@ function monthLabelFromOffset(base: Date, offset: number) {
   return d.toLocaleDateString('en-AU', { month: 'short' })
 }
 
-function IconRevenue({ size = 18 }: { size?: number }) {
+function DashboardImageIcon({
+  src,
+  alt,
+  size = 28,
+}: {
+  src: string
+  alt: string
+  size?: number
+}) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
-function IconCalendar({ size = 18 }: { size?: number }) {
+function IconCollected({ size = 28 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
+      alt="Revenue collected"
+      size={size}
+    />
   )
 }
 
-function IconInvoice({ size = 18 }: { size?: number }) {
+function IconOutstanding({ size = 28 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
+      alt="Outstanding"
+      size={size}
+    />
+  )
+}
+
+function IconAcceptedValue({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
+      alt="Accepted quote value"
+      size={size}
+    />
+  )
+}
+
+function IconOverdueServices({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
+      alt="Overdue services"
+      size={size}
+    />
   )
 }
 
@@ -170,22 +201,27 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconUsers({ size = 18 }: { size?: number }) {
+function IconPrint({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <rect x="7" y="14" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
     </svg>
   )
 }
 
-function IconQuote({ size = 18 }: { size?: number }) {
+function IconArrow({ size = 13 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -343,55 +379,84 @@ export default function ReportsPage() {
     }
   }, [customers, invoices, jobs, quotes, today])
 
-  const shellCard: React.CSSProperties = {
+  const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
     padding: '16px',
+    borderRadius: '16px',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
   }
 
-  const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
-    fontWeight: 700,
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
     cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-  }
-
-  const iconWrap = (): React.CSSProperties => ({
-    width: '30px',
-    height: '30px',
+    color: TEXT3,
+    padding: 0,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  })
+  }
+
+  const topCards = [
+    {
+      label: 'Revenue collected',
+      value: formatMoney(report.revenueCollected),
+      sub: 'Paid invoices',
+      icon: <IconCollected size={28} />,
+      accent: GREEN,
+      tag: 'Financials',
+    },
+    {
+      label: 'Outstanding',
+      value: formatMoney(report.outstanding),
+      sub: 'Awaiting payment',
+      icon: <IconOutstanding size={28} />,
+      accent: BLUE,
+      tag: 'Receivables',
+    },
+    {
+      label: 'Accepted quote value',
+      value: formatMoney(report.quotesAcceptedValue),
+      sub: 'Approved quotes',
+      icon: <IconAcceptedValue size={28} />,
+      accent: TEAL_DARK,
+      tag: 'Quote value',
+    },
+    {
+      label: 'Overdue services',
+      value: String(report.overdueServices),
+      sub: report.overdueServices > 0 ? 'Needs action now' : 'All clear',
+      icon: <IconOverdueServices size={28} />,
+      accent: report.overdueServices > 0 ? RED : TEXT,
+      tag: 'Service load',
+    },
+  ]
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: BG, fontFamily: FONT }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard/reports" />
         <div
           style={{
@@ -414,171 +479,139 @@ export default function ReportsPage() {
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         fontFamily: FONT,
         background: BG,
-        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
       <Sidebar active="/dashboard/reports" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            minHeight: '100%',
+            padding: isMobile ? '14px' : '16px 20px',
             display: 'flex',
             flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
+            gap: '14px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
           <div
             style={{
-              ...shellCard,
+              ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div>
-              <div
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
+              {todayStr}
+            </div>
+
+            <div
+              style={{
+                fontSize: isMobile ? '26px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: WHITE,
+                marginBottom: '8px',
+              }}
+            >
+              Reports
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Review revenue, activity, service workload, and customer trends from one premium reporting centre.
+            </div>
+
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => window.print()}
                 style={{
+                  height: '36px',
+                  padding: '0 14px',
                   fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: WHITE,
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  borderRadius: '10px',
                 }}
               >
-                {todayStr}
-              </div>
+                <IconPrint size={14} />
+                Print report
+              </button>
 
-              <div
+              <button
+                onClick={() => router.push('/dashboard/invoices')}
                 style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: TEAL,
+                  color: WHITE,
+                  border: 'none',
+                  borderRadius: '10px',
                 }}
               >
-                Reports
-              </div>
-
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Review revenue, activity, service workload, and customer trends from one premium reporting centre.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <button onClick={() => window.print()} style={quickActionStyle}>
-                  Print report
-                </button>
-
-                <button
-                  onClick={() => router.push('/dashboard/invoices')}
-                  style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                  }}
-                >
-                  <IconSpark size={16} />
-                  View invoices
-                </button>
-              </div>
+                <IconSpark size={14} />
+                View invoices
+              </button>
             </div>
           </div>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
-            {[
-              {
-                label: 'Revenue collected',
-                value: formatMoney(report.revenueCollected),
-                sub: 'Paid invoices',
-                icon: STAT_WIDGET_ICONS[0],
-                accent: GREEN,
-                tag: 'Financials',
-              },
-              {
-                label: 'Outstanding',
-                value: formatMoney(report.outstanding),
-                sub: 'Awaiting payment',
-                icon: STAT_WIDGET_ICONS[1],
-                accent: BLUE,
-                tag: 'Receivables',
-              },
-              {
-                label: 'Accepted quote value',
-                value: formatMoney(report.quotesAcceptedValue),
-                sub: 'Approved quotes',
-                icon: STAT_WIDGET_ICONS[2],
-                accent: TEAL_DARK,
-                tag: 'Quote value',
-              },
-              {
-                label: 'Overdue services',
-                value: String(report.overdueServices),
-                sub: report.overdueServices > 0 ? 'Needs action now' : 'All clear',
-                icon: STAT_WIDGET_ICONS[3],
-                accent: report.overdueServices > 0 ? RED : TEXT,
-                tag: 'Service load',
-              },
-            ].map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...panelCard,
-                  gridColumn: isMobile ? 'span 1' : 'span 3',
-                  minHeight: 148,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+            {topCards.map(item => (
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                      {item.label}
-                    </div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
-
-                  <div style={iconWrap()}>
-                    <img
-                      src={item.icon}
-                      alt=""
-                      aria-hidden="true"
-                      style={{
-                        width: '30px',
-                        height: '30px',
-                        objectFit: 'contain',
-                        display: 'block',
-                      }}
-                    />
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.icon}
                   </div>
                 </div>
 
@@ -586,13 +619,13 @@ export default function ReportsPage() {
                   <div
                     style={{
                       ...TYPE.valueLg,
-                      fontSize: item.label === 'Accepted quote value' && isMobile ? '24px' : '30px',
+                      fontSize: item.label === 'Accepted quote value' && isMobile ? '22px' : '26px',
                       color: item.accent,
                     }}
                   >
                     {item.value}
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -601,203 +634,207 @@ export default function ReportsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0,1fr))',
-              gap: '12px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gap: '14px',
               alignItems: 'start',
             }}
           >
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 7',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '14px' }}>
+            <div style={card}>
+              <div
+                style={{
+                  padding: '14px 16px 12px',
+                  borderBottom: `1px solid ${BORDER}`,
+                  display: 'flex',
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '10px',
+                }}
+              >
                 <div>
-                  <div style={sectionLabel}>Revenue trend</div>
+                  <div style={sectionHeaderTitle}>Revenue trend</div>
                   <div style={{ ...TYPE.bodySm }}>
-                    Paid invoice totals across the last 6 months
+                    Paid invoice totals across the last 6 months.
                   </div>
                 </div>
 
                 <div
                   style={{
+                    height: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
-                    fontSize: '11px',
-                    fontWeight: 800,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   6 month view
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr 1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
-                  gap: '10px',
-                  marginBottom: '14px',
-                }}
-              >
-                {[
-                  { label: 'Jobs this month', value: report.jobsThisMonth },
-                  { label: 'Last month', value: report.jobsLastMonth },
-                  { label: 'New customers', value: report.newCustomersThisMonth },
-                  { label: 'Invoices', value: report.invoicesThisMonth },
-                  { label: 'Quotes', value: report.quotesThisMonth },
-                  { label: 'Due soon', value: report.dueSoonServices },
-                ].map(item => (
-                  <div
-                    key={item.label}
-                    style={{
-                      borderRadius: '12px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      padding: '10px 12px',
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                    <div style={TYPE.valueMd}>{item.value}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                style={{
-                  height: isMobile ? 260 : 300,
-                  borderRadius: '14px',
-                  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
-                  border: `1px solid ${BORDER}`,
-                  padding: '16px 16px 14px',
-                  display: 'grid',
-                  gridTemplateColumns: '42px 1fr',
-                  gap: '12px',
-                }}
-              >
+              <div style={{ padding: '14px 16px' }}>
                 <div
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    fontSize: '11px',
-                    color: TEXT3,
-                    paddingTop: '4px',
-                    paddingBottom: '24px',
-                    fontWeight: 700,
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
+                    gap: '10px',
+                    marginBottom: '14px',
                   }}
                 >
-                  {[100, 75, 50, 25, 0].map(tick => (
-                    <span key={tick}>
-                      {formatMoney(Math.round((report.maxRevenue * tick) / 100))}
-                    </span>
+                  {[
+                    { label: 'Jobs this month', value: report.jobsThisMonth },
+                    { label: 'Last month', value: report.jobsLastMonth },
+                    { label: 'New customers', value: report.newCustomersThisMonth },
+                    { label: 'Invoices', value: report.invoicesThisMonth },
+                    { label: 'Quotes', value: report.quotesThisMonth },
+                    { label: 'Due soon', value: report.dueSoonServices },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      style={{
+                        borderRadius: '12px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                        padding: '10px 12px',
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
+                      <div style={TYPE.valueMd}>{item.value}</div>
+                    </div>
                   ))}
                 </div>
 
                 <div
                   style={{
-                    position: 'relative',
+                    height: isMobile ? 250 : 290,
+                    borderRadius: '14px',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    padding: '16px 16px 14px',
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
-                    gap: '10px',
-                    alignItems: 'end',
-                    paddingTop: '6px',
+                    gridTemplateColumns: '42px 1fr',
+                    gap: '12px',
                   }}
                 >
-                  {[0, 25, 50, 75, 100].map((top, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        top: `${top}%`,
-                        borderTop: i === 4 ? 'none' : '1px dashed #E8EDF3',
-                        zIndex: 0,
-                      }}
-                    />
-                  ))}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      fontSize: '11px',
+                      color: TEXT3,
+                      paddingTop: '4px',
+                      paddingBottom: '24px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {[100, 75, 50, 25, 0].map(tick => (
+                      <span key={tick}>
+                        {formatMoney(Math.round((report.maxRevenue * tick) / 100))}
+                      </span>
+                    ))}
+                  </div>
 
-                  {report.monthlyRevenue.map(item => {
-                    const height = Math.max(16, Math.round((item.total / report.maxRevenue) * (isMobile ? 140 : 170)))
-
-                    return (
+                  <div
+                    style={{
+                      position: 'relative',
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+                      gap: '10px',
+                      alignItems: 'end',
+                      paddingTop: '6px',
+                    }}
+                  >
+                    {[0, 25, 50, 75].map((top, i) => (
                       <div
-                        key={item.label}
+                        key={i}
                         style={{
-                          position: 'relative',
-                          zIndex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                          gap: '8px',
-                          height: '100%',
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          top: `${top}%`,
+                          borderTop: '1px dashed #E8EDF3',
+                          zIndex: 0,
                         }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            color: TEXT3,
-                            minHeight: '14px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          {item.total > 0 ? formatMoney(item.total) : '$0'}
-                        </div>
+                      />
+                    ))}
 
+                    {report.monthlyRevenue.map(item => {
+                      const height = Math.max(16, Math.round((item.total / report.maxRevenue) * (isMobile ? 136 : 166)))
+
+                      return (
                         <div
+                          key={item.label}
                           style={{
-                            width: '100%',
-                            maxWidth: '42px',
-                            height: isMobile ? '150px' : '182px',
+                            position: 'relative',
+                            zIndex: 1,
                             display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            gap: '8px',
+                            height: '100%',
                           }}
                         >
                           <div
                             style={{
-                              width: '30px',
-                              height: `${height}px`,
-                              borderRadius: '999px',
-                              background: item.total > 0
-                                ? 'linear-gradient(180deg, #28B5A7 0%, #1F9E94 100%)'
-                                : 'linear-gradient(180deg, #EEF2F6 0%, #E2E8F0 100%)',
-                              boxShadow: item.total > 0 ? '0 4px 10px rgba(31,158,148,0.18)' : 'none',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              color: TEXT3,
+                              minHeight: '14px',
+                              textAlign: 'center',
                             }}
-                          />
-                        </div>
+                          >
+                            {item.total > 0 ? formatMoney(item.total) : '$0'}
+                          </div>
 
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                          {item.label}
+                          <div
+                            style={{
+                              width: '100%',
+                              maxWidth: '42px',
+                              height: isMobile ? '146px' : '178px',
+                              display: 'flex',
+                              alignItems: 'flex-end',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '30px',
+                                height: `${height}px`,
+                                borderRadius: '999px',
+                                background: item.total > 0 ? TEAL : '#E2E8F0',
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
+                            {item.label}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div
-              style={{
-                gridColumn: isMobile ? 'span 1' : 'span 5',
-                display: 'grid',
-                gap: '12px',
-              }}
-            >
-              <div style={panelCard}>
-                <div style={sectionLabel}>This month</div>
+            <div style={{ display: 'grid', gap: '14px' }}>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>This month</div>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
                     ['New customers', report.newCustomersThisMonth],
                     ['Jobs created', report.jobsThisMonth],
@@ -808,8 +845,8 @@ export default function ReportsPage() {
                     <div
                       key={label as string}
                       style={{
-                        borderRadius: '12px',
-                        padding: '12px 14px',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
                         background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         display: 'flex',
@@ -818,20 +855,22 @@ export default function ReportsPage() {
                         gap: '10px',
                       }}
                     >
-                      <div>
-                        <div style={TYPE.titleSm}>{label}</div>
-                        <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>Current month</div>
-                      </div>
-                      <div style={TYPE.valueMd}>{value}</div>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={panelCard}>
-                <div style={sectionLabel}>Quote performance</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Quote performance</div>
+                  <button onClick={() => router.push('/dashboard/quotes')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
                     ['Accepted quotes', report.acceptedQuotes],
                     ['Sent quotes', report.sentQuotes],
@@ -840,8 +879,8 @@ export default function ReportsPage() {
                     <div
                       key={label as string}
                       style={{
-                        borderRadius: '12px',
-                        padding: '12px 14px',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
                         background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         display: 'flex',
@@ -850,20 +889,22 @@ export default function ReportsPage() {
                         gap: '10px',
                       }}
                     >
-                      <div>
-                        <div style={TYPE.titleSm}>{label}</div>
-                        <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>Pipeline status</div>
-                      </div>
-                      <div style={TYPE.valueMd}>{value}</div>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={panelCard}>
-                <div style={sectionLabel}>Snapshot</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Snapshot</div>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ marginTop: '14px', display: 'grid', gap: '8px' }}>
                   {[
                     {
                       label: 'Jobs trend',
@@ -874,7 +915,7 @@ export default function ReportsPage() {
                     {
                       label: 'Service workload',
                       heading: `${report.overdueServices + report.dueSoonServices} upcoming actions`,
-                      sub: `${report.overdueServices} overdue • ${report.dueSoonServices} due soon`,
+                      sub: `${report.overdueServices} overdue · ${report.dueSoonServices} due soon`,
                       accent: report.overdueServices > 0 ? RED : TEAL,
                     },
                     {
@@ -904,54 +945,64 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div>
-            <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }}>
-              Breakdown
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-                gap: '12px',
-              }}
-            >
-              {[
-                {
-                  title: 'Top suburbs',
-                  subtitle: 'Where most of your customers are located',
-                  data: report.topSuburbs,
-                  avatarBg: '#E8F4F1',
-                  avatarColor: '#0A4F4C',
-                  empty: 'No suburb data yet.',
-                },
-                {
-                  title: 'Top installed brands',
-                  subtitle: 'Most common equipment brands in your records',
-                  data: report.topBrands,
-                  avatarBg: '#DBEAFE',
-                  avatarColor: '#1E3A8A',
-                  empty: 'No brand data yet.',
-                },
-              ].map(section => (
-                <div key={section.title} style={panelCard}>
-                  <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>
-                    {section.title}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+              gap: '14px',
+              alignItems: 'start',
+            }}
+          >
+            {[
+              {
+                title: 'Top suburbs',
+                subtitle: 'Where most of your customers are located',
+                data: report.topSuburbs,
+                avatarBg: '#E8F4F1',
+                avatarColor: '#0A4F4C',
+                empty: 'No suburb data yet.',
+              },
+              {
+                title: 'Top installed brands',
+                subtitle: 'Most common equipment brands in your records',
+                data: report.topBrands,
+                avatarBg: '#DBEAFE',
+                avatarColor: '#1E3A8A',
+                empty: 'No brand data yet.',
+              },
+            ].map(section => (
+              <div key={section.title} style={card}>
+                <div
+                  style={{
+                    padding: '14px 16px 12px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                  }}
+                >
+                  <div>
+                    <div style={sectionHeaderTitle}>{section.title}</div>
+                    <div style={{ ...TYPE.bodySm }}>{section.subtitle}</div>
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginBottom: '10px' }}>
-                    {section.subtitle}
-                  </div>
 
+                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ padding: '14px 16px' }}>
                   {section.data.length === 0 ? (
                     <div
                       style={{
-                        borderRadius: '12px',
                         padding: '20px 14px',
-                        background: WHITE,
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         textAlign: 'center',
-                        fontSize: '14px',
-                        fontWeight: 500,
+                        fontSize: '12px',
+                        fontWeight: 600,
                         color: TEXT3,
                       }}
                     >
@@ -963,9 +1014,9 @@ export default function ReportsPage() {
                         <div
                           key={name as string}
                           style={{
-                            borderRadius: '12px',
-                            padding: '12px 14px',
-                            background: WHITE,
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            background: '#F8FAFC',
                             border: `1px solid ${BORDER}`,
                             display: 'flex',
                             alignItems: 'center',
@@ -973,7 +1024,7 @@ export default function ReportsPage() {
                             gap: '12px',
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                             <div
                               style={{
                                 width: '30px',
@@ -991,16 +1042,26 @@ export default function ReportsPage() {
                             >
                               {index + 1}
                             </div>
-                            <span style={{ ...TYPE.titleSm, fontSize: '13px' }}>{name}</span>
+                            <span
+                              style={{
+                                ...TYPE.titleSm,
+                                fontSize: '13px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {name}
+                            </span>
                           </div>
-                          <span style={TYPE.valueMd}>{count}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{count}</span>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
