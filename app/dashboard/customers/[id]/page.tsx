@@ -106,7 +106,7 @@ function IconArrowLeft({ size = 15 }: { size?: number }) {
 function IconArrow({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -207,6 +207,22 @@ function IconReview({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 17.5 6.71 20l1.01-5.46L3.5 10.5l5.67-.77L12 4.75l2.83 4.98 5.67.77-4.22 4.04L17.29 20 12 17.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function StatImageIcon({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: '40px',
+        height: '40px',
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
@@ -478,7 +494,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Units installed',
       value: stats.jobs.toLocaleString('en-AU'),
       sub: 'Tracked on this customer',
-      icon: <IconTool size={18} />,
+      iconSrc: 'https://static.wixstatic.com/media/48c433_036667b7dfd5426cbc717f8ce989bc5a~mv2.png',
       accent: TEXT,
       tag: 'Equipment total',
     },
@@ -486,7 +502,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Service records',
       value: stats.serviceRecords.toLocaleString('en-AU'),
       sub: 'Logged visit history',
-      icon: <IconClock size={18} />,
+      iconSrc: 'https://static.wixstatic.com/media/48c433_4038d62685f44d5395fda0f6dbb265fc~mv2.png',
       accent: TEAL_DARK,
       tag: 'History',
     },
@@ -494,7 +510,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
       sub: 'Units needing attention soon',
-      icon: <IconCalendar size={18} />,
+      iconSrc: 'https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png',
       accent: AMBER,
       tag: 'Service watch',
     },
@@ -502,7 +518,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Review clicks',
       value: stats.reviewClicks.toLocaleString('en-AU'),
       sub: uniquePlatforms.length > 0 ? `Across ${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No review activity yet',
-      icon: <IconReview size={18} />,
+      iconSrc: 'https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png',
       accent: stats.reviewClicks > 0 ? TEAL_DARK : TEXT,
       tag: 'Engagement',
     },
@@ -699,7 +715,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
 
                 <div>
@@ -1048,8 +1064,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   {
                                     label: 'Serial number',
                                     value: job.serial_number || '—',
-                                    icon: <IconTool size={15} />,
-                                    color: TEXT,
                                     mono: true,
                                   },
                                   {
@@ -1057,16 +1071,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     value: job.install_date
                                       ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                       : '—',
-                                    icon: <IconCalendar size={15} />,
-                                    color: TEAL_DARK,
                                   },
                                   {
                                     label: 'Next service',
                                     value: job.next_service_date
                                       ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                       : '—',
-                                    icon: <IconClock size={15} />,
-                                    color: job.next_service_date && getDays(job.next_service_date) < 0 ? RED : AMBER,
                                     danger: job.next_service_date && getDays(job.next_service_date) < 0,
                                   },
                                   {
@@ -1074,20 +1084,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     value: job.warranty_expiry
                                       ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                       : '—',
-                                    icon: <IconCalendar size={15} />,
-                                    color: TEXT,
                                   },
                                   {
                                     label: 'Location',
                                     value: job.install_location || '—',
-                                    icon: <IconMapPin size={15} />,
-                                    color: TEAL_DARK,
                                   },
                                   {
                                     label: 'Service interval',
                                     value: `Every ${job.service_interval_months} months`,
-                                    icon: <IconClock size={15} />,
-                                    color: AMBER,
                                   },
                                 ].map(row => (
                                   <div
@@ -1099,10 +1103,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                       padding: '12px',
                                     }}
                                   >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '7px' }}>
-                                      <div style={iconWrap(row.color)}>{row.icon}</div>
-                                      <div style={TYPE.label}>{row.label}</div>
-                                    </div>
+                                    <div style={{ ...TYPE.label, marginBottom: '7px' }}>{row.label}</div>
                                     <div
                                       style={{
                                         ...TYPE.body,
