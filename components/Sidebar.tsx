@@ -68,87 +68,91 @@ const iconBase = {
 
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': (
-    <svg {...iconBase}>
-      <rect x="3" y="3" width="8" height="8" rx="2" />
-      <rect x="13" y="3" width="8" height="5" rx="2" />
-      <rect x="13" y="10" width="8" height="11" rx="2" />
-      <rect x="3" y="13" width="8" height="8" rx="2" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_275af6b2cf654876ac6b4d488595e94c~mv2.png"
+      alt="Dashboard"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/customers': (
-    <svg {...iconBase}>
-      <circle cx="12" cy="8" r="3.2" />
-      <path d="M5 19c1.7-3 4.3-4.8 7-4.8s5.3 1.8 7 4.8" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
+      alt="Customers"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/leads': (
-    <svg {...iconBase}>
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="M20 20l-3.5-3.5" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_e4537a2002634cba9871fbdc2b886b8a~mv2.png"
+      alt="Leads"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/jobs': (
-    <svg {...iconBase}>
-      <rect x="4" y="6" width="16" height="13" rx="2.5" />
-      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
+      alt="Jobs"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/quotes': (
-    <svg {...iconBase}>
-      <path d="M7 3.5h7l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7.5 3.5Z" />
-      <path d="M14 3.5V8h4" />
-      <path d="M9 12h6" />
-      <path d="M9 16h4" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_8c9ea7223694496293ac015c7a34c1d0~mv2.png"
+      alt="Quotes"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/invoices': (
-    <svg {...iconBase}>
-      <path d="M7 2.8h10v18.4l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2V2.8Z" />
-      <path d="M9 8h6" />
-      <path d="M9 12h6" />
-      <path d="M9 16h4" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_7f2ee3fe8f84466a82117a774ec03d55~mv2.png"
+      alt="Invoices"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/revenue': (
-    <svg {...iconBase}>
-      <path d="M4 20V12" />
-      <path d="M10 20V8" />
-      <path d="M16 20V14" />
-      <path d="M22 20V5" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_c60e43bdd7c54c4a834aad9132d7a0d8~mv2.png"
+      alt="Revenue"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/schedule': (
-    <svg {...iconBase}>
-      <rect x="3" y="5" width="18" height="16" rx="2.5" />
-      <path d="M16 3v4" />
-      <path d="M8 3v4" />
-      <path d="M3 10h18" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
+      alt="Service"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/qrcodes': (
-    <svg {...iconBase}>
-      <rect x="3" y="3" width="6" height="6" rx="1.2" />
-      <rect x="15" y="3" width="6" height="6" rx="1.2" />
-      <rect x="3" y="15" width="6" height="6" rx="1.2" />
-      <path d="M15 15h2v2h-2z" />
-      <path d="M19 15h2v2h-2z" />
-      <path d="M15 19h2v2h-2z" />
-      <path d="M19 19h2v2h-2z" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_85c788cea5d94da097d1bbc631c25044~mv2.png"
+      alt="QR Code"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/reports': (
-    <svg {...iconBase}>
-      <path d="M4 19.5h16" />
-      <path d="M7 16V10" />
-      <path d="M12 16V6" />
-      <path d="M17 16v-3" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
+      alt="Reports"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
+
   '/dashboard/settings': (
-    <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19 12a7 7 0 0 0-.2-1.7l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2.9-1.7L13 2h-2l-.5 2.6a7 7 0 0 0-2.9 1.7l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .6.1 1.2.2 1.7l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2.9 1.7L11 22h2l.5-2.6a7 7 0 0 0 2.9-1.7l2.4 1 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z" />
-    </svg>
+    <img
+      src="https://static.wixstatic.com/media/48c433_a8bdb8a29ac64e40af9caba6d21fd86b~mv2.png"
+      alt="Settings"
+      style={{ width: 18, height: 18, objectFit: 'contain' }}
+    />
   ),
 }
 
