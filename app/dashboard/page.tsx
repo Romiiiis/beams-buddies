@@ -390,7 +390,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ border: `1px solid ${BORDER}`, background: TEAL, color: WHITE, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ background: TEAL, color: WHITE, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
                   <IconSpark size={16} /> Add job
                 </button>
                 <button onClick={() => router.push('/dashboard/quotes')} style={{ background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: 'none' }}>
