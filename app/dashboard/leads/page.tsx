@@ -147,6 +147,15 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
   )
 }
 
+function IconSearch({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function StatImageIcon({ src, alt }: { src: string; alt: string }) {
   return (
     <img
@@ -739,11 +748,37 @@ export default function LeadsPage() {
     padding: '18px',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+    borderRadius: '16px',
+  }
+
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
+  }
+
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
   }
 
   const statuses = ['all', 'booked', 'pending', 'incomplete', 'converted', 'wrong_number']
@@ -774,6 +809,10 @@ export default function LeadsPage() {
       tag: 'Completed flow',
     },
   ]
+
+  const bookedCount = leads.filter(l => l.status === 'booked').length
+  const pendingCount = leads.filter(l => l.status === 'pending').length
+  const convertedCount = leads.filter(l => l.status === 'converted').length
 
   return (
     <div
@@ -867,26 +906,18 @@ export default function LeadsPage() {
             }}
           >
             {overviewCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...cardP,
-                  minHeight: 146,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
                   <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
+
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -895,7 +926,7 @@ export default function LeadsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -903,88 +934,119 @@ export default function LeadsPage() {
             <div style={card}>
               <div
                 style={{
-                  padding: '16px 18px 12px',
+                  padding: '14px 16px 12px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
-                  alignItems: isMobile ? 'flex-start' : 'center',
+                  alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
                   gap: '10px',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>Inbound calls</div>
+                  <div style={sectionHeaderTitle}>Inbound calls</div>
                   <div style={{ ...TYPE.bodySm }}>Click any lead to follow up, update status, or book.</div>
                 </div>
 
                 <div
                   style={{
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
-                    fontSize: '11px',
-                    fontWeight: 800,
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                    width: isMobile ? '100%' : 'auto',
                   }}
                 >
-                  <IconFilter size={14} /> {filtered.length} shown
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: isMobile ? '100%' : '300px',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: TEXT3,
+                        display: 'inline-flex',
+                      }}
+                    >
+                      <IconSearch size={15} />
+                    </span>
+
+                    <input
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      placeholder="Search by name, phone, suburb..."
+                      style={{
+                        height: '40px',
+                        width: '100%',
+                        borderRadius: '11px',
+                        border: `1px solid ${BORDER}`,
+                        padding: '0 12px 0 38px',
+                        fontSize: '12px',
+                        background: WHITE,
+                        color: TEXT,
+                        fontFamily: FONT,
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      height: '40px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      whiteSpace: 'nowrap',
+                      gap: '6px',
+                    }}
+                  >
+                    <IconFilter size={14} /> {filtered.length} shown
+                  </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  padding: '14px 18px',
+                  padding: '12px 16px',
                   borderBottom: `1px solid ${BORDER}`,
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 320px) 1fr',
-                  gap: '10px',
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
                 }}
               >
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search by name, phone, suburb..."
-                  style={{
-                    width: '100%',
-                    height: '40px',
-                    padding: '0 12px',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    fontSize: '12px',
-                    color: TEXT,
-                    outline: 'none',
-                    fontFamily: FONT,
-                  }}
-                />
-
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {statuses.map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setFilterStatus(s)}
-                      style={{
-                        height: '36px',
-                        padding: '0 14px',
-                        borderRadius: '999px',
-                        border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
-                        background: filterStatus === s ? TEAL : WHITE,
-                        color: filterStatus === s ? WHITE : TEXT2,
-                        fontSize: '12px',
-                        fontWeight: filterStatus === s ? 700 : 600,
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        textTransform: 'capitalize',
-                      }}
-                    >
-                      {s === 'all' ? 'All' : s.replace('_', ' ')}
-                    </button>
-                  ))}
-                </div>
+                {statuses.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setFilterStatus(s)}
+                    style={{
+                      height: '34px',
+                      padding: '0 13px',
+                      borderRadius: '999px',
+                      border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
+                      background: filterStatus === s ? TEAL : WHITE,
+                      color: filterStatus === s ? WHITE : TEXT2,
+                      fontSize: '11px',
+                      fontWeight: filterStatus === s ? 700 : 600,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      textTransform: 'capitalize',
+                    }}
+                  >
+                    {s === 'all' ? 'All' : s.replace('_', ' ')}
+                  </button>
+                ))}
               </div>
 
               {loading ? (
@@ -1010,143 +1072,307 @@ export default function LeadsPage() {
                   No leads yet. Calls from Chloe will appear here.
                 </div>
               ) : (
-                <div style={{ display: 'grid' }}>
-                  {filtered.map(lead => {
-                    const statusAccent =
-                      lead.status === 'booked'
-                        ? GREEN
-                        : lead.status === 'pending'
-                        ? AMBER
-                        : lead.status === 'converted'
-                        ? BLUE
-                        : lead.status === 'wrong_number'
-                        ? RED
-                        : TEXT3
+                filtered.map(lead => {
+                  const statusAccent =
+                    lead.status === 'booked'
+                      ? GREEN
+                      : lead.status === 'pending'
+                      ? AMBER
+                      : lead.status === 'converted'
+                      ? BLUE
+                      : lead.status === 'wrong_number'
+                      ? RED
+                      : TEXT3
 
-                    return (
-                      <div
-                        key={lead.id}
-                        onClick={() => setSelectedLead(lead)}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: isMobile ? '1fr' : '6px 1fr',
-                          borderTop: `1px solid ${BORDER}`,
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                        onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-                      >
-                        {!isMobile && <div style={{ background: statusAccent }} />}
+                  return (
+                    <div
+                      key={lead.id}
+                      onClick={() => setSelectedLead(lead)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : '6px minmax(0,1fr)',
+                        gap: 0,
+                        borderBottom: `1px solid ${BORDER}`,
+                        cursor: 'pointer',
+                        transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                    >
+                      {!isMobile && <div style={{ background: statusAccent }} />}
 
-                        <div style={{ padding: '14px 16px' }}>
+                      <div style={{ padding: isMobile ? '14px 14px 13px' : '15px 16px 14px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '12px',
+                            flexDirection: isMobile ? 'column' : 'row',
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ ...TYPE.label, marginBottom: '5px', color: statusAccent }}>Inbound call</div>
+                            <div
+                              style={{
+                                fontSize: '15px',
+                                fontWeight: 800,
+                                color: TEXT,
+                                lineHeight: 1.2,
+                                marginBottom: '4px',
+                              }}
+                            >
+                              {lead.customer_name}
+                            </div>
+                            <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>{lead.phone_number}</div>
+                          </div>
+
                           <div
                             style={{
                               display: 'flex',
-                              alignItems: isMobile ? 'flex-start' : 'center',
-                              justifyContent: 'space-between',
-                              gap: '12px',
-                              flexDirection: isMobile ? 'column' : 'row',
-                              paddingBottom: '10px',
-                              borderBottom: `1px solid ${BORDER}`,
-                              marginBottom: '10px',
+                              alignItems: 'center',
+                              gap: '8px',
+                              flexWrap: 'wrap',
+                              flexShrink: 0,
                             }}
                           >
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ ...TYPE.label, marginBottom: '5px', color: statusAccent }}>Inbound call</div>
-                              <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '3px' }}>{lead.customer_name}</div>
-                              <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>{lead.phone_number}</div>
-                            </div>
+                            <JobTypeBadge type={lead.job_type} />
+                            <StatusBadge status={lead.status} />
+                          </div>
+                        </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <JobTypeBadge type={lead.job_type} />
-                              <StatusBadge status={lead.status} />
+                        <div
+                          style={{
+                            marginTop: '12px',
+                            display: 'grid',
+                            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
+                            gap: '10px',
+                            alignItems: 'stretch',
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Suburb</div>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {lead.suburb || 'Not provided'}
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            {lead.suburb && <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>📍 {lead.suburb}</div>}
-
-                            {lead.preferred_date && (
-                              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>
-                                📅 {lead.preferred_date}
-                                {lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}
-                              </div>
-                            )}
-
-                            {lead.issue_summary && (
-                              <div
-                                style={{
-                                  fontSize: '12px',
-                                  fontWeight: 500,
-                                  color: TEXT3,
-                                  flex: 1,
-                                  minWidth: 0,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {lead.issue_summary}
-                              </div>
-                            )}
-
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Preferred booking</div>
                             <div
                               style={{
-                                marginLeft: 'auto',
-                                flexShrink: 0,
-                                fontSize: '11px',
+                                fontSize: '12px',
                                 fontWeight: 700,
-                                color: TEAL,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                               }}
                             >
-                              View & manage <IconArrow size={12} />
+                              {lead.preferred_date
+                                ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
+                                : 'Not set'}
                             </div>
+                          </div>
+
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Call summary</div>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: TEXT3,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {lead.issue_summary || 'No summary recorded'}
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              alignSelf: isMobile ? 'start' : 'center',
+                              justifySelf: isMobile ? 'start' : 'end',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              color: TEAL,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            View & manage <IconArrow size={12} />
                           </div>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
+                    </div>
+                  )
+                })
               )}
             </div>
 
             <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={cardP}>
-                <div style={sectionLabel}>Pipeline summary</div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {[
-                    { label: 'Total leads', value: leads.length, sub: 'All inbound leads in this workspace' },
-                    { label: 'Shown now', value: filtered.length, sub: 'Based on your current search and filter' },
-                    { label: 'Booked to convert', value: leads.filter(l => l.status === 'booked').length, sub: 'Ready to move into active jobs' },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        borderRadius: '12px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        padding: '12px',
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                      <div style={{ ...TYPE.valueSm }}>{item.value}</div>
-                      <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>{item.sub}</div>
-                    </div>
-                  ))}
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Pipeline summary</div>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
+                  {bookedCount > 0 ? (
+                    <>
+                      <span style={{ color: GREEN }}>{bookedCount}</span> Ready to convert
+                    </>
+                  ) : (
+                    <span style={{ color: TEAL }}>No booked leads</span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#ECFDF3',
+                      border: '1px solid #BBF7D0',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: GREEN }}>Booked</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: GREEN }}>{bookedCount}</span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#FFFBEB',
+                      border: '1px solid #FDE68A',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: AMBER }}>Pending</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: AMBER }}>{pendingCount}</span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#EFF6FF',
+                      border: '1px solid #BFDBFE',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: BLUE }}>Converted</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: BLUE }}>{convertedCount}</span>
+                  </div>
                 </div>
               </div>
 
-              <div style={cardP}>
-                <div style={sectionLabel}>Actions</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Workspace totals</div>
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterStatus('all')
+                    }}
+                    style={cardArrowBtn}
+                  >
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ marginBottom: '4px' }}>
+                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
+                    {leads.length}
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>total leads</span>
+                </div>
+
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Showing now</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{filtered.length}</div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#E6F7F6',
+                      border: '1px solid #C4E8E5',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Current filter</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{filterStatus === 'all' ? 'All' : filterStatus.replace('_', ' ')}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={sideCard}>
+                <div style={{ ...TYPE.label, marginBottom: '8px' }}>Quick actions</div>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: TEAL,
                       color: WHITE,
                       border: 'none',
@@ -1167,7 +1393,7 @@ export default function LeadsPage() {
                     }}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
                       borderRadius: '10px',
@@ -1180,43 +1406,6 @@ export default function LeadsPage() {
                   >
                     Reset filters
                   </button>
-                </div>
-              </div>
-
-              <div style={cardP}>
-                <div style={sectionLabel}>How it works</div>
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  {[
-                    'Click any lead card to open the detail drawer.',
-                    'Update status, booking date/time, and add a follow-up note.',
-                    'Mark as Booked then convert directly into a job.',
-                    'Converted leads stay visible for tracking history.',
-                  ].map(item => (
-                    <div
-                      key={item}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          marginTop: '5px',
-                          borderRadius: '999px',
-                          background: TEAL,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>{item}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
