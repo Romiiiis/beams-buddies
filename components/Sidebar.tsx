@@ -41,11 +41,20 @@ const navManage = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
-const bottomTabs = [
-  { label: 'Home', href: '/dashboard' },
+const mobilePrimaryTabs = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Service schedule', href: '/dashboard/schedule' },
+  { label: 'Add job', href: '/dashboard/jobs' },
+]
+
+const mobileMenuItems = [
   { label: 'Customers', href: '/dashboard/customers' },
   { label: 'Leads', href: '/dashboard/leads' },
-  { label: 'Add job', href: '/dashboard/jobs' },
+  { label: 'Quotes', href: '/dashboard/quotes' },
+  { label: 'Invoices', href: '/dashboard/invoices' },
+  { label: 'Revenue', href: '/dashboard/revenue' },
+  { label: 'QR codes', href: '/dashboard/qrcodes' },
+  { label: 'Reports', href: '/dashboard/reports' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -164,11 +173,22 @@ function LogoutIcon() {
   )
 }
 
+function MenuIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
+    </svg>
+  )
+}
+
 export function Sidebar({ active }: { active: string }) {
   const router = useRouter()
   const { business, loading } = useBusinessData()
   const [isMobile, setIsMobile] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     function check() {
@@ -177,12 +197,27 @@ export function Sidebar({ active }: { active: string }) {
 
       setIsMobile(mobile)
       setIsCollapsed(!mobile && collapsed)
+
+      if (!mobile) {
+        setIsMobileMenuOpen(false)
+      }
     }
 
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return
+
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [isMobileMenuOpen])
 
   const initials = business?.full_name
     ? business.full_name
@@ -202,6 +237,8 @@ export function Sidebar({ active }: { active: string }) {
     const shouldCollapse = typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
     if (!isMobile) {
       setIsCollapsed(shouldCollapse)
+    } else {
+      setIsMobileMenuOpen(false)
     }
     router.push(href)
   }
@@ -311,51 +348,229 @@ export function Sidebar({ active }: { active: string }) {
           }
         `}</style>
 
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            background: WHITE,
-            borderTop: `1px solid ${BORDER}`,
-            display: 'flex',
-            alignItems: 'stretch',
-            paddingBottom: 'env(safe-area-inset-bottom)',
-            boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
-          }}
-        >
-          {bottomTabs.map(tab => {
-            const isActive = tab.href === active
+        <>
+          {isMobileMenuOpen && (
+            <div
+              onClick={() => setIsMobileMenuOpen(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(15, 23, 42, 0.32)',
+                zIndex: 109,
+              }}
+            />
+          )}
 
-            return (
-              <div
-                key={tab.href}
-                onClick={() => router.push(tab.href)}
-                className="mobile-tab"
-                style={{ color: isActive ? TEAL : TEXT3 }}
+          <div
+            style={{
+              position: 'fixed',
+              left: 12,
+              right: 12,
+              bottom: isMobileMenuOpen ? 86 : -420,
+              zIndex: 110,
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 20,
+              boxShadow: '0 20px 60px rgba(15,23,42,0.18), 0 6px 20px rgba(15,23,42,0.08)',
+              padding: 12,
+              transition: 'bottom 0.22s ease',
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 4,
+                borderRadius: 999,
+                background: '#CBD5E1',
+                margin: '4px auto 12px',
+              }}
+            />
+
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: TEXT3,
+                padding: '2px 6px 10px',
+              }}
+            >
+              Menu
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
+              }}
+            >
+              {mobileMenuItems.map(item => {
+                const isActive = item.href === active
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => navigateTo(item.href)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      minHeight: 48,
+                      padding: '10px 12px',
+                      borderRadius: 14,
+                      border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
+                      background: isActive ? TEAL_SOFT : '#F8FAFC',
+                      color: isActive ? TEAL : TEXT2,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 24,
+                        height: 24,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        lineHeight: 0,
+                      }}
+                    >
+                      {icons[item.href]}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: '-0.01em',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                )
+              })}
+
+              <button
+                onClick={signOut}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  width: '100%',
+                  minHeight: 48,
+                  padding: '10px 12px',
+                  borderRadius: 14,
+                  border: `1px solid ${BORDER}`,
+                  background: '#F8FAFC',
+                  color: TEXT2,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  gridColumn: '1 / -1',
+                }}
               >
-                <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
-                  {icons[tab.href]}
+                <span
+                  style={{
+                    width: 24,
+                    height: 24,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    lineHeight: 0,
+                    color: TEXT3,
+                  }}
+                >
+                  <LogoutIcon />
                 </span>
                 <span
                   style={{
-                    fontSize: 10,
-                    fontWeight: isActive ? 700 : 600,
-                    lineHeight: 1.1,
+                    fontSize: 12,
+                    fontWeight: 700,
                     letterSpacing: '-0.01em',
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
+                    lineHeight: 1.2,
                   }}
                 >
-                  {tab.label}
+                  Sign out
                 </span>
-              </div>
-            )
-          })}
-        </div>
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 100,
+              background: WHITE,
+              borderTop: `1px solid ${BORDER}`,
+              display: 'flex',
+              alignItems: 'stretch',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+              boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
+            }}
+          >
+            {mobilePrimaryTabs.map(tab => {
+              const isActive = tab.href === active
+
+              return (
+                <div
+                  key={tab.href}
+                  onClick={() => navigateTo(tab.href)}
+                  className="mobile-tab"
+                  style={{ color: isActive ? TEAL : TEXT3 }}
+                >
+                  <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
+                    {icons[tab.href]}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: isActive ? 700 : 600,
+                      lineHeight: 1.1,
+                      letterSpacing: '-0.01em',
+                      textAlign: 'center',
+                      textRendering: 'optimizeLegibility',
+                      WebkitFontSmoothing: 'antialiased',
+                      MozOsxFontSmoothing: 'grayscale',
+                    }}
+                  >
+                    {tab.label}
+                  </span>
+                </div>
+              )
+            })}
+
+            <div
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              className="mobile-tab"
+              style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}
+            >
+              <span className="mobile-tab-icon" style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}>
+                <MenuIcon />
+              </span>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: isMobileMenuOpen ? 700 : 600,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.01em',
+                  textAlign: 'center',
+                  textRendering: 'optimizeLegibility',
+                  WebkitFontSmoothing: 'antialiased',
+                  MozOsxFontSmoothing: 'grayscale',
+                }}
+              >
+                Menu
+              </span>
+            </div>
+          </div>
+        </>
       </>
     )
   }
