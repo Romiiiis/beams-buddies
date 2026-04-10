@@ -17,6 +17,8 @@ const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const METRIC_ICON_BOX = 40
+const METRIC_ICON_SIZE = 28
 
 const TYPE = {
   label: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em' as const, textTransform: 'uppercase' as const, color: TEXT3 },
@@ -47,50 +49,50 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconCustomersImage({ size = 20 }: { size?: number }) {
+function IconCustomersImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
       src="https://static.wixstatic.com/media/48c433_26bb14532fd9463f8c2b52b5c16a1483~mv2.png"
       alt="Customers icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
     />
   )
 }
 
-function IconMonthlyFlowImage({ size = 20 }: { size?: number }) {
+function IconMonthlyFlowImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
       src="https://static.wixstatic.com/media/48c433_35021773f24646d19bddaacf32b9f04d~mv2.png"
       alt="Monthly flow icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
     />
   )
 }
 
-function IconPaidTotalImage({ size = 20 }: { size?: number }) {
+function IconPaidTotalImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
       src="https://static.wixstatic.com/media/48c433_8d03db520b1c4494a4af17583444ea79~mv2.png"
       alt="Paid total icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
     />
   )
 }
 
-function IconActionNeededImage({ size = 20 }: { size?: number }) {
+function IconActionNeededImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
       src="https://static.wixstatic.com/media/48c433_2268ff893e5a46078f3e8a31bde8f978~mv2.png"
       alt="Action needed icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
     />
   )
 }
@@ -376,13 +378,25 @@ export default function DashboardPage() {
   const shellCard: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)', overflow: 'hidden' }
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
-  const iconWrap = (color: string): React.CSSProperties => ({ width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', color, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 })
+  const iconWrap = (color: string): React.CSSProperties => ({
+    width: `${METRIC_ICON_BOX}px`,
+    height: `${METRIC_ICON_BOX}px`,
+    borderRadius: '11px',
+    background: '#F8FAFC',
+    color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `1px solid ${BORDER}`,
+    flexShrink: 0,
+    overflow: 'hidden',
+  })
 
   const topCards = [
-    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersImage size={20} />, accent: TEXT, tag: 'CRM total' },
-    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconMonthlyFlowImage size={20} />, accent: TEAL_DARK, tag: 'Monthly flow' },
-    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconPaidTotalImage size={20} />, accent: TEXT, tag: 'Paid total' },
-    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconActionNeededImage size={20} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
+    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersImage size={METRIC_ICON_SIZE} />, accent: TEXT, tag: 'CRM total' },
+    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconMonthlyFlowImage size={METRIC_ICON_SIZE} />, accent: TEAL_DARK, tag: 'Monthly flow' },
+    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconPaidTotalImage size={METRIC_ICON_SIZE} />, accent: TEXT, tag: 'Paid total' },
+    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconActionNeededImage size={METRIC_ICON_SIZE} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
   ]
 
   if (loading) {
