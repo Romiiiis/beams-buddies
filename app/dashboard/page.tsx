@@ -289,7 +289,7 @@ function RevenueDistributionWidget({ distribution, isMobile }: { distribution: {
       </div>
       <div style={{ borderRadius: '12px', background: '#F0FAF9', border: '1px solid #C4E8E5', padding: '10px 13px', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ width: 28, height: 28, borderRadius: '8px', background: TEAL, color: WHITE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <IconRevenue size={14} />
+          <IconRevenueMixImage size={14} />
         </div>
         <div style={{ fontSize: '12px', color: TEXT3, lineHeight: 1.45 }}>
           Strongest workflow: <span style={{ color: TEXT, fontWeight: 800 }}>{strongest?.label || 'Service'}</span> at <span style={{ color: TEAL_DARK, fontWeight: 800 }}>{strongest?.percent || 0}%</span>
