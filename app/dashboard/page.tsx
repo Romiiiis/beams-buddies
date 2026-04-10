@@ -55,7 +55,13 @@ function IconCustomersImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
       alt="Customers icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
@@ -67,7 +73,13 @@ function IconMonthlyFlowImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
       alt="Monthly flow icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
@@ -79,7 +91,13 @@ function IconPaidTotalImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
       alt="Paid total icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
@@ -91,7 +109,13 @@ function IconActionNeededImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
       alt="Action needed icon"
       width={size}
       height={size}
-      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
@@ -390,8 +414,8 @@ export default function DashboardPage() {
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
   const iconWrap = (): React.CSSProperties => ({
-    width: `${METRIC_ICON_SIZE}px`,
-    height: `${METRIC_ICON_SIZE}px`,
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
