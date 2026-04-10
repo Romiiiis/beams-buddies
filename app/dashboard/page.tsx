@@ -88,7 +88,7 @@ function IconPaidTotalImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
 function IconActionNeededImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
-      src="https://static.wixstatic.com/media/48c433_2268ff893e5a46078f3e8a31bde8f978~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
       alt="Action needed icon"
       width={size}
       height={size}
