@@ -159,15 +159,14 @@ function AppointmentsBarChart({ data, stats, dueSoonCount, isMobile }: {
 
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* Y-axis */}
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: CHART_H, width: '18px', flexShrink: 0, paddingBottom: '0px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: CHART_H, width: '18px', flexShrink: 0 }}>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>{yTop}</span>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>{yMid}</span>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>0</span>
           </div>
 
           {/* Chart body */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {/* Bars area with grid lines */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', height: CHART_H }}>
               {/* Grid lines */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, borderTop: '1px dashed #E8EDF3' }} />
@@ -181,12 +180,8 @@ function AppointmentsBarChart({ data, stats, dueSoonCount, isMobile }: {
                   const totalH = item.total > 0 ? Math.max(4, (item.total / yTop) * CHART_H) : 0
                   const compH  = item.completed > 0 ? Math.max(3, (item.completed / yTop) * CHART_H) : 0
                   return (
-                    <div
-                      key={item.label}
-                      onMouseEnter={() => setHovered(item.label)}
-                      onMouseLeave={() => setHovered(null)}
-                      style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}
-                    >
+                    <div key={item.label} onMouseEnter={() => setHovered(item.label)} onMouseLeave={() => setHovered(null)}
+                      style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
                       {isActive && item.total > 0 && (
                         <div style={{ position: 'absolute', bottom: totalH + 6, left: '50%', transform: 'translateX(-50%)', background: '#0B1220', color: WHITE, fontSize: '10px', fontWeight: 800, padding: '3px 6px', borderRadius: '6px', whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 10 }}>
                           {item.total} · {item.completed} done
@@ -201,7 +196,7 @@ function AppointmentsBarChart({ data, stats, dueSoonCount, isMobile }: {
               </div>
             </div>
 
-            {/* X-axis labels — perfectly aligned under each bar */}
+            {/* X-axis labels */}
             <div style={{ display: 'flex', gap: '3px', padding: '0 2px', marginTop: '6px' }}>
               {data.map(item => (
                 <div key={item.label} style={{ flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700, color: hovered === item.label ? TEXT2 : TEXT3 }}>
@@ -369,7 +364,6 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
       <Sidebar active="/dashboard" />
 
-      {/* Single scroll container */}
       <div style={{ flex: 1, minWidth: 0, overflowY: 'scroll', background: BG }}>
         <div style={{ display: 'flex', flexDirection: 'column', padding: isMobile ? '14px' : '16px', gap: '12px', paddingBottom: '60px' }}>
 
@@ -380,17 +374,33 @@ export default function DashboardPage() {
             <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
               Track customers, service due dates, invoices, and jobs from one control centre.
             </div>
-            <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'row', gap: '6px' }}>
-              <button onClick={() => router.push('/dashboard/jobs')} style={{ flex: 1, height: '36px', padding: '0 6px', fontSize: isMobile ? '11px' : '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)', whiteSpace: 'nowrap' as const }}>
-                <IconSpark size={13} /> Add job
-              </button>
-              <button onClick={() => router.push('/dashboard/quotes')} style={{ flex: 1, height: '36px', padding: '0 6px', fontSize: isMobile ? '11px' : '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
-                <IconInvoice size={13} /> {isMobile ? 'Quote' : 'New quote'}
-              </button>
-              <button onClick={() => router.push('/dashboard/schedule')} style={{ flex: 1, height: '36px', padding: '0 6px', fontSize: isMobile ? '11px' : '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
-                <IconCalendar size={13} /> {isMobile ? 'Schedule' : 'Service schedule'}
-              </button>
-            </div>
+
+            {/* Desktop: original style buttons. Mobile: equal width row */}
+            {isMobile ? (
+              <div style={{ marginTop: '14px', display: 'flex', gap: '6px' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)', whiteSpace: 'nowrap' as const }}>
+                  <IconSpark size={13} /> Add job
+                </button>
+                <button onClick={() => router.push('/dashboard/quotes')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
+                  <IconInvoice size={13} /> Quote
+                </button>
+                <button onClick={() => router.push('/dashboard/schedule')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
+                  <IconCalendar size={13} /> Schedule
+                </button>
+              </div>
+            ) : (
+              <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ border: `1px solid ${BORDER}`, background: TEAL, color: WHITE, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
+                  <IconSpark size={16} /> Add job
+                </button>
+                <button onClick={() => router.push('/dashboard/quotes')} style={{ background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: 'none' }}>
+                  <IconInvoice size={16} /> New quote
+                </button>
+                <button onClick={() => router.push('/dashboard/schedule')} style={{ background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: 'none' }}>
+                  <IconCalendar size={16} /> Service schedule
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Stat cards */}
