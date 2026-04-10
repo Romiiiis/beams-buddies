@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
@@ -31,13 +31,6 @@ const TYPE = {
     fontSize: '10px',
     fontWeight: 800,
     letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  section: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.14em' as const,
     textTransform: 'uppercase' as const,
     color: TEXT3,
   },
@@ -140,6 +133,70 @@ async function getCroppedImg(
   })
 }
 
+function DashboardImageIcon({
+  src,
+  alt,
+  size = 28,
+}: {
+  src: string
+  alt: string
+  size?: number
+}) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
+function IconProfile({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
+      alt="Profile"
+      size={size}
+    />
+  )
+}
+
+function IconBrand({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
+      alt="Brand"
+      size={size}
+    />
+  )
+}
+
+function IconBilling({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
+      alt="Billing"
+      size={size}
+    />
+  )
+}
+
+function IconReviews({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
+      alt="Reviews"
+      size={size}
+    />
+  )
+}
+
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -149,29 +206,28 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconInvoice({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconStar({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6.01L12 16.77 6.6 19.6l1.03-6.01L3.27 9.35l6.03-.88L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconPercent({ size = 18 }: { size?: number }) {
+function IconPercent({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
       <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
       <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconArrow({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -233,7 +289,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session) {
         router.push('/login')
         return
@@ -374,22 +432,25 @@ export default function SettingsPage() {
         })
         .eq('id', userId),
 
-      supabase.from('business_settings').upsert({
-        business_id: businessId,
-        google_review_url: form.google_review_url || null,
-        facebook_review_url: form.facebook_review_url || null,
-        review_discount_amount: parseFloat(form.review_discount_amount) || 10,
-        review_discount_max: parseFloat(form.review_discount_max) || 30,
-        review_discount_enabled: form.review_discount_enabled,
-        custom_review_platforms: platforms,
-        bank_name: bankDetails.bank_name || null,
-        account_name: bankDetails.account_name || null,
-        bsb: bankDetails.bsb || null,
-        account_number: bankDetails.account_number || null,
-        payment_terms: parseInt(bankDetails.payment_terms) || 14,
-        invoice_notes: bankDetails.invoice_notes || null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'business_id' }),
+      supabase.from('business_settings').upsert(
+        {
+          business_id: businessId,
+          google_review_url: form.google_review_url || null,
+          facebook_review_url: form.facebook_review_url || null,
+          review_discount_amount: parseFloat(form.review_discount_amount) || 10,
+          review_discount_max: parseFloat(form.review_discount_max) || 30,
+          review_discount_enabled: form.review_discount_enabled,
+          custom_review_platforms: platforms,
+          bank_name: bankDetails.bank_name || null,
+          account_name: bankDetails.account_name || null,
+          bsb: bankDetails.bsb || null,
+          account_number: bankDetails.account_number || null,
+          payment_terms: parseInt(bankDetails.payment_terms) || 14,
+          invoice_notes: bankDetails.invoice_notes || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'business_id' }
+      ),
     ])
 
     setSaving(false)
@@ -433,6 +494,14 @@ export default function SettingsPage() {
     year: 'numeric',
   })
 
+  const profileReady = Boolean(userProfile.full_name.trim() || userProfile.role_title.trim())
+  const brandingReady = Boolean(business.name.trim() || business.logo_url)
+  const billingReady = Boolean(bankDetails.bank_name || bankDetails.account_name || bankDetails.bsb || bankDetails.account_number)
+  const reviewLinksCount =
+    (form.google_review_url ? 1 : 0) +
+    (form.facebook_review_url ? 1 : 0) +
+    platforms.filter(p => p.name.trim() && p.url.trim()).length
+
   const input: React.CSSProperties = {
     width: '100%',
     height: '42px',
@@ -444,6 +513,7 @@ export default function SettingsPage() {
     fontFamily: FONT,
     fontSize: '13px',
     outline: 'none',
+    boxSizing: 'border-box',
   }
 
   const textArea: React.CSSProperties = {
@@ -469,192 +539,296 @@ export default function SettingsPage() {
     marginTop: '4px',
   }
 
-  const shellCard: React.CSSProperties = {
+  const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
     padding: '16px',
+    borderRadius: '16px',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
   }
 
-  const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
-    fontWeight: 700,
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
     cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const sectionHeader = (title: string, description: string) => (
-    <div style={{ marginBottom: '14px' }}>
-      <div style={sectionLabel}>{title}</div>
-      <div style={TYPE.bodySm}>{description}</div>
-    </div>
-  )
+  const topCards = [
+    {
+      label: 'Profile',
+      value: profileReady ? 'Ready' : 'Setup',
+      sub: 'Owner and role details',
+      icon: <IconProfile size={28} />,
+      accent: profileReady ? TEAL_DARK : TEXT,
+      tag: 'Account',
+    },
+    {
+      label: 'Branding',
+      value: brandingReady ? 'Set' : 'Pending',
+      sub: business.logo_url ? 'Logo uploaded' : 'Add logo and name',
+      icon: <IconBrand size={28} />,
+      accent: brandingReady ? TEAL_DARK : TEXT,
+      tag: 'Business',
+    },
+    {
+      label: 'Invoices',
+      value: billingReady ? 'Ready' : 'Pending',
+      sub: billingReady ? 'Bank details added' : 'Add payment info',
+      icon: <IconBilling size={28} />,
+      accent: billingReady ? TEAL_DARK : TEXT,
+      tag: 'Billing',
+    },
+    {
+      label: 'Reviews',
+      value: reviewLinksCount.toString(),
+      sub: reviewLinksCount > 0 ? 'Platforms live' : 'No links yet',
+      icon: <IconReviews size={28} />,
+      accent: reviewLinksCount > 0 ? TEAL_DARK : TEXT,
+      tag: 'Customer flow',
+    },
+  ]
+
+  function SectionHeader({
+    title,
+    description,
+    action,
+  }: {
+    title: string
+    description: string
+    action?: React.ReactNode
+  }) {
+    return (
+      <div
+        style={{
+          padding: '14px 16px 12px',
+          borderBottom: `1px solid ${BORDER}`,
+          display: 'flex',
+          alignItems: isMobile ? 'stretch' : 'center',
+          justifyContent: 'space-between',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: '10px',
+        }}
+      >
+        <div>
+          <div style={sectionHeaderTitle}>{title}</div>
+          <div style={{ ...TYPE.bodySm }}>{description}</div>
+        </div>
+        {action}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
+        <Sidebar active="/dashboard/settings" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: TEXT3,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          Loading settings...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         fontFamily: FONT,
         background: BG,
-        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
       <Sidebar active="/dashboard/settings" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            minHeight: '100%',
+            padding: isMobile ? '14px' : '16px 20px',
             display: 'flex',
             flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
+            gap: '14px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
           <div
             style={{
-              ...shellCard,
+              ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
-                }}
-              >
-                {todayStr}
-              </div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
+              {todayStr}
+            </div>
 
-              <div
-                style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
-                }}
-              >
-                Settings
-              </div>
+            <div
+              style={{
+                fontSize: isMobile ? '26px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: WHITE,
+                marginBottom: '8px',
+              }}
+            >
+              Settings
+            </div>
 
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
-              </div>
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
+            </div>
 
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {saved && (
-                  <span
-                    style={{
-                      height: '38px',
-                      padding: '0 14px',
-                      borderRadius: '10px',
-                      background: 'rgba(255,255,255,0.12)',
-                      color: '#FFFFFF',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Saved
-                  </span>
-                )}
-
-                <button
-                  form="settings-form"
-                  type="submit"
-                  disabled={saving || uploadingLogo}
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              {saved && (
+                <span
                   style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                    opacity: saving || uploadingLogo ? 0.7 : 1,
-                    cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+                    height: '36px',
+                    padding: '0 14px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.12)',
+                    color: WHITE,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '12px',
+                    fontWeight: 700,
                   }}
                 >
-                  <IconSpark size={16} />
-                  {saving ? 'Saving...' : 'Save changes'}
-                </button>
-              </div>
+                  Saved
+                </span>
+              )}
+
+              <button
+                form="settings-form"
+                type="submit"
+                disabled={saving || uploadingLogo}
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: TEAL,
+                  color: WHITE,
+                  border: 'none',
+                  borderRadius: '10px',
+                  opacity: saving || uploadingLogo ? 0.7 : 1,
+                }}
+              >
+                <IconSpark size={14} />
+                {saving ? 'Saving...' : 'Save changes'}
+              </button>
             </div>
           </div>
 
-          {loading ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gap: '12px',
+            }}
+          >
+            {topCards.map(item => (
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                  <div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
+                  </div>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.icon}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '14px' }}>
             <div
               style={{
-                ...panelCard,
-                textAlign: 'center',
-                color: TEXT3,
-                fontSize: '14px',
-                fontWeight: 500,
-                padding: '40px 20px',
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+                gap: '14px',
+                alignItems: 'start',
               }}
             >
-              Loading...
-            </div>
-          ) : (
-            <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '12px' }}>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr',
-                  gap: '12px',
-                  alignItems: 'start',
-                }}
-              >
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Your profile', 'Update the details shown on your account and sidebar.')}
+              <div style={card}>
+                <SectionHeader
+                  title="Your profile"
+                  description="Update the details shown on your account and sidebar."
+                />
 
+                <div style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Your name</label>
@@ -669,10 +843,68 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Business profile', 'Set your core business details and brand identity.')}
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={sideCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ ...TYPE.label }}>Account summary</div>
+                    <button type="button" style={cardArrowBtn}>
+                      <IconExternalLink size={14} />
+                    </button>
+                  </div>
 
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
+                      {userProfile.full_name ? 'Live' : 'Pending'}
+                    </span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>profile status</span>
+                  </div>
+
+                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Name</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{userProfile.full_name || 'Not set'}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Role</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{userProfile.role_title || 'Not set'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+                gap: '14px',
+                alignItems: 'start',
+              }}
+            >
+              <div style={card}>
+                <SectionHeader
+                  title="Business profile"
+                  description="Set your core business details and brand identity."
+                />
+
+                <div style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={label}>Business name</label>
@@ -694,10 +926,10 @@ export default function SettingsPage() {
                   <div
                     style={{
                       marginTop: '16px',
-                      borderRadius: '14px',
-                      background: '#FCFCFD',
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
-                      padding: isMobile ? '16px' : '18px',
+                      padding: isMobile ? '14px' : '16px',
                       display: 'flex',
                       flexDirection: isMobile ? 'column' : 'row',
                       alignItems: isMobile ? 'stretch' : 'center',
@@ -799,25 +1031,72 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {uploadError ? (
-                    <p style={{ ...hint, color: RED }}>{uploadError}</p>
-                  ) : (
-                    <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>
-                  )}
+                  {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>}
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr',
-                  gap: '12px',
-                  alignItems: 'start',
-                }}
-              >
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Payment & bank details', 'These details are printed on invoices sent to customers.')}
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={sideCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ ...TYPE.label }}>Brand snapshot</div>
+                    <button type="button" style={cardArrowBtn}>
+                      <IconExternalLink size={14} />
+                    </button>
+                  </div>
 
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '26px', fontWeight: 900, color: brandingReady ? TEAL : TEXT, letterSpacing: '-0.05em' }}>
+                      {brandingReady ? 'Ready' : 'Pending'}
+                    </span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>business setup</span>
+                  </div>
+
+                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Business</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{business.name || 'Not set'}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: business.logo_url ? '#E6F7F6' : '#F8FAFC',
+                        border: `1px solid ${business.logo_url ? '#C4E8E5' : BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px', color: business.logo_url ? TEAL_DARK : TEXT3 }}>Logo</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px', color: business.logo_url ? TEAL_DARK : TEXT }}>
+                        {business.logo_url ? 'Uploaded' : 'Missing'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+                gap: '14px',
+                alignItems: 'start',
+              }}
+            >
+              <div style={card}>
+                <SectionHeader
+                  title="Payment & bank details"
+                  description="These details are printed on invoices sent to customers."
+                />
+
+                <div style={{ padding: '14px 16px' }}>
                   <div
                     style={{
                       padding: '14px 16px',
@@ -878,40 +1157,80 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Invoice preview', 'Preview how your payment section will appear.')}
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={sideCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ ...TYPE.label }}>Invoice preview</div>
+                    <button type="button" style={cardArrowBtn}>
+                      <IconExternalLink size={14} />
+                    </button>
+                  </div>
 
                   {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
-                    <div
-                      style={{
-                        borderRadius: '14px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
-                        padding: '16px 18px',
-                      }}
-                    >
-                      <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '12px' }}>Invoice payment section</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {bankDetails.bank_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Bank</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.bank_name}</span></div>}
-                        {bankDetails.account_name && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account name</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>{bankDetails.account_name}</span></div>}
-                        {bankDetails.bsb && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>BSB</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.bsb}</span></div>}
-                        {bankDetails.account_number && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Account no.</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600, fontFamily: 'monospace' }}>{bankDetails.account_number}</span></div>}
-                        {bankDetails.payment_terms && <div style={{ display: 'flex', gap: '12px' }}><span style={{ fontSize: '12px', color: TEXT3, width: '100px', flexShrink: 0 }}>Terms</span><span style={{ fontSize: '12px', color: TEXT, fontWeight: 600 }}>Due within {bankDetails.payment_terms} days</span></div>}
-                        {bankDetails.invoice_notes && <div style={{ marginTop: '6px', fontSize: '12px', color: TEXT2, lineHeight: 1.6 }}>{bankDetails.invoice_notes}</div>}
+                    <div style={{ marginTop: '14px', display: 'grid', gap: '8px' }}>
+                      {bankDetails.bank_name ? (
+                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Bank</div>
+                          <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{bankDetails.bank_name}</div>
+                        </div>
+                      ) : null}
+
+                      {bankDetails.account_name ? (
+                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Account name</div>
+                          <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{bankDetails.account_name}</div>
+                        </div>
+                      ) : null}
+
+                      {bankDetails.bsb ? (
+                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>BSB</div>
+                          <div style={{ ...TYPE.valueMd, fontSize: '16px', fontFamily: 'monospace' }}>{bankDetails.bsb}</div>
+                        </div>
+                      ) : null}
+
+                      {bankDetails.account_number ? (
+                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Account no.</div>
+                          <div style={{ ...TYPE.valueMd, fontSize: '16px', fontFamily: 'monospace' }}>{bankDetails.account_number}</div>
+                        </div>
+                      ) : null}
+
+                      <div
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          background: '#E6F7F6',
+                          border: '1px solid #C4E8E5',
+                        }}
+                      >
+                        <div style={{ ...TYPE.label, marginBottom: '4px', color: TEAL_DARK }}>Terms</div>
+                        <div style={{ ...TYPE.valueMd, fontSize: '16px', color: TEAL_DARK }}>
+                          Due within {bankDetails.payment_terms} days
+                        </div>
                       </div>
+
+                      {bankDetails.invoice_notes ? (
+                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Notes</div>
+                          <div style={TYPE.bodySm}>{bankDetails.invoice_notes}</div>
+                        </div>
+                      ) : null}
                     </div>
                   ) : (
                     <div
                       style={{
-                        borderRadius: '12px',
-                        padding: '26px 16px',
-                        background: WHITE,
+                        marginTop: '14px',
+                        padding: '20px 14px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         textAlign: 'center',
+                        fontSize: '12px',
+                        fontWeight: 600,
                         color: TEXT3,
-                        fontSize: '14px',
-                        fontWeight: 500,
                       }}
                     >
                       Add bank details to preview your invoice payment section.
@@ -919,18 +1238,23 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+            </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr',
-                  gap: '12px',
-                  alignItems: 'start',
-                }}
-              >
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Review platforms', 'Add the links shown to customers after each installation.')}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+                gap: '14px',
+                alignItems: 'start',
+              }}
+            >
+              <div style={card}>
+                <SectionHeader
+                  title="Review platforms"
+                  description="Add the links shown to customers after each installation."
+                />
 
+                <div style={{ padding: '14px 16px' }}>
                   <div
                     style={{
                       fontSize: '13px',
@@ -971,7 +1295,7 @@ export default function SettingsPage() {
                               gap: '10px',
                               alignItems: 'center',
                               padding: '12px',
-                              background: '#F9FAFB',
+                              background: '#F8FAFC',
                               border: `1px solid ${BORDER}`,
                               borderRadius: '10px',
                             }}
@@ -1029,10 +1353,82 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
+              </div>
 
-                <div style={{ ...panelCard, width: '100%' }}>
-                  {sectionHeader('Review discount', 'Control the offer shown after customers leave reviews.')}
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={sideCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ ...TYPE.label }}>Review status</div>
+                    <button type="button" style={cardArrowBtn}>
+                      <IconExternalLink size={14} />
+                    </button>
+                  </div>
 
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '26px', fontWeight: 900, color: reviewLinksCount > 0 ? TEAL : TEXT, letterSpacing: '-0.05em' }}>
+                      {reviewLinksCount}
+                    </span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>active platform{reviewLinksCount === 1 ? '' : 's'}</span>
+                  </div>
+
+                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Google</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{form.google_review_url ? 'Connected' : 'Missing'}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Facebook</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{form.facebook_review_url ? 'Connected' : 'Missing'}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#E6F7F6',
+                        border: '1px solid #C4E8E5',
+                      }}
+                    >
+                      <div style={{ ...TYPE.label, marginBottom: '4px', color: TEAL_DARK }}>Additional</div>
+                      <div style={{ ...TYPE.valueMd, fontSize: '16px', color: TEAL_DARK }}>
+                        {platforms.filter(p => p.name.trim() && p.url.trim()).length}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+                gap: '14px',
+                alignItems: 'start',
+              }}
+            >
+              <div style={card}>
+                <SectionHeader
+                  title="Review discount"
+                  description="Control the offer shown after customers leave reviews."
+                />
+
+                <div style={{ padding: '14px 16px' }}>
                   <div
                     style={{
                       display: 'flex',
@@ -1040,14 +1436,14 @@ export default function SettingsPage() {
                       justifyContent: 'space-between',
                       gap: '14px',
                       padding: '16px',
-                      background: '#F9FAFB',
+                      background: '#F8FAFC',
                       borderRadius: '10px',
                       border: `1px solid ${BORDER}`,
                       marginBottom: '14px',
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
                       <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
                     </div>
 
@@ -1096,13 +1492,13 @@ export default function SettingsPage() {
 
                       <div
                         style={{
-                          borderRadius: '14px',
-                          background: '#FCFCFD',
+                          borderRadius: '12px',
+                          background: '#F8FAFC',
                           border: `1px solid ${BORDER}`,
-                          padding: '16px 18px',
+                          padding: '14px 16px',
                         }}
                       >
-                        <div style={{ ...TYPE.title, color: '#0A4F4C', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ ...TYPE.title, color: TEAL_DARK, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <IconPercent size={16} />
                           Customer preview
                         </div>
@@ -1114,8 +1510,61 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
-            </form>
-          )}
+
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={sideCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ ...TYPE.label }}>Quick actions</div>
+                    <button type="button" style={cardArrowBtn}>
+                      <IconExternalLink size={14} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+                    <button
+                      form="settings-form"
+                      type="submit"
+                      disabled={saving || uploadingLogo}
+                      style={{
+                        width: '100%',
+                        height: '34px',
+                        background: TEAL,
+                        color: WHITE,
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+                        fontFamily: FONT,
+                        opacity: saving || uploadingLogo ? 0.7 : 1,
+                      }}
+                    >
+                      {saving ? 'Saving...' : 'Save changes'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      style={{
+                        width: '100%',
+                        height: '34px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        color: TEXT2,
+                      }}
+                    >
+                      Reset view
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -1140,11 +1589,12 @@ export default function SettingsPage() {
               borderRadius: '16px',
               overflow: 'hidden',
               boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+              border: `1px solid ${BORDER}`,
             }}
           >
             <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ ...TYPE.section, color: TEAL, marginBottom: '2px' }}>Upload</div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT }}>Adjust logo</div>
+              <div style={{ ...TYPE.label, color: TEAL, marginBottom: '4px' }}>Upload</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: TEXT }}>Adjust logo</div>
               <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{selectedFileName}</div>
             </div>
 
@@ -1197,7 +1647,7 @@ export default function SettingsPage() {
                     color: TEXT2,
                     cursor: 'pointer',
                     fontFamily: FONT,
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
                   Cancel
