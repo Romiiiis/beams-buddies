@@ -121,12 +121,21 @@ type Invoice = {
   customers: { first_name: string; last_name: string; suburb: string; phone: string; email: string; address?: string }
 }
 
-function IconInvoice({ size = 18 }: { size?: number }) {
+function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
@@ -160,17 +169,6 @@ function IconCalendar({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
       <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -377,18 +375,14 @@ export default function InvoicesPage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const statIconStyle: React.CSSProperties = {
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-  })
+  }
 
   const inp: React.CSSProperties = {
     width: '100%',
@@ -415,7 +409,13 @@ export default function InvoicesPage() {
       label: 'Total invoices',
       value: invoices.length.toLocaleString('en-AU'),
       sub: 'All billing records',
-      icon: <IconInvoice size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
+          size={30}
+          alt="Total invoices"
+        />
+      ),
       accent: TEXT,
       tag: 'Invoice total',
     },
@@ -423,7 +423,13 @@ export default function InvoicesPage() {
       label: 'Revenue collected',
       value: `$${totalRevenue.toFixed(0)}`,
       sub: `${paidCount} paid invoice${paidCount === 1 ? '' : 's'}`,
-      icon: <IconRevenue size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_c2a83be57f7745f4ab9e345fa6cd2149~mv2.png"
+          size={30}
+          alt="Revenue collected"
+        />
+      ),
       accent: '#166534',
       tag: 'Paid total',
     },
@@ -431,7 +437,13 @@ export default function InvoicesPage() {
       label: 'Outstanding',
       value: `$${totalOutstanding.toFixed(0)}`,
       sub: 'Awaiting payment',
-      icon: <IconClock size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
+          size={30}
+          alt="Outstanding"
+        />
+      ),
       accent: BLUE,
       tag: 'Open balance',
     },
@@ -439,7 +451,13 @@ export default function InvoicesPage() {
       label: 'Overdue',
       value: totalOverdue.toLocaleString('en-AU'),
       sub: totalOverdue > 0 ? 'Needs follow-up' : 'All clear',
-      icon: <IconCalendar size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
+          size={30}
+          alt="Overdue"
+        />
+      ),
       accent: totalOverdue > 0 ? RED : TEXT,
       tag: 'Attention',
     },
@@ -575,7 +593,7 @@ export default function InvoicesPage() {
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <div style={statIconStyle}>{item.icon}</div>
                 </div>
 
                 <div>
