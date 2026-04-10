@@ -97,6 +97,18 @@ function IconActionNeededImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   )
 }
 
+function IconRevenueMixImage({ size = 22 }: { size?: number }) {
+  return (
+    <img
+      src="https://static.wixstatic.com/media/48c433_c2a83be57f7745f4ab9e345fa6cd2149~mv2.png"
+      alt="Revenue mix icon"
+      width={size}
+      height={size}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain', objectPosition: 'center' }}
+    />
+  )
+}
+
 function IconInvoice({ size = 18 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
@@ -152,7 +164,7 @@ function DonutChart({ segments, size = 220, thickness = 36 }: { segments: { labe
         ) : (
           <>
             <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: 4 }}>Mix</div>
-            <div style={{ color: TEAL_DARK }}><IconRevenue size={22} /></div>
+            <div><IconRevenueMixImage size={22} /></div>
           </>
         )}
       </div>
