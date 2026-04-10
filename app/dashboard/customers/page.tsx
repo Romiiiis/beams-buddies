@@ -152,7 +152,7 @@ function IconService({ size = 22 }: { size?: number }) {
 function IconReports({ size = 22 }: { size?: number }) {
   return (
     <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png"
       alt="Reports"
       size={size}
     />
