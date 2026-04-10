@@ -48,82 +48,74 @@ function useIsMobile() {
   return isMobile
 }
 
-function StatIcon({
-  src,
-  alt,
-  scale = 1,
-}: {
-  src: string
-  alt: string
-  scale?: number
-}) {
+function IconCustomersImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
-    <div
-      style={{
-        width: '30px',
-        height: '30px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        flexShrink: 0,
-      }}
-    >
-      <img
-        src={src}
-        alt={alt}
-        width={30}
-        height={30}
-        style={{
-          display: 'block',
-          width: '30px',
-          height: '30px',
-          objectFit: 'contain',
-          objectPosition: 'center',
-          transform: `scale(${scale})`,
-          transformOrigin: 'center',
-        }}
-      />
-    </div>
-  )
-}
-
-function IconCustomersImage() {
-  return (
-    <StatIcon
+    <img
       src="https://static.wixstatic.com/media/48c433_26bb14532fd9463f8c2b52b5c16a1483~mv2.png"
       alt="Customers icon"
-      scale={1.16}
+      width={size}
+      height={size}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
 
-function IconMonthlyFlowImage() {
+function IconMonthlyFlowImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
-    <StatIcon
+    <img
       src="https://static.wixstatic.com/media/48c433_7935079b22ff414ea0f865be42d66955~mv2.png"
       alt="Monthly flow icon"
-      scale={1.12}
+      width={size}
+      height={size}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
 
-function IconPaidTotalImage() {
+function IconPaidTotalImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
-    <StatIcon
+    <img
       src="https://static.wixstatic.com/media/48c433_c60e43bdd7c54c4a834aad9132d7a0d8~mv2.png"
       alt="Paid total icon"
-      scale={1.14}
+      width={size}
+      height={size}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
 
-function IconActionNeededImage() {
+function IconActionNeededImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
-    <StatIcon
+    <img
       src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
       alt="Action needed icon"
-      scale={1.15}
+      width={size}
+      height={size}
+      style={{
+        display: 'block',
+        width: '30px',
+        height: '30px',
+        objectFit: 'contain',
+        objectPosition: 'center',
+      }}
     />
   )
 }
@@ -431,10 +423,10 @@ export default function DashboardPage() {
   })
 
   const topCards = [
-    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersImage />, accent: TEXT, tag: 'CRM total' },
-    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconMonthlyFlowImage />, accent: TEAL_DARK, tag: 'Monthly flow' },
-    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconPaidTotalImage />, accent: TEXT, tag: 'Paid total' },
-    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconActionNeededImage />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
+    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersImage size={METRIC_ICON_SIZE} />, accent: TEXT, tag: 'CRM total' },
+    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconMonthlyFlowImage size={METRIC_ICON_SIZE} />, accent: TEAL_DARK, tag: 'Monthly flow' },
+    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconPaidTotalImage size={METRIC_ICON_SIZE} />, accent: TEXT, tag: 'Paid total' },
+    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconActionNeededImage size={METRIC_ICON_SIZE} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
   ]
 
   if (loading) {
