@@ -31,6 +31,9 @@ function useIsMobile() {
   return isMobile
 }
 
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
 function IconSpark({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
 }
@@ -56,7 +59,7 @@ function IconPhone({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/></svg>
 }
 
-// ── Radial Gauge (v3 original) ────────────────────────────────────────────────
+// ── Radial Gauge ──────────────────────────────────────────────────────────────
 function RadialGauge({ value, label, color, size = 76 }: { value: number; label: string; color: string; size?: number }) {
   const r = (size - 10) / 2
   const circ = 2 * Math.PI * r
@@ -248,9 +251,15 @@ export default function DashboardPage() {
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const jobTimes = ['8:00 AM', '11:00 AM', '2:30 PM', '4:00 PM', '9:00 AM']
 
-  // Flat cards — no boxShadow
+  // No boxShadow — flat cards only
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }
   const cardP: React.CSSProperties = { ...card, padding: '18px' }
+
+  // Shared arrow button style for top-right of cards
+  const cardArrowBtn = (href: string): React.CSSProperties => ({
+    background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0,
+    display: 'flex', alignItems: 'center',
+  })
 
   function statusPill(d: string | null) {
     if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
@@ -274,9 +283,16 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard"/>
 
-      {/* No height:100vh / overflow:scroll — browser handles scroll natively */}
+      {/* No height/overflow constraints — browser scrolls naturally */}
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: isMobile ? 'calc(120px + env(safe-area-inset-bottom))' : '60px' }}>
+        <div style={{
+          padding: isMobile ? '14px' : '16px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '14px',
+          // Extra bottom padding on mobile so content clears the fixed tab bar
+          paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+        }}>
 
           {/* ── HEADER ──────────────────────────────────────────────────── */}
           <div style={{ ...card, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -298,14 +314,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 1: 4 stat cards — 1-col on mobile, 4-col on desktop ─── */}
+          {/* ── ROW 1: 4 stat cards — 1-col mobile, 4-col desktop ─────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
 
-            {/* 1. TODAY'S JOBS — radial gauges from v3 */}
+            {/* 1. TODAY'S JOBS */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <div style={{ ...TYPE.label }}>Today's Jobs</div>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT3 }}>{stats.jobsThisMonth}</span>
+                <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn('/dashboard/jobs')}>
+                  <IconExternalLink size={14}/>
+                </button>
               </div>
               <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
                 <span>{stats.jobsThisMonth}</span>
@@ -322,12 +340,12 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* 2. REVENUE STAT — sparkline + legend from v3 */}
+            {/* 2. REVENUE STAT */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <div style={{ ...TYPE.label }}>Revenue Stat</div>
-                <button onClick={() => router.push('/dashboard/revenue')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0 }}>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <button onClick={() => router.push('/dashboard/revenue')} style={cardArrowBtn('/dashboard/revenue')}>
+                  <IconExternalLink size={14}/>
                 </button>
               </div>
               <div style={{ marginBottom: '4px' }}>
@@ -354,11 +372,13 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 3. NEW LEADS / CUSTOMERS — from v3 */}
+            {/* 3. NEW LEADS */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <div style={{ ...TYPE.label }}>New Leads</div>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT3 }}>{stats.customers}</span>
+                <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn('/dashboard/customers')}>
+                  <IconExternalLink size={14}/>
+                </button>
               </div>
               <div style={{ marginBottom: '4px' }}>
                 <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
@@ -380,11 +400,13 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 4. URGENT ISSUES — from v3 */}
+            {/* 4. URGENT ISSUES */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <div style={{ ...TYPE.label }}>Urgent Issues</div>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: '#B91C1C' }}>{stats.overdue + invoiceStats.overdueCount}</span>
+                <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn('/dashboard/jobs')}>
+                  <IconExternalLink size={14}/>
+                </button>
               </div>
               <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '16px' }}>
                 {stats.overdue > 0
