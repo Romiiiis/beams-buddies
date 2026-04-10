@@ -276,7 +276,7 @@ export default function DashboardPage() {
 
       {/* No height:100vh / overflow:scroll — browser handles scroll natively */}
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '80px' }}>
+        <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: isMobile ? 'calc(120px + env(safe-area-inset-bottom))' : '60px' }}>
 
           {/* ── HEADER ──────────────────────────────────────────────────── */}
           <div style={{ ...card, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
