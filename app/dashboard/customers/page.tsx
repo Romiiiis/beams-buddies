@@ -95,23 +95,67 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconUsers({ size = 18 }: { size?: number }) {
+function DashboardImageIcon({
+  src,
+  alt,
+  size = 22,
+}: {
+  src: string
+  alt: string
+  size?: number
+}) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
-function IconJob({ size = 16 }: { size?: number }) {
+function IconCustomers({ size = 22 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
+      alt="Customers"
+      size={size}
+    />
+  )
+}
+
+function IconJobs({ size = 22 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
+      alt="Jobs"
+      size={size}
+    />
+  )
+}
+
+function IconService({ size = 22 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
+      alt="Service"
+      size={size}
+    />
+  )
+}
+
+function IconReports({ size = 22 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
+      alt="Reports"
+      size={size}
+    />
   )
 }
 
@@ -137,23 +181,6 @@ function IconArrow({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconReview({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 17.5 6.71 20l1.01-5.46L3.5 10.5l5.67-.77L12 4.75l2.83 4.98 5.67.77-4.22 4.04L17.29 20 12 17.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconCalendar({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -332,9 +359,9 @@ export default function CustomersPage() {
   }
 
   const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
     background: '#F8FAFC',
     color,
     display: 'flex',
@@ -349,7 +376,7 @@ export default function CustomersPage() {
       label: 'Customers',
       value: stats.totalCustomers.toLocaleString('en-AU'),
       sub: 'Stored in your CRM',
-      icon: <IconUsers size={18} />,
+      icon: <IconCustomers size={22} />,
       accent: TEXT,
       tag: 'Directory total',
     },
@@ -357,7 +384,7 @@ export default function CustomersPage() {
       label: 'Tracked units',
       value: stats.totalUnits.toLocaleString('en-AU'),
       sub: 'Linked to customer profiles',
-      icon: <IconJob size={18} />,
+      icon: <IconJobs size={22} />,
       accent: TEAL_DARK,
       tag: 'Equipment count',
     },
@@ -365,7 +392,7 @@ export default function CustomersPage() {
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
       sub: 'Customers needing attention soon',
-      icon: <IconCalendar size={18} />,
+      icon: <IconService size={22} />,
       accent: AMBER,
       tag: 'Service watch',
     },
@@ -373,7 +400,7 @@ export default function CustomersPage() {
       label: 'Review clicks',
       value: stats.totalReviewClicks.toLocaleString('en-AU'),
       sub: totalPlatforms > 0 ? `Across ${totalPlatforms} active platform${totalPlatforms === 1 ? '' : 's'}` : 'No review platforms connected',
-      icon: <IconReview size={18} />,
+      icon: <IconReports size={22} />,
       accent: stats.totalReviewClicks > 0 ? TEAL_DARK : TEXT,
       tag: 'Engagement',
     },
