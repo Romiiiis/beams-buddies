@@ -80,21 +80,6 @@ const TYPE = {
   },
 }
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    function check() {
-      setIsMobile(window.innerWidth < 768)
-    }
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  return isMobile
-}
-
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; accent: string }> = {
   draft: { bg: '#F1F5F9', color: TEXT3, label: 'Draft', accent: TEXT3 },
   sent: { bg: '#DBEAFE', color: '#1E3A8A', label: 'Sent', accent: BLUE },
@@ -118,7 +103,29 @@ type Invoice = {
   paid_at: string
   created_at: string
   line_items: LineItem[]
-  customers: { first_name: string; last_name: string; suburb: string; phone: string; email: string; address?: string }
+  customers: {
+    first_name: string
+    last_name: string
+    suburb: string
+    phone: string
+    email: string
+    address?: string
+  }
+}
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    function check() {
+      setIsMobile(window.innerWidth < 768)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  return isMobile
 }
 
 function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
@@ -164,28 +171,18 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconCalendar({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconClock({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconFilter({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -244,7 +241,7 @@ export default function InvoicesPage() {
         supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
       ])
 
-      setInvoices(invoicesRes.data || [])
+      setInvoices((invoicesRes.data as Invoice[]) || [])
       setCustomers(customersRes.data || [])
       setBusinessSettings(settingsRes.data)
       setBusinessInfo(businessRes.data)
@@ -271,7 +268,10 @@ export default function InvoicesPage() {
   }
 
   function removeLine(idx: number) {
-    setForm(f => ({ ...f, line_items: f.line_items.filter((_, i) => i !== idx) }))
+    setForm(f => ({
+      ...f,
+      line_items: f.line_items.length === 1 ? f.line_items : f.line_items.filter((_, i) => i !== idx),
+    }))
   }
 
   async function handleSave() {
@@ -301,7 +301,7 @@ export default function InvoicesPage() {
       .select('*, customers(first_name, last_name, suburb, phone, email, address)')
       .single()
 
-    if (data) setInvoices(prev => [data, ...prev])
+    if (data) setInvoices(prev => [data as Invoice, ...prev])
 
     setShowForm(false)
     setForm({
@@ -338,17 +338,16 @@ export default function InvoicesPage() {
     year: 'numeric',
   })
 
-  const shellCard: React.CSSProperties = {
+  const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
-    padding: '16px',
+  const cardP: React.CSSProperties = {
+    ...card,
+    padding: '18px',
   }
 
   const sectionLabel: React.CSSProperties = {
@@ -372,7 +371,6 @@ export default function InvoicesPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
   const statIconStyle: React.CSSProperties = {
@@ -395,13 +393,23 @@ export default function InvoicesPage() {
     fontFamily: FONT,
     fontSize: '13px',
     outline: 'none',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
+    boxSizing: 'border-box',
   }
 
   const lbl: React.CSSProperties = {
     ...TYPE.label,
     marginBottom: '6px',
     display: 'block',
+  }
+
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
   }
 
   const topCards = [
@@ -474,104 +482,90 @@ export default function InvoicesPage() {
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         fontFamily: FONT,
         background: BG,
-        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
       <Sidebar active="/dashboard/invoices" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            minHeight: '100%',
+            padding: isMobile ? '14px' : '16px 20px',
             display: 'flex',
             flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
+            gap: '14px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
           <div
             style={{
-              ...shellCard,
+              ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
-                }}
-              >
-                {todayStr}
-              </div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
 
-              <div
+            <div
+              style={{
+                fontSize: isMobile ? '26px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: '#FFFFFF',
+                marginBottom: '8px',
+              }}
+            >
+              Invoices
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Create, track, and manage invoices from one premium billing workspace built for fast daily visibility.
+            </div>
+
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => setShowForm(true)}
                 style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
+                  ...quickActionStyle,
+                  background: TEAL,
                   color: '#FFFFFF',
-                  marginBottom: '8px',
+                  border: 'none',
                 }}
               >
-                Invoices
-              </div>
+                <IconSpark size={16} />
+                New invoice
+              </button>
 
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Create, track, and manage invoices from one premium billing workspace built for fast daily visibility.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <button
-                  onClick={() => setShowForm(true)}
-                  style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                  }}
-                >
-                  <IconSpark size={16} />
-                  New invoice
-                </button>
-
-                <button onClick={() => router.push('/dashboard/revenue')} style={quickActionStyle}>
-                  <IconRevenue size={16} />
-                  View revenue
-                </button>
-              </div>
+              <button onClick={() => router.push('/dashboard/revenue')} style={{ ...quickActionStyle, background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)' }}>
+                <IconRevenue size={16} />
+                View revenue
+              </button>
             </div>
           </div>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
@@ -579,8 +573,7 @@ export default function InvoicesPage() {
               <div
                 key={item.label}
                 style={{
-                  ...panelCard,
-                  gridColumn: isMobile ? 'span 1' : 'span 3',
+                  ...cardP,
                   minHeight: 148,
                   display: 'flex',
                   flexDirection: 'column',
@@ -592,7 +585,6 @@ export default function InvoicesPage() {
                     <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
                   </div>
-
                   <div style={statIconStyle}>{item.icon}</div>
                 </div>
 
@@ -607,25 +599,21 @@ export default function InvoicesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
+              gap: '14px',
               alignItems: 'start',
             }}
           >
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 8',
-              }}
-            >
+            <div style={card}>
               <div
                 style={{
+                  padding: '16px 18px 12px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: isMobile ? 'flex-start' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
                   gap: '10px',
-                  marginBottom: '14px',
                 }}
               >
                 <div>
@@ -649,7 +637,6 @@ export default function InvoicesPage() {
                     alignItems: 'center',
                     gap: '8px',
                     fontFamily: FONT,
-                    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
                   }}
                 >
                   {filtered.length} shown
@@ -658,10 +645,11 @@ export default function InvoicesPage() {
 
               <div
                 style={{
+                  padding: '14px 18px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'grid',
                   gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))',
                   gap: '8px',
-                  marginBottom: '14px',
                 }}
               >
                 {statusSummary.map(item => (
@@ -685,8 +673,8 @@ export default function InvoicesPage() {
                   display: 'flex',
                   gap: '6px',
                   overflowX: 'auto',
-                  paddingBottom: '2px',
-                  marginBottom: '14px',
+                  padding: '14px 18px',
+                  borderBottom: `1px solid ${BORDER}`,
                 }}
               >
                 {['all', 'draft', 'sent', 'paid', 'overdue', 'cancelled'].map(s => (
@@ -706,7 +694,6 @@ export default function InvoicesPage() {
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
                       fontWeight: filterStatus === s ? 700 : 600,
-                      boxShadow: filterStatus === s ? '0 2px 8px rgba(31,158,148,0.18)' : 'none',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '7px',
@@ -721,14 +708,10 @@ export default function InvoicesPage() {
               {loading ? (
                 <div
                   style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
+                    padding: '32px 18px',
                     textAlign: 'center',
                     color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
+                    fontSize: '13px',
                   }}
                 >
                   Loading...
@@ -736,14 +719,10 @@ export default function InvoicesPage() {
               ) : filtered.length === 0 ? (
                 <div
                   style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
+                    padding: '32px 18px',
                     textAlign: 'center',
                     color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
+                    fontSize: '13px',
                   }}
                 >
                   No invoices yet.{' '}
@@ -755,7 +734,7 @@ export default function InvoicesPage() {
                   </span>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'grid' }}>
                   {filtered.map(inv => {
                     const isAutoOverdue = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
                     const statusKey = isAutoOverdue ? 'overdue' : inv.status
@@ -766,126 +745,186 @@ export default function InvoicesPage() {
                         key={inv.id}
                         onClick={() => setViewingInvoice(inv)}
                         style={{
-                          borderRadius: '14px',
-                          padding: isMobile ? '14px' : '14px 16px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          cursor: 'pointer',
                           display: 'grid',
-                          gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) minmax(0,0.8fr) minmax(0,0.9fr) auto',
-                          gap: '12px',
-                          alignItems: 'center',
+                          gridTemplateColumns: isMobile ? '1fr' : '6px 1fr',
+                          borderTop: `1px solid ${BORDER}`,
+                          cursor: 'pointer',
                         }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                        onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                       >
-                        <div style={{ minWidth: 0 }}>
+                        {!isMobile && <div style={{ background: st.accent }} />}
+
+                        <div style={{ padding: isMobile ? '14px' : '14px 16px' }}>
                           <div
                             style={{
-                              ...TYPE.titleSm,
-                              fontSize: '13px',
-                              marginBottom: '3px',
-                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                              display: 'flex',
+                              alignItems: isMobile ? 'flex-start' : 'center',
+                              justifyContent: 'space-between',
+                              gap: '12px',
+                              flexDirection: isMobile ? 'column' : 'row',
+                              paddingBottom: '12px',
+                              borderBottom: `1px solid ${BORDER}`,
+                              marginBottom: '12px',
                             }}
                           >
-                            {inv.invoice_number}
-                          </div>
-                          <div style={{ ...TYPE.body, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {inv.customers?.first_name} {inv.customers?.last_name}
-                          </div>
-                          <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {inv.customers?.suburb || 'No suburb'}
-                          </div>
-                        </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div
+                                style={{
+                                  ...TYPE.label,
+                                  marginBottom: '6px',
+                                  color: st.color,
+                                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                }}
+                              >
+                                {inv.invoice_number}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '15px',
+                                  fontWeight: 800,
+                                  color: TEXT,
+                                  lineHeight: 1.2,
+                                  marginBottom: '4px',
+                                }}
+                              >
+                                {inv.customers?.first_name} {inv.customers?.last_name}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>
+                                {inv.customers?.suburb || 'No suburb'}
+                              </div>
+                            </div>
 
-                        {!isMobile && (
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Total</div>
-                            <div style={{ ...TYPE.body, fontWeight: 700 }}>${inv.total.toFixed(2)}</div>
-                          </div>
-                        )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span
+                                style={{
+                                  background: st.bg,
+                                  color: st.color,
+                                  padding: '7px 10px',
+                                  borderRadius: '999px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-block',
+                                  letterSpacing: '0.02em',
+                                }}
+                              >
+                                {st.label}
+                              </span>
 
-                        {!isMobile && (
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Due date</div>
-                            <div style={{ ...TYPE.body, fontWeight: 700, color: isAutoOverdue ? RED : TEXT2 }}>
-                              {inv.due_date
-                                ? new Date(inv.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                : '—'}
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '7px 9px',
+                                  borderRadius: '999px',
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  color: TEXT3,
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                <IconArrow size={12} />
+                                Open
+                              </span>
                             </div>
                           </div>
-                        )}
 
-                        <div
-                          style={{
-                            justifySelf: isMobile ? 'start' : 'end',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            flexWrap: 'wrap',
-                          }}
-                        >
-                          {isMobile && (
-                            <span
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0,1fr))',
+                              gap: '10px',
+                            }}
+                          >
+                            <div
                               style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '7px 9px',
-                                borderRadius: '999px',
                                 background: '#F8FAFC',
                                 border: `1px solid ${BORDER}`,
-                                color: TEXT3,
-                                fontSize: '11px',
-                                fontWeight: 700,
+                                borderRadius: '12px',
+                                padding: '12px',
                               }}
                             >
-                              ${inv.total.toFixed(2)}
-                            </span>
-                          )}
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Total</div>
+                              <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>${inv.total.toFixed(2)}</div>
+                            </div>
 
-                          <span
-                            style={{
-                              background: st.bg,
-                              color: st.color,
-                              padding: '7px 10px',
-                              borderRadius: '999px',
-                              fontSize: '11px',
-                              fontWeight: 800,
-                              whiteSpace: 'nowrap',
-                              display: 'inline-block',
-                              letterSpacing: '0.02em',
-                            }}
-                          >
-                            {st.label}
-                          </span>
+                            <div
+                              style={{
+                                background: '#F8FAFC',
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: '12px',
+                                padding: '12px',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Due date</div>
+                              <div style={{ fontSize: '13px', fontWeight: 800, color: isAutoOverdue ? RED : TEXT }}>
+                                {inv.due_date
+                                  ? new Date(inv.due_date).toLocaleDateString('en-AU', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric',
+                                    })
+                                  : '—'}
+                              </div>
+                            </div>
 
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '7px 9px',
-                              borderRadius: '999px',
-                              background: '#F8FAFC',
-                              border: `1px solid ${BORDER}`,
-                              color: TEXT3,
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            <IconArrow size={12} />
-                            Open
-                          </span>
-                        </div>
-
-                        {isMobile && (
-                          <div style={{ ...TYPE.bodySm }}>
-                            Due{' '}
-                            {inv.due_date
-                              ? new Date(inv.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                              : '—'}
+                            <div
+                              style={{
+                                background: '#F8FAFC',
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: '12px',
+                                padding: '12px',
+                                gridColumn: isMobile ? 'span 2' : 'span 1',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Status update</div>
+                              <select
+                                value={inv.status}
+                                onClick={e => e.stopPropagation()}
+                                onChange={e => updateStatus(inv.id, e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  height: '34px',
+                                  padding: '0 10px',
+                                  borderRadius: '8px',
+                                  border: 'none',
+                                  background: st.bg,
+                                  color: st.color,
+                                  fontSize: '12px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  outline: 'none',
+                                }}
+                              >
+                                {Object.entries(STATUS_STYLES).map(([k, v]) => (
+                                  <option key={k} value={k}>
+                                    {v.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
-                        )}
+
+                          {inv.notes ? (
+                            <div
+                              style={{
+                                marginTop: '12px',
+                                background: '#FCFCFD',
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: '12px',
+                                padding: '13px 14px',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
+                              <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2, lineHeight: 1.7 }}>{inv.notes}</div>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     )
                   })}
@@ -893,90 +932,128 @@ export default function InvoicesPage() {
               )}
             </div>
 
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 4',
-              }}
-            >
-              <div style={sectionLabel}>Billing snapshot</div>
+            <div style={{ display: 'grid', gap: '14px' }}>
+              <div style={cardP}>
+                <div style={sectionLabel}>Billing snapshot</div>
 
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px',
-                }}
-              >
                 <div
                   style={{
-                    borderRadius: '14px',
-                    border: `1px solid ${BORDER}`,
-                    background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
-                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '14px',
                   }}
                 >
-                  <div style={{ ...TYPE.label, marginBottom: '8px' }}>Collection health</div>
-                  <div style={{ ...TYPE.valueMd, color: totalOutstanding > 0 ? BLUE : '#166534', marginBottom: '6px' }}>
-                    {totalOutstanding > 0 ? 'Open' : 'Clear'}
-                  </div>
-                  <div style={TYPE.bodySm}>
-                    {totalOutstanding > 0
-                      ? 'There are active invoices awaiting payment.'
-                      : 'All invoices are currently settled or in draft.'}
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {[
-                    { label: 'Draft invoices', value: invoices.filter(i => i.status === 'draft').length, color: TEXT3 },
-                    { label: 'Sent invoices', value: invoices.filter(i => i.status === 'sent').length, color: BLUE },
-                    { label: 'Paid invoices', value: invoices.filter(i => i.status === 'paid').length, color: '#166534' },
-                    { label: 'Cancelled', value: invoices.filter(i => i.status === 'cancelled').length, color: TEXT3 },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                          style={{
-                            width: '9px',
-                            height: '9px',
-                            borderRadius: '50%',
-                            background: item.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ ...TYPE.body, fontWeight: 700 }}>{item.label}</span>
-                      </div>
-                      <span style={{ ...TYPE.body, fontWeight: 800 }}>{item.value}</span>
+                  <div
+                    style={{
+                      borderRadius: '14px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      padding: '16px',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>Collection health</div>
+                    <div style={{ ...TYPE.valueMd, color: totalOutstanding > 0 ? BLUE : '#166534', marginBottom: '6px' }}>
+                      {totalOutstanding > 0 ? 'Open' : 'Clear'}
                     </div>
-                  ))}
-                </div>
+                    <div style={TYPE.bodySm}>
+                      {totalOutstanding > 0
+                        ? 'There are active invoices awaiting payment.'
+                        : 'All invoices are currently settled or in draft.'}
+                    </div>
+                  </div>
 
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    padding: '10px 12px',
-                    fontSize: '12px',
-                    color: TEXT3,
-                  }}
-                >
-                  {invoices.length > 0
-                    ? `Average invoice value is $${avgInvoice.toFixed(2)}.`
-                    : 'Create your first invoice to start tracking billing performance.'}
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {[
+                      { label: 'Draft invoices', value: invoices.filter(i => i.status === 'draft').length, color: TEXT3 },
+                      { label: 'Sent invoices', value: invoices.filter(i => i.status === 'sent').length, color: BLUE },
+                      { label: 'Paid invoices', value: invoices.filter(i => i.status === 'paid').length, color: '#166534' },
+                      { label: 'Cancelled', value: invoices.filter(i => i.status === 'cancelled').length, color: TEXT3 },
+                    ].map(item => (
+                      <div
+                        key={item.label}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          background: '#FCFCFD',
+                          border: `1px solid ${BORDER}`,
+                        }}
+                      >
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                          <span
+                            style={{
+                              width: '9px',
+                              height: '9px',
+                              borderRadius: '50%',
+                              background: item.color,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span style={{ ...TYPE.body, fontWeight: 700 }}>{item.label}</span>
+                        </div>
+                        <span style={{ ...TYPE.body, fontWeight: 800 }}>{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      padding: '10px 12px',
+                      fontSize: '12px',
+                      color: TEXT3,
+                    }}
+                  >
+                    {invoices.length > 0
+                      ? `Average invoice value is $${avgInvoice.toFixed(2)}.`
+                      : 'Create your first invoice to start tracking billing performance.'}
+                  </div>
+                </div>
+              </div>
+
+              <div style={cardP}>
+                <div style={sectionLabel}>Quick actions</div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <button
+                    onClick={() => setShowForm(true)}
+                    style={{
+                      width: '100%',
+                      height: '36px',
+                      background: TEAL,
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                    }}
+                  >
+                    New invoice
+                  </button>
+
+                  <button
+                    onClick={() => router.push('/dashboard/revenue')}
+                    style={{
+                      width: '100%',
+                      height: '36px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      color: TEXT2,
+                    }}
+                  >
+                    View revenue
+                  </button>
                 </div>
               </div>
             </div>
@@ -1006,7 +1083,6 @@ export default function InvoicesPage() {
               maxHeight: '90vh',
               overflow: 'auto',
               border: `1px solid ${BORDER}`,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
               fontFamily: FONT,
             }}
           >
@@ -1022,7 +1098,7 @@ export default function InvoicesPage() {
             >
               <div>
                 <div style={{ ...TYPE.section, color: TEAL, marginBottom: '2px' }}>Create</div>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: TEXT }}>New invoice</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT }}>New invoice</div>
                 <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Create a draft invoice and save it to your records.</div>
               </div>
               <button
@@ -1087,7 +1163,7 @@ export default function InvoicesPage() {
                         key={h}
                         style={{
                           fontSize: '11px',
-                          fontWeight: '700',
+                          fontWeight: 700,
                           color: TEXT3,
                           textTransform: 'uppercase',
                           letterSpacing: '0.4px',
@@ -1110,21 +1186,21 @@ export default function InvoicesPage() {
                       }}
                     >
                       <input
-                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px', boxShadow: 'none' }}
+                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px' }}
                         value={item.description}
                         onChange={e => setLine(idx, 'description', e.target.value)}
                         placeholder="e.g. Split system installation"
                       />
                       <input
                         type="number"
-                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px', boxShadow: 'none' }}
+                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px' }}
                         value={item.qty}
                         onChange={e => setLine(idx, 'qty', e.target.value)}
                         min="1"
                       />
                       <input
                         type="number"
-                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px', boxShadow: 'none' }}
+                        style={{ ...inp, height: '32px', border: 'none', background: 'transparent', padding: '0 8px' }}
                         value={item.unit_price}
                         onChange={e => setLine(idx, 'unit_price', e.target.value)}
                         placeholder="0.00"
@@ -1141,7 +1217,7 @@ export default function InvoicesPage() {
                   <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}`, background: WHITE }}>
                     <button
                       onClick={addLine}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEAL, fontSize: '13px', fontFamily: FONT, fontWeight: '700' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEAL, fontSize: '13px', fontFamily: FONT, fontWeight: 700 }}
                     >
                       + Add line
                     </button>
@@ -1163,16 +1239,16 @@ export default function InvoicesPage() {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '13px', color: TEXT3, fontWeight: '500' }}>Subtotal</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>${subtotal.toFixed(2)}</span>
+                      <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>Subtotal</span>
+                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${subtotal.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '13px', color: TEXT3, fontWeight: '500' }}>GST ({taxRate}%)</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>${tax_amount.toFixed(2)}</span>
+                      <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>GST ({taxRate}%)</span>
+                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${tax_amount.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${BORDER}`, paddingTop: '10px' }}>
-                      <span style={{ fontSize: '15px', fontWeight: '700', color: TEXT }}>Total</span>
-                      <span style={{ fontSize: '15px', fontWeight: '800', color: TEXT }}>${total.toFixed(2)}</span>
+                      <span style={{ fontSize: '15px', fontWeight: 700, color: TEXT }}>Total</span>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>${total.toFixed(2)}</span>
                     </div>
                   </div>
                 )
@@ -1201,7 +1277,7 @@ export default function InvoicesPage() {
                     fontSize: '14px',
                     cursor: 'pointer',
                     fontFamily: FONT,
-                    fontWeight: '600',
+                    fontWeight: 600,
                   }}
                 >
                   Cancel
@@ -1217,7 +1293,7 @@ export default function InvoicesPage() {
                     background: TEAL,
                     color: WHITE,
                     fontSize: '14px',
-                    fontWeight: '700',
+                    fontWeight: 700,
                     cursor: 'pointer',
                     fontFamily: FONT,
                     opacity: !form.customer_id ? 0.5 : 1,
@@ -1253,7 +1329,6 @@ export default function InvoicesPage() {
               maxHeight: '92vh',
               overflow: 'auto',
               border: `1px solid ${BORDER}`,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
               fontFamily: FONT,
             }}
           >
@@ -1271,7 +1346,7 @@ export default function InvoicesPage() {
                 <div
                   style={{
                     fontSize: '15px',
-                    fontWeight: '700',
+                    fontWeight: 700,
                     color: TEXT,
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                   }}
@@ -1286,7 +1361,7 @@ export default function InvoicesPage() {
                     padding: '5px 10px',
                     borderRadius: '999px',
                     fontSize: '12px',
-                    fontWeight: '700',
+                    fontWeight: 700,
                     border: 'none',
                     background: STATUS_STYLES[viewingInvoice.status]?.bg,
                     color: STATUS_STYLES[viewingInvoice.status]?.color,
@@ -1314,7 +1389,7 @@ export default function InvoicesPage() {
                     background: WHITE,
                     color: TEXT2,
                     fontSize: '12px',
-                    fontWeight: '700',
+                    fontWeight: 700,
                     cursor: 'pointer',
                     fontFamily: FONT,
                   }}
@@ -1368,7 +1443,7 @@ export default function InvoicesPage() {
                       }}
                     />
                   )}
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: TEXT, letterSpacing: '-0.4px' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, letterSpacing: '-0.4px' }}>
                     {businessInfo?.name || 'Your Business'}
                   </div>
                   {businessInfo?.phone && <div style={{ fontSize: '13px', color: TEXT3, marginTop: '3px' }}>{businessInfo.phone}</div>}
@@ -1376,10 +1451,8 @@ export default function InvoicesPage() {
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: TEAL, letterSpacing: '-0.6px', marginBottom: '6px' }}>
-                    INVOICE
-                  </div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 800, color: TEAL, letterSpacing: '-0.6px', marginBottom: '6px' }}>INVOICE</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
                     {viewingInvoice.invoice_number}
                   </div>
                   <div style={{ fontSize: '12px', color: TEXT3, marginTop: '4px' }}>
@@ -1397,7 +1470,7 @@ export default function InvoicesPage() {
                 <div
                   style={{
                     fontSize: '11px',
-                    fontWeight: '700',
+                    fontWeight: 700,
                     color: TEXT3,
                     textTransform: 'uppercase',
                     letterSpacing: '0.8px',
@@ -1406,7 +1479,7 @@ export default function InvoicesPage() {
                 >
                   Bill to
                 </div>
-                <div style={{ fontSize: '15px', fontWeight: '700', color: TEXT }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT }}>
                   {viewingInvoice.customers?.first_name} {viewingInvoice.customers?.last_name}
                 </div>
                 {viewingInvoice.customers?.address && <div style={{ fontSize: '13px', color: TEXT2, marginTop: '2px' }}>{viewingInvoice.customers.address}</div>}
@@ -1430,7 +1503,7 @@ export default function InvoicesPage() {
                       key={h}
                       style={{
                         fontSize: '11px',
-                        fontWeight: '700',
+                        fontWeight: 700,
                         color: TEXT3,
                         textTransform: 'uppercase',
                         letterSpacing: '0.4px',
@@ -1453,10 +1526,10 @@ export default function InvoicesPage() {
                       alignItems: 'center',
                     }}
                   >
-                    <div style={{ fontSize: '14px', color: TEXT, fontWeight: '500' }}>{item.description}</div>
+                    <div style={{ fontSize: '14px', color: TEXT, fontWeight: 500 }}>{item.description}</div>
                     <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{item.qty}</div>
                     <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>${item.unit_price.toFixed(2)}</div>
-                    <div style={{ fontSize: '13px', color: TEXT, fontWeight: '700', textAlign: 'right' }}>
+                    <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>
                       ${(item.qty * item.unit_price).toFixed(2)}
                     </div>
                   </div>
@@ -1467,19 +1540,19 @@ export default function InvoicesPage() {
                 <div style={{ width: '260px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                     <span style={{ fontSize: '13px', color: TEXT3 }}>Subtotal</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>${viewingInvoice.subtotal?.toFixed(2)}</span>
+                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${viewingInvoice.subtotal?.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${BORDER}`, marginBottom: '8px' }}>
                     <span style={{ fontSize: '13px', color: TEXT3 }}>GST ({viewingInvoice.tax_rate}%)</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>${viewingInvoice.tax_amount?.toFixed(2)}</span>
+                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${viewingInvoice.tax_amount?.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', background: TEAL, borderRadius: '8px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: '700', color: WHITE }}>Total</span>
-                    <span style={{ fontSize: '15px', fontWeight: '800', color: WHITE }}>${viewingInvoice.total?.toFixed(2)}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 700, color: WHITE }}>Total</span>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: WHITE }}>${viewingInvoice.total?.toFixed(2)}</span>
                   </div>
                   {viewingInvoice.status === 'paid' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', marginTop: '6px' }}>
-                      <span style={{ fontSize: '13px', color: '#166534', fontWeight: '700' }}>Paid</span>
+                      <span style={{ fontSize: '13px', color: '#166534', fontWeight: 700 }}>Paid</span>
                       {viewingInvoice.paid_at && (
                         <span style={{ fontSize: '12px', color: TEXT3 }}>
                           {new Date(viewingInvoice.paid_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -1503,7 +1576,7 @@ export default function InvoicesPage() {
                   <div
                     style={{
                       fontSize: '11px',
-                      fontWeight: '700',
+                      fontWeight: 700,
                       color: TEXT3,
                       textTransform: 'uppercase',
                       letterSpacing: '0.8px',
@@ -1515,36 +1588,36 @@ export default function InvoicesPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                     {businessSettings.bank_name && (
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: '500', width: '100px', flexShrink: 0 }}>Bank</span>
-                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>{businessSettings.bank_name}</span>
+                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, width: '100px', flexShrink: 0 }}>Bank</span>
+                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{businessSettings.bank_name}</span>
                       </div>
                     )}
                     {businessSettings.account_name && (
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: '500', width: '100px', flexShrink: 0 }}>Account name</span>
-                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>{businessSettings.account_name}</span>
+                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, width: '100px', flexShrink: 0 }}>Account name</span>
+                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{businessSettings.account_name}</span>
                       </div>
                     )}
                     {businessSettings.bsb && (
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: '500', width: '100px', flexShrink: 0 }}>BSB</span>
-                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, width: '100px', flexShrink: 0 }}>BSB</span>
+                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
                           {businessSettings.bsb}
                         </span>
                       </div>
                     )}
                     {businessSettings.account_number && (
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: '500', width: '100px', flexShrink: 0 }}>Account no.</span>
-                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, width: '100px', flexShrink: 0 }}>Account no.</span>
+                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
                           {businessSettings.account_number}
                         </span>
                       </div>
                     )}
                     {businessSettings.payment_terms && (
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: '500', width: '100px', flexShrink: 0 }}>Terms</span>
-                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: '700' }}>Due within {businessSettings.payment_terms} days</span>
+                        <span style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, width: '100px', flexShrink: 0 }}>Terms</span>
+                        <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>Due within {businessSettings.payment_terms} days</span>
                       </div>
                     )}
                   </div>
@@ -1556,7 +1629,7 @@ export default function InvoicesPage() {
                   <div
                     style={{
                       fontSize: '11px',
-                      fontWeight: '700',
+                      fontWeight: 700,
                       color: TEXT3,
                       textTransform: 'uppercase',
                       letterSpacing: '0.8px',
