@@ -166,6 +166,22 @@ function IconNote({ size = 15 }: { size?: number }) {
   )
 }
 
+function StatImageIcon({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: '34px',
+        height: '34px',
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
 const STATUS_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
   booked:       { bg: '#DCFCE7', color: '#166534', label: 'Booked' },
   pending:      { bg: '#FEF3C7', color: '#78350F', label: 'Pending' },
@@ -288,7 +304,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
 
   return (
     <>
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
@@ -299,7 +314,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
         }}
       />
 
-      {/* Drawer */}
       <div
         style={{
           position: 'fixed',
@@ -321,7 +335,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           }
         `}</style>
 
-        {/* Header */}
         <div style={{
           padding: '20px 22px 18px',
           borderBottom: `1px solid ${BORDER}`,
@@ -361,10 +374,8 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           </div>
         </div>
 
-        {/* Scrollable body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px' }}>
 
-          {/* Call summary */}
           <div style={{ marginBottom: '22px' }}>
             <div style={labelStyle}>Call summary</div>
             <div style={{ ...fieldBox, ...TYPE.body, fontSize: '13px', lineHeight: 1.7 }}>
@@ -372,7 +383,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             </div>
           </div>
 
-          {/* Details grid */}
           <div style={{ marginBottom: '22px' }}>
             <div style={labelStyle}>Call details</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -392,7 +402,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             </div>
           </div>
 
-          {/* ── Editable section ── */}
           <div style={{
             borderRadius: '14px',
             border: `1.5px solid ${BORDER}`,
@@ -410,7 +419,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             </div>
 
             <div style={{ padding: '16px 14px', display: 'grid', gap: '16px' }}>
-              {/* Status picker */}
               <div>
                 <label style={labelStyle}>Status</label>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -443,7 +451,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 </div>
               </div>
 
-              {/* Booking date + time */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={labelStyle}>Booking date</label>
@@ -465,7 +472,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 </div>
               </div>
 
-              {/* Follow-up note */}
               <div>
                 <label style={labelStyle}>Follow-up note</label>
                 <textarea
@@ -483,7 +489,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             </div>
           </div>
 
-          {/* Existing follow-up note if set and unchanged */}
           {lead.follow_up_note && lead.follow_up_note !== followUpNote && (
             <div style={{ ...fieldBox, marginBottom: '22px' }}>
               <div style={{ ...TYPE.label, marginBottom: '6px' }}>Previous note</div>
@@ -495,7 +500,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
 
         </div>
 
-        {/* Footer actions */}
         <div style={{
           padding: '14px 22px 20px',
           borderTop: `1px solid ${BORDER}`,
@@ -504,7 +508,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           display: 'grid',
           gap: '8px',
         }}>
-          {/* Save */}
           <button
             onClick={save}
             disabled={saving}
@@ -530,7 +533,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             {saved ? <><IconCheck size={16} /> Saved</> : saving ? 'Saving...' : 'Save changes'}
           </button>
 
-          {/* Convert to job — only for booked */}
           {status === 'booked' && lead.status !== 'converted' && (
             <button
               onClick={() => onConvert(lead)}
@@ -575,7 +577,6 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
             </div>
           )}
 
-          {/* Call button */}
           {lead.phone_number && (
             <a
               href={`tel:${lead.phone_number}`}
@@ -714,18 +715,33 @@ export default function LeadsPage() {
     display: 'inline-flex', alignItems: 'center', gap: '8px',
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px', height: '36px', borderRadius: '11px',
-    background: '#F8FAFC', color, display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    border: `1px solid ${BORDER}`, flexShrink: 0,
-  })
 
   const statuses = ['all', 'booked', 'pending', 'incomplete', 'converted', 'wrong_number']
   const overviewCards = [
-    { label: 'Booked',    value: leads.filter(l => l.status === 'booked').length,    sub: 'Ready to convert',   icon: <IconCalendar size={18} />, accent: GREEN, tag: 'Live pipeline' },
-    { label: 'Pending',   value: leads.filter(l => l.status === 'pending').length,   sub: 'Need follow-up',     icon: <IconPhone size={18} />,    accent: AMBER, tag: 'Needs action' },
-    { label: 'Converted', value: leads.filter(l => l.status === 'converted').length, sub: 'Moved into jobs',    icon: <IconUsers size={18} />,    accent: BLUE,  tag: 'Completed flow' },
+    {
+      label: 'Booked',
+      value: leads.filter(l => l.status === 'booked').length,
+      sub: 'Ready to convert',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png',
+      accent: GREEN,
+      tag: 'Live pipeline',
+    },
+    {
+      label: 'Pending',
+      value: leads.filter(l => l.status === 'pending').length,
+      sub: 'Need follow-up',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_bc1fa329d29143c0903d4d61a44a8c5e~mv2.png',
+      accent: AMBER,
+      tag: 'Needs action',
+    },
+    {
+      label: 'Converted',
+      value: leads.filter(l => l.status === 'converted').length,
+      sub: 'Moved into jobs',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_a7bee743bd61424d9d0ae825cb76bc58~mv2.png',
+      accent: BLUE,
+      tag: 'Completed flow',
+    },
   ]
 
   return (
@@ -738,7 +754,6 @@ export default function LeadsPage() {
           background: BG, padding: isMobile ? '14px' : '16px', gap: '12px',
         }}>
 
-          {/* Header */}
           <div style={{
             ...shellCard,
             padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
@@ -759,16 +774,25 @@ export default function LeadsPage() {
             </div>
           </div>
 
-          {/* Overview cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px' }}>
             {overviewCards.map(item => (
-              <div key={item.label} style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 4', minHeight: 148, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div
+                key={item.label}
+                style={{
+                  ...panelCard,
+                  gridColumn: isMobile ? 'span 1' : 'span 4',
+                  minHeight: 148,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
                   </div>
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
                 <div>
                   <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>{item.value}</div>
@@ -778,10 +802,8 @@ export default function LeadsPage() {
             ))}
           </div>
 
-          {/* Main content */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))', gap: '12px', alignItems: 'start' }}>
 
-            {/* Leads list */}
             <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 8' }}>
               <div style={{
                 display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
@@ -884,7 +906,6 @@ export default function LeadsPage() {
                           {!isMobile && <div style={{ background: statusAccent }} />}
 
                           <div style={{ padding: '14px 16px' }}>
-                            {/* Top row */}
                             <div style={{
                               display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
                               justifyContent: 'space-between', gap: '12px',
@@ -905,7 +926,6 @@ export default function LeadsPage() {
                               </div>
                             </div>
 
-                            {/* Info row */}
                             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {lead.suburb && (
                                 <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>
@@ -939,7 +959,6 @@ export default function LeadsPage() {
               )}
             </div>
 
-            {/* Right sidebar */}
             <div style={{ gridColumn: isMobile ? 'span 1' : 'span 4', display: 'grid', gap: '12px' }}>
               <div style={panelCard}>
                 <div style={sectionLabel}>Pipeline summary</div>
@@ -997,7 +1016,6 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Lead drawer */}
       {selectedLead && (
         <LeadDrawer
           lead={selectedLead}
