@@ -32,10 +32,10 @@ const TYPE = {
 
 const avColors = [
   { bg: '#E8F4F1', color: '#0A4F4C' },
-  { bg: '#DBEAFE', color: '#1E3A8A' },
-  { bg: '#FEF3C7', color: '#78350F' },
-  { bg: '#EDE9FE', color: '#4C1D95' },
-  { bg: '#FFE4E6', color: '#881337' },
+  { bg: '#EEF2F6', color: '#334155' },
+  { bg: '#E6F7F6', color: '#177A72' },
+  { bg: '#F1F5F9', color: '#475569' },
+  { bg: '#E8F4F1', color: '#1F9E94' },
 ]
 
 // ─── Hooks ─────────────────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ function PipelineBarChart({ data }: { data: { label: string; value: number }[] }
   const [hovered, setHovered] = useState<string | null>(null)
   const yMax = Math.max(...data.map(d => d.value), 1)
   const CHART_H = 90
-  const barColors = [TEAL, '#3B82F6', '#8B5CF6', '#F59E0B']
+  const barColors = [TEAL, TEAL_DARK, '#94A3B8', '#CBD5E1']
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: CHART_H }}>
@@ -210,10 +210,10 @@ function ScheduleGrid({ jobs, isMobile }: { jobs: any[]; isMobile: boolean }) {
   })
   const jobColors = [
     { bg: TEAL, text: WHITE },
-    { bg: '#3B82F6', text: WHITE },
-    { bg: '#F59E0B', text: WHITE },
-    { bg: '#EF4444', text: WHITE },
-    { bg: '#8B5CF6', text: WHITE },
+    { bg: TEAL_DARK, text: WHITE },
+    { bg: '#475569', text: WHITE },
+    { bg: '#94A3B8', text: WHITE },
+    { bg: '#CBD5E1', text: TEXT },
   ]
   const scheduled = jobs.filter(j => j.next_service_date).slice(0, 4)
 
@@ -344,7 +344,7 @@ export default function DashboardPage() {
       else b.Other += 1
     })
     if (Object.values(b).every(v => v === 0)) { b.Service = 4; b.Installation = 3; b.Quote = 2; b.Repair = 2; b.Other = 1 }
-    const colors: Record<string, string> = { Service: '#6EE7B7', Installation: '#93C5FD', Quote: '#C4B5FD', Repair: '#FCD34D', Other: '#E5E7EB' }
+    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1', Other: '#E2E8F0' }
     const total = Object.values(b).reduce((s, v) => s + v, 0)
     return Object.entries(b).map(([label, value]) => ({ label, value, percent: Math.round((value / total) * 100), color: colors[label] }))
   }, [allJobs])
@@ -355,17 +355,17 @@ export default function DashboardPage() {
     const pending = dueSoonCount
     const onHold = Math.max(0, allJobs.length - inProgress - completed)
     if (allJobs.length === 0) return [
-      { label: 'In Progress', value: 3, percent: 33, color: '#93C5FD' },
-      { label: 'Completed', value: 5, percent: 42, color: '#6EE7B7' },
-      { label: 'Pending', value: 2, percent: 17, color: '#FCD34D' },
-      { label: 'On Hold', value: 1, percent: 8, color: '#E5E7EB' },
+      { label: 'In Progress', value: 3, percent: 33, color: TEAL },
+      { label: 'Completed', value: 5, percent: 42, color: '#94A3B8' },
+      { label: 'Pending', value: 2, percent: 17, color: '#CBD5E1' },
+      { label: 'On Hold', value: 1, percent: 8, color: '#E2E8F0' },
     ]
     const total = inProgress + completed + pending + onHold || 1
     return [
-      { label: 'In Progress', value: inProgress, percent: Math.round(inProgress / total * 100), color: '#93C5FD' },
-      { label: 'Completed', value: completed, percent: Math.round(completed / total * 100), color: '#6EE7B7' },
-      { label: 'Pending', value: pending, percent: Math.round(pending / total * 100), color: '#FCD34D' },
-      { label: 'On Hold', value: onHold, percent: Math.round(onHold / total * 100), color: '#E5E7EB' },
+      { label: 'In Progress', value: inProgress, percent: Math.round(inProgress / total * 100), color: TEAL },
+      { label: 'Completed', value: completed, percent: Math.round(completed / total * 100), color: '#94A3B8' },
+      { label: 'Pending', value: pending, percent: Math.round(pending / total * 100), color: '#CBD5E1' },
+      { label: 'On Hold', value: onHold, percent: Math.round(onHold / total * 100), color: '#E2E8F0' },
     ]
   }, [allJobs, dueSoonCount])
 
@@ -414,7 +414,7 @@ export default function DashboardPage() {
       sub: 'Created this month',
       change: stats.jobsThisMonth > 0 ? `+${stats.jobsThisMonth} this month` : 'None yet',
       up: stats.jobsThisMonth > 0,
-      sparkColor: '#3B82F6',
+      sparkColor: TEAL,
       icon: <IconMonthlyFlowImage size={METRIC_ICON_SIZE}/>,
     },
     {
@@ -423,7 +423,7 @@ export default function DashboardPage() {
       sub: `${stats.units} units tracked`,
       change: stats.customers > 0 ? 'Active in CRM' : 'None yet',
       up: stats.customers > 0,
-      sparkColor: '#8B5CF6',
+      sparkColor: TEAL,
       icon: <IconCustomersImage size={METRIC_ICON_SIZE}/>,
     },
     {
@@ -677,7 +677,7 @@ export default function DashboardPage() {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
                   const actions = ['approved Quote', 'completed Job', 'scheduled service', 'added a job']
-                  const actionColors = [TEAL, '#3B82F6', '#8B5CF6', TEXT3]
+                  const actionColors = [TEAL, TEAL_DARK, TEXT3, TEXT3]
                   const idx = i % 4
                   const timeAgo = job.created_at ? `${Math.floor((Date.now() - new Date(job.created_at).getTime()) / 60000)}m ago` : ''
                   return (
