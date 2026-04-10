@@ -361,11 +361,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: FONT, background: BG, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'scroll', background: BG }}>
-        <div style={{ display: 'flex', flexDirection: 'column', padding: isMobile ? '14px' : '16px', gap: '12px', paddingBottom: '60px' }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG, ...(isMobile ? {} : { height: '100vh', overflowY: 'scroll' }) }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: isMobile ? '14px' : '16px', gap: '12px', paddingBottom: isMobile ? '100px' : '60px' }}>
 
           {/* Header */}
           <div style={{ ...shellCard, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
