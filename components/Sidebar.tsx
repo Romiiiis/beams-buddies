@@ -49,6 +49,14 @@ const bottomTabs = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
+const iconImageStyle: React.CSSProperties = {
+  width: 18,
+  height: 18,
+  objectFit: 'contain',
+  display: 'block',
+  flexShrink: 0,
+}
+
 const iconBase = {
   width: 18,
   height: 18,
@@ -71,87 +79,77 @@ const icons: Record<string, React.ReactElement> = {
     <img
       src="https://static.wixstatic.com/media/48c433_275af6b2cf654876ac6b4d488595e94c~mv2.png"
       alt="Dashboard"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/customers': (
     <img
       src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
       alt="Customers"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/leads': (
     <img
       src="https://static.wixstatic.com/media/48c433_e4537a2002634cba9871fbdc2b886b8a~mv2.png"
       alt="Leads"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/jobs': (
     <img
       src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
       alt="Jobs"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/quotes': (
     <img
       src="https://static.wixstatic.com/media/48c433_8c9ea7223694496293ac015c7a34c1d0~mv2.png"
       alt="Quotes"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/invoices': (
     <img
       src="https://static.wixstatic.com/media/48c433_7f2ee3fe8f84466a82117a774ec03d55~mv2.png"
       alt="Invoices"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/revenue': (
     <img
       src="https://static.wixstatic.com/media/48c433_c60e43bdd7c54c4a834aad9132d7a0d8~mv2.png"
       alt="Revenue"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/schedule': (
     <img
       src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
       alt="Service"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/qrcodes': (
     <img
       src="https://static.wixstatic.com/media/48c433_85c788cea5d94da097d1bbc631c25044~mv2.png"
       alt="QR Code"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/reports': (
     <img
       src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
       alt="Reports"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
-
   '/dashboard/settings': (
     <img
       src="https://static.wixstatic.com/media/48c433_a8bdb8a29ac64e40af9caba6d21fd86b~mv2.png"
       alt="Settings"
-      style={{ width: 18, height: 18, objectFit: 'contain' }}
+      style={iconImageStyle}
     />
   ),
 }
@@ -304,10 +302,12 @@ export function Sidebar({ active }: { active: string }) {
             flex-shrink: 0;
             line-height: 0;
           }
-          .mobile-tab-icon svg {
+          .mobile-tab-icon svg,
+          .mobile-tab-icon img {
             display: block;
             width: 20px;
             height: 20px;
+            object-fit: contain;
           }
         `}</style>
 
@@ -379,11 +379,12 @@ export function Sidebar({ active }: { active: string }) {
           height: 0;
         }
 
-        .sidebar-icon svg {
+        .sidebar-icon svg,
+        .sidebar-icon img {
           display: block;
           width: 18px;
           height: 18px;
-          stroke-width: 1.9;
+          object-fit: contain;
           shape-rendering: geometricPrecision;
         }
       `}</style>
