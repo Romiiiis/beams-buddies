@@ -91,7 +91,7 @@ const icons: Record<string, React.ReactElement> = {
   ),
   '/dashboard/leads': (
     <img
-      src="https://static.wixstatic.com/media/48c433_e4537a2002634cba9871fbdc2b886b8a~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_01edbde061b847908d6bb4957a01731c~mv2.png"
       alt="Leads"
       style={iconImageStyle}
     />
