@@ -79,20 +79,56 @@ function useIsMobile() {
   return isMobile
 }
 
-function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
+function DashboardImageIcon({
+  src,
+  alt,
+  size = 28,
+}: {
+  src: string
+  alt: string
+  size?: number
+}) {
   return (
     <img
       src={src}
       alt={alt}
-      width={size}
-      height={size}
       style={{
-        width: `${size}px`,
-        height: `${size}px`,
+        width: size,
+        height: size,
         objectFit: 'contain',
         display: 'block',
         flexShrink: 0,
       }}
+    />
+  )
+}
+
+function IconQrCodes({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_a063dbe15aa840af9882c0e94b5525fa~mv2.png"
+      alt="QR codes"
+      size={size}
+    />
+  )
+}
+
+function IconReady({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_e64e818ee96f486cb8bf1c7787435fb9~mv2.png"
+      alt="Ready to save"
+      size={size}
+    />
+  )
+}
+
+function IconLatest({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_6442d64c1c9e4069ac41a182df951b32~mv2.png"
+      alt="Latest install"
+      size={size}
     />
   )
 }
@@ -138,6 +174,22 @@ function IconPlus({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconArrow({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -210,24 +262,52 @@ export default function QRCodesPage() {
     year: 'numeric',
   })
 
-  const shellCard: React.CSSProperties = {
+  const qrCount = jobs.length
+  const readyCount = jobs.filter(job => !!job.qr_code_token).length
+  const latestInstall = useMemo(() => {
+    const withDates = jobs.filter(job => job.install_date)
+    if (!withDates.length) return 'No date'
+    return formatDate(withDates[0].install_date)
+  }, [jobs])
+
+  const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
-    padding: '16px',
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+    borderRadius: '16px',
+  }
+
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
+  }
+
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
   }
 
   const quickActionStyle: React.CSSProperties = {
@@ -245,190 +325,170 @@ export default function QRCodesPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const statIconStyle: React.CSSProperties = {
-    width: '30px',
-    height: '30px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  }
+  const topCards = [
+    {
+      label: 'QR codes',
+      value: qrCount.toLocaleString('en-AU'),
+      sub: 'Units with generated QR links',
+      icon: <IconQrCodes size={28} />,
+      accent: TEXT,
+      tag: 'Library total',
+    },
+    {
+      label: 'Ready to save',
+      value: readyCount.toLocaleString('en-AU'),
+      sub: 'Download or print now',
+      icon: <IconReady size={28} />,
+      accent: TEAL_DARK,
+      tag: 'Actions live',
+    },
+    {
+      label: 'Latest install',
+      value: latestInstall,
+      sub: 'Most recent install date in the list',
+      icon: <IconLatest size={28} />,
+      accent: TEXT,
+      tag: 'Recent activity',
+    },
+  ]
 
-  const qrCount = jobs.length
-  const readyCount = jobs.filter(job => !!job.qr_code_token).length
-  const latestInstall = useMemo(() => {
-    const withDates = jobs.filter(job => job.install_date)
-    if (!withDates.length) return 'No date'
-    return formatDate(withDates[0].install_date)
-  }, [jobs])
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
+        <Sidebar active="/dashboard/qrcodes" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: TEXT3,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          Generating QR codes...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         fontFamily: FONT,
         background: BG,
-        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
       <Sidebar active="/dashboard/qrcodes" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            minHeight: '100%',
+            padding: isMobile ? '14px' : '16px 20px',
             display: 'flex',
             flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
+            gap: '14px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
           <div
             style={{
-              ...shellCard,
+              ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div>
-              <div
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
+              {todayStr}
+            </div>
+
+            <div
+              style={{
+                fontSize: isMobile ? '26px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: WHITE,
+                marginBottom: '8px',
+              }}
+            >
+              QR codes
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Generate and save one QR code per installed unit so customers can register service requests instantly.
+            </div>
+
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => router.push('/dashboard/jobs')}
                 style={{
+                  height: '36px',
+                  padding: '0 14px',
                   fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: TEAL,
+                  color: WHITE,
+                  border: 'none',
+                  borderRadius: '10px',
                 }}
               >
-                {todayStr}
-              </div>
-
-              <div
-                style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
-                }}
-              >
-                QR codes
-              </div>
-
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Generate and save one QR code per installed unit so customers can register service requests instantly.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <button
-                  onClick={() => router.push('/dashboard/jobs')}
-                  style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                  }}
-                >
-                  <IconSpark size={16} />
-                  Add job
-                </button>
-              </div>
+                <IconSpark size={14} />
+                Add job
+              </button>
             </div>
           </div>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
               gap: '12px',
             }}
           >
-            {[
-              {
-                label: 'QR codes',
-                value: qrCount,
-                sub: 'Units with generated QR links',
-                icon: (
-                  <ImageIcon
-                    src="https://static.wixstatic.com/media/48c433_a063dbe15aa840af9882c0e94b5525fa~mv2.png"
-                    size={30}
-                    alt="QR codes"
-                  />
-                ),
-                accent: TEXT,
-                tag: 'Library total',
-              },
-              {
-                label: 'Ready to save',
-                value: readyCount,
-                sub: 'Download or print now',
-                icon: (
-                  <ImageIcon
-                    src="https://static.wixstatic.com/media/48c433_e64e818ee96f486cb8bf1c7787435fb9~mv2.png"
-                    size={30}
-                    alt="Ready to save"
-                  />
-                ),
-                accent: TEAL_DARK,
-                tag: 'Actions live',
-              },
-              {
-                label: 'Latest install',
-                value: latestInstall,
-                sub: 'Most recent install date in the list',
-                icon: (
-                  <ImageIcon
-                    src="https://static.wixstatic.com/media/48c433_6442d64c1c9e4069ac41a182df951b32~mv2.png"
-                    size={30}
-                    alt="Latest install"
-                  />
-                ),
-                accent: TEXT,
-                tag: 'Recent activity',
-              },
-            ].map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...panelCard,
-                  gridColumn: isMobile ? 'span 1' : 'span 4',
-                  minHeight: 148,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+            {topCards.map(item => (
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                      {item.label}
-                    </div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
-
-                  <div style={statIconStyle}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
                     {item.icon}
                   </div>
                 </div>
@@ -437,16 +497,14 @@ export default function QRCodesPage() {
                   <div
                     style={{
                       ...TYPE.valueLg,
-                      fontSize: item.label === 'Latest install' ? (isMobile ? '20px' : '22px') : '30px',
+                      fontSize: item.label === 'Latest install' ? (isMobile ? '20px' : '22px') : '26px',
                       color: item.accent,
                       wordBreak: 'break-word',
                     }}
                   >
                     {item.value}
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
-                    {item.sub}
-                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -455,29 +513,25 @@ export default function QRCodesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gap: '14px',
               alignItems: 'start',
             }}
           >
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 8',
-              }}
-            >
+            <div style={card}>
               <div
                 style={{
+                  padding: '14px 16px 12px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
-                  alignItems: isMobile ? 'flex-start' : 'center',
+                  alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
                   gap: '10px',
-                  marginBottom: '14px',
                 }}
               >
                 <div>
-                  <div style={sectionLabel}>All units</div>
+                  <div style={sectionHeaderTitle}>All units</div>
                   <div style={{ ...TYPE.bodySm }}>
                     Every saved job has a QR card ready for download or print.
                   </div>
@@ -485,48 +539,30 @@ export default function QRCodesPage() {
 
                 <div
                   style={{
+                    height: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
-                    fontSize: '11px',
-                    fontWeight: 800,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {jobs.length} total
                 </div>
               </div>
 
-              {loading ? (
+              {jobs.length === 0 ? (
                 <div
                   style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
+                    padding: '32px 18px',
                     textAlign: 'center',
                     color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
-                >
-                  Generating QR codes...
-                </div>
-              ) : jobs.length === 0 ? (
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
+                    fontSize: '13px',
                   }}
                 >
                   No jobs yet.{' '}
@@ -540,6 +576,7 @@ export default function QRCodesPage() {
               ) : (
                 <div
                   style={{
+                    padding: '14px 16px',
                     display: 'grid',
                     gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
                     gap: '12px',
@@ -553,10 +590,9 @@ export default function QRCodesPage() {
                       <div
                         key={job.id}
                         style={{
-                          borderRadius: '18px',
+                          borderRadius: '16px',
                           border: `1px solid ${BORDER}`,
                           background: WHITE,
-                          boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
                           overflow: 'hidden',
                         }}
                       >
@@ -569,7 +605,7 @@ export default function QRCodesPage() {
                         >
                           <div
                             style={{
-                              background: 'linear-gradient(180deg, #FCFCFD 0%, #F8FAFC 100%)',
+                              background: '#F8FAFC',
                               borderRight: isMobile ? 'none' : `1px solid ${BORDER}`,
                               borderBottom: isMobile ? `1px solid ${BORDER}` : 'none',
                               padding: isMobile ? '14px 14px 12px' : '14px 12px 12px',
@@ -578,28 +614,15 @@ export default function QRCodesPage() {
                               alignItems: 'center',
                               justifyContent: 'center',
                               gap: '8px',
-                              position: 'relative',
                             }}
                           >
                             <div
                               style={{
-                                position: 'absolute',
-                                inset: '10px',
-                                borderRadius: '14px',
-                                background: 'radial-gradient(circle at top left, rgba(31,158,148,0.05), transparent 45%)',
-                                pointerEvents: 'none',
-                              }}
-                            />
-
-                            <div
-                              style={{
-                                position: 'relative',
                                 width: isMobile ? '132px' : '136px',
                                 height: isMobile ? '132px' : '136px',
                                 borderRadius: '16px',
                                 border: `1px solid ${BORDER}`,
                                 background: WHITE,
-                                boxShadow: '0 6px 14px rgba(15,23,42,0.05)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -632,7 +655,6 @@ export default function QRCodesPage() {
 
                             <div
                               style={{
-                                position: 'relative',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -643,7 +665,6 @@ export default function QRCodesPage() {
                                 color: '#0A4F4C',
                                 fontSize: '10px',
                                 fontWeight: 800,
-                                letterSpacing: '0.02em',
                               }}
                             >
                               Ready to scan
@@ -698,7 +719,6 @@ export default function QRCodesPage() {
                                   fontWeight: 800,
                                   whiteSpace: 'nowrap',
                                   display: 'inline-block',
-                                  letterSpacing: '0.02em',
                                   border: `1px solid ${BORDER}`,
                                 }}
                               >
@@ -810,7 +830,6 @@ export default function QRCodesPage() {
                                   background: TEAL,
                                   color: WHITE,
                                   border: 'none',
-                                  boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
                                   flex: '0 0 auto',
                                 }}
                               >
@@ -862,102 +881,119 @@ export default function QRCodesPage() {
               )}
             </div>
 
-            <div
-              style={{
-                gridColumn: isMobile ? 'span 1' : 'span 4',
-                display: 'grid',
-                gap: '12px',
-              }}
-            >
-              <div style={panelCard}>
-                <div style={sectionLabel}>QR workflow</div>
+            <div style={{ display: 'grid', gap: '14px' }}>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>QR workflow</div>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div
                     style={{
-                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
-                      padding: '12px',
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Step 1</div>
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
                     <div style={{ ...TYPE.valueSm }}>Create job</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
                       Each saved unit receives a registration token
                     </div>
                   </div>
 
                   <div
                     style={{
-                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
-                      padding: '12px',
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Step 2</div>
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
                     <div style={{ ...TYPE.valueSm }}>Save or print</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
                       Use the QR on stickers, cards, or install packs
                     </div>
                   </div>
 
                   <div
                     style={{
-                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
-                      padding: '12px',
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Step 3</div>
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
                     <div style={{ ...TYPE.valueSm }}>Customer scans</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>
+                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
                       Registration starts from the embedded unit link
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={panelCard}>
-                <div style={sectionLabel}>Quick actions</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Quick actions</div>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={{
-                      ...quickActionStyle,
                       width: '100%',
-                      justifyContent: 'center',
+                      height: '34px',
                       background: TEAL,
-                      color: '#FFFFFF',
+                      color: WHITE,
                       border: 'none',
-                      boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
                     }}
                   >
-                    <IconSpark size={16} />
                     Add job
                   </button>
 
                   <button
                     onClick={() => window.print()}
                     style={{
-                      ...quickActionStyle,
                       width: '100%',
-                      justifyContent: 'center',
+                      height: '34px',
+                      background: '#F8FAFC',
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      color: TEXT2,
                     }}
                   >
-                    <IconPrint size={15} />
                     Print page
                   </button>
                 </div>
               </div>
 
-              <div style={panelCard}>
-                <div style={sectionLabel}>Notes</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Notes</div>
+                  <button onClick={() => window.print()} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
-                <div style={{ display: 'grid', gap: '10px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {[
                     'Each card is tied to a job token and customer unit.',
                     'Save creates a PNG download for the selected unit.',
