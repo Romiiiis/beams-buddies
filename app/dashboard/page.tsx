@@ -69,7 +69,7 @@ function Sparkline({ data, color, width = 120, height = 40 }: { data: number[]; 
   })
   const uid = `sp${color.replace('#', '')}`
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', width: '100%' }}>
       <defs>
         <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.14"/>
@@ -223,7 +223,13 @@ export default function DashboardPage() {
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const jobTimes = ['8:00 AM', '11:00 AM', '2:30 PM', '4:00 PM', '9:00 AM']
 
-  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 1px 3px rgba(15,23,42,0.04)', overflow: 'hidden' }
+  // No boxShadow anywhere — clean flat cards only
+  const card: React.CSSProperties = {
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    borderRadius: '16px',
+    overflow: 'hidden',
+  }
   const cardP: React.CSSProperties = { ...card, padding: '18px' }
 
   function statusPill(d: string | null) {
@@ -237,7 +243,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: BG, fontFamily: FONT }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard"/>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>Loading dashboard...</div>
       </div>
@@ -245,47 +251,35 @@ export default function DashboardPage() {
   }
 
   return (
+    // ── Outermost: flex row, min-height fills screen, page scrolls naturally ──
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard"/>
 
-      <div style={{ flex: 1, minWidth: 0, background: BG, ...(isMobile ? {} : { height: '100vh', overflowY: 'scroll' }) }}>
-        <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: isMobile ? '100px' : '60px' }}>
+      {/* ── Content column: no height:100vh, no overflow:scroll — browser scrolls this ── */}
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+        <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '80px' }}>
 
-          {/* ── HEADER (unchanged) ─────────────────────────────────────────── */}
+          {/* ── HEADER (unchanged) ─────────────────────────────────────── */}
           <div style={{ ...card, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-            <div style={{ fontSize: isMobile ? '28px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Dashboard</div>
-            <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
+            <div style={{ fontSize: isMobile ? '26px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Dashboard</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
               Track customers, service due dates, invoices, and jobs from one control centre.
             </div>
-            {isMobile ? (
-              <div style={{ marginTop: '14px', display: 'flex', gap: '6px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
-                  <IconSpark size={13}/> Add job
-                </button>
-                <button onClick={() => router.push('/dashboard/quotes')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
-                  <IconInvoice size={13}/> Quote
-                </button>
-                <button onClick={() => router.push('/dashboard/schedule')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', whiteSpace: 'nowrap' as const }}>
-                  <IconCalendar size={13}/> Schedule
-                </button>
-              </div>
-            ) : (
-              <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ background: TEAL, color: WHITE, borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', boxShadow: '0 6px 14px rgba(31,158,148,0.20)' }}>
-                  <IconSpark size={16}/> Add job
-                </button>
-                <button onClick={() => router.push('/dashboard/quotes')} style={{ background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                  <IconInvoice size={16}/> New quote
-                </button>
-                <button onClick={() => router.push('/dashboard/schedule')} style={{ background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                  <IconCalendar size={16}/> Service schedule
-                </button>
-              </div>
-            )}
+            <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px' }}>
+                <IconSpark size={14}/> Add job
+              </button>
+              <button onClick={() => router.push('/dashboard/quotes')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px' }}>
+                <IconInvoice size={14}/> New quote
+              </button>
+              <button onClick={() => router.push('/dashboard/schedule')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px' }}>
+                <IconCalendar size={14}/> Schedule
+              </button>
+            </div>
           </div>
 
-          {/* ── ROW 1: 4 clean stat cards ──────────────────────────────────── */}
+          {/* ── ROW 1: 4 stat cards — 2-col on mobile, 4-col on desktop ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
 
             {/* TODAY'S JOBS */}
@@ -308,7 +302,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <button onClick={() => router.push('/dashboard/schedule')}
-                style={{ width: '100%', height: '34px', background: TEAL, color: WHITE, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, boxShadow: '0 4px 10px rgba(31,158,148,0.2)' }}>
+                style={{ width: '100%', height: '34px', background: TEAL, color: WHITE, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
                 View schedule
               </button>
             </div>
@@ -336,7 +330,7 @@ export default function DashboardPage() {
             <div style={cardP}>
               <div style={{ ...TYPE.label, marginBottom: '10px' }}>Customers</div>
               <div style={{ fontSize: '36px', fontWeight: 900, color: TEXT, letterSpacing: '-0.06em', lineHeight: 1, marginBottom: '4px' }}>{stats.customers}</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>{stats.units} units tracked in CRM</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>{stats.units} units tracked</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                 {[
                   { label: 'Service jobs', val: allJobs.filter(j => String(j.job_type || '').toLowerCase().includes('service')).length },
@@ -390,7 +384,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 2: Upcoming appointments + Revenue Stats ───────────────── */}
+          {/* ── ROW 2: Upcoming appointments + Revenue Stats ─────────────── */}
+          {/* On mobile: stacked. On desktop: side by side */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 290px', gap: '14px', alignItems: 'start' }}>
 
             {/* UPCOMING APPOINTMENTS */}
@@ -400,9 +395,9 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   {[
                     { label: 'Today', val: upcoming.filter(j => getDays(j.next_service_date || '') === 0).length },
-                    { label: 'Jobs Due', val: stats.overdue },
+                    { label: 'Due', val: stats.overdue },
                     { label: 'Scheduled', val: stats.units },
-                    { label: 'Due Soon', val: dueSoonCount },
+                    { label: 'Soon', val: dueSoonCount },
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ fontSize: '11px', color: TEXT3, fontWeight: 600 }}>{item.label}</span>
@@ -421,20 +416,20 @@ export default function DashboardPage() {
                 const brand = job.brand ? `${job.brand}${job.capacity_kw ? ' ' + job.capacity_kw + 'kW' : ''}` : job.job_type || 'Service'
                 return (
                   <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                    style={{ display: 'grid', gridTemplateColumns: '72px 1fr auto auto', gap: '12px', alignItems: 'center', padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                    style={{ display: 'grid', gridTemplateColumns: isMobile ? '60px 1fr auto' : '72px 1fr auto auto', gap: '10px', alignItems: 'center', padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                     onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: isFirst ? TEXT : TEXT3, whiteSpace: 'nowrap' }}>{time}</div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '2px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEXT : TEXT3, whiteSpace: 'nowrap' }}>{time}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '13px', fontWeight: 800, color: isFirst ? TEAL : TEXT }}>{name}</span>
                         <span style={{ fontSize: '11px', color: TEXT3 }}>{job.customers?.suburb || ''}</span>
                       </div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'} · {brand}
                       </div>
                     </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap' }}>{job.job_type || 'Service'}</div>
+                    {!isMobile && <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap' }}>{job.job_type || 'Service'}</div>}
                     {isFirst ? (
                       <button onClick={e => { e.stopPropagation(); router.push(`/dashboard/customers/${job.customer_id}`) }}
                         style={{ height: '30px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
@@ -446,8 +441,8 @@ export default function DashboardPage() {
               })}
 
               <div style={{ padding: '14px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', gap: '5px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                     {([['next7', 'Next 7 Days'], ['due', 'Jobs Due'], ['attime', 'At time']] as const).map(([key, lbl]) => (
                       <button key={key} onClick={() => setActiveTab(key)}
                         style={{ height: '28px', padding: '0 9px', borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, border: `1px solid ${activeTab === key ? TEAL : BORDER}`, background: activeTab === key ? '#E6F7F6' : WHITE, color: activeTab === key ? TEAL_DARK : TEXT3 }}>
@@ -457,7 +452,7 @@ export default function DashboardPage() {
                   </div>
                   <button onClick={() => router.push('/dashboard/jobs')}
                     style={{ height: '28px', padding: '0 9px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    View all jobs <IconArrow size={11}/>
+                    View all <IconArrow size={11}/>
                   </button>
                 </div>
                 <MonthlyBarChart data={monthlyData}/>
@@ -491,7 +486,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 3: Recent Customers + Unpaid Invoices ──────────────────── */}
+          {/* ── ROW 3: Recent Customers + Unpaid Invoices — stacked on mobile ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: '14px', alignItems: 'start' }}>
 
             {/* RECENT CUSTOMERS */}
@@ -519,7 +514,7 @@ export default function DashboardPage() {
                     <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials}</div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-                      <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
                         {job.customers?.suburb && <span>{job.customers.suburb}</span>}
                         {job.customers?.phone && !isMobile && <><span>·</span><span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><IconPhone size={11}/>{job.customers.phone}</span></>}
                       </div>
