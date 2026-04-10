@@ -216,8 +216,8 @@ function StatImageIcon({ src, alt }: { src: string; alt: string }) {
       src={src}
       alt={alt}
       style={{
-        width: '34px',
-        height: '34px',
+        width: '30px',
+        height: '30px',
         objectFit: 'contain',
         display: 'block',
         flexShrink: 0,
