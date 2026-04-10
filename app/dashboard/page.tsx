@@ -64,7 +64,7 @@ function IconCustomersImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
 function IconMonthlyFlowImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
-      src="https://static.wixstatic.com/media/48c433_35021773f24646d19bddaacf32b9f04d~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_b499df26be3b43098be1fddabab7db6f~mv2.png"
       alt="Monthly flow icon"
       width={size}
       height={size}
@@ -76,7 +76,7 @@ function IconMonthlyFlowImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
 function IconPaidTotalImage({ size = METRIC_ICON_SIZE }: { size?: number }) {
   return (
     <img
-      src="https://static.wixstatic.com/media/48c433_8d03db520b1c4494a4af17583444ea79~mv2.png"
+      src="https://static.wixstatic.com/media/48c433_167be70910b148dca6cfb5da29030d2c~mv2.png"
       alt="Paid total icon"
       width={size}
       height={size}
