@@ -112,12 +112,21 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconQuote({ size = 18 }: { size?: number }) {
+function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
@@ -126,41 +135,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconCheck({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconClose({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -377,18 +351,14 @@ export default function QuotesPage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const statIconStyle: React.CSSProperties = {
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-  })
+  }
 
   const inp: React.CSSProperties = {
     width: '100%',
@@ -515,7 +485,13 @@ export default function QuotesPage() {
                 label: 'Draft',
                 value: counts.draft,
                 sub: 'Not sent yet',
-                icon: <IconQuote size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_27c4de2991b14ff19e7b2c6e4713e8e0~mv2.png"
+                    size={30}
+                    alt="Draft"
+                  />
+                ),
                 accent: TEXT,
                 tag: 'Pipeline',
               },
@@ -523,7 +499,13 @@ export default function QuotesPage() {
                 label: 'Sent',
                 value: counts.sent,
                 sub: 'Awaiting response',
-                icon: <IconArrow size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_4d059321b22e4619b468f9a3f76285f4~mv2.png"
+                    size={30}
+                    alt="Sent"
+                  />
+                ),
                 accent: BLUE,
                 tag: 'In progress',
               },
@@ -531,7 +513,13 @@ export default function QuotesPage() {
                 label: 'Accepted',
                 value: counts.accepted,
                 sub: 'Approved quotes',
-                icon: <IconCheck size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_e8f3ef41771e44beae80121758693d4a~mv2.png"
+                    size={30}
+                    alt="Accepted"
+                  />
+                ),
                 accent: GREEN,
                 tag: 'Won',
               },
@@ -539,7 +527,13 @@ export default function QuotesPage() {
                 label: 'Declined',
                 value: counts.declined,
                 sub: 'Not proceeding',
-                icon: <IconClose size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_a9564822636344f699c5d3dc69d4c4d6~mv2.png"
+                    size={30}
+                    alt="Declined"
+                  />
+                ),
                 accent: RED,
                 tag: 'Lost',
               },
@@ -563,7 +557,7 @@ export default function QuotesPage() {
                     </div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>
+                  <div style={statIconStyle}>
                     {item.icon}
                   </div>
                 </div>
