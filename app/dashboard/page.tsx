@@ -17,8 +17,7 @@ const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-const METRIC_ICON_BOX = 40
-const METRIC_ICON_SIZE = 28
+const METRIC_ICON_SIZE = 30
 
 const TYPE = {
   label: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em' as const, textTransform: 'uppercase' as const, color: TEXT3 },
@@ -390,18 +389,13 @@ export default function DashboardPage() {
   const shellCard: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)', overflow: 'hidden' }
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: `${METRIC_ICON_BOX}px`,
-    height: `${METRIC_ICON_BOX}px`,
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const iconWrap = (): React.CSSProperties => ({
+    width: `${METRIC_ICON_SIZE}px`,
+    height: `${METRIC_ICON_SIZE}px`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-    overflow: 'hidden',
   })
 
   const topCards = [
@@ -469,7 +463,7 @@ export default function DashboardPage() {
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
                     <div style={{ fontSize: isMobile ? '11px' : '14px', fontWeight: 800, color: TEXT2, marginBottom: '8px' }}>{item.label}</div>
                   </div>
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <div style={iconWrap()}>{item.icon}</div>
                 </div>
                 <div>
                   <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '22px' : '30px', color: item.accent }}>{item.value}</div>
