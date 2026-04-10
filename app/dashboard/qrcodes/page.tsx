@@ -79,6 +79,24 @@ function useIsMobile() {
   return isMobile
 }
 
+function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
 function formatDate(date?: string | null) {
   if (!date) return 'No date'
   const parsed = new Date(date)
@@ -112,28 +130,6 @@ function IconPrint({ size = 15 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <rect x="7" y="14" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
-}
-
-function IconQr({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M14 14h2v2h-2zM18 14h3v3h-3zM14 18h3v3h-3zM19 19h2v2h-2z" fill="currentColor" />
-    </svg>
-  )
-}
-
-function IconGrid({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.9" />
     </svg>
   )
 }
@@ -252,18 +248,14 @@ export default function QRCodesPage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const statIconStyle: React.CSSProperties = {
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-  })
+  }
 
   const qrCount = jobs.length
   const readyCount = jobs.filter(job => !!job.qr_code_token).length
@@ -378,7 +370,13 @@ export default function QRCodesPage() {
                 label: 'QR codes',
                 value: qrCount,
                 sub: 'Units with generated QR links',
-                icon: <IconQr size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_a063dbe15aa840af9882c0e94b5525fa~mv2.png"
+                    size={30}
+                    alt="QR codes"
+                  />
+                ),
                 accent: TEXT,
                 tag: 'Library total',
               },
@@ -386,7 +384,13 @@ export default function QRCodesPage() {
                 label: 'Ready to save',
                 value: readyCount,
                 sub: 'Download or print now',
-                icon: <IconDownload size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_e64e818ee96f486cb8bf1c7787435fb9~mv2.png"
+                    size={30}
+                    alt="Ready to save"
+                  />
+                ),
                 accent: TEAL_DARK,
                 tag: 'Actions live',
               },
@@ -394,7 +398,13 @@ export default function QRCodesPage() {
                 label: 'Latest install',
                 value: latestInstall,
                 sub: 'Most recent install date in the list',
-                icon: <IconGrid size={18} />,
+                icon: (
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_6442d64c1c9e4069ac41a182df951b32~mv2.png"
+                    size={30}
+                    alt="Latest install"
+                  />
+                ),
                 accent: TEXT,
                 tag: 'Recent activity',
               },
@@ -418,7 +428,7 @@ export default function QRCodesPage() {
                     </div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>
+                  <div style={statIconStyle}>
                     {item.icon}
                   </div>
                 </div>
