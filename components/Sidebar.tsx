@@ -50,8 +50,8 @@ const bottomTabs = [
 ]
 
 const iconImageStyle: React.CSSProperties = {
-  width: 18,
-  height: 18,
+  width: 22,
+  height: 22,
   objectFit: 'contain',
   display: 'block',
   flexShrink: 0,
@@ -294,8 +294,8 @@ export function Sidebar({ active }: { active: string }) {
             font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           }
           .mobile-tab-icon {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -305,8 +305,8 @@ export function Sidebar({ active }: { active: string }) {
           .mobile-tab-icon svg,
           .mobile-tab-icon img {
             display: block;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             object-fit: contain;
           }
         `}</style>
@@ -382,8 +382,8 @@ export function Sidebar({ active }: { active: string }) {
         .sidebar-icon svg,
         .sidebar-icon img {
           display: block;
-          width: 18px;
-          height: 18px;
+          width: 22px;
+          height: 22px;
           object-fit: contain;
           shape-rendering: geometricPrecision;
         }
