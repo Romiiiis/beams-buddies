@@ -95,20 +95,66 @@ function useIsMobile() {
   return isMobile
 }
 
-function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
+function DashboardImageIcon({
+  src,
+  alt,
+  size = 28,
+}: {
+  src: string
+  alt: string
+  size?: number
+}) {
   return (
     <img
       src={src}
       alt={alt}
-      width={size}
-      height={size}
       style={{
-        width: `${size}px`,
-        height: `${size}px`,
+        width: size,
+        height: size,
         objectFit: 'contain',
         display: 'block',
         flexShrink: 0,
       }}
+    />
+  )
+}
+
+function IconScheduled({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png"
+      alt="Scheduled units"
+      size={size}
+    />
+  )
+}
+
+function IconOverdueServices({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png"
+      alt="Overdue services"
+      size={size}
+    />
+  )
+}
+
+function IconDueSoon({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
+      alt="Due soon"
+      size={size}
+    />
+  )
+}
+
+function IconUpcomingLater({ size = 28 }: { size?: number }) {
+  return (
+    <DashboardImageIcon
+      src="https://static.wixstatic.com/media/48c433_7c5b4b86c5af4656861b5cc302bcab0e~mv2.png"
+      alt="Upcoming later"
+      size={size}
     />
   )
 }
@@ -148,6 +194,14 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function SchedulePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -157,7 +211,10 @@ export default function SchedulePage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
@@ -229,12 +286,15 @@ export default function SchedulePage() {
     }
   }
 
-  const counts = useMemo(() => ({
-    all: jobs.length,
-    overdue: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length,
-    due_soon: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30).length,
-    good: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) > 30).length,
-  }), [jobs])
+  const counts = useMemo(
+    () => ({
+      all: jobs.length,
+      overdue: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length,
+      due_soon: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30).length,
+      good: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) > 30).length,
+    }),
+    [jobs]
+  )
 
   const filtered = useMemo(() => {
     return jobs.filter(j => {
@@ -261,106 +321,76 @@ export default function SchedulePage() {
     year: 'numeric',
   })
 
-  const shellCard: React.CSSProperties = {
+  const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
     overflow: 'hidden',
   }
 
-  const panelCard: React.CSSProperties = {
-    ...shellCard,
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
     padding: '16px',
+    borderRadius: '16px',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
   }
 
-  const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
-    fontWeight: 700,
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
     cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
-  }
-
-  const statIconStyle: React.CSSProperties = {
-    width: '30px',
-    height: '30px',
+    color: TEXT3,
+    padding: 0,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
   }
 
   const topCards = [
     {
       label: 'Scheduled units',
-      value: counts.all,
+      value: counts.all.toLocaleString('en-AU'),
       sub: 'With service tracking',
-      icon: (
-        <ImageIcon
-          src="https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png"
-          size={30}
-          alt="Scheduled units"
-        />
-      ),
+      icon: <IconScheduled size={28} />,
       accent: TEXT,
       tag: 'Service total',
     },
     {
       label: 'Overdue services',
-      value: counts.overdue,
+      value: counts.overdue.toLocaleString('en-AU'),
       sub: counts.overdue > 0 ? 'Needs attention now' : 'All clear',
-      icon: (
-        <ImageIcon
-          src="https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png"
-          size={30}
-          alt="Overdue services"
-        />
-      ),
+      icon: <IconOverdueServices size={28} />,
       accent: counts.overdue > 0 ? RED : TEXT,
       tag: 'Action needed',
     },
     {
       label: 'Due soon',
-      value: counts.due_soon,
+      value: counts.due_soon.toLocaleString('en-AU'),
       sub: 'Within 30 days',
-      icon: (
-        <ImageIcon
-          src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
-          size={30}
-          alt="Due soon"
-        />
-      ),
+      icon: <IconDueSoon size={28} />,
       accent: AMBER,
       tag: 'Next window',
     },
     {
       label: 'Upcoming later',
-      value: counts.good,
+      value: counts.good.toLocaleString('en-AU'),
       sub: 'More than 30 days',
-      icon: (
-        <ImageIcon
-          src="https://static.wixstatic.com/media/48c433_7c5b4b86c5af4656861b5cc302bcab0e~mv2.png"
-          size={30}
-          alt="Upcoming later"
-        />
-      ),
+      icon: <IconUpcomingLater size={28} />,
       accent: BLUE,
       tag: 'On track',
     },
@@ -373,155 +403,169 @@ export default function SchedulePage() {
     { key: 'good', label: `Upcoming (${counts.good})` },
   ]
 
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
+        <Sidebar active="/dashboard/schedule" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: TEXT3,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          Loading schedule...
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         fontFamily: FONT,
         background: BG,
-        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
       <Sidebar active="/dashboard/schedule" />
 
-      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            minHeight: '100%',
+            padding: isMobile ? '14px' : '16px 20px',
             display: 'flex',
             flexDirection: 'column',
-            background: BG,
-            padding: isMobile ? '14px' : '16px',
-            gap: '12px',
+            gap: '14px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
           <div
             style={{
-              ...shellCard,
+              ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div>
-              <div
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
+              {todayStr}
+            </div>
+
+            <div
+              style={{
+                fontSize: isMobile ? '26px' : '34px',
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                fontWeight: 900,
+                color: WHITE,
+                marginBottom: '8px',
+              }}
+            >
+              Service schedule
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: '760px',
+              }}
+            >
+              Monitor overdue, due soon, and upcoming services with a clean scheduling view built for fast follow-up.
+            </div>
+
+            <div
+              style={{
+                marginTop: '14px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                onClick={() => router.push('/dashboard/customers')}
                 style={{
+                  height: '36px',
+                  padding: '0 14px',
                   fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.68)',
-                  marginBottom: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: WHITE,
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  borderRadius: '10px',
                 }}
               >
-                {todayStr}
-              </div>
+                <IconArrow size={13} />
+                View customers
+              </button>
 
-              <div
+              <button
                 style={{
-                  fontSize: isMobile ? '28px' : '34px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.04em',
-                  fontWeight: 900,
-                  color: '#FFFFFF',
-                  marginBottom: '8px',
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  background: TEAL,
+                  color: WHITE,
+                  border: 'none',
+                  borderRadius: '10px',
                 }}
               >
-                Service schedule
-              </div>
-
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.72)',
-                  maxWidth: '760px',
-                }}
-              >
-                Monitor overdue, due soon, and upcoming services with a clean scheduling view built for fast follow-up.
-              </div>
-
-              <div
-                style={{
-                  marginTop: '14px',
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <button
-                  onClick={() => router.push('/dashboard/customers')}
-                  style={{
-                    ...quickActionStyle,
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    boxShadow: 'none',
-                  }}
-                >
-                  <ImageIcon
-                    src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
-                    size={16}
-                    alt="View customers"
-                  />
-                  View customers
-                </button>
-
-                <button
-                  style={{
-                    ...quickActionStyle,
-                    background: TEAL,
-                    color: '#FFFFFF',
-                    border: 'none',
-                    boxShadow: '0 6px 14px rgba(31,158,148,0.20)',
-                  }}
-                >
-                  <IconSpark size={16} />
-                  Send all reminders
-                </button>
-              </div>
+                <IconSpark size={14} />
+                Send all reminders
+              </button>
             </div>
           </div>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
             {topCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...panelCard,
-                  gridColumn: isMobile ? 'span 1' : 'span 3',
-                  minHeight: 148,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                      {item.label}
-                    </div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
-
-                  <div style={statIconStyle}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
                     {item.icon}
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>
-                    {item.value}
-                  </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
-                    {item.sub}
-                  </div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -530,10 +574,9 @@ export default function SchedulePage() {
           {overdueJobs.length > 0 && (
             <div
               style={{
-                ...shellCard,
+                ...card,
                 background: '#FFF9F9',
                 border: '1px solid #FECACA',
-                boxShadow: '0 6px 18px rgba(239,68,68,0.06), 0 1px 4px rgba(239,68,68,0.04)',
               }}
             >
               <div
@@ -544,6 +587,7 @@ export default function SchedulePage() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '12px',
+                  flexWrap: 'wrap',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -553,18 +597,32 @@ export default function SchedulePage() {
                   </span>
                 </div>
 
-                <span
-                  style={{ fontSize: '12px', color: '#B91C1C', cursor: 'pointer', fontWeight: 700, whiteSpace: 'nowrap' }}
+                <button
                   onClick={() => setFilter('overdue')}
+                  style={{
+                    height: '28px',
+                    padding: '0 9px',
+                    background: WHITE,
+                    border: '1px solid #FECACA',
+                    borderRadius: '7px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    color: '#991B1B',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
                 >
-                  View all
-                </span>
+                  View all <IconArrow size={11} />
+                </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0,1fr))' }}>
-                {overdueJobs.slice(0, 4).map((job, i) => {
+                {overdueJobs.slice(0, 4).map((job, i, arr) => {
                   const days = Math.abs(getDays(job.next_service_date))
-                  const isLastRow = i >= overdueJobs.slice(0, 4).length - (isMobile ? 1 : 2)
+                  const isLastRow = i >= arr.length - (isMobile ? 1 : 2)
 
                   return (
                     <div
@@ -579,6 +637,7 @@ export default function SchedulePage() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: '12px',
+                        background: '#FFF9F9',
                       }}
                     >
                       <div style={{ minWidth: 0 }}>
@@ -586,7 +645,7 @@ export default function SchedulePage() {
                           {job.customers?.first_name} {job.customers?.last_name}
                         </div>
                         <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} • {job.customers?.suburb || '-'}
+                          {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {job.customers?.suburb || '-'}
                         </div>
                       </div>
 
@@ -610,16 +669,15 @@ export default function SchedulePage() {
                   height: '34px',
                   padding: '0 14px',
                   borderRadius: '999px',
-                  border: `1px solid ${filter === f.key ? TEAL_DARK : BORDER}`,
-                  background: filter === f.key ? TEAL : WHITE,
-                  color: filter === f.key ? WHITE : TEXT2,
+                  border: `1px solid ${filter === f.key ? TEAL : BORDER}`,
+                  background: filter === f.key ? '#E6F7F6' : WHITE,
+                  color: filter === f.key ? TEAL_DARK : TEXT2,
                   fontSize: '12px',
                   cursor: 'pointer',
                   fontFamily: FONT,
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
-                  fontWeight: filter === f.key ? 700 : 600,
-                  boxShadow: filter === f.key ? '0 2px 8px rgba(31,158,148,0.18)' : 'none',
+                  fontWeight: 700,
                 }}
               >
                 {f.label}
@@ -630,29 +688,25 @@ export default function SchedulePage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0, 1fr))',
-              gap: '12px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gap: '14px',
               alignItems: 'start',
             }}
           >
-            <div
-              style={{
-                ...panelCard,
-                gridColumn: isMobile ? 'span 1' : 'span 8',
-              }}
-            >
+            <div style={card}>
               <div
                 style={{
+                  padding: '14px 16px 12px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
-                  alignItems: isMobile ? 'flex-start' : 'center',
+                  alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
-                  gap: '10px',
                   flexDirection: isMobile ? 'column' : 'row',
-                  marginBottom: '12px',
+                  gap: '10px',
                 }}
               >
                 <div>
-                  <div style={sectionLabel}>Scheduled services</div>
+                  <div style={sectionHeaderTitle}>Scheduled services</div>
                   <div style={{ ...TYPE.bodySm }}>
                     Filter, review, and action every service date from one streamlined list.
                   </div>
@@ -660,74 +714,55 @@ export default function SchedulePage() {
 
                 <div
                   style={{
-                    height: '34px',
+                    height: '40px',
+                    padding: '0 12px',
                     borderRadius: '10px',
                     border: `1px solid ${BORDER}`,
-                    background: '#F8FAFC',
+                    background: WHITE,
                     color: TEXT2,
                     fontSize: '12px',
                     fontWeight: 700,
-                    padding: '0 12px',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    fontFamily: FONT,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {filtered.length} shown
                 </div>
               </div>
 
-              {loading ? (
+              {filtered.length === 0 ? (
                 <div
                   style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
+                    padding: '32px 18px',
                     textAlign: 'center',
                     color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
-                >
-                  Loading...
-                </div>
-              ) : filtered.length === 0 ? (
-                <div
-                  style={{
-                    borderRadius: '12px',
-                    padding: '26px 16px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '14px',
-                    fontWeight: 500,
+                    fontSize: '13px',
                   }}
                 >
                   No jobs in this category.
                 </div>
               ) : (
-                <div style={{ display: 'grid', gap: '8px' }}>
+                <div style={{ display: 'grid' }}>
                   {filtered.map(job => {
                     const u = job.next_service_date ? getUrgency(job.next_service_date) : null
 
                     return (
                       <div
                         key={job.id}
+                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                         style={{
-                          borderRadius: '14px',
-                          border: `1px solid ${BORDER}`,
-                          background: WHITE,
-                          padding: '12px 14px',
                           display: 'grid',
                           gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) auto auto',
-                          gap: '10px',
+                          gap: '12px',
                           alignItems: 'center',
+                          padding: '13px 16px',
+                          borderBottom: `1px solid ${BORDER}`,
                           cursor: 'pointer',
+                          transition: 'background 0.12s',
                         }}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                        onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                       >
                         <div style={{ minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
@@ -745,8 +780,6 @@ export default function SchedulePage() {
                                   fontSize: '10px',
                                   fontWeight: 800,
                                   whiteSpace: 'nowrap',
-                                  display: 'inline-block',
-                                  letterSpacing: '0.02em',
                                 }}
                               >
                                 {u.label}
@@ -755,7 +788,7 @@ export default function SchedulePage() {
                           </div>
 
                           <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type ? `• ${String(job.equipment_type).replace('_', ' ')}` : ''}
+                            {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type ? `· ${String(job.equipment_type).replace('_', ' ')}` : ''}
                           </div>
                           <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {job.customers?.suburb || '-'}
@@ -812,7 +845,6 @@ export default function SchedulePage() {
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '6px',
-                              boxShadow: '0 4px 10px rgba(31,158,148,0.14)',
                             }}
                           >
                             <IconSms size={14} />
@@ -822,7 +854,7 @@ export default function SchedulePage() {
 
                         {isMobile && (
                           <div style={{ gridColumn: '1 / -1', ...TYPE.bodySm }}>
-                            {u?.sub || 'No date set'} • {u?.dateLabel || '-'}
+                            {u?.sub || 'No date set'} · {u?.dateLabel || '-'}
                           </div>
                         )}
                       </div>
@@ -832,140 +864,153 @@ export default function SchedulePage() {
               )}
             </div>
 
-            {!isMobile && (
-              <div
-                style={{
-                  gridColumn: 'span 4',
-                  display: 'grid',
-                  gap: '12px',
-                }}
-              >
-                <div style={panelCard}>
-                  <div style={sectionLabel}>Next 5 due</div>
+            <div style={{ display: 'grid', gap: '14px' }}>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Next 5 due</div>
+                  <button onClick={() => setFilter('due_soon')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
 
+                <div style={{ marginBottom: '4px' }}>
+                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
+                    {dueSoonJobs.length}
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>inside 30 days</span>
+                </div>
+
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {dueSoonJobs.length === 0 ? (
                     <div
                       style={{
-                        borderRadius: '12px',
-                        padding: '20px 14px',
-                        background: WHITE,
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
-                        textAlign: 'center',
-                        fontSize: '14px',
-                        fontWeight: 500,
+                        fontSize: '12px',
+                        fontWeight: 600,
                         color: TEXT3,
+                        textAlign: 'center',
                       }}
                     >
-                      No due soon services.
+                      No due soon services
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gap: '8px' }}>
-                      {dueSoonJobs.slice(0, 5).map(job => {
-                        const u = getUrgency(job.next_service_date)
+                    dueSoonJobs.slice(0, 5).map(job => {
+                      const u = getUrgency(job.next_service_date)
 
-                        return (
-                          <div
-                            key={job.id}
-                            style={{
-                              borderRadius: '12px',
-                              padding: '12px 14px',
-                              background: WHITE,
-                              border: `1px solid ${BORDER}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '10px',
-                              cursor: 'pointer',
-                            }}
-                            onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                          >
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ ...TYPE.titleSm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {job.customers?.first_name} {job.customers?.last_name}
-                              </div>
-                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
-                              </div>
+                      return (
+                        <div
+                          key={job.id}
+                          onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                          style={{
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: TEXT,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {job.customers?.first_name} {job.customers?.last_name}
                             </div>
-
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ ...TYPE.titleSm, color: u.valColor }}>
-                                {u.sub.replace(' until due', '')}
-                              </div>
-                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
-                                {u.dateLabel}
-                              </div>
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: u.valColor, flexShrink: 0 }}>
+                              {u.sub.replace(' until due', '')}
                             </div>
                           </div>
-                        )
-                      })}
-                    </div>
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {u.dateLabel}
+                          </div>
+                        </div>
+                      )
+                    })
                   )}
                 </div>
+              </div>
 
-                <div style={panelCard}>
-                  <div style={sectionLabel}>Quick actions</div>
-
-                  <div style={{ display: 'grid', gap: '8px' }}>
-                    {[
-                      { label: 'View all customers', href: '/dashboard/customers' },
-                      { label: 'Create a new invoice', href: '/dashboard/invoices' },
-                      { label: 'View revenue', href: '/dashboard/revenue' },
-                    ].map(a => (
-                      <div
-                        key={a.label}
-                        onClick={() => router.push(a.href)}
-                        style={{
-                          borderRadius: '12px',
-                          padding: '12px 14px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <span style={TYPE.titleSm}>{a.label}</span>
-                        <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <IconArrow size={14} />
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Quick actions</div>
+                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
                 </div>
 
-                <div style={panelCard}>
-                  <div style={sectionLabel}>Snapshot</div>
-
-                  <div style={{ display: 'grid', gap: '8px' }}>
-                    {[
-                      { label: 'Overdue now', value: counts.overdue, color: counts.overdue > 0 ? RED : TEXT },
-                      { label: 'Due soon', value: counts.due_soon, color: AMBER },
-                      { label: 'Later upcoming', value: counts.good, color: BLUE },
-                    ].map(item => (
-                      <div
-                        key={item.label}
-                        style={{
-                          borderRadius: '12px',
-                          padding: '12px 14px',
-                          background: WHITE,
-                          border: `1px solid ${BORDER}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                        }}
-                      >
-                        <span style={TYPE.titleSm}>{item.label}</span>
-                        <span style={{ ...TYPE.valueMd, color: item.color }}>{item.value}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+                  {[
+                    { label: 'View all customers', href: '/dashboard/customers' },
+                    { label: 'Create a new invoice', href: '/dashboard/invoices' },
+                    { label: 'View revenue', href: '/dashboard/revenue' },
+                  ].map(a => (
+                    <div
+                      key={a.label}
+                      onClick={() => router.push(a.href)}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: `1px solid ${BORDER}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span style={TYPE.titleSm}>{a.label}</span>
+                      <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <IconArrow size={13} />
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
+
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Snapshot</div>
+                  <button onClick={() => setFilter('all')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[
+                    { label: 'Overdue now', value: counts.overdue, color: counts.overdue > 0 ? RED : TEXT, bg: counts.overdue > 0 ? '#FEF2F2' : '#F8FAFC', borderColor: counts.overdue > 0 ? '#FECACA' : BORDER },
+                    { label: 'Due soon', value: counts.due_soon, color: AMBER, bg: '#FFFBEB', borderColor: '#FDE68A' },
+                    { label: 'Later upcoming', value: counts.good, color: BLUE, bg: '#EFF6FF', borderColor: '#BFDBFE' },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: item.bg,
+                        border: `1px solid ${item.borderColor}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px',
+                      }}
+                    >
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{item.label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
