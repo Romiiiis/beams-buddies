@@ -43,23 +43,44 @@ function IconInvoice({ size = 15 }: { size?: number }) {
 function IconArrow({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
-function IconAlert({ size = 14 }: { size?: number }) {
+function IconAlert({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
 }
-function IconChevron({ size = 13 }: { size?: number }) {
+function IconChevronRight({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
-function IconTrendUp({ size = 12 }: { size?: number }) {
+function IconTrendUp({ size = 11 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
 function IconPhone({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/></svg>
 }
-function IconDollar({ size = 14 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+
+// ── Radial Gauge (v3 original) ────────────────────────────────────────────────
+function RadialGauge({ value, label, color, size = 76 }: { value: number; label: string; color: string; size?: number }) {
+  const r = (size - 10) / 2
+  const circ = 2 * Math.PI * r
+  const filled = Math.min(value / Math.max(value + 2, 10), 1) * circ
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      <div style={{ position: 'relative', width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={BORDER} strokeWidth={7}/>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={7}
+            strokeDasharray={`${filled} ${circ}`} strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray 0.5s ease' }}/>
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>{value}</span>
+        </div>
+      </div>
+      <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{label}</span>
+    </div>
+  )
 }
 
-function Sparkline({ data, color, width = 120, height = 40 }: { data: number[]; color: string; width?: number; height?: number }) {
+// ── Sparkline ─────────────────────────────────────────────────────────────────
+function Sparkline({ data, color, width = 160, height = 50 }: { data: number[]; color: string; width?: number; height?: number }) {
   if (data.length < 2) return <div style={{ width, height }}/>
   const min = Math.min(...data), max = Math.max(...data) || 1
   const pts = data.map((v, i) => {
@@ -82,6 +103,7 @@ function Sparkline({ data, color, width = 120, height = 40 }: { data: number[]; 
   )
 }
 
+// ── Donut Chart ───────────────────────────────────────────────────────────────
 function DonutChart({ segments, size = 180, thickness = 28 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((s, x) => s + x.value, 0) || 1
@@ -112,6 +134,7 @@ function DonutChart({ segments, size = 180, thickness = 28 }: { segments: { labe
   )
 }
 
+// ── Monthly Bar Chart ─────────────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { label: string; total: number; completed: number }[] }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const yMax = Math.max(...data.map(d => d.total), 1)
@@ -141,6 +164,7 @@ function MonthlyBarChart({ data }: { data: { label: string; total: number; compl
   )
 }
 
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -188,6 +212,8 @@ export default function DashboardPage() {
   function getDays(d: string) { return Math.floor((new Date(d).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) }
 
   const dueSoonCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
+  const inProgressCount = useMemo(() => allJobs.filter(j => !j.next_service_date || getDays(j.next_service_date) >= 0).length, [allJobs])
+  const completedCount  = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
 
   const monthlyData = useMemo(() => {
     const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -219,17 +245,11 @@ export default function DashboardPage() {
     return Object.entries(b).map(([label, value]) => ({ label, value: Math.round((value / total) * collected), color: colors[label] }))
   }, [allJobs, invoiceStats.collected])
 
-  const avgJobValue = invoiceStats.paidCount > 0 ? Math.round(invoiceStats.collected / invoiceStats.paidCount) : 0
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const jobTimes = ['8:00 AM', '11:00 AM', '2:30 PM', '4:00 PM', '9:00 AM']
 
-  // No boxShadow anywhere — clean flat cards only
-  const card: React.CSSProperties = {
-    background: WHITE,
-    border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
-    overflow: 'hidden',
-  }
+  // Flat cards — no boxShadow
+  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }
   const cardP: React.CSSProperties = { ...card, padding: '18px' }
 
   function statusPill(d: string | null) {
@@ -251,15 +271,14 @@ export default function DashboardPage() {
   }
 
   return (
-    // ── Outermost: flex row, min-height fills screen, page scrolls naturally ──
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard"/>
 
-      {/* ── Content column: no height:100vh, no overflow:scroll — browser scrolls this ── */}
+      {/* No height:100vh / overflow:scroll — browser handles scroll natively */}
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '80px' }}>
 
-          {/* ── HEADER (unchanged) ─────────────────────────────────────── */}
+          {/* ── HEADER ──────────────────────────────────────────────────── */}
           <div style={{ ...card, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '26px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Dashboard</div>
@@ -279,113 +298,130 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 1: 4 stat cards — 2-col on mobile, 4-col on desktop ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+          {/* ── ROW 1: 4 stat cards — 1-col on mobile, 4-col on desktop ─── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
 
-            {/* TODAY'S JOBS */}
+            {/* 1. TODAY'S JOBS — radial gauges from v3 */}
             <div style={cardP}>
-              <div style={{ ...TYPE.label, marginBottom: '10px' }}>Today's Jobs</div>
-              <div style={{ fontSize: '36px', fontWeight: 900, color: TEXT, letterSpacing: '-0.06em', lineHeight: 1, marginBottom: '4px' }}>{stats.jobsThisMonth}</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>
-                {dueSoonCount > 0 ? <span style={{ color: TEAL, fontWeight: 700 }}>{dueSoonCount} due this week</span> : 'Scheduled this month'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Today's Jobs</div>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT3 }}>{stats.jobsThisMonth}</span>
               </div>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
-                {[
-                  { label: 'Active', val: stats.units - stats.overdue },
-                  { label: 'Overdue', val: stats.overdue },
-                  { label: 'Done', val: allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length },
-                ].map(item => (
-                  <div key={item.label} style={{ flex: 1, textAlign: 'center', padding: '8px 4px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: item.label === 'Overdue' && item.val > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.03em' }}>{item.val}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, marginTop: 2 }}>{item.label}</div>
-                  </div>
-                ))}
+              <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
+                <span>{stats.jobsThisMonth}</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: TEXT3 }}> Jobs Scheduled</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '14px' }}>
+                <RadialGauge value={inProgressCount} label="In Progress" color={TEAL} size={76}/>
+                <RadialGauge value={dueSoonCount} label="Upcoming" color={TEAL_DARK} size={76}/>
+                <RadialGauge value={completedCount} label="Completed" color="#94A3B8" size={76}/>
               </div>
               <button onClick={() => router.push('/dashboard/schedule')}
-                style={{ width: '100%', height: '34px', background: TEAL, color: WHITE, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                style={{ width: '100%', height: '36px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
                 View schedule
               </button>
             </div>
 
-            {/* REVENUE */}
+            {/* 2. REVENUE STAT — sparkline + legend from v3 */}
             <div style={cardP}>
-              <div style={{ ...TYPE.label, marginBottom: '10px' }}>Revenue</div>
-              <div style={{ fontSize: '32px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: '4px' }}>
-                ${invoiceStats.collected > 0 ? (invoiceStats.collected >= 1000 ? (invoiceStats.collected / 1000).toFixed(1) + 'k' : invoiceStats.collected.toLocaleString()) : '0'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Revenue Stat</div>
+                <button onClick={() => router.push('/dashboard/revenue')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0 }}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </div>
+              <div style={{ marginBottom: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
+                  ${invoiceStats.collected > 0 ? (invoiceStats.collected / 1000).toFixed(1) + 'k' : '0'}
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>this month</span>
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '10px', padding: '3px 7px', borderRadius: '6px', background: '#E6F7F6' }}>
                 <span style={{ color: TEAL }}><IconTrendUp size={11}/></span>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK }}>Collected this month</span>
-              </div>
-              <Sparkline data={sparkData} color={TEAL} width={180} height={44}/>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                <span style={{ ...TYPE.bodySm }}>{invoiceStats.paidCount} paid invoices</span>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT3 }}>
-                  {invoiceStats.outstanding > 0 ? `$${(invoiceStats.outstanding / 1000).toFixed(1)}k outstanding` : 'All clear'}
+                <span style={{ fontSize: '11px', fontWeight: 800, color: TEAL_DARK }}>
+                  ${invoiceStats.outstanding > 0 ? (invoiceStats.outstanding / 1000).toFixed(1) + 'k' : '0'} vs last month
                 </span>
               </div>
-            </div>
-
-            {/* CUSTOMERS */}
-            <div style={cardP}>
-              <div style={{ ...TYPE.label, marginBottom: '10px' }}>Customers</div>
-              <div style={{ fontSize: '36px', fontWeight: 900, color: TEXT, letterSpacing: '-0.06em', lineHeight: 1, marginBottom: '4px' }}>{stats.customers}</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>{stats.units} units tracked</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                {[
-                  { label: 'Service jobs', val: allJobs.filter(j => String(j.job_type || '').toLowerCase().includes('service')).length },
-                  { label: 'Installations', val: allJobs.filter(j => String(j.job_type || '').toLowerCase().includes('install')).length },
-                  { label: 'Repairs', val: allJobs.filter(j => String(j.job_type || '').toLowerCase().includes('repair')).length },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>{item.label}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: 56, height: 4, borderRadius: '999px', background: BORDER, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${Math.min(100, (item.val / (stats.units || 1)) * 100)}%`, background: TEAL, borderRadius: '999px' }}/>
-                      </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT, minWidth: 16, textAlign: 'right' }}>{item.val}</span>
-                    </div>
+              <Sparkline data={sparkData} color={TEAL} width={160} height={50}/>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
+                {revenueBreakdown.slice(0, 3).map(rb => (
+                  <div key={rb.label} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: rb.color, flexShrink: 0 }}/>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT2, flex: 1 }}>{rb.label}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>${(rb.value / 1000).toFixed(1)}k</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* AVG JOB VALUE + ALERTS */}
+            {/* 3. NEW LEADS / CUSTOMERS — from v3 */}
             <div style={cardP}>
-              <div style={{ ...TYPE.label, marginBottom: '10px' }}>Avg Job Value</div>
-              <div style={{ fontSize: '32px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: '4px' }}>
-                ${avgJobValue > 0 ? avgJobValue.toLocaleString('en-AU') : '—'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>New Leads</div>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT3 }}>{stats.customers}</span>
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>per paid invoice</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ padding: '10px 12px', borderRadius: '10px', background: invoiceStats.outstanding > 0 ? '#FEF2F2' : '#E6F7F6', border: `1px solid ${invoiceStats.outstanding > 0 ? '#FECACA' : '#C4E8E5'}`, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  onClick={() => router.push('/dashboard/invoices')}>
-                  <span style={{ color: invoiceStats.outstanding > 0 ? '#B91C1C' : TEAL }}><IconDollar size={14}/></span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: invoiceStats.outstanding > 0 ? '#7F1D1D' : TEAL_DARK }}>
-                      {invoiceStats.outstanding > 0 ? `$${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })} unpaid` : 'All invoices paid'}
-                    </div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>{invoiceStats.overdueCount} overdue invoices</div>
+              <div style={{ marginBottom: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
+                  {stats.customers > 0 ? (stats.customers >= 1000 ? (stats.customers / 1000).toFixed(1) + 'k' : stats.customers) : '0'}
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>this week</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '14px' }}>
+                {revenueBreakdown.map(rb => (
+                  <div key={rb.label} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: rb.color, flexShrink: 0 }}/>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT2, flex: 1 }}>{rb.label}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>${(rb.value / 1000).toFixed(1)}k</span>
                   </div>
-                  <IconChevron size={12}/>
+                ))}
+              </div>
+              <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: `1px solid ${BORDER}`, fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
+                {stats.units} units tracked in CRM
+              </div>
+            </div>
+
+            {/* 4. URGENT ISSUES — from v3 */}
+            <div style={cardP}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Urgent Issues</div>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#B91C1C' }}>{stats.overdue + invoiceStats.overdueCount}</span>
+              </div>
+              <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '16px' }}>
+                {stats.overdue > 0
+                  ? <><span style={{ color: '#B91C1C' }}>{stats.overdue}</span> Overdue Service{stats.overdue !== 1 ? 's' : ''}</>
+                  : <span style={{ color: TEAL }}>All Clear</span>
+                }
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                <div onClick={() => router.push('/dashboard/jobs')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: '#FEF2F2', border: '1px solid #FECACA', cursor: 'pointer' }}>
+                  <span style={{ color: '#B91C1C', flexShrink: 0 }}><IconAlert size={15}/></span>
+                  <div style={{ flex: 1, fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>
+                    {stats.overdue > 0
+                      ? <><span style={{ fontWeight: 900 }}>{stats.overdue} Job{stats.overdue !== 1 ? 's' : ''}</span> Overdue</>
+                      : 'No overdue jobs'}
+                  </div>
+                  <IconChevronRight size={13}/>
                 </div>
-                <div style={{ padding: '10px 12px', borderRadius: '10px', background: stats.overdue > 0 ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${stats.overdue > 0 ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  onClick={() => router.push('/dashboard/jobs')}>
-                  <span style={{ color: stats.overdue > 0 ? '#B91C1C' : TEXT3 }}><IconAlert size={14}/></span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: stats.overdue > 0 ? '#7F1D1D' : TEXT2 }}>
-                      {stats.overdue > 0 ? `${stats.overdue} service${stats.overdue !== 1 ? 's' : ''} overdue` : 'No overdue services'}
-                    </div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>{dueSoonCount} due this week</div>
+                <div onClick={() => router.push('/dashboard/invoices')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: '#FEF2F2', border: '1px solid #FECACA', cursor: 'pointer' }}>
+                  <span style={{ color: '#B91C1C', flexShrink: 0 }}><IconAlert size={15}/></span>
+                  <div style={{ flex: 1, fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>
+                    {invoiceStats.outstanding > 0
+                      ? <><span style={{ fontWeight: 900 }}>${invoiceStats.outstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}</span> Overdue Invoices</>
+                      : 'No overdue invoices'}
                   </div>
-                  <IconChevron size={12}/>
+                  <IconChevronRight size={13}/>
                 </div>
               </div>
+              <button onClick={() => router.push('/dashboard/jobs')}
+                style={{ width: '100%', height: '34px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2 }}>
+                View all
+              </button>
             </div>
           </div>
 
           {/* ── ROW 2: Upcoming appointments + Revenue Stats ─────────────── */}
-          {/* On mobile: stacked. On desktop: side by side */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 290px', gap: '14px', alignItems: 'start' }}>
 
             {/* UPCOMING APPOINTMENTS */}
@@ -433,9 +469,9 @@ export default function DashboardPage() {
                     {isFirst ? (
                       <button onClick={e => { e.stopPropagation(); router.push(`/dashboard/customers/${job.customer_id}`) }}
                         style={{ height: '30px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-                        Start Job <IconChevron size={11}/>
+                        Start Job <IconChevronRight size={11}/>
                       </button>
-                    ) : <div style={{ color: TEXT3 }}><IconChevron size={13}/></div>}
+                    ) : <div style={{ color: TEXT3 }}><IconChevronRight size={13}/></div>}
                   </div>
                 )
               })}
@@ -472,7 +508,7 @@ export default function DashboardPage() {
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: rb.color, flexShrink: 0 }}/>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT, flex: 1 }}>{rb.label}</span>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>${(rb.value / 1000).toFixed(1)}k</span>
-                    <IconChevron size={12}/>
+                    <IconChevronRight size={12}/>
                   </div>
                 ))}
               </div>
@@ -486,7 +522,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 3: Recent Customers + Unpaid Invoices — stacked on mobile ── */}
+          {/* ── ROW 3: Recent Customers + Unpaid Invoices ─────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: '14px', alignItems: 'start' }}>
 
             {/* RECENT CUSTOMERS */}
