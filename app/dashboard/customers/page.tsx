@@ -379,7 +379,6 @@ export default function CustomersPage() {
       sub: 'Stored in your CRM',
       icon: <IconCustomers size={28} />,
       accent: TEXT,
-      tag: 'Directory total',
     },
     {
       label: 'Tracked units',
@@ -387,7 +386,6 @@ export default function CustomersPage() {
       sub: 'Linked to customer profiles',
       icon: <IconJobs size={28} />,
       accent: TEAL_DARK,
-      tag: 'Equipment count',
     },
     {
       label: 'Due soon',
@@ -395,7 +393,6 @@ export default function CustomersPage() {
       sub: 'Customers needing attention soon',
       icon: <IconService size={28} />,
       accent: AMBER,
-      tag: 'Service watch',
     },
     {
       label: 'Review clicks',
@@ -403,7 +400,6 @@ export default function CustomersPage() {
       sub: totalPlatforms > 0 ? `Across ${totalPlatforms} active platform${totalPlatforms === 1 ? '' : 's'}` : 'No review platforms connected',
       icon: <IconReports size={28} />,
       accent: stats.totalReviewClicks > 0 ? TEAL_DARK : TEXT,
-      tag: 'Engagement',
     },
   ]
 
@@ -542,7 +538,6 @@ export default function CustomersPage() {
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
                     <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
                       {item.label}
                     </div>
