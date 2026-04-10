@@ -59,9 +59,42 @@ function IconCustomersImage({ size = 20 }: { size?: number }) {
   )
 }
 
-function IconAlert({ size = 18 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor"/><path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+function IconMonthlyFlowImage({ size = 20 }: { size?: number }) {
+  return (
+    <img
+      src="https://static.wixstatic.com/media/48c433_35021773f24646d19bddaacf32b9f04d~mv2.png"
+      alt="Monthly flow icon"
+      width={size}
+      height={size}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+    />
+  )
 }
+
+function IconPaidTotalImage({ size = 20 }: { size?: number }) {
+  return (
+    <img
+      src="https://static.wixstatic.com/media/48c433_8d03db520b1c4494a4af17583444ea79~mv2.png"
+      alt="Paid total icon"
+      width={size}
+      height={size}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+    />
+  )
+}
+
+function IconActionNeededImage({ size = 20 }: { size?: number }) {
+  return (
+    <img
+      src="https://static.wixstatic.com/media/48c433_2268ff893e5a46078f3e8a31bde8f978~mv2.png"
+      alt="Action needed icon"
+      width={size}
+      height={size}
+      style={{ display: 'block', width: size, height: size, objectFit: 'contain' }}
+    />
+  )
+}
+
 function IconInvoice({ size = 18 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
@@ -76,9 +109,6 @@ function IconArrow({ size = 15 }: { size?: number }) {
 }
 function IconSpark({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
-}
-function IconJob({ size = 16 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
 function IconPhone({ size = 14 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -350,9 +380,9 @@ export default function DashboardPage() {
 
   const topCards = [
     { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersImage size={20} />, accent: TEXT, tag: 'CRM total' },
-    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconJob size={18} />, accent: TEAL_DARK, tag: 'Monthly flow' },
-    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconRevenue size={18} />, accent: TEXT, tag: 'Paid total' },
-    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconAlert size={18} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
+    { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconMonthlyFlowImage size={20} />, accent: TEAL_DARK, tag: 'Monthly flow' },
+    { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconPaidTotalImage size={20} />, accent: TEXT, tag: 'Paid total' },
+    { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconActionNeededImage size={20} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
   ]
 
   if (loading) {
