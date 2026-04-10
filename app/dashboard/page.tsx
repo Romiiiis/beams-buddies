@@ -47,9 +47,21 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconUsers({ size = 18 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+function IconCustomersExact({ size = 18 }: { size?: number }) {
+  return (
+    <img
+      src="/icons/customer.png"
+      alt="Customers"
+      style={{
+        width: size,
+        height: size,
+        display: 'block',
+        objectFit: 'contain',
+      }}
+    />
+  )
 }
+
 function IconAlert({ size = 18 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor"/><path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
@@ -158,22 +170,18 @@ function AppointmentsBarChart({ data, stats, dueSoonCount, isMobile }: {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          {/* Y-axis */}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: CHART_H, width: '18px', flexShrink: 0 }}>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>{yTop}</span>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>{yMid}</span>
             <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>0</span>
           </div>
 
-          {/* Chart body */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', height: CHART_H }}>
-              {/* Grid lines */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, borderTop: '1px dashed #E8EDF3' }} />
               <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px dashed #E8EDF3' }} />
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderTop: '1px solid #E8EDF3' }} />
 
-              {/* Bars */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '3px', padding: '0 2px' }}>
                 {data.map(item => {
                   const isActive = hovered === item.label
@@ -196,7 +204,6 @@ function AppointmentsBarChart({ data, stats, dueSoonCount, isMobile }: {
               </div>
             </div>
 
-            {/* X-axis labels */}
             <div style={{ display: 'flex', gap: '3px', padding: '0 2px', marginTop: '6px' }}>
               {data.map(item => (
                 <div key={item.label} style={{ flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700, color: hovered === item.label ? TEXT2 : TEXT3 }}>
@@ -342,10 +349,10 @@ export default function DashboardPage() {
   const shellCard: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)', overflow: 'hidden' }
   const panelCard: React.CSSProperties = { ...shellCard, padding: '16px' }
   const sectionLabel: React.CSSProperties = { ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '12px' }
-  const iconWrap = (color: string): React.CSSProperties => ({ width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', color, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 })
+  const iconWrap: React.CSSProperties = { width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 }
 
   const topCards = [
-    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconUsers size={18} />, accent: TEXT, tag: 'CRM total' },
+    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersExact size={18} />, accent: TEXT, tag: 'CRM total' },
     { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconJob size={18} />, accent: TEAL_DARK, tag: 'Monthly flow' },
     { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconRevenue size={18} />, accent: TEXT, tag: 'Paid total' },
     { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconAlert size={18} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
@@ -367,7 +374,6 @@ export default function DashboardPage() {
       <div style={{ flex: 1, minWidth: 0, background: BG, ...(isMobile ? {} : { height: '100vh', overflowY: 'scroll' }) }}>
         <div style={{ display: 'flex', flexDirection: 'column', padding: isMobile ? '14px' : '16px', gap: '12px', paddingBottom: isMobile ? '100px' : '60px' }}>
 
-          {/* Header */}
           <div style={{ ...shellCard, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '28px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>Dashboard</div>
@@ -375,7 +381,6 @@ export default function DashboardPage() {
               Track customers, service due dates, invoices, and jobs from one control centre.
             </div>
 
-            {/* Desktop: original style buttons. Mobile: equal width row */}
             {isMobile ? (
               <div style={{ marginTop: '14px', display: 'flex', gap: '6px' }}>
                 <button onClick={() => router.push('/dashboard/jobs')} style={{ flex: 1, height: '36px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', boxShadow: '0 6px 14px rgba(31,158,148,0.20)', whiteSpace: 'nowrap' as const }}>
@@ -403,7 +408,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
             {topCards.map(item => (
               <div key={item.label} style={{ ...panelCard, minHeight: isMobile ? 110 : 148, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -412,7 +416,7 @@ export default function DashboardPage() {
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
                     <div style={{ fontSize: isMobile ? '11px' : '14px', fontWeight: 800, color: TEXT2, marginBottom: '8px' }}>{item.label}</div>
                   </div>
-                  <div style={iconWrap(item.accent)}>{item.icon}</div>
+                  <div style={iconWrap}>{item.icon}</div>
                 </div>
                 <div>
                   <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '22px' : '30px', color: item.accent }}>{item.value}</div>
@@ -422,7 +426,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Charts */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, minmax(0,1fr))', gap: '12px', alignItems: 'start' }}>
             <div style={{ ...panelCard, gridColumn: isMobile ? 'span 1' : 'span 8' }}>
               <div style={{ marginBottom: '14px' }}>
@@ -437,7 +440,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Upcoming jobs */}
           <div style={panelCard}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
               <div style={sectionLabel}>Upcoming jobs</div>
@@ -479,7 +481,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Recent customers */}
           <div style={panelCard}>
             <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '12px' }}>
               <div>
