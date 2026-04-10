@@ -421,9 +421,7 @@ export default function JobsPage() {
       }
       const { data } = await supabase
         .from('jobs')
-        .select(
-          `*, customers ( first_name, last_name, phone, suburb, address )`
-        )
+        .select(`*, customers ( first_name, last_name, phone, suburb, address )`)
         .eq('business_id', userData.business_id)
         .order('install_date', { ascending: false })
       setJobs(data || [])
@@ -478,11 +476,37 @@ export default function JobsPage() {
     padding: '18px',
   }
 
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+    borderRadius: '16px',
+  }
+
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
     fontWeight: 800,
-    marginBottom: '12px',
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
+  }
+
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
   }
 
   const overviewCards = [
@@ -514,6 +538,21 @@ export default function JobsPage() {
       tag: 'Unique',
     },
   ]
+
+  const overdueCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d < 0
+  }).length
+
+  const dueSoonCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d >= 0 && d <= 30
+  }).length
+
+  const upToDateCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d > 30
+  }).length
 
   return (
     <div
@@ -607,27 +646,20 @@ export default function JobsPage() {
             }}
           >
             {overviewCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...cardP,
-                  minHeight: 146,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
                   <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '30px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                  <div style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>
+                    {item.value}
+                  </div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -636,7 +668,7 @@ export default function JobsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -644,105 +676,119 @@ export default function JobsPage() {
             <div style={card}>
               <div
                 style={{
-                  padding: '16px 18px 12px',
+                  padding: '14px 16px 12px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
-                  alignItems: isMobile ? 'flex-start' : 'center',
+                  alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
                   gap: '10px',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>All jobs</div>
+                  <div style={sectionHeaderTitle}>All jobs</div>
                   <div style={{ ...TYPE.bodySm }}>Click a job to view full details.</div>
                 </div>
 
                 <div
                   style={{
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
-                    fontSize: '11px',
-                    fontWeight: 800,
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                    width: isMobile ? '100%' : 'auto',
                   }}
                 >
-                  <IconFilter size={14} /> {filtered.length} shown
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: isMobile ? '100%' : '300px',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: TEXT3,
+                        display: 'inline-flex',
+                      }}
+                    >
+                      <IconSearch size={14} />
+                    </span>
+                    <input
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      placeholder="Search by name, brand, suburb..."
+                      style={{
+                        height: '40px',
+                        width: '100%',
+                        borderRadius: '11px',
+                        border: `1px solid ${BORDER}`,
+                        padding: '0 12px 0 36px',
+                        fontSize: '12px',
+                        background: WHITE,
+                        color: TEXT,
+                        fontFamily: FONT,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      height: '40px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      whiteSpace: 'nowrap',
+                      gap: '6px',
+                    }}
+                  >
+                    <IconFilter size={14} /> {filtered.length} shown
+                  </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  padding: '14px 18px',
+                  padding: '12px 16px',
                   borderBottom: `1px solid ${BORDER}`,
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 300px) 1fr',
-                  gap: '10px',
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
                 }}
               >
-                <div style={{ position: 'relative', height: '40px' }}>
-                  <span
+                {equipmentTypes.map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setFilterType(t)}
                     style={{
-                      position: 'absolute',
-                      left: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: TEXT3,
-                      pointerEvents: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
+                      height: '34px',
+                      padding: '0 13px',
+                      borderRadius: '999px',
+                      border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`,
+                      background: filterType === t ? TEAL : WHITE,
+                      color: filterType === t ? WHITE : TEXT2,
+                      fontSize: '11px',
+                      fontWeight: filterType === t ? 700 : 600,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    <IconSearch size={14} />
-                  </span>
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by name, brand, suburb..."
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '0 12px 0 34px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      fontSize: '12px',
-                      color: TEXT,
-                      outline: 'none',
-                      fontFamily: FONT,
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {equipmentTypes.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setFilterType(t)}
-                      style={{
-                        height: '36px',
-                        padding: '0 12px',
-                        borderRadius: '999px',
-                        border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`,
-                        background: filterType === t ? TEAL : WHITE,
-                        color: filterType === t ? WHITE : TEXT2,
-                        fontSize: '11px',
-                        fontWeight: filterType === t ? 700 : 600,
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
-                    </button>
-                  ))}
-                </div>
+                    {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
+                  </button>
+                ))}
               </div>
 
               {loading ? (
@@ -759,144 +805,224 @@ export default function JobsPage() {
                   No jobs yet. Add your first job or convert a lead to get started.
                 </div>
               ) : (
-                <div style={{ display: 'grid' }}>
-                  {filtered.map(job => {
-                    const customer = job.customers
-                    const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
-                    const days = daysUntil(job.install_date, job.service_interval_months)
-                    const next = nextService(job.install_date, job.service_interval_months)
-                    const isDueSoon = days !== null && days >= 0 && days <= 30
-                    const isOverdue = days !== null && days < 0
-                    const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL
-                    const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : '#E6F6F5'
-                    const serviceLabel = isOverdue ? `Overdue ${Math.abs(days!)} days` : isDueSoon ? `Due in ${days} days` : next ? `Next: ${next}` : '—'
+                filtered.map(job => {
+                  const customer = job.customers
+                  const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
+                  const days = daysUntil(job.install_date, job.service_interval_months)
+                  const next = nextService(job.install_date, job.service_interval_months)
+                  const isDueSoon = days !== null && days >= 0 && days <= 30
+                  const isOverdue = days !== null && days < 0
+                  const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL
+                  const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : '#E6F6F5'
+                  const serviceLabel = isOverdue ? `Overdue ${Math.abs(days!)} days` : isDueSoon ? `Due in ${days} days` : next ? `Next: ${next}` : '—'
 
-                    return (
-                      <div
-                        key={job.id}
-                        onClick={() => setSelectedJob(job)}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: isMobile ? '1fr' : '6px 1fr',
-                          borderTop: `1px solid ${BORDER}`,
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                        onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-                      >
-                        {!isMobile && <div style={{ background: serviceColor }} />}
+                  return (
+                    <div
+                      key={job.id}
+                      onClick={() => setSelectedJob(job)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : '6px minmax(0,1fr)',
+                        gap: 0,
+                        borderBottom: `1px solid ${BORDER}`,
+                        cursor: 'pointer',
+                        transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                    >
+                      {!isMobile && <div style={{ background: serviceColor }} />}
 
-                        <div style={{ padding: '14px 16px' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: isMobile ? 'flex-start' : 'center',
-                              justifyContent: 'space-between',
-                              gap: '12px',
-                              flexDirection: isMobile ? 'column' : 'row',
-                              paddingBottom: '10px',
-                              borderBottom: `1px solid ${BORDER}`,
-                              marginBottom: '10px',
-                            }}
-                          >
-                            <div>
-                              <div style={{ ...TYPE.label, marginBottom: '5px', color: serviceColor }}>{EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}</div>
-                              <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '3px' }}>{name}</div>
-                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
-                                {customer?.phone || '—'}
-                                {customer?.suburb ? ` · ${customer.suburb}` : ''}
-                              </div>
+                      <div style={{ padding: isMobile ? '14px 14px 13px' : '15px 16px 14px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '12px',
+                            flexDirection: isMobile ? 'column' : 'row',
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ ...TYPE.label, marginBottom: '5px', color: serviceColor }}>
+                              {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
                             </div>
-
-                            <div
-                              style={{
-                                background: serviceBg,
-                                color: serviceColor,
-                                padding: '6px 12px',
-                                borderRadius: '999px',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                              }}
-                            >
-                              <IconCalendar size={12} />
-                              {serviceLabel}
+                            <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
+                              {customer?.phone || '—'}
+                              {customer?.suburb ? ` · ${customer.suburb}` : ''}
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>
-                              🔧 {job.brand}
+                          <div
+                            style={{
+                              background: serviceBg,
+                              color: serviceColor,
+                              padding: '6px 12px',
+                              borderRadius: '999px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <IconCalendar size={12} />
+                            {serviceLabel}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: '12px',
+                            display: 'grid',
+                            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
+                            gap: '10px',
+                            alignItems: 'stretch',
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Equipment</div>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {job.brand}
                               {job.model ? ` ${job.model}` : ''}
                               {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
                             </div>
+                          </div>
 
-                            {job.install_date && (
-                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
-                                📅 Installed{' '}
-                                {new Date(job.install_date).toLocaleDateString('en-AU', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })}
-                              </div>
-                            )}
-
-                            {job.install_location && <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>📍 {job.install_location}</div>}
-
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Installed</div>
                             <div
                               style={{
-                                marginLeft: 'auto',
-                                flexShrink: 0,
-                                fontSize: '11px',
+                                fontSize: '12px',
                                 fontWeight: 700,
-                                color: TEAL,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                               }}
                             >
-                              View details <IconArrow size={12} />
+                              {job.install_date
+                                ? new Date(job.install_date).toLocaleDateString('en-AU', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })
+                                : 'Not set'}
                             </div>
                           </div>
 
-                          {job.notes && (
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '10px',
+                              background: '#F8FAFC',
+                              border: `1px solid ${BORDER}`,
+                              minWidth: 0,
+                            }}
+                          >
+                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Install location</div>
                             <div
                               style={{
-                                marginTop: '10px',
-                                padding: '10px 12px',
-                                background: '#F8FAFC',
-                                borderRadius: '10px',
-                                border: `1px solid ${BORDER}`,
                                 fontSize: '12px',
-                                fontWeight: 500,
+                                fontWeight: 600,
                                 color: TEXT3,
-                                lineHeight: 1.6,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                               }}
                             >
-                              {job.notes}
+                              {job.install_location || 'Not set'}
                             </div>
-                          )}
+                          </div>
+
+                          <div
+                            style={{
+                              alignSelf: isMobile ? 'start' : 'center',
+                              justifySelf: isMobile ? 'start' : 'end',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              color: TEAL,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            View details <IconArrow size={12} />
+                          </div>
                         </div>
+
+                        {job.notes && (
+                          <div
+                            style={{
+                              marginTop: '10px',
+                              padding: '10px 12px',
+                              background: '#F8FAFC',
+                              borderRadius: '10px',
+                              border: `1px solid ${BORDER}`,
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              color: TEXT3,
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {job.notes}
+                          </div>
+                        )}
                       </div>
-                    )
-                  })}
-                </div>
+                    </div>
+                  )
+                })
               )}
             </div>
 
             <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={cardP}>
-                <div style={sectionLabel}>Quick actions</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Quick actions</div>
+                  <button onClick={() => router.push('/dashboard/jobs/add')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
+                  <span style={{ color: TEAL }}>{jobs.length}</span> Total jobs
+                </div>
+
                 <div style={{ display: 'grid', gap: '8px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs/add')}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: TEAL,
                       color: WHITE,
                       border: 'none',
@@ -914,7 +1040,7 @@ export default function JobsPage() {
                     onClick={() => router.push('/dashboard/leads')}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
                       borderRadius: '10px',
@@ -935,7 +1061,7 @@ export default function JobsPage() {
                     }}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
                       borderRadius: '10px',
@@ -951,70 +1077,81 @@ export default function JobsPage() {
                 </div>
               </div>
 
-              <div style={cardP}>
-                <div style={sectionLabel}>Service status</div>
+              <div style={sideCard}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ ...TYPE.label }}>Service status</div>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
+                  {overdueCount > 0 ? (
+                    <>
+                      <span style={{ color: '#B91C1C' }}>{overdueCount}</span> Overdue job{overdueCount !== 1 ? 's' : ''}
+                    </>
+                  ) : (
+                    <span style={{ color: TEAL }}>All clear</span>
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {[
                     {
                       label: 'Overdue',
-                      value: jobs.filter(j => {
-                        const d = daysUntil(j.install_date, j.service_interval_months)
-                        return d !== null && d < 0
-                      }).length,
+                      value: overdueCount,
                       color: '#B91C1C',
                       bg: '#FEE2E2',
+                      border: '#FECACA',
                     },
                     {
                       label: 'Due this month',
-                      value: jobs.filter(j => {
-                        const d = daysUntil(j.install_date, j.service_interval_months)
-                        return d !== null && d >= 0 && d <= 30
-                      }).length,
+                      value: dueSoonCount,
                       color: '#92400E',
                       bg: '#FEF3C7',
+                      border: '#FDE68A',
                     },
                     {
                       label: 'Up to date',
-                      value: jobs.filter(j => {
-                        const d = daysUntil(j.install_date, j.service_interval_months)
-                        return d !== null && d > 30
-                      }).length,
+                      value: upToDateCount,
                       color: TEAL,
                       bg: '#E6F6F5',
+                      border: '#C4E8E5',
                     },
                   ].map(item => (
                     <div
                       key={item.label}
                       style={{
-                        borderRadius: '12px',
+                        borderRadius: '10px',
                         background: item.bg,
-                        padding: '12px 14px',
+                        border: `1px solid ${item.border}`,
+                        padding: '10px 12px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                       }}
                     >
                       <div style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</div>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: item.color }}>{item.value}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={cardP}>
-                <div style={sectionLabel}>Equipment breakdown</div>
-                <div style={{ display: 'grid', gap: '6px' }}>
+              <div style={sideCard}>
+                <div style={{ ...TYPE.label, marginBottom: '8px' }}>Equipment breakdown</div>
+                <div style={{ display: 'grid', gap: '8px' }}>
                   {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => {
                     const count = jobs.filter(j => j.equipment_type === key).length
                     if (count === 0) return null
                     const pct = jobs.length ? Math.round((count / jobs.length) * 100) : 0
                     return (
                       <div key={key}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                           <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>{label}</span>
                           <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{count}</span>
                         </div>
-                        <div style={{ height: '5px', borderRadius: '999px', background: BORDER, overflow: 'hidden' }}>
+                        <div style={{ height: '6px', borderRadius: '999px', background: BORDER, overflow: 'hidden' }}>
                           <div
                             style={{
                               height: '100%',
