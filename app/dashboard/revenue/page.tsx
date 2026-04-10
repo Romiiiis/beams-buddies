@@ -81,20 +81,21 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconRevenue({ size = 18 }: { size?: number }) {
+function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconInvoice({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
@@ -103,14 +104,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconChart({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
   )
 }
@@ -280,18 +273,14 @@ export default function RevenuePage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const statIconStyle: React.CSSProperties = {
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-  })
+  }
 
   return (
     <div
@@ -415,7 +404,13 @@ export default function RevenuePage() {
                     label: 'Total collected',
                     value: `$${totalRevenue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
                     sub: 'Paid invoices',
-                    icon: <IconRevenue size={18} />,
+                    icon: (
+                      <ImageIcon
+                        src="https://static.wixstatic.com/media/48c433_c2a83be57f7745f4ab9e345fa6cd2149~mv2.png"
+                        size={30}
+                        alt="Total collected"
+                      />
+                    ),
                     accent: '#166534',
                     tag: 'Cash received',
                   },
@@ -423,7 +418,13 @@ export default function RevenuePage() {
                     label: 'Outstanding',
                     value: `$${totalOutstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
                     sub: 'Awaiting payment',
-                    icon: <IconInvoice size={18} />,
+                    icon: (
+                      <ImageIcon
+                        src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
+                        size={30}
+                        alt="Outstanding"
+                      />
+                    ),
                     accent: '#1E3A8A',
                     tag: 'Open balance',
                   },
@@ -431,7 +432,13 @@ export default function RevenuePage() {
                     label: 'Overdue',
                     value: `$${totalOverdue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
                     sub: totalOverdue > 0 ? 'Needs follow-up' : 'All up to date',
-                    icon: <IconInvoice size={18} />,
+                    icon: (
+                      <ImageIcon
+                        src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
+                        size={30}
+                        alt="Overdue"
+                      />
+                    ),
                     accent: totalOverdue > 0 ? RED : TEXT,
                     tag: 'Past due',
                   },
@@ -439,7 +446,13 @@ export default function RevenuePage() {
                     label: 'Total invoiced',
                     value: `$${totalInvoiced.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
                     sub: 'All invoices',
-                    icon: <IconChart size={18} />,
+                    icon: (
+                      <ImageIcon
+                        src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
+                        size={30}
+                        alt="Total invoiced"
+                      />
+                    ),
                     accent: TEAL_DARK,
                     tag: 'Gross billed',
                   },
@@ -463,7 +476,7 @@ export default function RevenuePage() {
                         </div>
                       </div>
 
-                      <div style={iconWrap(item.accent)}>
+                      <div style={statIconStyle}>
                         {item.icon}
                       </div>
                     </div>
