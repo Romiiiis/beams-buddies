@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
@@ -133,70 +133,6 @@ async function getCroppedImg(
   })
 }
 
-function DashboardImageIcon({
-  src,
-  alt,
-  size = 28,
-}: {
-  src: string
-  alt: string
-  size?: number
-}) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
-function IconProfile({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
-      alt="Profile"
-      size={size}
-    />
-  )
-}
-
-function IconBrand({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
-      alt="Brand"
-      size={size}
-    />
-  )
-}
-
-function IconBilling({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
-      alt="Billing"
-      size={size}
-    />
-  )
-}
-
-function IconReviews({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
-      alt="Reviews"
-      size={size}
-    />
-  )
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -212,22 +148,6 @@ function IconPercent({ size = 16 }: { size?: number }) {
       <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
       <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
       <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconArrow({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -494,14 +414,6 @@ export default function SettingsPage() {
     year: 'numeric',
   })
 
-  const profileReady = Boolean(userProfile.full_name.trim() || userProfile.role_title.trim())
-  const brandingReady = Boolean(business.name.trim() || business.logo_url)
-  const billingReady = Boolean(bankDetails.bank_name || bankDetails.account_name || bankDetails.bsb || bankDetails.account_number)
-  const reviewLinksCount =
-    (form.google_review_url ? 1 : 0) +
-    (form.facebook_review_url ? 1 : 0) +
-    platforms.filter(p => p.name.trim() && p.url.trim()).length
-
   const input: React.CSSProperties = {
     width: '100%',
     height: '42px',
@@ -546,15 +458,6 @@ export default function SettingsPage() {
     overflow: 'hidden',
   }
 
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  }
-
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
@@ -568,51 +471,6 @@ export default function SettingsPage() {
     marginBottom: '4px',
     letterSpacing: '-0.02em',
   }
-
-  const cardArrowBtn: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: TEXT3,
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
-  }
-
-  const topCards = [
-    {
-      label: 'Profile',
-      value: profileReady ? 'Ready' : 'Setup',
-      sub: 'Owner and role details',
-      icon: <IconProfile size={28} />,
-      accent: profileReady ? TEAL_DARK : TEXT,
-      tag: 'Account',
-    },
-    {
-      label: 'Branding',
-      value: brandingReady ? 'Set' : 'Pending',
-      sub: business.logo_url ? 'Logo uploaded' : 'Add logo and name',
-      icon: <IconBrand size={28} />,
-      accent: brandingReady ? TEAL_DARK : TEXT,
-      tag: 'Business',
-    },
-    {
-      label: 'Invoices',
-      value: billingReady ? 'Ready' : 'Pending',
-      sub: billingReady ? 'Bank details added' : 'Add payment info',
-      icon: <IconBilling size={28} />,
-      accent: billingReady ? TEAL_DARK : TEXT,
-      tag: 'Billing',
-    },
-    {
-      label: 'Reviews',
-      value: reviewLinksCount.toString(),
-      sub: reviewLinksCount > 0 ? 'Platforms live' : 'No links yet',
-      icon: <IconReviews size={28} />,
-      accent: reviewLinksCount > 0 ? TEAL_DARK : TEXT,
-      tag: 'Customer flow',
-    },
-  ]
 
   function SectionHeader({
     title,
@@ -777,308 +635,164 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-              gap: '12px',
-            }}
-          >
-            {topCards.map(item => (
-              <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
-                  </div>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '14px' }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-                gap: '14px',
-                alignItems: 'start',
-              }}
-            >
-              <div style={card}>
-                <SectionHeader
-                  title="Your profile"
-                  description="Update the details shown on your account and sidebar."
-                />
+            <div style={card}>
+              <SectionHeader
+                title="Your profile"
+                description="Update the details shown on your account and sidebar."
+              />
 
-                <div style={{ padding: '14px 16px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Your name</label>
-                      <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
-                      <p style={hint}>Shown in the bottom left of the sidebar</p>
-                    </div>
-
-                    <div>
-                      <label style={label}>Your title</label>
-                      <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
-                      <p style={hint}>Shown below your name in the sidebar</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ ...TYPE.label }}>Account summary</div>
-                    <button type="button" style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
+              <div style={{ padding: '14px 16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={label}>Your name</label>
+                    <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
+                    <p style={hint}>Shown in the bottom left of the sidebar</p>
                   </div>
 
-                  <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
-                      {userProfile.full_name ? 'Live' : 'Pending'}
-                    </span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>profile status</span>
-                  </div>
-
-                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Name</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{userProfile.full_name || 'Not set'}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Role</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{userProfile.role_title || 'Not set'}</div>
-                    </div>
+                  <div>
+                    <label style={label}>Your title</label>
+                    <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
+                    <p style={hint}>Shown below your name in the sidebar</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-                gap: '14px',
-                alignItems: 'start',
-              }}
-            >
-              <div style={card}>
-                <SectionHeader
-                  title="Business profile"
-                  description="Set your core business details and brand identity."
-                />
+            <div style={card}>
+              <SectionHeader
+                title="Business profile"
+                description="Set your core business details and brand identity."
+              />
 
-                <div style={{ padding: '14px 16px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Business name</label>
-                      <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
-                      <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
-                    </div>
-
-                    <div>
-                      <label style={label}>Phone</label>
-                      <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
-                    </div>
-
-                    <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
-                      <label style={label}>Email</label>
-                      <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
-                    </div>
+              <div style={{ padding: '14px 16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={label}>Business name</label>
+                    <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
+                    <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
                   </div>
 
+                  <div>
+                    <label style={label}>Phone</label>
+                    <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
+                  </div>
+
+                  <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
+                    <label style={label}>Email</label>
+                    <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: '16px',
+                    borderRadius: '12px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    padding: isMobile ? '14px' : '16px',
+                    display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    alignItems: isMobile ? 'stretch' : 'center',
+                    gap: '14px',
+                  }}
+                >
                   <div
                     style={{
-                      marginTop: '16px',
-                      borderRadius: '12px',
-                      background: '#F8FAFC',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '50%',
+                      background: WHITE,
                       border: `1px solid ${BORDER}`,
-                      padding: isMobile ? '14px' : '16px',
                       display: 'flex',
-                      flexDirection: isMobile ? 'column' : 'row',
-                      alignItems: isMobile ? 'stretch' : 'center',
-                      gap: '14px',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      flexShrink: 0,
                     }}
                   >
-                    <div
+                    {business.logo_url ? (
+                      <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
+                    <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <label
+                      htmlFor="logo-upload"
                       style={{
-                        width: '72px',
-                        height: '72px',
-                        borderRadius: '50%',
-                        background: WHITE,
+                        height: '38px',
+                        padding: '0 16px',
+                        borderRadius: '8px',
                         border: `1px solid ${BORDER}`,
-                        display: 'flex',
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                        fontFamily: FONT,
+                        display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        overflow: 'hidden',
-                        flexShrink: 0,
+                        opacity: uploadingLogo ? 0.7 : 1,
+                        fontWeight: 700,
                       }}
                     >
-                      {business.logo_url ? (
-                        <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
-                      )}
-                    </div>
+                      {uploadingLogo ? 'Uploading...' : 'Upload image'}
+                    </label>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
-                      <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
-                    </div>
+                    <input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                      style={{ display: 'none' }}
+                      disabled={uploadingLogo}
+                      onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setUploadError('')
+                        setSelectedFileName(file.name)
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                          setSelectedImage(reader.result as string)
+                          setCrop({ x: 0, y: 0 })
+                          setZoom(1)
+                          setShowCropper(true)
+                        }
+                        reader.readAsDataURL(file)
+                        e.currentTarget.value = ''
+                      }}
+                    />
 
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <label
-                        htmlFor="logo-upload"
+                    {business.logo_url && (
+                      <button
+                        type="button"
+                        onClick={removeLogo}
                         style={{
                           height: '38px',
                           padding: '0 16px',
                           borderRadius: '8px',
                           border: `1px solid ${BORDER}`,
                           background: WHITE,
-                          color: TEXT2,
+                          color: RED,
                           fontSize: '12px',
-                          cursor: uploadingLogo ? 'not-allowed' : 'pointer',
+                          cursor: 'pointer',
                           fontFamily: FONT,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: uploadingLogo ? 0.7 : 1,
                           fontWeight: 700,
                         }}
                       >
-                        {uploadingLogo ? 'Uploading...' : 'Upload image'}
-                      </label>
-
-                      <input
-                        id="logo-upload"
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                        style={{ display: 'none' }}
-                        disabled={uploadingLogo}
-                        onChange={async e => {
-                          const file = e.target.files?.[0]
-                          if (!file) return
-                          setUploadError('')
-                          setSelectedFileName(file.name)
-                          const reader = new FileReader()
-                          reader.onload = () => {
-                            setSelectedImage(reader.result as string)
-                            setCrop({ x: 0, y: 0 })
-                            setZoom(1)
-                            setShowCropper(true)
-                          }
-                          reader.readAsDataURL(file)
-                          e.currentTarget.value = ''
-                        }}
-                      />
-
-                      {business.logo_url && (
-                        <button
-                          type="button"
-                          onClick={removeLogo}
-                          style={{
-                            height: '38px',
-                            padding: '0 16px',
-                            borderRadius: '8px',
-                            border: `1px solid ${BORDER}`,
-                            background: WHITE,
-                            color: RED,
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            fontFamily: FONT,
-                            fontWeight: 700,
-                          }}
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>}
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ ...TYPE.label }}>Brand snapshot</div>
-                    <button type="button" style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
-                  </div>
-
-                  <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '26px', fontWeight: 900, color: brandingReady ? TEAL : TEXT, letterSpacing: '-0.05em' }}>
-                      {brandingReady ? 'Ready' : 'Pending'}
-                    </span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>business setup</span>
-                  </div>
-
-                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Business</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{business.name || 'Not set'}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: business.logo_url ? '#E6F7F6' : '#F8FAFC',
-                        border: `1px solid ${business.logo_url ? '#C4E8E5' : BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px', color: business.logo_url ? TEAL_DARK : TEXT3 }}>Logo</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px', color: business.logo_url ? TEAL_DARK : TEXT }}>
-                        {business.logo_url ? 'Uploaded' : 'Missing'}
-                      </div>
-                    </div>
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>}
               </div>
             </div>
 
@@ -1161,12 +875,7 @@ export default function SettingsPage() {
 
               <div style={{ display: 'grid', gap: '14px' }}>
                 <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ ...TYPE.label }}>Invoice preview</div>
-                    <button type="button" style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
-                  </div>
+                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Invoice preview</div>
 
                   {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
                     <div style={{ marginTop: '14px', display: 'grid', gap: '8px' }}>
@@ -1240,176 +949,109 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-                gap: '14px',
-                alignItems: 'start',
-              }}
-            >
-              <div style={card}>
-                <SectionHeader
-                  title="Review platforms"
-                  description="Add the links shown to customers after each installation."
-                />
+            <div style={card}>
+              <SectionHeader
+                title="Review platforms"
+                description="Add the links shown to customers after each installation."
+              />
 
-                <div style={{ padding: '14px 16px' }}>
-                  <div
-                    style={{
-                      fontSize: '13px',
-                      color: TEXT2,
-                      lineHeight: 1.6,
-                      padding: '14px 16px',
-                      background: '#F0F9F8',
-                      borderRadius: '10px',
-                      border: '1px solid #CCEFED',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    Add your review page links below. These appear on the customer registration page after each installation.
+              <div style={{ padding: '14px 16px' }}>
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: TEXT2,
+                    lineHeight: 1.6,
+                    padding: '14px 16px',
+                    background: '#F0F9F8',
+                    borderRadius: '10px',
+                    border: '1px solid #CCEFED',
+                    marginBottom: '16px',
+                  }}
+                >
+                  Add your review page links below. These appear on the customer registration page after each installation.
+                </div>
+
+                <div style={{ display: 'grid', gap: '14px' }}>
+                  <div>
+                    <label style={label}>Google review link</label>
+                    <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
+                    <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
                   </div>
 
-                  <div style={{ display: 'grid', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Google review link</label>
-                      <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
-                      <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
-                    </div>
+                  <div>
+                    <label style={label}>Facebook review link</label>
+                    <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews" />
+                    <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
+                  </div>
 
-                    <div>
-                      <label style={label}>Facebook review link</label>
-                      <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews" />
-                      <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
-                    </div>
-
-                    {platforms.length > 0 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
-                        {platforms.map(p => (
-                          <div
-                            key={p.id}
+                  {platforms.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
+                      {platforms.map(p => (
+                        <div
+                          key={p.id}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr auto',
+                            gap: '10px',
+                            alignItems: 'center',
+                            padding: '12px',
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: '10px',
+                          }}
+                        >
+                          {!isMobile && (
+                            <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
+                          )}
+                          <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://..." />
+                          <button
+                            type="button"
+                            onClick={() => removePlatform(p.id)}
                             style={{
-                              display: 'grid',
-                              gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr auto',
-                              gap: '10px',
-                              alignItems: 'center',
-                              padding: '12px',
-                              background: '#F8FAFC',
+                              height: '42px',
+                              width: '42px',
+                              borderRadius: '8px',
                               border: `1px solid ${BORDER}`,
-                              borderRadius: '10px',
+                              background: WHITE,
+                              color: RED,
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
                             }}
                           >
-                            {!isMobile && (
-                              <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
-                            )}
-                            <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://..." />
-                            <button
-                              type="button"
-                              onClick={() => removePlatform(p.id)}
-                              style={{
-                                height: '42px',
-                                width: '42px',
-                                borderRadius: '8px',
-                                border: `1px solid ${BORDER}`,
-                                background: WHITE,
-                                color: RED,
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={addPlatform}
-                      style={{
-                        height: '38px',
-                        padding: '0 16px',
-                        borderRadius: '8px',
-                        border: `1px dashed ${BORDER}`,
-                        background: 'transparent',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '7px',
-                        width: 'fit-content',
-                        fontWeight: 700,
-                      }}
-                    >
-                      <span style={{ fontSize: '16px' }}>+</span> Add another platform
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ ...TYPE.label }}>Review status</div>
-                    <button type="button" style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
-                  </div>
-
-                  <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '26px', fontWeight: 900, color: reviewLinksCount > 0 ? TEAL : TEXT, letterSpacing: '-0.05em' }}>
-                      {reviewLinksCount}
-                    </span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>active platform{reviewLinksCount === 1 ? '' : 's'}</span>
-                  </div>
-
-                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Google</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{form.google_review_url ? 'Connected' : 'Missing'}</div>
+                            ×
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  )}
 
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px' }}>Facebook</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{form.facebook_review_url ? 'Connected' : 'Missing'}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#E6F7F6',
-                        border: '1px solid #C4E8E5',
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px', color: TEAL_DARK }}>Additional</div>
-                      <div style={{ ...TYPE.valueMd, fontSize: '16px', color: TEAL_DARK }}>
-                        {platforms.filter(p => p.name.trim() && p.url.trim()).length}
-                      </div>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={addPlatform}
+                    style={{
+                      height: '38px',
+                      padding: '0 16px',
+                      borderRadius: '8px',
+                      border: `1px dashed ${BORDER}`,
+                      background: 'transparent',
+                      color: TEXT2,
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      width: 'fit-content',
+                      fontWeight: 700,
+                    }}
+                  >
+                    <span style={{ fontSize: '16px' }}>+</span> Add another platform
+                  </button>
                 </div>
               </div>
             </div>
@@ -1513,12 +1155,7 @@ export default function SettingsPage() {
 
               <div style={{ display: 'grid', gap: '14px' }}>
                 <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ ...TYPE.label }}>Quick actions</div>
-                    <button type="button" style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
-                  </div>
+                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Quick actions</div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
                     <button
