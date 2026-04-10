@@ -247,10 +247,10 @@ export function Sidebar({ active }: { active: string }) {
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: isActive ? TEAL : WHITE,
+            background: 'transparent',
             color: isActive ? WHITE : TEXT3,
-            border: isActive ? 'none' : `1px solid ${BORDER}`,
-            boxShadow: isActive ? '0 6px 14px rgba(31,158,148,0.20)' : 'none',
+            border: 'none',
+            boxShadow: 'none',
             lineHeight: 0,
           }}
         >
