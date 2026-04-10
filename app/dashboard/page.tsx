@@ -47,43 +47,21 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconCustomersGroup({ size = 18 }: { size?: number }) {
+function IconCustomersExact({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <circle cx="32" cy="14" r="8.5" stroke="currentColor" strokeWidth="4.2" />
-      <circle cx="14" cy="18" r="5" stroke="currentColor" strokeWidth="4.2" />
-      <circle cx="50" cy="18" r="5" stroke="currentColor" strokeWidth="4.2" />
-      <path
-        d="M22 52V40.5C22 33.6 27.6 28 34.5 28H29.5C22.6 28 17 33.6 17 40.5V52"
-        stroke="currentColor"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M47 52V40.5C47 33.6 41.4 28 34.5 28H29.5C22.6 28 17 33.6 17 40.5V52"
-        stroke="currentColor"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 49V38.5C7 33.8 10.8 30 15.5 30H19.5C22.6 30 25.3 31.7 26.7 34.2"
-        stroke="currentColor"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M57 49V38.5C57 33.8 53.2 30 48.5 30H44.5C41.4 30 38.7 31.7 37.3 34.2"
-        stroke="currentColor"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <img
+      src="/icons/customers-group.png"
+      alt="Customers"
+      style={{
+        width: size,
+        height: size,
+        display: 'block',
+        objectFit: 'contain',
+      }}
+    />
   )
 }
+
 function IconAlert({ size = 18 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 9v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor"/><path d="M10.29 3.86 1.82 18A2 2 0 0 0 3.53 21h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
@@ -374,7 +352,7 @@ export default function DashboardPage() {
   const iconWrap = (color: string): React.CSSProperties => ({ width: '36px', height: '36px', borderRadius: '11px', background: '#F8FAFC', color, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, flexShrink: 0 })
 
   const topCards = [
-    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersGroup size={18} />, accent: TEXT, tag: 'CRM total' },
+    { label: 'Customers', value: stats.customers.toLocaleString('en-AU'), sub: 'Registered in your CRM', icon: <IconCustomersExact size={18} />, accent: TEXT, tag: 'CRM total' },
     { label: 'New jobs', value: `+${stats.jobsThisMonth.toLocaleString('en-AU')}`, sub: 'Created this month', icon: <IconJob size={18} />, accent: TEAL_DARK, tag: 'Monthly flow' },
     { label: 'Revenue', value: `$${invoiceStats.collected.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`, sub: 'Collected invoices', icon: <IconRevenue size={18} />, accent: TEXT, tag: 'Paid total' },
     { label: 'Overdue services', value: stats.overdue.toLocaleString('en-AU'), sub: stats.overdue > 0 ? 'Needs attention now' : 'All clear', icon: <IconAlert size={18} />, accent: stats.overdue > 0 ? RED : TEAL_DARK, tag: 'Action needed' },
