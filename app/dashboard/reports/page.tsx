@@ -20,6 +20,13 @@ const WHITE = '#FFFFFF'
 const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
+const STAT_WIDGET_ICONS = [
+  'https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png',
+  'https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png',
+  'https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png',
+  'https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png',
+]
+
 const TYPE = {
   label: {
     fontSize: '10px',
@@ -373,16 +380,12 @@ export default function ReportsPage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const iconWrap = (): React.CSSProperties => ({
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
   })
 
@@ -516,7 +519,7 @@ export default function ReportsPage() {
                 label: 'Revenue collected',
                 value: formatMoney(report.revenueCollected),
                 sub: 'Paid invoices',
-                icon: <IconRevenue size={18} />,
+                icon: STAT_WIDGET_ICONS[0],
                 accent: GREEN,
                 tag: 'Financials',
               },
@@ -524,7 +527,7 @@ export default function ReportsPage() {
                 label: 'Outstanding',
                 value: formatMoney(report.outstanding),
                 sub: 'Awaiting payment',
-                icon: <IconInvoice size={18} />,
+                icon: STAT_WIDGET_ICONS[1],
                 accent: BLUE,
                 tag: 'Receivables',
               },
@@ -532,7 +535,7 @@ export default function ReportsPage() {
                 label: 'Accepted quote value',
                 value: formatMoney(report.quotesAcceptedValue),
                 sub: 'Approved quotes',
-                icon: <IconQuote size={18} />,
+                icon: STAT_WIDGET_ICONS[2],
                 accent: TEAL_DARK,
                 tag: 'Quote value',
               },
@@ -540,7 +543,7 @@ export default function ReportsPage() {
                 label: 'Overdue services',
                 value: String(report.overdueServices),
                 sub: report.overdueServices > 0 ? 'Needs action now' : 'All clear',
-                icon: <IconCalendar size={18} />,
+                icon: STAT_WIDGET_ICONS[3],
                 accent: report.overdueServices > 0 ? RED : TEXT,
                 tag: 'Service load',
               },
@@ -564,8 +567,18 @@ export default function ReportsPage() {
                     </div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>
-                    {item.icon}
+                  <div style={iconWrap()}>
+                    <img
+                      src={item.icon}
+                      alt=""
+                      aria-hidden="true"
+                      style={{
+                        width: '30px',
+                        height: '30px',
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
                   </div>
                 </div>
 
