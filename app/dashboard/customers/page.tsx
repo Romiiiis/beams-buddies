@@ -337,6 +337,29 @@ export default function CustomersPage() {
     alignItems: 'center',
   }
 
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+    borderRadius: '16px',
+  }
+
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
+    fontWeight: 800,
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
+  }
+
   const topCards = [
     {
       label: 'Customers',
@@ -496,23 +519,17 @@ export default function CustomersPage() {
             {topCards.map(item => (
               <div
                 key={item.label}
-                style={{
-                  ...cardP,
-                  minHeight: 146,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
+                style={statCard}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
                   <div
                     style={{
-                      width: 30,
-                      height: 30,
+                      width: 28,
+                      height: 28,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -524,8 +541,8 @@ export default function CustomersPage() {
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -534,7 +551,7 @@ export default function CustomersPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 300px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -542,7 +559,7 @@ export default function CustomersPage() {
             <div style={card}>
               <div
                 style={{
-                  padding: '16px 18px 12px',
+                  padding: '14px 16px 12px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: isMobile ? 'stretch' : 'center',
@@ -552,7 +569,7 @@ export default function CustomersPage() {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>
+                  <div style={sectionHeaderTitle}>
                     Customer directory
                   </div>
                   <div style={{ ...TYPE.bodySm }}>
@@ -660,7 +677,7 @@ export default function CustomersPage() {
                         gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.3fr) minmax(0,0.8fr) minmax(0,0.9fr) auto',
                         gap: '12px',
                         alignItems: 'center',
-                        padding: '13px 18px',
+                        padding: '13px 16px',
                         borderBottom: `1px solid ${BORDER}`,
                         cursor: 'pointer',
                         transition: 'background 0.12s',
@@ -855,7 +872,7 @@ export default function CustomersPage() {
             </div>
 
             <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={cardP}>
+              <div style={sideCard}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ ...TYPE.label }}>Service status</div>
                   <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
@@ -927,7 +944,7 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              <div style={cardP}>
+              <div style={sideCard}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ ...TYPE.label }}>Review stats</div>
                   <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
@@ -971,14 +988,14 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              <div style={cardP}>
+              <div style={sideCard}>
                 <div style={{ ...TYPE.label, marginBottom: '8px' }}>Quick actions</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: TEAL,
                       color: WHITE,
                       border: 'none',
@@ -996,7 +1013,7 @@ export default function CustomersPage() {
                     onClick={() => router.push('/dashboard/customers')}
                     style={{
                       width: '100%',
-                      height: '36px',
+                      height: '34px',
                       background: '#F8FAFC',
                       border: `1px solid ${BORDER}`,
                       borderRadius: '10px',
