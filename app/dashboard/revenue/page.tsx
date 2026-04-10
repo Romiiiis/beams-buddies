@@ -406,7 +406,7 @@ export default function RevenuePage() {
                     sub: 'Paid invoices',
                     icon: (
                       <ImageIcon
-                        src="https://static.wixstatic.com/media/48c433_c2a83be57f7745f4ab9e345fa6cd2149~mv2.png"
+                        src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
                         size={30}
                         alt="Total collected"
                       />

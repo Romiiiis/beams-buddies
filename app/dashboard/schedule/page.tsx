@@ -95,23 +95,21 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconCalendar({ size = 18 }: { size?: number }) {
+function ImageIcon({ src, size = 30, alt }: { src: string; size?: number; alt: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: 'contain',
+        display: 'block',
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
@@ -300,25 +298,27 @@ export default function SchedulePage() {
     boxShadow: '0 1px 2px rgba(15,23,42,0.02)',
   }
 
-  const iconWrap = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
+  const statIconStyle: React.CSSProperties = {
+    width: '30px',
+    height: '30px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
     flexShrink: 0,
-  })
+  }
 
   const topCards = [
     {
       label: 'Scheduled units',
       value: counts.all,
       sub: 'With service tracking',
-      icon: <IconCalendar size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png"
+          size={30}
+          alt="Scheduled units"
+        />
+      ),
       accent: TEXT,
       tag: 'Service total',
     },
@@ -326,7 +326,13 @@ export default function SchedulePage() {
       label: 'Overdue services',
       value: counts.overdue,
       sub: counts.overdue > 0 ? 'Needs attention now' : 'All clear',
-      icon: <IconCalendar size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png"
+          size={30}
+          alt="Overdue services"
+        />
+      ),
       accent: counts.overdue > 0 ? RED : TEXT,
       tag: 'Action needed',
     },
@@ -334,7 +340,13 @@ export default function SchedulePage() {
       label: 'Due soon',
       value: counts.due_soon,
       sub: 'Within 30 days',
-      icon: <IconUsers size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
+          size={30}
+          alt="Due soon"
+        />
+      ),
       accent: AMBER,
       tag: 'Next window',
     },
@@ -342,7 +354,13 @@ export default function SchedulePage() {
       label: 'Upcoming later',
       value: counts.good,
       sub: 'More than 30 days',
-      icon: <IconCalendar size={18} />,
+      icon: (
+        <ImageIcon
+          src="https://static.wixstatic.com/media/48c433_7c5b4b86c5af4656861b5cc302bcab0e~mv2.png"
+          size={30}
+          alt="Upcoming later"
+        />
+      ),
       accent: BLUE,
       tag: 'On track',
     },
@@ -441,7 +459,11 @@ export default function SchedulePage() {
                     boxShadow: 'none',
                   }}
                 >
-                  <IconUsers size={16} />
+                  <ImageIcon
+                    src="https://static.wixstatic.com/media/48c433_f55b6ff5cc4141fcbaf6ce460c56c4c3~mv2.png"
+                    size={16}
+                    alt="View customers"
+                  />
                   View customers
                 </button>
 
@@ -488,7 +510,7 @@ export default function SchedulePage() {
                     </div>
                   </div>
 
-                  <div style={iconWrap(item.accent)}>
+                  <div style={statIconStyle}>
                     {item.icon}
                   </div>
                 </div>

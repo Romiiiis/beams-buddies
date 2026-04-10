@@ -501,7 +501,7 @@ export default function QuotesPage() {
                 sub: 'Awaiting response',
                 icon: (
                   <ImageIcon
-                    src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
+                    src="https://static.wixstatic.com/media/48c433_4d059321b22e4619b468f9a3f76285f4~mv2.png"
                     size={30}
                     alt="Sent"
                   />
