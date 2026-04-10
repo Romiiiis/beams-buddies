@@ -172,8 +172,8 @@ function StatImageIcon({ src, alt }: { src: string; alt: string }) {
       src={src}
       alt={alt}
       style={{
-        width: '34px',
-        height: '34px',
+        width: '30px',
+        height: '30px',
         objectFit: 'contain',
         display: 'block',
         flexShrink: 0,
@@ -738,7 +738,7 @@ export default function LeadsPage() {
       label: 'Converted',
       value: leads.filter(l => l.status === 'converted').length,
       sub: 'Moved into jobs',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_a7bee743bd61424d9d0ae825cb76bc58~mv2.png',
+      iconSrc: 'https://static.wixstatic.com/media/48c433_89fcc1a5259c48a6b610658abb3f89ff~mv2.png',
       accent: BLUE,
       tag: 'Completed flow',
     },
