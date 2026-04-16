@@ -10,6 +10,7 @@ const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const BLUE = '#2563EB'
+const GREEN = '#166534'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -80,12 +81,12 @@ const TYPE = {
   },
 }
 
-const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; accent: string }> = {
-  draft: { bg: '#F1F5F9', color: TEXT3, label: 'Draft', accent: TEXT3 },
-  sent: { bg: '#DBEAFE', color: '#1E3A8A', label: 'Sent', accent: BLUE },
-  paid: { bg: '#DCFCE7', color: '#166534', label: 'Paid', accent: '#166534' },
-  overdue: { bg: '#FEE2E2', color: '#7F1D1D', label: 'Overdue', accent: RED },
-  cancelled: { bg: '#F1F5F9', color: TEXT3, label: 'Cancelled', accent: TEXT3 },
+const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; accent: string; border: string }> = {
+  draft: { bg: '#F8FAFC', color: TEXT3, label: 'Draft', accent: TEXT3, border: BORDER },
+  sent: { bg: '#F8FAFC', color: TEXT2, label: 'Sent', accent: BLUE, border: BORDER },
+  paid: { bg: '#E8F7EE', color: '#166534', label: 'Paid', accent: '#166534', border: '#BBF7D0' },
+  overdue: { bg: '#FEECEC', color: '#7F1D1D', label: 'Overdue', accent: RED, border: '#FECACA' },
+  cancelled: { bg: '#F8FAFC', color: TEXT3, label: 'Cancelled', accent: TEXT3, border: BORDER },
 }
 
 type LineItem = { description: string; qty: number; unit_price: number }
@@ -184,6 +185,33 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function StatusPill({ status }: { status: string }) {
+  const st = STATUS_STYLES[status] || STATUS_STYLES.draft
+  return (
+    <span
+      style={{
+        background: st.bg,
+        color: st.color,
+        border: `1px solid ${st.border}`,
+        minWidth: '92px',
+        height: '32px',
+        padding: '0 12px',
+        borderRadius: '999px',
+        fontSize: '11px',
+        fontWeight: 800,
+        whiteSpace: 'nowrap',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        letterSpacing: '0.01em',
+        boxSizing: 'border-box',
+      }}
+    >
+      {st.label}
+    </span>
   )
 }
 
@@ -438,7 +466,7 @@ export default function InvoicesPage() {
           alt="Revenue collected"
         />
       ),
-      accent: '#166534',
+      accent: GREEN,
       tag: 'Paid total',
     },
     {
@@ -796,21 +824,7 @@ export default function InvoicesPage() {
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <span
-                                style={{
-                                  background: st.bg,
-                                  color: st.color,
-                                  padding: '7px 10px',
-                                  borderRadius: '999px',
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  whiteSpace: 'nowrap',
-                                  display: 'inline-block',
-                                  letterSpacing: '0.02em',
-                                }}
-                              >
-                                {st.label}
-                              </span>
+                              <StatusPill status={statusKey} />
 
                               <span
                                 style={{
@@ -882,31 +896,34 @@ export default function InvoicesPage() {
                               }}
                             >
                               <div style={{ ...TYPE.label, marginBottom: '6px' }}>Status update</div>
-                              <select
-                                value={inv.status}
-                                onClick={e => e.stopPropagation()}
-                                onChange={e => updateStatus(inv.id, e.target.value)}
-                                style={{
-                                  width: '100%',
-                                  height: '34px',
-                                  padding: '0 10px',
-                                  borderRadius: '8px',
-                                  border: 'none',
-                                  background: st.bg,
-                                  color: st.color,
-                                  fontSize: '12px',
-                                  fontWeight: 800,
-                                  cursor: 'pointer',
-                                  fontFamily: FONT,
-                                  outline: 'none',
-                                }}
-                              >
-                                {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                                  <option key={k} value={k}>
-                                    {v.label}
-                                  </option>
-                                ))}
-                              </select>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <StatusPill status={statusKey} />
+                                <select
+                                  value={inv.status}
+                                  onClick={e => e.stopPropagation()}
+                                  onChange={e => updateStatus(inv.id, e.target.value)}
+                                  style={{
+                                    minWidth: '112px',
+                                    height: '32px',
+                                    padding: '0 12px',
+                                    borderRadius: '999px',
+                                    border: `1px solid ${st.border}`,
+                                    background: st.bg,
+                                    color: st.color,
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    fontFamily: FONT,
+                                    outline: 'none',
+                                  }}
+                                >
+                                  {Object.entries(STATUS_STYLES).map(([k, v]) => (
+                                    <option key={k} value={k}>
+                                      {v.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
                           </div>
 
@@ -952,7 +969,7 @@ export default function InvoicesPage() {
                     }}
                   >
                     <div style={{ ...TYPE.label, marginBottom: '8px' }}>Collection health</div>
-                    <div style={{ ...TYPE.valueMd, color: totalOutstanding > 0 ? BLUE : '#166534', marginBottom: '6px' }}>
+                    <div style={{ ...TYPE.valueMd, color: totalOutstanding > 0 ? BLUE : GREEN, marginBottom: '6px' }}>
                       {totalOutstanding > 0 ? 'Open' : 'Clear'}
                     </div>
                     <div style={TYPE.bodySm}>
@@ -966,7 +983,7 @@ export default function InvoicesPage() {
                     {[
                       { label: 'Draft invoices', value: invoices.filter(i => i.status === 'draft').length, color: TEXT3 },
                       { label: 'Sent invoices', value: invoices.filter(i => i.status === 'sent').length, color: BLUE },
-                      { label: 'Paid invoices', value: invoices.filter(i => i.status === 'paid').length, color: '#166534' },
+                      { label: 'Paid invoices', value: invoices.filter(i => i.status === 'paid').length, color: GREEN },
                       { label: 'Cancelled', value: invoices.filter(i => i.status === 'cancelled').length, color: TEXT3 },
                     ].map(item => (
                       <div
@@ -1354,28 +1371,33 @@ export default function InvoicesPage() {
                   {viewingInvoice.invoice_number}
                 </div>
 
-                <select
-                  value={viewingInvoice.status}
-                  onChange={e => updateStatus(viewingInvoice.id, e.target.value)}
-                  style={{
-                    padding: '5px 10px',
-                    borderRadius: '999px',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    border: 'none',
-                    background: STATUS_STYLES[viewingInvoice.status]?.bg,
-                    color: STATUS_STYLES[viewingInvoice.status]?.color,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    outline: 'none',
-                  }}
-                >
-                  {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <StatusPill status={viewingInvoice.status} />
+                  <select
+                    value={viewingInvoice.status}
+                    onChange={e => updateStatus(viewingInvoice.id, e.target.value)}
+                    style={{
+                      minWidth: '112px',
+                      height: '32px',
+                      padding: '0 12px',
+                      borderRadius: '999px',
+                      border: `1px solid ${(STATUS_STYLES[viewingInvoice.status] || STATUS_STYLES.draft).border}`,
+                      background: (STATUS_STYLES[viewingInvoice.status] || STATUS_STYLES.draft).bg,
+                      color: (STATUS_STYLES[viewingInvoice.status] || STATUS_STYLES.draft).color,
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      outline: 'none',
+                    }}
+                  >
+                    {Object.entries(STATUS_STYLES).map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
