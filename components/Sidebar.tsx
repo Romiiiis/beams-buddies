@@ -769,7 +769,7 @@ export function Sidebar({ active }: { active: string }) {
                 gap: isCollapsed ? 10 : 10,
                 justifyContent: isCollapsed ? 'center' : 'space-between',
                 padding: isCollapsed ? '12px 8px' : '10px 12px',
-                background: '#F8FAFC',
+                background: WHITE,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 12,
               }}
