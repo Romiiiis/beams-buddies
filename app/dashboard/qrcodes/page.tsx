@@ -170,14 +170,6 @@ function IconPrint({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconPlus({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function IconArrow({ size = 13 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -200,6 +192,7 @@ export default function QRCodesPage() {
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [qrUrls, setQrUrls] = useState<Record<string, string>>({})
+  const [selectedJobId, setSelectedJobId] = useState<string>('')
 
   useEffect(() => {
     async function load() {
@@ -225,15 +218,20 @@ export default function QRCodesPage() {
 
       const { data } = await supabase
         .from('jobs')
-        .select('id, qr_code_token, brand, model, capacity_kw, install_date, customers(first_name, last_name, suburb)')
+        .select('id, customer_id, qr_code_token, brand, model, capacity_kw, install_date, created_at, customers(first_name, last_name, suburb)')
         .eq('business_id', userData.business_id)
         .order('created_at', { ascending: false })
 
       const jobRows = data || []
       setJobs(jobRows)
 
+      if (jobRows.length > 0) {
+        setSelectedJobId(jobRows[0].id)
+      }
+
       const urls: Record<string, string> = {}
       for (const job of jobRows) {
+        if (!job.qr_code_token) continue
         const url = `${window.location.origin}/register/${job.qr_code_token}`
         urls[job.id] = await QRCode.toDataURL(url, { width: 220, margin: 1 })
       }
@@ -254,6 +252,11 @@ export default function QRCodesPage() {
     a.download = `qr-${name.replace(/\s+/g, '-').toLowerCase()}.png`
     a.click()
   }
+
+  const selectedJob = useMemo(
+    () => jobs.find(job => job.id === selectedJobId) || null,
+    [jobs, selectedJobId]
+  )
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -331,7 +334,7 @@ export default function QRCodesPage() {
     {
       label: 'QR codes',
       value: qrCount.toLocaleString('en-AU'),
-      sub: 'Units with generated QR links',
+      sub: 'Jobs with generated QR links',
       icon: <IconQrCodes size={28} />,
       accent: TEXT,
       tag: 'Library total',
@@ -339,7 +342,7 @@ export default function QRCodesPage() {
     {
       label: 'Ready to save',
       value: readyCount.toLocaleString('en-AU'),
-      sub: 'Download or print now',
+      sub: 'Available after selection',
       icon: <IconReady size={28} />,
       accent: TEAL_DARK,
       tag: 'Actions live',
@@ -430,7 +433,7 @@ export default function QRCodesPage() {
                 maxWidth: '760px',
               }}
             >
-              Generate and save one QR code per installed unit so customers can register service requests instantly.
+              Select a job first, then save or print its QR code from a cleaner one-at-a-time workspace.
             </div>
 
             <div
@@ -513,7 +516,7 @@ export default function QRCodesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 380px',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -531,9 +534,9 @@ export default function QRCodesPage() {
                 }}
               >
                 <div>
-                  <div style={sectionHeaderTitle}>All units</div>
+                  <div style={sectionHeaderTitle}>Jobs</div>
                   <div style={{ ...TYPE.bodySm }}>
-                    Every saved job has a QR card ready for download or print.
+                    Select a customer job to reveal its QR code.
                   </div>
                 </div>
 
@@ -574,110 +577,50 @@ export default function QRCodesPage() {
                   </span>
                 </div>
               ) : (
-                <div
-                  style={{
-                    padding: '14px 16px',
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-                    gap: '12px',
-                  }}
-                >
+                <div style={{ display: 'grid' }}>
+                  {!isMobile && (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr) auto',
+                        gap: '12px',
+                        padding: '10px 16px',
+                        borderBottom: `1px solid ${BORDER}`,
+                        background: '#FCFCFD',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={TYPE.label}>Customer</div>
+                      <div style={TYPE.label}>Job</div>
+                      <div style={{ ...TYPE.label, textAlign: 'right' }}>Install date</div>
+                    </div>
+                  )}
+
                   {jobs.map(job => {
                     const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                    const qrSize = isMobile ? 118 : 126
+                    const isSelected = selectedJobId === job.id
 
                     return (
-                      <div
+                      <button
                         key={job.id}
+                        onClick={() => setSelectedJobId(job.id)}
                         style={{
-                          borderRadius: '16px',
-                          border: `1px solid ${BORDER}`,
-                          background: WHITE,
-                          overflow: 'hidden',
+                          width: '100%',
+                          textAlign: 'left',
+                          border: 'none',
+                          borderBottom: `1px solid ${BORDER}`,
+                          background: isSelected ? '#F0FBFA' : WHITE,
+                          cursor: 'pointer',
+                          padding: 0,
+                          fontFamily: FONT,
                         }}
                       >
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : '170px minmax(0, 1fr)',
-                            minHeight: '100%',
-                          }}
-                        >
+                        {isMobile ? (
                           <div
                             style={{
-                              background: '#F8FAFC',
-                              borderRight: isMobile ? 'none' : `1px solid ${BORDER}`,
-                              borderBottom: isMobile ? `1px solid ${BORDER}` : 'none',
-                              padding: isMobile ? '14px 14px 12px' : '14px 12px 12px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '8px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: isMobile ? '132px' : '136px',
-                                height: isMobile ? '132px' : '136px',
-                                borderRadius: '16px',
-                                border: `1px solid ${BORDER}`,
-                                background: WHITE,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '8px',
-                              }}
-                            >
-                              {qrUrls[job.id] ? (
-                                <img
-                                  src={qrUrls[job.id]}
-                                  alt="QR code"
-                                  style={{
-                                    width: qrSize,
-                                    height: qrSize,
-                                    display: 'block',
-                                    borderRadius: '6px',
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: qrSize,
-                                    height: qrSize,
-                                    background: BG,
-                                    borderRadius: '12px',
-                                    border: `1px solid ${BORDER}`,
-                                  }}
-                                />
-                              )}
-                            </div>
-
-                            <div
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '5px 9px',
-                                borderRadius: '999px',
-                                background: '#E8F4F1',
-                                border: '1px solid rgba(31,158,148,0.12)',
-                                color: '#0A4F4C',
-                                fontSize: '10px',
-                                fontWeight: 800,
-                              }}
-                            >
-                              Ready to scan
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              padding: '14px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'space-between',
-                              gap: '12px',
+                              padding: '14px 16px',
+                              display: 'grid',
+                              gap: '10px',
                             }}
                           >
                             <div
@@ -685,17 +628,13 @@ export default function QRCodesPage() {
                                 display: 'flex',
                                 alignItems: 'flex-start',
                                 justifyContent: 'space-between',
-                                gap: '10px',
-                                flexWrap: 'wrap',
+                                gap: '12px',
                               }}
                             >
                               <div style={{ minWidth: 0 }}>
-                                <div style={{ ...TYPE.label, marginBottom: '5px', color: TEAL_DARK }}>
-                                  Registered unit
-                                </div>
                                 <div
                                   style={{
-                                    fontSize: '14px',
+                                    fontSize: '13px',
                                     fontWeight: 800,
                                     color: TEXT,
                                     lineHeight: 1.2,
@@ -704,327 +643,487 @@ export default function QRCodesPage() {
                                 >
                                   {name}
                                 </div>
-                                <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>
+                                <div style={{ ...TYPE.bodySm, color: TEXT2 }}>
                                   {job.customers?.suburb || 'No suburb'}
                                 </div>
                               </div>
 
                               <span
                                 style={{
-                                  background: '#F8FAFC',
-                                  color: TEXT2,
                                   padding: '5px 9px',
                                   borderRadius: '999px',
+                                  background: isSelected ? '#DDF7F5' : '#F8FAFC',
+                                  color: isSelected ? TEAL_DARK : TEXT3,
+                                  border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`,
                                   fontSize: '10px',
                                   fontWeight: 800,
                                   whiteSpace: 'nowrap',
-                                  display: 'inline-block',
-                                  border: `1px solid ${BORDER}`,
+                                  flexShrink: 0,
                                 }}
                               >
-                                Job linked
+                                {isSelected ? 'Selected' : 'Select'}
                               </span>
                             </div>
 
-                            <div
-                              style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                                gap: '8px',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  background: '#F8FAFC',
-                                  border: `1px solid ${BORDER}`,
-                                  borderRadius: '12px',
-                                  padding: '10px',
-                                  minWidth: 0,
-                                }}
-                              >
-                                <div style={{ ...TYPE.label, marginBottom: '5px' }}>Unit</div>
-                                <div
-                                  style={{
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    color: TEXT,
-                                    lineHeight: 1.35,
-                                    wordBreak: 'break-word',
-                                  }}
-                                >
-                                  {job.brand || 'Unknown'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
-                                </div>
-                                <div
-                                  style={{
-                                    ...TYPE.bodySm,
-                                    marginTop: '5px',
-                                    fontSize: '11px',
-                                    wordBreak: 'break-word',
-                                  }}
-                                >
-                                  {job.model || 'No model'}
-                                </div>
-                              </div>
+                            <div style={{ ...TYPE.bodySm, color: TEXT2 }}>
+                              {job.brand || 'Unknown'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.model ? `· ${job.model}` : ''}
+                            </div>
 
+                            <div style={{ ...TYPE.bodySm }}>
+                              Installed {formatDate(job.install_date)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr) auto',
+                              gap: '12px',
+                              alignItems: 'center',
+                              padding: '14px 16px',
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
                               <div
                                 style={{
-                                  background: '#F8FAFC',
-                                  border: `1px solid ${BORDER}`,
-                                  borderRadius: '12px',
-                                  padding: '10px',
-                                  minWidth: 0,
+                                  fontSize: '13px',
+                                  fontWeight: 800,
+                                  color: TEXT,
+                                  lineHeight: 1.2,
+                                  marginBottom: '4px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
                                 }}
                               >
-                                <div style={{ ...TYPE.label, marginBottom: '5px' }}>Install date</div>
-                                <div
-                                  style={{
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    color: TEXT,
-                                    lineHeight: 1.35,
-                                  }}
-                                >
-                                  {formatDate(job.install_date)}
-                                </div>
-                                <div
-                                  style={{
-                                    ...TYPE.bodySm,
-                                    marginTop: '5px',
-                                    fontSize: '11px',
-                                    lineHeight: 1.4,
-                                  }}
-                                >
-                                  Customer registration link embedded
-                                </div>
+                                {name}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {job.customers?.suburb || 'No suburb'}
+                              </div>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  color: TEXT2,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {job.brand || 'Unknown'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {job.model || 'No model'}
                               </div>
                             </div>
 
                             <div
                               style={{
                                 display: 'flex',
-                                gap: '8px',
-                                flexWrap: 'wrap',
+                                alignItems: 'center',
+                                gap: '10px',
+                                flexShrink: 0,
                               }}
                             >
-                              <button
-                                onClick={() => downloadQR(job.id, name)}
-                                style={{
-                                  ...quickActionStyle,
-                                  height: '34px',
-                                  padding: '0 12px',
-                                  borderRadius: '10px',
-                                  flex: '0 0 auto',
-                                }}
-                              >
-                                <IconDownload size={14} />
-                                Save
-                              </button>
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT }}>
+                                  {formatDate(job.install_date)}
+                                </div>
+                              </div>
 
-                              <button
-                                onClick={() => window.print()}
+                              <span
                                 style={{
-                                  ...quickActionStyle,
-                                  height: '34px',
-                                  padding: '0 12px',
-                                  borderRadius: '10px',
-                                  background: TEAL,
-                                  color: WHITE,
-                                  border: 'none',
-                                  flex: '0 0 auto',
+                                  padding: '5px 9px',
+                                  borderRadius: '999px',
+                                  background: isSelected ? '#DDF7F5' : '#F8FAFC',
+                                  color: isSelected ? TEAL_DARK : TEXT3,
+                                  border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`,
+                                  fontSize: '10px',
+                                  fontWeight: 800,
+                                  whiteSpace: 'nowrap',
                                 }}
                               >
-                                <IconPrint size={14} />
-                                Print
-                              </button>
+                                {isSelected ? 'Selected' : 'Select'}
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                        )}
+                      </button>
                     )
                   })}
-
-                  <div
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={{
-                      background: WHITE,
-                      border: `1.5px dashed ${BORDER}`,
-                      borderRadius: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      minHeight: isMobile ? '180px' : '240px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: TEXT3,
-                      }}
-                    >
-                      <IconPlus size={18} />
-                    </div>
-
-                    <div style={{ ...TYPE.titleSm, fontSize: '13px' }}>Add new job</div>
-                    <div style={TYPE.bodySm}>QR auto-generated</div>
-                  </div>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>QR workflow</div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
-                    <div style={{ ...TYPE.valueSm }}>Create job</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
-                      Each saved unit receives a registration token
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
-                    <div style={{ ...TYPE.valueSm }}>Save or print</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
-                      Use the QR on stickers, cards, or install packs
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
-                    <div style={{ ...TYPE.valueSm }}>Customer scans</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
-                      Registration starts from the embedded unit link
-                    </div>
-                  </div>
-                </div>
+            <div style={sideCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Selected QR</div>
+                <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                  <IconExternalLink size={14} />
+                </button>
               </div>
 
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Quick actions</div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
+              {!selectedJob ? (
+                <div
+                  style={{
+                    marginTop: '14px',
+                    padding: '18px',
+                    borderRadius: '14px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    textAlign: 'center',
+                    color: TEXT3,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  Select a customer job to view its QR code
                 </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
+              ) : (
+                <>
+                  <div
                     style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
+                      marginTop: '14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
                     }}
                   >
-                    Add job
-                  </button>
-
-                  <button
-                    onClick={() => window.print()}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    Print page
-                  </button>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Notes</div>
-                  <button onClick={() => window.print()} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {[
-                    'Each card is tied to a job token and customer unit.',
-                    'Save creates a PNG download for the selected unit.',
-                    'Print uses the browser print flow for fast output.',
-                  ].map(item => (
                     <div
-                      key={item}
                       style={{
+                        borderRadius: '16px',
+                        border: `1px solid ${BORDER}`,
+                        background: '#F8FAFC',
+                        padding: '14px',
                         display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '10px',
                       }}
                     >
-                      <span
+                      <div
                         style={{
-                          width: '8px',
-                          height: '8px',
-                          marginTop: '5px',
-                          borderRadius: '999px',
-                          background: TEAL,
-                          flexShrink: 0,
+                          width: isMobile ? '190px' : '220px',
+                          height: isMobile ? '190px' : '220px',
+                          borderRadius: '18px',
+                          border: `1px solid ${BORDER}`,
+                          background: WHITE,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '12px',
                         }}
-                      />
-                      <span>{item}</span>
+                      >
+                        {qrUrls[selectedJob.id] ? (
+                          <img
+                            src={qrUrls[selectedJob.id]}
+                            alt="QR code"
+                            style={{
+                              width: isMobile ? 160 : 190,
+                              height: isMobile ? 160 : 190,
+                              display: 'block',
+                              borderRadius: '8px',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: isMobile ? 160 : 190,
+                              height: isMobile ? 160 : 190,
+                              background: BG,
+                              borderRadius: '12px',
+                              border: `1px solid ${BORDER}`,
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '5px 9px',
+                          borderRadius: '999px',
+                          background: '#E8F4F1',
+                          border: '1px solid rgba(31,158,148,0.12)',
+                          color: '#0A4F4C',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                        }}
+                      >
+                        Ready to scan
+                      </div>
                     </div>
-                  ))}
+
+                    <div
+                      style={{
+                        borderRadius: '14px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        padding: '12px',
+                        display: 'grid',
+                        gap: '10px',
+                      }}
+                    >
+                      <div>
+                        <div style={{ ...TYPE.label, marginBottom: '5px', color: TEAL_DARK }}>Selected customer</div>
+                        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2 }}>
+                          {`${selectedJob.customers?.first_name || ''} ${selectedJob.customers?.last_name || ''}`.trim() || 'Customer'}
+                        </div>
+                        <div style={{ ...TYPE.bodySm, marginTop: '4px', color: TEXT2 }}>
+                          {selectedJob.customers?.suburb || 'No suburb'}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                          gap: '8px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: '12px',
+                            padding: '10px',
+                            minWidth: 0,
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '5px' }}>Job</div>
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, lineHeight: 1.35 }}>
+                            {selectedJob.brand || 'Unknown'} {selectedJob.capacity_kw ? `${selectedJob.capacity_kw}kW` : ''}
+                          </div>
+                          <div style={{ ...TYPE.bodySm, marginTop: '5px', fontSize: '11px', wordBreak: 'break-word' }}>
+                            {selectedJob.model || 'No model'}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            background: '#F8FAFC',
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: '12px',
+                            padding: '10px',
+                            minWidth: 0,
+                          }}
+                        >
+                          <div style={{ ...TYPE.label, marginBottom: '5px' }}>Install date</div>
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, lineHeight: 1.35 }}>
+                            {formatDate(selectedJob.install_date)}
+                          </div>
+                          <div style={{ ...TYPE.bodySm, marginTop: '5px', fontSize: '11px' }}>
+                            Job linked
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '8px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <button
+                          onClick={() =>
+                            downloadQR(
+                              selectedJob.id,
+                              `${selectedJob.customers?.first_name || ''} ${selectedJob.customers?.last_name || ''}`.trim() || 'customer'
+                            )
+                          }
+                          style={{
+                            ...quickActionStyle,
+                            height: '34px',
+                            padding: '0 12px',
+                            borderRadius: '10px',
+                            flex: '1 1 140px',
+                          }}
+                        >
+                          <IconDownload size={14} />
+                          Save
+                        </button>
+
+                        <button
+                          onClick={() => window.print()}
+                          style={{
+                            ...quickActionStyle,
+                            height: '34px',
+                            padding: '0 12px',
+                            borderRadius: '10px',
+                            background: TEAL,
+                            color: WHITE,
+                            border: 'none',
+                            flex: '1 1 140px',
+                          }}
+                        >
+                          <IconPrint size={14} />
+                          Print
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))',
+              gap: '14px',
+              alignItems: 'start',
+            }}
+          >
+            <div style={sideCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>QR workflow</div>
+                <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                  <IconExternalLink size={14} />
+                </button>
+              </div>
+
+              <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                  }}
+                >
+                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
+                  <div style={{ ...TYPE.valueSm }}>Select job</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
+                    Choose the installed unit from the jobs list
+                  </div>
                 </div>
+
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                  }}
+                >
+                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
+                  <div style={{ ...TYPE.valueSm }}>Show QR</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
+                    The code appears after the customer job is selected
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                  }}
+                >
+                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
+                  <div style={{ ...TYPE.valueSm }}>Save or print</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '5px' }}>
+                    Download PNG or print the selected QR
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={sideCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Quick actions</div>
+                <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                  <IconExternalLink size={14} />
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+                <button
+                  onClick={() => router.push('/dashboard/jobs')}
+                  style={{
+                    width: '100%',
+                    height: '34px',
+                    background: TEAL,
+                    color: WHITE,
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                  }}
+                >
+                  Add job
+                </button>
+
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    width: '100%',
+                    height: '34px',
+                    background: '#F8FAFC',
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    color: TEXT2,
+                  }}
+                >
+                  Print page
+                </button>
+              </div>
+            </div>
+
+            <div style={sideCard}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ ...TYPE.label }}>Notes</div>
+                <button onClick={() => window.print()} style={cardArrowBtn}>
+                  <IconExternalLink size={14} />
+                </button>
+              </div>
+
+              <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  'Only jobs are listed in the main library.',
+                  'The QR panel updates after selecting a customer job.',
+                  'Save downloads only the currently selected QR code.',
+                ].map(item => (
+                  <div
+                    key={item}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '8px',
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        marginTop: '5px',
+                        borderRadius: '999px',
+                        background: TEAL,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
