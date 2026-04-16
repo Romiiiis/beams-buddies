@@ -210,14 +210,6 @@ function IconPrint({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconArrow({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -339,7 +331,10 @@ export default function ReportsPage() {
         .filter(i => isSameMonth(i.created_at, monthDate))
         .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
 
-      return { label: monthLabelFromOffset(today, offset), total }
+      return {
+        label: monthLabelFromOffset(today, offset),
+        total,
+      }
     })
 
     const maxRevenue = Math.max(...monthlyRevenue.map(m => m.total), 1)
@@ -691,7 +686,7 @@ export default function ReportsPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0, 1fr))',
                     gap: '10px',
                     marginBottom: '14px',
                   }}
@@ -707,14 +702,38 @@ export default function ReportsPage() {
                     <div
                       key={item.label}
                       style={{
+                        minWidth: 0,
+                        minHeight: isMobile ? '72px' : '78px',
                         borderRadius: '12px',
                         background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
-                        padding: '10px 12px',
+                        padding: isMobile ? '10px' : '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '8px',
                       }}
                     >
-                      <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                      <div style={TYPE.valueMd}>{item.value}</div>
+                      <div
+                        style={{
+                          ...TYPE.label,
+                          marginBottom: 0,
+                          lineHeight: 1.25,
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div
+                        style={{
+                          ...TYPE.valueMd,
+                          fontSize: '20px',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {item.value}
+                      </div>
                     </div>
                   ))}
                 </div>
