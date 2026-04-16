@@ -59,6 +59,14 @@ const TYPE = {
   },
 }
 
+const avColors = [
+  { bg: '#E8F4F1', color: '#0A4F4C' },
+  { bg: '#EEF2F6', color: '#334155' },
+  { bg: '#E6F7F6', color: '#177A72' },
+  { bg: '#F1F5F9', color: '#475569' },
+  { bg: '#E8F4F1', color: '#1F9E94' },
+]
+
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -332,11 +340,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   function statusPill(nextServiceDate: string | null) {
-    if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
+    if (!nextServiceDate) return { label: 'No date', bg: '#F8FAFC', color: TEXT3, border: BORDER }
     const days = getDays(nextServiceDate)
-    if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
-    if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
-    return { label: 'Good', bg: '#DCFCE7', color: '#166534' }
+    if (days < 0) return { label: 'Overdue', bg: '#FFF7F7', color: '#7F1D1D', border: '#FECACA' }
+    if (days <= 30) return { label: 'Due soon', bg: '#FFFBF2', color: '#78350F', border: '#FDE68A' }
+    return { label: 'Good', bg: '#F7FCFA', color: '#166534', border: '#BBF7D0' }
   }
 
   const totalServiceRecords = useMemo(() => {
@@ -409,6 +417,29 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     padding: 0,
     display: 'flex',
     alignItems: 'center',
+  }
+
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
+    minHeight: isMobile ? 112 : 118,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+    borderRadius: '16px',
+  }
+
+  const sectionHeaderTitle: React.CSSProperties = {
+    fontSize: '15px',
+    fontWeight: 800,
+    color: TEXT,
+    marginBottom: '4px',
+    letterSpacing: '-0.02em',
   }
 
   const topCards = [
@@ -649,27 +680,29 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             }}
           >
             {topCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  ...cardP,
-                  minHeight: 146,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '8px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
                   </div>
-                  <StatImageIcon src={item.iconSrc} alt={item.label} />
+                  <div
+                    style={{
+                      width: 30,
+                      height: 30,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <StatImageIcon src={item.iconSrc} alt={item.label} />
+                  </div>
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '30px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{item.sub}</div>
+                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -687,7 +720,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div style={card}>
                 <div
                   style={{
-                    padding: '16px 18px 12px',
+                    padding: '14px 16px 12px',
                     borderBottom: `1px solid ${BORDER}`,
                     display: 'flex',
                     alignItems: 'center',
@@ -696,10 +729,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>
-                      Customer profile
-                    </div>
-                    <div style={TYPE.bodySm}>Contact details, address, and internal notes.</div>
+                    <div style={sectionHeaderTitle}>Customer profile</div>
+                    <div style={{ ...TYPE.bodySm }}>Contact details, address, and internal notes.</div>
                   </div>
 
                   {!editingCustomer && (
@@ -828,7 +859,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               </div>
 
               {(reviewClicks.length > 0 || jobs.length > 0) && (
-                <div style={cardP}>
+                <div style={sideCard}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <div style={{ ...TYPE.label }}>Activity summary</div>
                     <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
@@ -839,10 +870,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
                     {stats.overdue > 0 ? (
                       <>
-                        <span style={{ color: RED }}>{stats.overdue}</span> Overdue unit{stats.overdue !== 1 ? 's' : ''}
+                        <span style={{ color: TEXT }}>{stats.overdue}</span> Overdue unit{stats.overdue !== 1 ? 's' : ''}
                       </>
                     ) : (
-                      <span style={{ color: TEAL }}>All Clear</span>
+                      <span style={{ color: TEAL_DARK }}>All Clear</span>
                     )}
                   </div>
 
@@ -855,12 +886,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         gap: '10px',
                         padding: '10px 12px',
                         borderRadius: '10px',
-                        background: '#FEF2F2',
-                        border: '1px solid #FECACA',
+                        background: '#FFF9F9',
+                        border: '1px solid #F3D4D4',
                       }}
                     >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>Overdue</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: RED }}>{stats.overdue}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Overdue</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{stats.overdue}</span>
                     </div>
 
                     <div
@@ -871,12 +902,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         gap: '10px',
                         padding: '10px 12px',
                         borderRadius: '10px',
-                        background: '#FFFBEB',
-                        border: '1px solid #FDE68A',
+                        background: '#FFFDF7',
+                        border: '1px solid #F4E5B8',
                       }}
                     >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#92400E' }}>Due soon</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: AMBER }}>{stats.dueSoon}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Due soon</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{stats.dueSoon}</span>
                     </div>
 
                     <div
@@ -887,7 +918,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         gap: '10px',
                         padding: '10px 12px',
                         borderRadius: '10px',
-                        background: '#F8FAFC',
+                        background: '#FCFCFD',
                         border: `1px solid ${BORDER}`,
                       }}
                     >
@@ -952,7 +983,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             <div style={card}>
               <div
                 style={{
-                  padding: '16px 18px 12px',
+                  padding: '14px 16px 12px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: isMobile ? 'stretch' : 'center',
@@ -962,10 +993,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>
-                    Installed units
-                  </div>
-                  <div style={TYPE.bodySm}>View equipment details, service timing, and history for this customer.</div>
+                  <div style={sectionHeaderTitle}>Installed units</div>
+                  <div style={{ ...TYPE.bodySm }}>View equipment details, service timing, and history for this customer.</div>
                 </div>
 
                 <div
@@ -1020,11 +1049,31 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             background: WHITE,
                           }}
                         >
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>
-                              {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                            <div
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: '10px',
+                                background: avColors[idx % avColors.length].bg,
+                                color: avColors[idx % avColors.length].color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {String(job.brand || 'U').slice(0, 1).toUpperCase()}
                             </div>
-                            {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>
+                                {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                              </div>
+                              {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
+                            </div>
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -1032,6 +1081,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                               style={{
                                 background: s.bg,
                                 color: s.color,
+                                border: `1px solid ${s.border}`,
                                 padding: '6px 9px',
                                 borderRadius: '999px',
                                 fontSize: '10px',
@@ -1083,12 +1133,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   label: 'Serial number',
                                   value: job.serial_number || '—',
                                   mono: true,
+                                  icon: <IconArrow size={12} />,
                                 },
                                 {
                                   label: 'Installed',
                                   value: job.install_date
                                     ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                     : '—',
+                                  icon: <IconClock size={14} />,
                                 },
                                 {
                                   label: 'Next service',
@@ -1096,20 +1148,24 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                     : '—',
                                   danger: job.next_service_date && getDays(job.next_service_date) < 0,
+                                  icon: <IconClock size={14} />,
                                 },
                                 {
                                   label: 'Warranty expiry',
                                   value: job.warranty_expiry
                                     ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                                     : '—',
+                                  icon: <IconClock size={14} />,
                                 },
                                 {
                                   label: 'Location',
                                   value: job.install_location || '—',
+                                  icon: <IconMapPin size={14} />,
                                 },
                                 {
                                   label: 'Service interval',
                                   value: `Every ${job.service_interval_months} months`,
+                                  icon: <IconClock size={14} />,
                                 },
                               ].map(row => (
                                 <div
@@ -1121,7 +1177,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     padding: '12px',
                                   }}
                                 >
-                                  <div style={{ ...TYPE.label, marginBottom: '7px' }}>{row.label}</div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px', color: TEXT3 }}>
+                                    {row.icon}
+                                    <div style={TYPE.label}>{row.label}</div>
+                                  </div>
                                   <div
                                     style={{
                                       ...TYPE.body,
