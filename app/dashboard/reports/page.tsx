@@ -113,6 +113,8 @@ type Customer = {
   suburb: string | null
 }
 
+type ReportView = 'revenue' | 'jobs' | 'quotes' | 'services'
+
 function isSameMonth(dateStr: string | null | undefined, base: Date) {
   if (!dateStr) return false
   const d = new Date(dateStr)
@@ -226,6 +228,7 @@ export default function ReportsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [reportView, setReportView] = useState<ReportView>('revenue')
 
   useEffect(() => {
     async function load() {
@@ -337,8 +340,6 @@ export default function ReportsPage() {
       }
     })
 
-    const maxRevenue = Math.max(...monthlyRevenue.map(m => m.total), 1)
-
     const suburbCounts: Record<string, number> = {}
     customers.forEach(c => {
       const key = (c.suburb || 'Unknown').trim() || 'Unknown'
@@ -368,11 +369,108 @@ export default function ReportsPage() {
       sentQuotes,
       acceptanceRate,
       monthlyRevenue,
-      maxRevenue,
       topSuburbs,
       topBrands,
     }
   }, [customers, invoices, jobs, quotes, today])
+
+  const trendConfig = useMemo(() => {
+    if (reportView === 'jobs') {
+      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
+        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+        const total = jobs.filter(j => isSameMonth(j.created_at, monthDate)).length
+        return { label: monthLabelFromOffset(today, offset), total }
+      })
+
+      return {
+        title: 'Jobs trend',
+        subtitle: 'Jobs created over the last 6 months.',
+        pill: `${report.jobsThisMonth} this month`,
+        widgets: [
+          { label: 'Jobs this month', value: report.jobsThisMonth },
+          { label: 'Last month', value: report.jobsLastMonth },
+          { label: 'New customers', value: report.newCustomersThisMonth },
+          { label: 'Invoices', value: report.invoicesThisMonth },
+          { label: 'Quotes', value: report.quotesThisMonth },
+          { label: 'Due soon', value: report.dueSoonServices },
+        ],
+        monthly,
+        max: Math.max(...monthly.map(m => m.total), 1),
+        formatValue: (v: number) => String(v),
+      }
+    }
+
+    if (reportView === 'quotes') {
+      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
+        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+        const total = quotes
+          .filter(q => isSameMonth(q.created_at, monthDate))
+          .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+        return { label: monthLabelFromOffset(today, offset), total }
+      })
+
+      return {
+        title: 'Quote trend',
+        subtitle: 'Quote value over the last 6 months.',
+        pill: `Acceptance ${report.acceptanceRate}%`,
+        widgets: [
+          { label: 'Accepted', value: report.acceptedQuotes },
+          { label: 'Sent', value: report.sentQuotes },
+          { label: 'Quotes this month', value: report.quotesThisMonth },
+          { label: 'Acceptance', value: `${report.acceptanceRate}%` },
+          { label: 'Accepted value', value: formatMoney(report.quotesAcceptedValue) },
+          { label: 'Outstanding', value: formatMoney(report.outstanding) },
+        ],
+        monthly,
+        max: Math.max(...monthly.map(m => m.total), 1),
+        formatValue: (v: number) => `$${Math.round(v).toLocaleString('en-AU')}`,
+      }
+    }
+
+    if (reportView === 'services') {
+      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
+        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+        const total = jobs.filter(j => j.next_service_date && isSameMonth(j.next_service_date, monthDate)).length
+        return { label: monthLabelFromOffset(today, offset), total }
+      })
+
+      return {
+        title: 'Service trend',
+        subtitle: 'Scheduled services over the last 6 months.',
+        pill: `${report.overdueServices + report.dueSoonServices} active`,
+        widgets: [
+          { label: 'Overdue', value: report.overdueServices },
+          { label: 'Due soon', value: report.dueSoonServices },
+          { label: 'Jobs this month', value: report.jobsThisMonth },
+          { label: 'Last month', value: report.jobsLastMonth },
+          { label: 'New customers', value: report.newCustomersThisMonth },
+          { label: 'Quotes', value: report.quotesThisMonth },
+        ],
+        monthly,
+        max: Math.max(...monthly.map(m => m.total), 1),
+        formatValue: (v: number) => String(v),
+      }
+    }
+
+    const monthly = report.monthlyRevenue
+
+    return {
+      title: 'Revenue trend',
+      subtitle: 'Invoiced revenue over the last 6 months with current collections snapshot.',
+      pill: `Acceptance rate ${report.acceptanceRate}%`,
+      widgets: [
+        { label: 'Jobs this month', value: report.jobsThisMonth },
+        { label: 'Last month', value: report.jobsLastMonth },
+        { label: 'New customers', value: report.newCustomersThisMonth },
+        { label: 'Invoices', value: report.invoicesThisMonth },
+        { label: 'Quotes', value: report.quotesThisMonth },
+        { label: 'Due soon', value: report.dueSoonServices },
+      ],
+      monthly,
+      max: Math.max(...monthly.map(m => m.total), 1),
+      formatValue: (v: number) => `$${Math.round(v).toLocaleString('en-AU')}`,
+    }
+  }, [reportView, report, jobs, quotes, today])
 
   const card: React.CSSProperties = {
     background: WHITE,
@@ -647,10 +745,8 @@ export default function ReportsPage() {
                 }}
               >
                 <div>
-                  <div style={sectionHeaderTitle}>Revenue trend</div>
-                  <div style={{ ...TYPE.bodySm }}>
-                    Invoiced revenue over the last 6 months with current collections snapshot.
-                  </div>
+                  <div style={sectionHeaderTitle}>{trendConfig.title}</div>
+                  <div style={{ ...TYPE.bodySm }}>{trendConfig.subtitle}</div>
                 </div>
 
                 <div
@@ -662,6 +758,58 @@ export default function ReportsPage() {
                     width: isMobile ? '100%' : 'auto',
                   }}
                 >
+                  <div
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: isMobile ? '100%' : 'auto',
+                    }}
+                  >
+                    <select
+                      value={reportView}
+                      onChange={e => setReportView(e.target.value as ReportView)}
+                      style={{
+                        height: '40px',
+                        padding: '0 38px 0 12px',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        fontFamily: FONT,
+                        outline: 'none',
+                        cursor: 'pointer',
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none',
+                        minWidth: '140px',
+                        width: isMobile ? '100%' : 'auto',
+                      }}
+                    >
+                      <option value="revenue">Revenue</option>
+                      <option value="jobs">Jobs</option>
+                      <option value="quotes">Quotes</option>
+                      <option value="services">Services</option>
+                    </select>
+
+                    <div
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        pointerEvents: 'none',
+                        color: TEXT3,
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+
                   <div
                     style={{
                       height: '40px',
@@ -677,7 +825,7 @@ export default function ReportsPage() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Acceptance rate {report.acceptanceRate}%
+                    {trendConfig.pill}
                   </div>
                 </div>
               </div>
@@ -691,14 +839,7 @@ export default function ReportsPage() {
                     marginBottom: '14px',
                   }}
                 >
-                  {[
-                    { label: 'Jobs this month', value: report.jobsThisMonth },
-                    { label: 'Last month', value: report.jobsLastMonth },
-                    { label: 'New customers', value: report.newCustomersThisMonth },
-                    { label: 'Invoices', value: report.invoicesThisMonth },
-                    { label: 'Quotes', value: report.quotesThisMonth },
-                    { label: 'Due soon', value: report.dueSoonServices },
-                  ].map(item => (
+                  {trendConfig.widgets.map(item => (
                     <div
                       key={item.label}
                       style={{
@@ -728,7 +869,8 @@ export default function ReportsPage() {
                       <div
                         style={{
                           ...TYPE.valueMd,
-                          fontSize: '20px',
+                          fontSize:
+                            typeof item.value === 'string' && item.value.length > 9 ? '16px' : '20px',
                           lineHeight: 1,
                         }}
                       >
@@ -764,9 +906,7 @@ export default function ReportsPage() {
                     }}
                   >
                     {[100, 75, 50, 25, 0].map(tick => (
-                      <span key={tick}>
-                        ${Math.round((report.maxRevenue * tick) / 100).toLocaleString('en-AU')}
-                      </span>
+                      <span key={tick}>{trendConfig.formatValue(Math.round((trendConfig.max * tick) / 100))}</span>
                     ))}
                   </div>
 
@@ -794,8 +934,8 @@ export default function ReportsPage() {
                       />
                     ))}
 
-                    {report.monthlyRevenue.map(item => {
-                      const height = Math.max(16, Math.round((item.total / report.maxRevenue) * (isMobile ? 136 : 166)))
+                    {trendConfig.monthly.map(item => {
+                      const height = Math.max(16, Math.round((item.total / trendConfig.max) * (isMobile ? 136 : 166)))
 
                       return (
                         <div
@@ -820,7 +960,7 @@ export default function ReportsPage() {
                               textAlign: 'center',
                             }}
                           >
-                            {item.total > 0 ? `$${Math.round(item.total).toLocaleString('en-AU')}` : '$0'}
+                            {item.total > 0 ? trendConfig.formatValue(item.total) : trendConfig.formatValue(0)}
                           </div>
 
                           <div
