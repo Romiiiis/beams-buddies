@@ -336,7 +336,7 @@ export default function ReportsPage() {
     const monthlyRevenue = [-5, -4, -3, -2, -1, 0].map(offset => {
       const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
       const total = invoices
-        .filter(i => i.status === 'paid' && isSameMonth(i.created_at, monthDate))
+        .filter(i => isSameMonth(i.created_at, monthDate))
         .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
 
       return { label: monthLabelFromOffset(today, offset), total }
@@ -654,26 +654,36 @@ export default function ReportsPage() {
                 <div>
                   <div style={sectionHeaderTitle}>Revenue trend</div>
                   <div style={{ ...TYPE.bodySm }}>
-                    Paid invoice totals across the last 6 months.
+                    Invoiced revenue over the last 6 months with current collections snapshot.
                   </div>
                 </div>
 
                 <div
                   style={{
-                    height: '40px',
-                    padding: '0 12px',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    whiteSpace: 'nowrap',
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                    width: isMobile ? '100%' : 'auto',
                   }}
                 >
-                  6 month view
+                  <div
+                    style={{
+                      height: '40px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Acceptance rate {report.acceptanceRate}%
+                  </div>
                 </div>
               </div>
 
@@ -736,7 +746,7 @@ export default function ReportsPage() {
                   >
                     {[100, 75, 50, 25, 0].map(tick => (
                       <span key={tick}>
-                        {formatMoney(Math.round((report.maxRevenue * tick) / 100))}
+                        ${Math.round((report.maxRevenue * tick) / 100).toLocaleString('en-AU')}
                       </span>
                     ))}
                   </div>
@@ -791,7 +801,7 @@ export default function ReportsPage() {
                               textAlign: 'center',
                             }}
                           >
-                            {item.total > 0 ? formatMoney(item.total) : '$0'}
+                            {item.total > 0 ? `$${Math.round(item.total).toLocaleString('en-AU')}` : '$0'}
                           </div>
 
                           <div
