@@ -68,11 +68,11 @@ const TYPE = {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; border: string }> = {
-  draft: { bg: '#F1F5F9', color: TEXT3, label: 'Draft', border: BORDER },
-  sent: { bg: '#E8F0FF', color: BLUE, label: 'Sent', border: '#BFDBFE' },
+  draft: { bg: '#F8FAFC', color: TEXT3, label: 'Draft', border: BORDER },
+  sent: { bg: '#F8FAFC', color: TEXT2, label: 'Sent', border: BORDER },
   accepted: { bg: '#E8F7EE', color: GREEN, label: 'Accepted', border: '#BBF7D0' },
   declined: { bg: '#FEECEC', color: '#7F1D1D', label: 'Declined', border: '#FECACA' },
-  expired: { bg: '#FEF3C7', color: AMBER, label: 'Expired', border: '#FDE68A' },
+  expired: { bg: '#F8FAFC', color: TEXT3, label: 'Expired', border: BORDER },
 }
 
 type LineItem = { description: string; qty: number; unit_price: number }
@@ -202,14 +202,6 @@ function IconSearch({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconArrow({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -226,13 +218,18 @@ function StatusPill({ status }: { status: string }) {
         background: st.bg,
         color: st.color,
         border: `1px solid ${st.border}`,
-        padding: '6px 10px',
+        minWidth: '84px',
+        height: '32px',
+        padding: '0 12px',
         borderRadius: '999px',
-        fontSize: '10px',
+        fontSize: '11px',
         fontWeight: 800,
         whiteSpace: 'nowrap',
-        display: 'inline-block',
-        letterSpacing: '0.02em',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        letterSpacing: '0.01em',
+        boxSizing: 'border-box',
       }}
     >
       {st.label}
@@ -416,11 +413,6 @@ export default function QuotesPage() {
   const taxRatePreview = parseFloat(form.tax_rate) || 10
   const previewTotals = calcTotals(form.line_items, taxRatePreview)
 
-  const draftValue = useMemo(
-    () => quotes.filter(q => q.status === 'draft').reduce((sum, q) => sum + Number(q.total || 0), 0),
-    [quotes]
-  )
-
   const totalValue = useMemo(
     () => quotes.reduce((sum, q) => sum + Number(q.total || 0), 0),
     [quotes]
@@ -505,7 +497,7 @@ export default function QuotesPage() {
       value: statusCounts.sent.toLocaleString('en-AU'),
       sub: 'Awaiting response',
       icon: <IconSent size={28} />,
-      accent: BLUE,
+      accent: TEXT,
       tag: 'In progress',
     },
     {
@@ -959,9 +951,10 @@ export default function QuotesPage() {
                                   value={q.status}
                                   onChange={e => updateStatus(q.id, e.target.value)}
                                   style={{
-                                    height: '34px',
-                                    padding: '0 10px',
-                                    borderRadius: '8px',
+                                    minWidth: '110px',
+                                    height: '32px',
+                                    padding: '0 12px',
+                                    borderRadius: '999px',
                                     border: `1px solid ${st.border}`,
                                     background: st.bg,
                                     color: st.color,
@@ -1100,9 +1093,10 @@ export default function QuotesPage() {
                                 value={q.status}
                                 onChange={e => updateStatus(q.id, e.target.value)}
                                 style={{
+                                  minWidth: '110px',
                                   height: '32px',
-                                  padding: '0 10px',
-                                  borderRadius: '8px',
+                                  padding: '0 12px',
+                                  borderRadius: '999px',
                                   border: `1px solid ${st.border}`,
                                   background: st.bg,
                                   color: st.color,
@@ -1210,6 +1204,22 @@ export default function QuotesPage() {
                     <span style={{ fontSize: '12px', fontWeight: 700, color: BLUE }}>Total value</span>
                     <span style={{ fontSize: '13px', fontWeight: 900, color: BLUE }}>${totalValue.toFixed(0)}</span>
                   </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#FEECEC',
+                      border: '1px solid #FECACA',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>Declined</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#7F1D1D' }}>{statusCounts.declined}</span>
+                  </div>
                 </div>
               </div>
 
@@ -1292,12 +1302,12 @@ export default function QuotesPage() {
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FEF3C7',
-                      border: '1px solid #FDE68A',
+                      background: '#FCFCFD',
+                      border: `1px solid ${BORDER}`,
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '4px', color: AMBER }}>GST</div>
-                    <div style={{ ...TYPE.valueSm, color: AMBER }}>${previewTotals.tax_amount.toFixed(2)}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>GST</div>
+                    <div style={{ ...TYPE.valueSm }}>${previewTotals.tax_amount.toFixed(2)}</div>
                   </div>
 
                   <div
