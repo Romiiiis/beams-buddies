@@ -259,19 +259,19 @@ export default function CustomersPage() {
   }
 
   function statusPill(jobs: any[]) {
-    if (!jobs?.length) return { label: 'No units', bg: '#F1F5F9', color: TEXT3 }
+    if (!jobs?.length) return { label: 'No units', bg: '#F8FAFC', color: TEXT3, border: BORDER }
 
     const datedJobs = [...jobs]
       .filter(j => j?.next_service_date)
       .sort((a, b) => new Date(a.next_service_date).getTime() - new Date(b.next_service_date).getTime())
 
     const next = datedJobs[0]?.next_service_date || jobs[0]?.next_service_date
-    if (!next) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
+    if (!next) return { label: 'No date', bg: '#F8FAFC', color: TEXT3, border: BORDER }
 
     const days = getDays(next)
-    if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#7F1D1D' }
-    if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#78350F' }
-    return { label: 'Good', bg: '#DCFCE7', color: '#166534' }
+    if (days < 0) return { label: 'Overdue', bg: '#FFF7F7', color: '#7F1D1D', border: '#FECACA' }
+    if (days <= 30) return { label: 'Due soon', bg: '#FFFBF2', color: '#78350F', border: '#FDE68A' }
+    return { label: 'Good', bg: '#F7FCFA', color: '#166534', border: '#BBF7D0' }
   }
 
   const filtered = useMemo(() => {
@@ -645,6 +645,27 @@ export default function CustomersPage() {
                 </div>
               </div>
 
+              {!isMobile && filtered.length > 0 && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
+                    gap: '12px',
+                    alignItems: 'center',
+                    padding: '10px 16px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    background: '#FCFCFD',
+                  }}
+                >
+                  <div style={{ ...TYPE.label }}>Customer</div>
+                  <div style={{ ...TYPE.label }}>Units</div>
+                  <div style={{ ...TYPE.label }}>Next service</div>
+                  <div style={{ ...TYPE.label }}>Review activity</div>
+                  <div style={{ ...TYPE.label }}>Status</div>
+                  <div />
+                </div>
+              )}
+
               {filtered.length === 0 ? (
                 <div
                   style={{
@@ -674,10 +695,10 @@ export default function CustomersPage() {
                       onClick={() => router.push(`/dashboard/customers/${c.id}`)}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.3fr) minmax(0,0.8fr) minmax(0,0.9fr) auto',
+                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
                         gap: '12px',
                         alignItems: 'center',
-                        padding: '13px 16px',
+                        padding: '14px 16px',
                         borderBottom: `1px solid ${BORDER}`,
                         cursor: 'pointer',
                         transition: 'background 0.12s',
@@ -685,92 +706,207 @@ export default function CustomersPage() {
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                        <div
-                          style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '10px',
-                            background: av.bg,
-                            color: av.color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                        </div>
+                      {isMobile ? (
+                        <div style={{ display: 'grid', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                            <div
+                              style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '11px',
+                                background: av.bg,
+                                color: av.color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                            </div>
 
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 700,
-                              color: TEXT,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {c.first_name} {c.last_name}
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 700,
+                                  color: TEXT,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {c.first_name} {c.last_name}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '11px',
+                                  color: TEXT3,
+                                  marginTop: '2px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {c.suburb || c.address || 'No suburb'}
+                              </div>
+                            </div>
+
+                            <span
+                              style={{
+                                color: TEXT3,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <IconArrow size={12} />
+                            </span>
                           </div>
+
                           <div
                             style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              marginTop: '1px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '8px',
                             }}
                           >
-                            {c.suburb || c.address || 'No suburb'}
+                            <div
+                              style={{
+                                padding: '10px 11px',
+                                borderRadius: '12px',
+                                border: `1px solid ${BORDER}`,
+                                background: '#FCFCFD',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '4px' }}>Units</div>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                                {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+
+                            <div
+                              style={{
+                                padding: '10px 11px',
+                                borderRadius: '12px',
+                                border: `1px solid ${BORDER}`,
+                                background: '#FCFCFD',
+                              }}
+                            >
+                              <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                                {nextJob?.next_service_date
+                                  ? new Date(nextJob.next_service_date).toLocaleDateString('en-AU', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : 'Not set'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '10px',
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <div style={{ fontSize: '11px', color: TEXT3 }}>
+                              {totalPlatforms > 0
+                                ? clicks > 0
+                                  ? `${clicks}/${totalPlatforms} review clicks`
+                                  : 'No review clicks'
+                                : 'No review platforms connected'}
+                            </div>
+
+                            <span
+                              style={{
+                                background: s.bg,
+                                color: s.color,
+                                border: `1px solid ${s.border}`,
+                                padding: '6px 9px',
+                                borderRadius: '999px',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {s.label}
+                            </span>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                            <div
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: '10px',
+                                background: av.bg,
+                                color: av.color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                            </div>
 
-                      {!isMobile && (
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              color: TEXT3,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.07em',
-                              marginBottom: '2px',
-                            }}
-                          >
-                            Units
+                            <div style={{ minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 700,
+                                  color: TEXT,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {c.first_name} {c.last_name}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '11px',
+                                  color: TEXT3,
+                                  marginTop: '2px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {c.suburb || c.address || 'No suburb'}
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>
-                            {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
-                          </div>
-                        </div>
-                      )}
 
-                      {!isMobile && (
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              color: TEXT3,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.07em',
-                              marginBottom: '2px',
-                            }}
-                          >
-                            Review activity
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                            {c.jobs?.length || 0}
                           </div>
+
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                            {nextJob?.next_service_date
+                              ? new Date(nextJob.next_service_date).toLocaleDateString('en-AU', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                })
+                              : 'Not set'}
+                          </div>
+
                           <div
                             style={{
                               fontSize: '12px',
                               fontWeight: 600,
-                              color: TEXT2,
+                              color: TEXT3,
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -782,88 +918,37 @@ export default function CustomersPage() {
                                 : 'No review clicks'
                               : 'No platforms connected'}
                           </div>
-                        </div>
-                      )}
 
-                      <div
-                        style={{
-                          justifySelf: isMobile ? 'start' : 'end',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        {isMobile && (
-                          <span
+                          <div>
+                            <span
+                              style={{
+                                background: s.bg,
+                                color: s.color,
+                                border: `1px solid ${s.border}`,
+                                padding: '6px 9px',
+                                borderRadius: '999px',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {s.label}
+                            </span>
+                          </div>
+
+                          <div
                             style={{
-                              background: '#F8FAFC',
                               color: TEXT3,
-                              padding: '6px 9px',
-                              borderRadius: '999px',
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              border: `1px solid ${BORDER}`,
-                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
                             }}
                           >
-                            {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
-                          </span>
-                        )}
-
-                        {nextJob?.next_service_date && !isMobile && (
-                          <span
-                            style={{
-                              background: '#F8FAFC',
-                              color: TEXT3,
-                              padding: '6px 9px',
-                              borderRadius: '999px',
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              border: `1px solid ${BORDER}`,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {new Date(nextJob.next_service_date).toLocaleDateString('en-AU', {
-                              day: 'numeric',
-                              month: 'short',
-                            })}
-                          </span>
-                        )}
-
-                        <span
-                          style={{
-                            background: s.bg,
-                            color: s.color,
-                            padding: '6px 9px',
-                            borderRadius: '999px',
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {s.label}
-                        </span>
-
-                        <span
-                          style={{
-                            color: TEXT3,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <IconArrow size={12} />
-                        </span>
-                      </div>
-
-                      {isMobile && (
-                        <div style={{ fontSize: '11px', color: TEXT3, paddingLeft: '48px', marginTop: '-4px' }}>
-                          {totalPlatforms > 0
-                            ? clicks > 0
-                              ? `${clicks}/${totalPlatforms} review clicks`
-                              : 'No review clicks'
-                            : 'No review platforms connected'}
-                        </div>
+                            <IconArrow size={12} />
+                          </div>
+                        </>
                       )}
                     </div>
                   )
@@ -883,11 +968,11 @@ export default function CustomersPage() {
                 <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
                   {stats.overdue > 0 ? (
                     <>
-                      <span style={{ color: '#B91C1C' }}>{stats.overdue}</span> Overdue customer
+                      <span style={{ color: TEXT }}>{stats.overdue}</span> Overdue customer
                       {stats.overdue !== 1 ? 's' : ''}
                     </>
                   ) : (
-                    <span style={{ color: TEAL }}>All Clear</span>
+                    <span style={{ color: TEAL_DARK }}>All Clear</span>
                   )}
                 </div>
 
@@ -900,12 +985,12 @@ export default function CustomersPage() {
                       gap: '10px',
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FEF2F2',
-                      border: '1px solid #FECACA',
+                      background: '#FFF9F9',
+                      border: '1px solid #F3D4D4',
                     }}
                   >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>Overdue</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#991B1B' }}>{stats.overdue}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Overdue</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{stats.overdue}</span>
                   </div>
 
                   <div
@@ -916,12 +1001,12 @@ export default function CustomersPage() {
                       gap: '10px',
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FFFBEB',
-                      border: '1px solid #FDE68A',
+                      background: '#FFFDF7',
+                      border: '1px solid #F4E5B8',
                     }}
                   >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#92400E' }}>Due soon</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#92400E' }}>{stats.dueSoon}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Due soon</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{stats.dueSoon}</span>
                   </div>
 
                   <div
@@ -932,8 +1017,8 @@ export default function CustomersPage() {
                       gap: '10px',
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
+                      background: '#FAFCFB',
+                      border: '1px solid #D9ECE6',
                     }}
                   >
                     <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Healthy</span>
@@ -964,7 +1049,7 @@ export default function CustomersPage() {
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#F8FAFC',
+                      background: '#FCFCFD',
                       border: `1px solid ${BORDER}`,
                     }}
                   >
@@ -976,8 +1061,8 @@ export default function CustomersPage() {
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#E6F7F6',
-                      border: '1px solid #C4E8E5',
+                      background: '#FAFCFB',
+                      border: '1px solid #D9ECE6',
                     }}
                   >
                     <div style={{ ...TYPE.label, marginBottom: '4px' }}>Customers engaged</div>
