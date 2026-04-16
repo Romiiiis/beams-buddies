@@ -331,11 +331,6 @@ export default function RevenuePage() {
     overflow: 'hidden',
   }
 
-  const cardP: React.CSSProperties = {
-    ...card,
-    padding: '18px',
-  }
-
   const statCard: React.CSSProperties = {
     ...card,
     padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
@@ -611,7 +606,7 @@ export default function RevenuePage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, minmax(0, 1fr))',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0, 1fr))',
                     gap: '10px',
                     marginBottom: '14px',
                   }}
@@ -627,18 +622,42 @@ export default function RevenuePage() {
                     <div
                       key={item.label}
                       style={{
+                        minWidth: 0,
+                        minHeight: isMobile ? '78px' : '84px',
                         borderRadius: '12px',
                         background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
-                        padding: '10px 12px',
+                        padding: isMobile ? '10px' : '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '8px',
                       }}
                     >
-                      <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
                       <div
                         style={{
-                          ...TYPE.valueMd,
-                          fontSize: typeof item.value === 'string' && item.value.length > 8 ? '16px' : '20px',
+                          ...TYPE.label,
+                          marginBottom: 0,
+                          lineHeight: 1.35,
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word',
                         }}
+                      >
+                        {item.label}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: typeof item.value === 'string' && item.value.length > 8 ? '18px' : '22px',
+                          fontWeight: 900,
+                          color: TEXT,
+                          letterSpacing: '-0.04em',
+                          lineHeight: 1,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={String(item.value)}
                       >
                         {item.value}
                       </div>
