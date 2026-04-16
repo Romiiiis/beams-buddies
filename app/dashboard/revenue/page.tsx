@@ -161,14 +161,6 @@ function IconArrow({ size = 13 }: { size?: number }) {
   )
 }
 
-function IconChevronRight({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -286,16 +278,16 @@ export default function RevenuePage() {
   const monthlyRevenue = useMemo(
     () =>
       last6.map(m => {
-        const total = paid
+        const total = invoices
           .filter(i => {
-            const d = new Date(i.paid_at || i.created_at)
+            const d = new Date(i.created_at)
             return d.getMonth() === m.month && d.getFullYear() === m.year
           })
           .reduce((sum, i) => sum + Number(i.total || 0), 0)
 
         return { ...m, total }
       }),
-    [last6, paid]
+    [last6, invoices]
   )
 
   const maxMonthly = Math.max(...monthlyRevenue.map(m => m.total), 1)
@@ -582,7 +574,7 @@ export default function RevenuePage() {
                 <div>
                   <div style={sectionHeaderTitle}>Monthly revenue</div>
                   <div style={{ ...TYPE.bodySm }}>
-                    Paid revenue over the last 6 months with current collections snapshot.
+                    Invoiced revenue over the last 6 months with current collections snapshot.
                   </div>
                 </div>
 
