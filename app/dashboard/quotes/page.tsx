@@ -68,11 +68,11 @@ const TYPE = {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; border: string }> = {
-  draft: { bg: '#F8FAFC', color: TEXT3, label: 'Draft', border: BORDER },
-  sent: { bg: '#F5F8FF', color: BLUE, label: 'Sent', border: '#DBEAFE' },
-  accepted: { bg: '#F7FCFA', color: GREEN, label: 'Accepted', border: '#BBF7D0' },
-  declined: { bg: '#FFF7F7', color: '#7F1D1D', label: 'Declined', border: '#FECACA' },
-  expired: { bg: '#FFFBF2', color: AMBER, label: 'Expired', border: '#FDE68A' },
+  draft: { bg: '#F1F5F9', color: TEXT3, label: 'Draft', border: BORDER },
+  sent: { bg: '#E8F0FF', color: BLUE, label: 'Sent', border: '#BFDBFE' },
+  accepted: { bg: '#E8F7EE', color: GREEN, label: 'Accepted', border: '#BBF7D0' },
+  declined: { bg: '#FEECEC', color: '#7F1D1D', label: 'Declined', border: '#FECACA' },
+  expired: { bg: '#FEF3C7', color: AMBER, label: 'Expired', border: '#FDE68A' },
 }
 
 type LineItem = { description: string; qty: number; unit_price: number }
@@ -251,6 +251,8 @@ export default function QuotesPage() {
   const [businessId, setBusinessId] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [search, setSearch] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<Quote | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const [form, setForm] = useState({
     customer_id: '',
@@ -368,6 +370,16 @@ export default function QuotesPage() {
   async function updateStatus(id: string, status: string) {
     await supabase.from('quotes').update({ status }).eq('id', id)
     setQuotes(prev => prev.map(q => (q.id === id ? { ...q, status } : q)))
+  }
+
+  async function deleteQuote(id: string) {
+    setDeleting(true)
+    const { error } = await supabase.from('quotes').delete().eq('id', id)
+    if (!error) {
+      setQuotes(prev => prev.filter(q => q.id !== id))
+      setDeleteTarget(null)
+    }
+    setDeleting(false)
   }
 
   const statusCounts = useMemo(() => {
@@ -792,7 +804,7 @@ export default function QuotesPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.35fr) 120px 130px 160px',
+                    gridTemplateColumns: 'minmax(0,1.2fr) 100px 120px 150px 82px',
                     gap: '12px',
                     alignItems: 'center',
                     padding: '10px 16px',
@@ -804,6 +816,7 @@ export default function QuotesPage() {
                   <div style={{ ...TYPE.label }}>Total</div>
                   <div style={{ ...TYPE.label }}>Valid until</div>
                   <div style={{ ...TYPE.label }}>Status</div>
+                  <div style={{ ...TYPE.label, textAlign: 'right' }}>Delete</div>
                 </div>
               )}
 
@@ -939,31 +952,51 @@ export default function QuotesPage() {
                                 flexWrap: 'wrap',
                               }}
                             >
-                              <StatusPill status={q.status} />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <StatusPill status={q.status} />
 
-                              <select
-                                value={q.status}
-                                onChange={e => updateStatus(q.id, e.target.value)}
+                                <select
+                                  value={q.status}
+                                  onChange={e => updateStatus(q.id, e.target.value)}
+                                  style={{
+                                    height: '34px',
+                                    padding: '0 10px',
+                                    borderRadius: '8px',
+                                    border: `1px solid ${st.border}`,
+                                    background: st.bg,
+                                    color: st.color,
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    fontFamily: FONT,
+                                    outline: 'none',
+                                  }}
+                                >
+                                  {Object.entries(STATUS_STYLES).map(([k, v]) => (
+                                    <option key={k} value={k}>
+                                      {v.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <button
+                                onClick={() => setDeleteTarget(q)}
                                 style={{
                                   height: '34px',
-                                  padding: '0 10px',
+                                  padding: '0 12px',
                                   borderRadius: '8px',
-                                  border: `1px solid ${st.border}`,
-                                  background: st.bg,
-                                  color: st.color,
+                                  border: '1px solid #FECACA',
+                                  background: '#FEECEC',
+                                  color: '#7F1D1D',
                                   fontSize: '11px',
                                   fontWeight: 800,
                                   cursor: 'pointer',
                                   fontFamily: FONT,
-                                  outline: 'none',
                                 }}
                               >
-                                {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                                  <option key={k} value={k}>
-                                    {v.label}
-                                  </option>
-                                ))}
-                              </select>
+                                Delete
+                              </button>
                             </div>
 
                             {q.notes && (
@@ -987,7 +1020,7 @@ export default function QuotesPage() {
                           <div
                             style={{
                               display: 'grid',
-                              gridTemplateColumns: 'minmax(0,1.35fr) 120px 130px 160px',
+                              gridTemplateColumns: 'minmax(0,1.2fr) 100px 120px 150px 82px',
                               gap: '12px',
                               alignItems: 'center',
                             }}
@@ -1057,7 +1090,6 @@ export default function QuotesPage() {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'flex-end',
                                 gap: '8px',
                                 flexWrap: 'wrap',
                               }}
@@ -1087,6 +1119,26 @@ export default function QuotesPage() {
                                   </option>
                                 ))}
                               </select>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => setDeleteTarget(q)}
+                                style={{
+                                  height: '32px',
+                                  padding: '0 10px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #FECACA',
+                                  background: '#FEECEC',
+                                  color: '#7F1D1D',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                }}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         )}
@@ -1135,12 +1187,12 @@ export default function QuotesPage() {
                       gap: '10px',
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FAFCFB',
-                      border: '1px solid #D9ECE6',
+                      background: '#E8F7EE',
+                      border: '1px solid #BBF7D0',
                     }}
                   >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Accepted value</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>${acceptedValue.toFixed(0)}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: GREEN }}>Accepted value</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: GREEN }}>${acceptedValue.toFixed(0)}</span>
                   </div>
 
                   <div
@@ -1151,12 +1203,12 @@ export default function QuotesPage() {
                       gap: '10px',
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FCFCFD',
-                      border: `1px solid ${BORDER}`,
+                      background: '#EAF3FF',
+                      border: '1px solid #BFDBFE',
                     }}
                   >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Total value</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>${totalValue.toFixed(0)}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: BLUE }}>Total value</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: BLUE }}>${totalValue.toFixed(0)}</span>
                   </div>
                 </div>
               </div>
@@ -1240,24 +1292,24 @@ export default function QuotesPage() {
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FCFCFD',
-                      border: `1px solid ${BORDER}`,
+                      background: '#FEF3C7',
+                      border: '1px solid #FDE68A',
                     }}
                   >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>GST</div>
-                    <div style={{ ...TYPE.valueSm }}>${previewTotals.tax_amount.toFixed(2)}</div>
+                    <div style={{ ...TYPE.label, marginBottom: '4px', color: AMBER }}>GST</div>
+                    <div style={{ ...TYPE.valueSm, color: AMBER }}>${previewTotals.tax_amount.toFixed(2)}</div>
                   </div>
 
                   <div
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      background: '#FAFCFB',
-                      border: '1px solid #D9ECE6',
+                      background: '#E6F7F6',
+                      border: '1px solid #C4E8E5',
                     }}
                   >
                     <div style={{ ...TYPE.label, marginBottom: '4px', color: TEAL_DARK }}>Total</div>
-                    <div style={{ ...TYPE.valueSm, color: TEXT }}>${previewTotals.total.toFixed(2)}</div>
+                    <div style={{ ...TYPE.valueSm, color: TEAL_DARK }}>${previewTotals.total.toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -1579,6 +1631,98 @@ export default function QuotesPage() {
                   {saving ? 'Saving...' : 'Create quote'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(10,10,10,0.4)',
+            zIndex: 220,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: WHITE,
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '420px',
+              border: `1px solid ${BORDER}`,
+              overflow: 'hidden',
+              fontFamily: FONT,
+            }}
+          >
+            <div style={{ height: '4px', background: '#EF4444' }} />
+
+            <div style={{ padding: '24px 24px 20px' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#EF4444',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.8px',
+                  marginBottom: '6px',
+                }}
+              >
+                Delete quote
+              </div>
+
+              <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, marginBottom: '10px' }}>
+                Delete {deleteTarget.quote_number}?
+              </div>
+
+              <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
+                This will permanently delete the quote for {deleteTarget.customers?.first_name} {deleteTarget.customers?.last_name}. This cannot be undone.
+              </div>
+            </div>
+
+            <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                style={{
+                  flex: 1,
+                  height: '42px',
+                  borderRadius: '9px',
+                  border: `1px solid ${BORDER}`,
+                  background: WHITE,
+                  color: TEXT2,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: FONT,
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => deleteQuote(deleteTarget.id)}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  height: '42px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  background: '#EF4444',
+                  color: WHITE,
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontFamily: FONT,
+                  opacity: deleting ? 0.7 : 1,
+                }}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
             </div>
           </div>
         </div>
