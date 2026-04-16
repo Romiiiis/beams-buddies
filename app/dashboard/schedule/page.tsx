@@ -731,6 +731,25 @@ export default function SchedulePage() {
                 </div>
               </div>
 
+              {!isMobile && filtered.length > 0 && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0,1.45fr) minmax(0,1fr) minmax(0,1fr) auto',
+                    gap: '12px',
+                    padding: '10px 16px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    background: '#FCFCFD',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div style={TYPE.label}>Customer</div>
+                  <div style={TYPE.label}>Unit details</div>
+                  <div style={TYPE.label}>Service timing</div>
+                  <div style={{ ...TYPE.label, textAlign: 'right' }}>Actions</div>
+                </div>
+              )}
+
               {filtered.length === 0 ? (
                 <div
                   style={{
@@ -752,109 +771,284 @@ export default function SchedulePage() {
                         key={job.id}
                         onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.2fr) auto auto',
-                          gap: '12px',
-                          alignItems: 'center',
-                          padding: '13px 16px',
                           borderBottom: `1px solid ${BORDER}`,
                           cursor: 'pointer',
+                          background: WHITE,
                           transition: 'background 0.12s',
                         }}
                         onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                         onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                       >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                            <div style={{ ...TYPE.titleSm, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.customers?.first_name} {job.customers?.last_name}
+                        {isMobile ? (
+                          <div
+                            style={{
+                              padding: '14px 16px',
+                              display: 'grid',
+                              gap: '12px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                gap: '12px',
+                              }}
+                            >
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.25 }}>
+                                  {job.customers?.first_name} {job.customers?.last_name}
+                                </div>
+                                <div style={{ ...TYPE.bodySm, marginTop: '4px', color: TEXT2 }}>
+                                  {job.customers?.suburb || '-'}
+                                </div>
+                              </div>
+
+                              {u && (
+                                <span
+                                  style={{
+                                    background: u.pillBg,
+                                    color: u.pillColor,
+                                    padding: '6px 10px',
+                                    borderRadius: '999px',
+                                    fontSize: '10px',
+                                    fontWeight: 800,
+                                    whiteSpace: 'nowrap',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {u.label}
+                                </span>
+                              )}
                             </div>
 
-                            {u && (
-                              <span
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '10px',
+                              }}
+                            >
+                              <div
                                 style={{
-                                  background: u.pillBg,
-                                  color: u.pillColor,
-                                  padding: '5px 9px',
-                                  borderRadius: '999px',
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  whiteSpace: 'nowrap',
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  borderRadius: '12px',
+                                  padding: '10px 12px',
                                 }}
                               >
-                                {u.label}
-                              </span>
-                            )}
-                          </div>
+                                <div style={{ ...TYPE.label, marginBottom: '5px' }}>Unit</div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, lineHeight: 1.4 }}>
+                                  {job.brand || '-'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                                </div>
+                                <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                  {job.equipment_type ? String(job.equipment_type).replace('_', ' ') : 'No equipment type'}
+                                </div>
+                              </div>
 
-                          <div style={{ ...TYPE.bodySm, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type ? `· ${String(job.equipment_type).replace('_', ' ')}` : ''}
-                          </div>
-                          <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.suburb || '-'}
-                          </div>
-                        </div>
-
-                        {!isMobile && (
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ ...TYPE.title, fontWeight: 800, color: u?.valColor || TEXT3 }}>
-                              {u?.sub || 'No date set'}
+                              <div
+                                style={{
+                                  background: '#F8FAFC',
+                                  border: `1px solid ${BORDER}`,
+                                  borderRadius: '12px',
+                                  padding: '10px 12px',
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '5px' }}>Schedule</div>
+                                <div style={{ fontSize: '12px', fontWeight: 800, color: u?.valColor || TEXT }}>
+                                  {u?.sub || 'No date set'}
+                                </div>
+                                <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                  {u?.dateLabel || '-'}
+                                </div>
+                              </div>
                             </div>
-                            <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
-                              {u?.dateLabel || '-'}
+
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <button
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  flex: 1,
+                                  minWidth: '120px',
+                                  height: '34px',
+                                  padding: '0 12px',
+                                  borderRadius: '9px',
+                                  border: `1px solid ${BORDER}`,
+                                  background: WHITE,
+                                  color: TEXT2,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                <IconMail size={14} />
+                                Email
+                              </button>
+
+                              <button
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  flex: 1,
+                                  minWidth: '120px',
+                                  height: '34px',
+                                  padding: '0 12px',
+                                  borderRadius: '9px',
+                                  border: 'none',
+                                  background: TEAL,
+                                  color: WHITE,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                <IconSms size={14} />
+                                SMS
+                              </button>
                             </div>
                           </div>
-                        )}
-
-                        <div style={{ justifySelf: isMobile ? 'start' : 'end', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <button
-                            onClick={e => e.stopPropagation()}
+                        ) : (
+                          <div
                             style={{
-                              height: '32px',
-                              padding: '0 12px',
-                              borderRadius: '8px',
-                              border: `1px solid ${BORDER}`,
-                              background: WHITE,
-                              color: TEXT2,
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              fontFamily: FONT,
-                              display: 'inline-flex',
+                              display: 'grid',
+                              gridTemplateColumns: 'minmax(0,1.45fr) minmax(0,1fr) minmax(0,1fr) auto',
+                              gap: '12px',
                               alignItems: 'center',
-                              gap: '6px',
+                              padding: '14px 16px',
                             }}
                           >
-                            <IconMail size={14} />
-                            Email
-                          </button>
+                            <div style={{ minWidth: 0 }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  marginBottom: '5px',
+                                  flexWrap: 'wrap',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: '13px',
+                                    fontWeight: 800,
+                                    color: TEXT,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '100%',
+                                  }}
+                                >
+                                  {job.customers?.first_name} {job.customers?.last_name}
+                                </div>
 
-                          <button
-                            onClick={e => e.stopPropagation()}
-                            style={{
-                              height: '32px',
-                              padding: '0 12px',
-                              borderRadius: '8px',
-                              border: 'none',
-                              background: TEAL,
-                              color: WHITE,
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              fontFamily: FONT,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                            }}
-                          >
-                            <IconSms size={14} />
-                            SMS
-                          </button>
-                        </div>
+                                {u && (
+                                  <span
+                                    style={{
+                                      background: u.pillBg,
+                                      color: u.pillColor,
+                                      padding: '5px 9px',
+                                      borderRadius: '999px',
+                                      fontSize: '10px',
+                                      fontWeight: 800,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {u.label}
+                                  </span>
+                                )}
+                              </div>
 
-                        {isMobile && (
-                          <div style={{ gridColumn: '1 / -1', ...TYPE.bodySm }}>
-                            {u?.sub || 'No date set'} · {u?.dateLabel || '-'}
+                              <div style={{ ...TYPE.bodySm, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {job.customers?.suburb || '-'}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {job.customers?.email || job.customers?.phone || 'No contact details'}
+                              </div>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Unit</div>
+                              <div
+                                style={{
+                                  fontSize: '12px',
+                                  fontWeight: 800,
+                                  color: TEXT,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {job.brand || '-'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {job.equipment_type ? String(job.equipment_type).replace('_', ' ') : 'No equipment type'}
+                              </div>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Service timing</div>
+                              <div style={{ fontSize: '12px', fontWeight: 800, color: u?.valColor || TEXT3 }}>
+                                {u?.sub || 'No date set'}
+                              </div>
+                              <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                                {u?.dateLabel || '-'}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px', justifySelf: 'end', flexWrap: 'wrap' }}>
+                              <button
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  height: '32px',
+                                  padding: '0 12px',
+                                  borderRadius: '8px',
+                                  border: `1px solid ${BORDER}`,
+                                  background: WHITE,
+                                  color: TEXT2,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                <IconMail size={14} />
+                                Email
+                              </button>
+
+                              <button
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  height: '32px',
+                                  padding: '0 12px',
+                                  borderRadius: '8px',
+                                  border: 'none',
+                                  background: TEAL,
+                                  color: WHITE,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                <IconSms size={14} />
+                                SMS
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
