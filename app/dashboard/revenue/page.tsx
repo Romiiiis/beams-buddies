@@ -623,22 +623,22 @@ export default function RevenuePage() {
                       key={item.label}
                       style={{
                         minWidth: 0,
-                        minHeight: isMobile ? '78px' : '84px',
+                        minHeight: isMobile ? '64px' : '68px',
                         borderRadius: '12px',
                         background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
-                        padding: isMobile ? '10px' : '12px',
+                        padding: isMobile ? '8px 10px' : '9px 12px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
-                        gap: '8px',
+                        gap: '5px',
                       }}
                     >
                       <div
                         style={{
                           ...TYPE.label,
                           marginBottom: 0,
-                          lineHeight: 1.35,
+                          lineHeight: 1.2,
                           whiteSpace: 'normal',
                           wordBreak: 'break-word',
                         }}
@@ -648,7 +648,7 @@ export default function RevenuePage() {
 
                       <div
                         style={{
-                          fontSize: typeof item.value === 'string' && item.value.length > 8 ? '18px' : '22px',
+                          fontSize: typeof item.value === 'string' && item.value.length > 8 ? '17px' : '20px',
                           fontWeight: 900,
                           color: TEXT,
                           letterSpacing: '-0.04em',
