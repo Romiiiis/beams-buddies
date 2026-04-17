@@ -264,6 +264,41 @@ export function Sidebar({ active }: { active: string }) {
     }
   }, [isMobileMenuOpen])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const html = document.documentElement
+    const body = document.body
+
+    const prevHtmlOverscroll = html.style.overscrollBehaviorY
+    const prevHtmlOverflowX = html.style.overflowX
+    const prevBodyOverscroll = body.style.overscrollBehaviorY
+    const prevBodyOverflowX = body.style.overflowX
+    const prevBodyMinHeight = body.style.minHeight
+    const prevBodyPosition = body.style.position
+    const prevBodyWidth = body.style.width
+
+    if (isMobile) {
+      html.style.overscrollBehaviorY = 'none'
+      html.style.overflowX = 'hidden'
+      body.style.overscrollBehaviorY = 'none'
+      body.style.overflowX = 'hidden'
+      body.style.minHeight = '100svh'
+      body.style.position = 'relative'
+      body.style.width = '100%'
+    }
+
+    return () => {
+      html.style.overscrollBehaviorY = prevHtmlOverscroll
+      html.style.overflowX = prevHtmlOverflowX
+      body.style.overscrollBehaviorY = prevBodyOverscroll
+      body.style.overflowX = prevBodyOverflowX
+      body.style.minHeight = prevBodyMinHeight
+      body.style.position = prevBodyPosition
+      body.style.width = prevBodyWidth
+    }
+  }, [isMobile])
+
   const initials = business?.full_name
     ? business.full_name
         .split(' ')
@@ -365,6 +400,15 @@ export function Sidebar({ active }: { active: string }) {
     return (
       <>
         <style>{`
+          html, body {
+            overscroll-behavior-y: none;
+            overflow-x: hidden;
+          }
+
+          body {
+            min-height: 100svh;
+          }
+
           .mobile-tab {
             flex: 1;
             display: flex;
@@ -375,7 +419,9 @@ export function Sidebar({ active }: { active: string }) {
             cursor: pointer;
             gap: 4px;
             font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-tap-highlight-color: transparent;
           }
+
           .mobile-tab-icon {
             width: 22px;
             height: 22px;
@@ -385,6 +431,7 @@ export function Sidebar({ active }: { active: string }) {
             flex-shrink: 0;
             line-height: 0;
           }
+
           .mobile-tab-icon svg {
             display: block;
             width: 22px;
@@ -422,6 +469,8 @@ export function Sidebar({ active }: { active: string }) {
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             <div
@@ -551,6 +600,7 @@ export function Sidebar({ active }: { active: string }) {
               alignItems: 'stretch',
               paddingBottom: 'env(safe-area-inset-bottom)',
               boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
+              overscrollBehavior: 'none',
             }}
           >
             {mobilePrimaryTabs.map(tab => {
