@@ -496,7 +496,16 @@ export default function DashboardPage() {
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
-          <div style={{ ...card, padding: isMobile ? '18px 16px 16px' : '22px 24px 20px', background: HEADER_BG, border: '1px solid rgba(255,255,255,0.08)' }}>
+          {/* ── HEADER: edge-to-edge on mobile, card style on desktop ── */}
+          <div
+            style={{
+              ...card,
+              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              background: HEADER_BG,
+              border: '1px solid rgba(255,255,255,0.08)',
+              ...(isMobile ? { borderRadius: 0, marginLeft: '-14px', marginRight: '-14px' } : {}),
+            }}
+          >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
             <div style={{ fontSize: isMobile ? '26px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>
               Dashboard
