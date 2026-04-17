@@ -450,7 +450,10 @@ export default function SchedulePage() {
               ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: isMobile ? 0 : '16px',
+              marginLeft: isMobile ? '-14px' : 0,
+              marginRight: isMobile ? '-14px' : 0,
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
@@ -538,7 +541,7 @@ export default function SchedulePage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
@@ -660,29 +663,66 @@ export default function SchedulePage() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
-            {filterTabs.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {!isMobile && (
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+                {filterTabs.map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => setFilter(f.key)}
+                    style={{
+                      height: '34px',
+                      padding: '0 14px',
+                      borderRadius: '999px',
+                      border: `1px solid ${filter === f.key ? TEAL : BORDER}`,
+                      background: filter === f.key ? '#E6F7F6' : WHITE,
+                      color: filter === f.key ? TEAL_DARK : TEXT2,
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {isMobile && (
+              <select
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
                 style={{
-                  height: '34px',
-                  padding: '0 14px',
-                  borderRadius: '999px',
-                  border: `1px solid ${filter === f.key ? TEAL : BORDER}`,
-                  background: filter === f.key ? '#E6F7F6' : WHITE,
-                  color: filter === f.key ? TEAL_DARK : TEXT2,
+                  height: '36px',
+                  padding: '0 12px',
+                  borderRadius: '10px',
+                  border: `1px solid ${BORDER}`,
+                  background: WHITE,
                   fontSize: '12px',
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
                   fontWeight: 700,
+                  color: TEXT2,
+                  fontFamily: FONT,
+                  outline: 'none',
                 }}
               >
-                {f.label}
-              </button>
-            ))}
+                {filterTabs.map(f => (
+                  <option key={f.key} value={f.key}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div
