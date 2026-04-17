@@ -364,28 +364,22 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               position: 'fixed',
-              left: 12,
-              right: 12,
-              bottom: isMobileMenuOpen ? 86 : -420,
+              top: 12,
+              right: isMobileMenuOpen ? 12 : -320,
+              bottom: 84,
+              width: 268,
               zIndex: 110,
               background: WHITE,
               border: `1px solid ${BORDER}`,
               borderRadius: 20,
               boxShadow: '0 20px 60px rgba(15,23,42,0.18), 0 6px 20px rgba(15,23,42,0.08)',
               padding: 12,
-              transition: 'bottom 0.22s ease',
+              transition: 'right 0.22s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'auto',
             }}
           >
-            <div
-              style={{
-                width: 40,
-                height: 4,
-                borderRadius: 999,
-                background: '#CBD5E1',
-                margin: '4px auto 12px',
-              }}
-            />
-
             <div
               style={{
                 fontSize: 11,
@@ -401,8 +395,8 @@ export function Sidebar({ active }: { active: string }) {
 
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                display: 'flex',
+                flexDirection: 'column',
                 gap: 8,
               }}
             >
@@ -469,7 +463,7 @@ export function Sidebar({ active }: { active: string }) {
                   color: TEXT2,
                   cursor: 'pointer',
                   textAlign: 'left',
-                  gridColumn: '1 / -1',
+                  marginTop: 4,
                 }}
               >
                 <span
