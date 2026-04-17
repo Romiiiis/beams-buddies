@@ -58,17 +58,9 @@ const mobileMenuItems = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
-const iconImageStyle: React.CSSProperties = {
-  width: 22,
-  height: 22,
-  objectFit: 'contain',
-  display: 'block',
-  flexShrink: 0,
-}
-
 const iconBase = {
-  width: 18,
-  height: 18,
+  width: 20,
+  height: 20,
   viewBox: '0 0 24 24',
   fill: 'none' as const,
   stroke: 'currentColor',
@@ -83,84 +75,137 @@ const iconBase = {
   },
 }
 
+function DashboardIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3.2" />
+      <path d="M8 15.5V11" />
+      <path d="M12 15.5V7.5" />
+      <path d="M16 15.5v-5" />
+    </svg>
+  )
+}
+
+function CustomersIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
+    </svg>
+  )
+}
+
+function LeadsIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M12 20s-6.5-3.9-8.3-7.8A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8.3 5.2C18.5 16.1 12 20 12 20Z" />
+    </svg>
+  )
+}
+
+function JobsIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path d="M8 9h8" />
+      <path d="M8 12h8" />
+      <path d="M8 15h5" />
+    </svg>
+  )
+}
+
+function QuotesIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M4 20h4.2l9.9-9.9a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20Z" />
+      <path d="m12.6 7.4 4 4" />
+    </svg>
+  )
+}
+
+function InvoicesIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+      <path d="M3.5 10h17" />
+      <path d="M7 14h3" />
+    </svg>
+  )
+}
+
+function RevenueIcon() {
+  return (
+    <svg {...iconBase}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M14.7 9.3c0-1.2-1.2-2-2.8-2-1.5 0-2.6.8-2.6 1.9 0 1 .6 1.6 2.4 2l1.5.3c1.8.4 2.7 1.1 2.7 2.4 0 1.5-1.4 2.7-3.5 2.7-2 0-3.4-1-3.6-2.6" />
+      <path d="M12 6.5v11" />
+    </svg>
+  )
+}
+
+function ScheduleIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+      <path d="M8 3.8v2.7" />
+      <path d="M16 3.8v2.7" />
+      <path d="M3.5 9.5h17" />
+    </svg>
+  )
+}
+
+function QrCodesIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="4" y="4" width="6" height="6" rx="1.2" />
+      <rect x="14" y="4" width="6" height="6" rx="1.2" />
+      <rect x="4" y="14" width="6" height="6" rx="1.2" />
+      <path d="M14 14h2" />
+      <path d="M18 14h2" />
+      <path d="M14 18h2" />
+      <path d="M18 16v4" />
+    </svg>
+  )
+}
+
+function ReportsIcon() {
+  return (
+    <svg {...iconBase}>
+      <path d="M6 7h12" />
+      <path d="M6 12h12" />
+      <path d="M6 17h8" />
+    </svg>
+  )
+}
+
+function SettingsIcon() {
+  return (
+    <svg {...iconBase}>
+      <circle cx="12" cy="12" r="3.25" />
+      <path d="M12 2.75v2.1" />
+      <path d="M12 19.15v2.1" />
+      <path d="M21.25 12h-2.1" />
+      <path d="M4.85 12h-2.1" />
+      <path d="m18.54 5.46-1.48 1.48" />
+      <path d="m6.94 17.06-1.48 1.48" />
+      <path d="m18.54 18.54-1.48-1.48" />
+      <path d="m6.94 6.94-1.48-1.48" />
+    </svg>
+  )
+}
+
 const icons: Record<string, React.ReactElement> = {
-  '/dashboard': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_275af6b2cf654876ac6b4d488595e94c~mv2.png"
-      alt="Dashboard"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/customers': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
-      alt="Customers"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/leads': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_01edbde061b847908d6bb4957a01731c~mv2.png"
-      alt="Leads"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/jobs': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_97fb2a3aacb64329967cc40ebc8e5d0e~mv2.png"
-      alt="Jobs"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/quotes': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_8c9ea7223694496293ac015c7a34c1d0~mv2.png"
-      alt="Quotes"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/invoices': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_7f2ee3fe8f84466a82117a774ec03d55~mv2.png"
-      alt="Invoices"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/revenue': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_c60e43bdd7c54c4a834aad9132d7a0d8~mv2.png"
-      alt="Revenue"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/schedule': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_d9f72d8508bd42149766cc5310f1880e~mv2.png"
-      alt="Service"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/qrcodes': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_85c788cea5d94da097d1bbc631c25044~mv2.png"
-      alt="QR Code"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/reports': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_bded5cf8a9bc45fd9ef7fff40d3ccbc8~mv2.png"
-      alt="Reports"
-      style={iconImageStyle}
-    />
-  ),
-  '/dashboard/settings': (
-    <img
-      src="https://static.wixstatic.com/media/48c433_a8bdb8a29ac64e40af9caba6d21fd86b~mv2.png"
-      alt="Settings"
-      style={iconImageStyle}
-    />
-  ),
+  '/dashboard': <DashboardIcon />,
+  '/dashboard/customers': <CustomersIcon />,
+  '/dashboard/leads': <LeadsIcon />,
+  '/dashboard/jobs': <JobsIcon />,
+  '/dashboard/quotes': <QuotesIcon />,
+  '/dashboard/invoices': <InvoicesIcon />,
+  '/dashboard/revenue': <RevenueIcon />,
+  '/dashboard/schedule': <ScheduleIcon />,
+  '/dashboard/qrcodes': <QrCodesIcon />,
+  '/dashboard/reports': <ReportsIcon />,
+  '/dashboard/settings': <SettingsIcon />,
 }
 
 function LogoutIcon() {
@@ -276,6 +321,7 @@ export function Sidebar({ active }: { active: string }) {
         }}
       >
         <span
+          className="sidebar-icon"
           style={{
             width: 30,
             height: 30,
@@ -285,7 +331,7 @@ export function Sidebar({ active }: { active: string }) {
             alignItems: 'center',
             justifyContent: 'center',
             background: 'transparent',
-            color: isActive ? WHITE : TEXT3,
+            color: isActive ? TEAL : TEXT3,
             border: 'none',
             boxShadow: 'none',
             lineHeight: 0,
@@ -339,12 +385,10 @@ export function Sidebar({ active }: { active: string }) {
             flex-shrink: 0;
             line-height: 0;
           }
-          .mobile-tab-icon svg,
-          .mobile-tab-icon img {
+          .mobile-tab-icon svg {
             display: block;
             width: 22px;
             height: 22px;
-            object-fit: contain;
           }
         `}</style>
 
@@ -589,11 +633,10 @@ export function Sidebar({ active }: { active: string }) {
         }
 
         .sidebar-icon svg,
-        .sidebar-icon img {
+        .mobile-tab-icon svg {
           display: block;
-          width: 22px;
-          height: 22px;
-          object-fit: contain;
+          width: 20px;
+          height: 20px;
           shape-rendering: geometricPrecision;
         }
       `}</style>
