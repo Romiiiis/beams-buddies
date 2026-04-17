@@ -682,7 +682,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
