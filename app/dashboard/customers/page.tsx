@@ -339,8 +339,8 @@ export default function CustomersPage() {
 
   const statCard: React.CSSProperties = {
     ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
+    padding: isMobile ? '12px 12px 11px' : '14px 16px 13px',
+    minHeight: isMobile ? 100 : 118,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -365,34 +365,33 @@ export default function CustomersPage() {
       label: 'Customers',
       value: stats.totalCustomers.toLocaleString('en-AU'),
       sub: 'Stored in your CRM',
-      icon: <IconCustomers size={28} />,
+      icon: <IconCustomers size={isMobile ? 22 : 28} />,
       accent: TEXT,
       tag: 'Directory total',
     },
     {
       label: 'Tracked units',
       value: stats.totalUnits.toLocaleString('en-AU'),
-      sub: 'Linked to customer profiles',
-      icon: <IconJobs size={28} />,
+      sub: 'Linked to profiles',
+      icon: <IconJobs size={isMobile ? 22 : 28} />,
       accent: TEAL_DARK,
-      tag: 'Equipment count',
+      tag: 'Equipment',
     },
     {
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
-      sub: 'Customers needing attention soon',
-      icon: <IconService size={28} />,
+      sub: 'Need attention soon',
+      icon: <IconService size={isMobile ? 22 : 28} />,
       accent: AMBER,
       tag: 'Service watch',
     },
     {
       label: 'Review clicks',
       value: stats.totalReviewClicks.toLocaleString('en-AU'),
-      sub:
-        totalPlatforms > 0
-          ? `Across ${totalPlatforms} active platform${totalPlatforms === 1 ? '' : 's'}`
-          : 'No review platforms connected',
-      icon: <IconReports size={28} />,
+      sub: totalPlatforms > 0
+        ? `${totalPlatforms} platform${totalPlatforms === 1 ? '' : 's'}`
+        : 'No platforms',
+      icon: <IconReports size={isMobile ? 22 : 28} />,
       accent: stats.totalReviewClicks > 0 ? TEAL_DARK : TEXT,
       tag: 'Engagement',
     },
@@ -440,12 +439,14 @@ export default function CustomersPage() {
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
+          {/* ── HEADER: edge-to-edge on mobile ── */}
           <div
             style={{
               ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
               border: '1px solid rgba(255,255,255,0.08)',
+              ...(isMobile ? { borderRadius: 0, marginLeft: '-14px', marginRight: '-14px' } : {}),
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
@@ -477,14 +478,7 @@ export default function CustomersPage() {
               View customer records, unit counts, service status, and review activity from one control centre.
             </div>
 
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
+            <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => router.push('/dashboard/jobs')}
                 style={{
@@ -509,40 +503,31 @@ export default function CustomersPage() {
             </div>
           </div>
 
+          {/* ── STAT CARDS: 2×2 on mobile, 4-col on desktop ── */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-              gap: '12px',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+              gap: '10px',
             }}
           >
             {topCards.map(item => (
-              <div
-                key={item.label}
-                style={statCard}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
+              <div key={item.label} style={statCard}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ ...TYPE.label, marginBottom: '4px', fontSize: isMobile ? '9px' : '10px' }}>{item.tag}</div>
+                    <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 800, color: TEXT, lineHeight: 1.3, marginBottom: '4px' }}>{item.label}</div>
                   </div>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
+                  <div style={{ flexShrink: 0 }}>{item.icon}</div>
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
+                  <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>
+                    {item.value}
+                  </div>
+                  <div style={{ fontSize: isMobile ? '10px' : '11px', fontWeight: 500, color: TEXT3, marginTop: '3px', lineHeight: 1.4 }}>
+                    {item.sub}
+                  </div>
                 </div>
               </div>
             ))}
@@ -569,9 +554,7 @@ export default function CustomersPage() {
                 }}
               >
                 <div>
-                  <div style={sectionHeaderTitle}>
-                    Customer directory
-                  </div>
+                  <div style={sectionHeaderTitle}>Customer directory</div>
                   <div style={{ ...TYPE.bodySm }}>
                     Browse every customer profile with service status, linked units, and review engagement.
                   </div>
@@ -667,14 +650,7 @@ export default function CustomersPage() {
               )}
 
               {filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
+                <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>
                   No matching customers.
                 </div>
               ) : (
@@ -754,25 +730,12 @@ export default function CustomersPage() {
                               </div>
                             </div>
 
-                            <span
-                              style={{
-                                color: TEXT3,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                flexShrink: 0,
-                              }}
-                            >
+                            <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
                               <IconArrow size={12} />
                             </span>
                           </div>
 
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '1fr 1fr',
-                              gap: '8px',
-                            }}
-                          >
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                             <div
                               style={{
                                 padding: '10px 11px',
