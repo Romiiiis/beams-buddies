@@ -12,7 +12,7 @@ const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
 const BORDER     = '#E8EDF2'
-const BG         = '#F4F6F9'
+const BG         = '#FFFFFF'
 const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
@@ -264,44 +264,65 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Heatmap ────────────────────────────────────────────────────────────────
-function HeatmapGrid({ jobs }: { jobs: any[] }) {
+// ── Visit heatmap using REAL scheduled dates ───────────────────────────────
+function VisitByTimeGrid({ jobs }: { jobs: any[] }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const slots = ['12 AM – 8 AM', '8 AM – 4 PM', '4 PM – 12 AM']
-  const seed = jobs.length
-  const grid = slots.map((_, si) => days.map((_, di) => {
-    const base = ((si * 7 + di + seed) * 137) % 10
-    return Math.max(0, base - 2)
-  }))
+  const rows = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5']
+
+  const grid = useMemo(() => {
+    const next = Array.from({ length: 5 }, () => Array.from({ length: 7 }, () => 0))
+
+    jobs.forEach(job => {
+      if (!job.next_service_date) return
+      const d = new Date(job.next_service_date)
+      if (isNaN(d.getTime())) return
+
+      const dateNum = d.getDate()
+      const row = Math.min(4, Math.floor((dateNum - 1) / 7))
+
+      const jsDay = d.getDay()
+      const col = jsDay === 0 ? 6 : jsDay - 1
+
+      next[row][col] += 1
+    })
+
+    return next
+  }, [jobs])
+
   const maxVal = Math.max(...grid.flat(), 1)
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '90px repeat(7, 1fr)', gap: '5px', alignItems: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '70px repeat(7, 1fr)', gap: '6px', alignItems: 'center' }}>
         <div />
         {days.map(d => (
           <div key={d} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>{d}</div>
         ))}
-        {slots.map((slot, si) => (
-          <React.Fragment key={slot}>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{slot}</div>
-            {days.map((_, di) => {
-              const v = grid[si][di]
+        {rows.map((rowLabel, rowIndex) => (
+          <React.Fragment key={rowLabel}>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{rowLabel}</div>
+            {days.map((_, colIndex) => {
+              const v = grid[rowIndex][colIndex]
               const intensity = v / maxVal
               return (
                 <div
-                  key={di}
-                  title={`${v} jobs`}
+                  key={`${rowIndex}-${colIndex}`}
+                  title={`${v} scheduled job${v !== 1 ? 's' : ''}`}
                   style={{
-                    height: 28,
-                    borderRadius: 20,
-                    background: intensity > 0
-                      ? `rgba(31,158,148,${0.15 + intensity * 0.75})`
-                      : '#F1F5F9',
-                    transition: 'background 0.15s',
-                    cursor: 'default',
+                    height: 30,
+                    borderRadius: 10,
+                    border: `1px solid ${v > 0 ? 'rgba(31,158,148,0.12)' : BORDER}`,
+                    background: v > 0 ? `rgba(31,158,148,${0.12 + intensity * 0.78})` : '#F8FAFC',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    color: v > 0 ? WHITE : TEXT3,
                   }}
-                />
+                >
+                  {v > 0 ? v : ''}
+                </div>
               )
             })}
           </React.Fragment>
@@ -364,8 +385,15 @@ export default function DashboardPage() {
       const jobs = jobsRes.data || []
       const invoices = invoicesRes.data || []
       const overdue = jobs.filter(j => j.next_service_date && startOfDay(new Date(j.next_service_date)) < today)
-      const jobsThisMonth = jobs.filter(j => { if (!j.created_at) return false; const d = new Date(j.created_at); return d.getMonth() === currentMonth && d.getFullYear() === currentYear }).length
-      const jobsToday = jobs.filter(j => { if (!j.next_service_date) return false; return startOfDay(new Date(j.next_service_date)).getTime() === today.getTime() }).length
+      const jobsThisMonth = jobs.filter(j => {
+        if (!j.created_at) return false
+        const d = new Date(j.created_at)
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+      }).length
+      const jobsToday = jobs.filter(j => {
+        if (!j.next_service_date) return false
+        return startOfDay(new Date(j.next_service_date)).getTime() === today.getTime()
+      }).length
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
       setAllJobs(jobs)
@@ -405,6 +433,18 @@ export default function DashboardPage() {
 
   const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
   const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
+
+  const visitMax = useMemo(() => {
+    const counts: Record<string, number> = {}
+    allJobs.forEach(job => {
+      if (!job.next_service_date) return
+      const d = new Date(job.next_service_date)
+      if (isNaN(d.getTime())) return
+      const key = `${d.getFullYear()}-${d.getMonth()}-${Math.floor((d.getDate() - 1) / 7)}-${d.getDay()}`
+      counts[key] = (counts[key] || 0) + 1
+    })
+    return Math.max(0, ...Object.values(counts))
+  }, [allJobs])
 
   const revenueBreakdown = useMemo(() => {
     const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
@@ -485,53 +525,70 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
 
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: isMobile ? '14px' : '20px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
-        }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: WHITE }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px' : '20px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            background: WHITE,
+          }}
+        >
 
           {/* ── HEADER ───────────────────────────────────────────────────── */}
-          <div style={{
-            background: WHITE,
-            border: `1px solid ${BORDER}`,
-            borderRadius: isMobile ? 0 : '16px',
-            padding: isMobile ? '14px 16px' : '16px 20px',
-            ...(isMobile ? { marginLeft: '-14px', marginRight: '-14px' } : {}),
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: isMobile ? 'flex-start' : 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-              flexDirection: isMobile ? 'column' : 'row',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <h1 style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>
+          <div
+            style={{
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: isMobile ? '14px' : '16px',
+              padding: isMobile ? '14px' : '16px 20px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: isMobile ? 'stretch' : 'center',
+                justifyContent: 'space-between',
+                gap: isMobile ? '12px' : '16px',
+                flexDirection: isMobile ? 'column' : 'row',
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <h1
+                  style={{
+                    fontSize: isMobile ? '22px' : '28px',
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: '-0.04em',
+                    margin: 0,
+                    lineHeight: 1,
+                  }}
+                >
                   Dashboard
                 </h1>
               </div>
 
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap',
-                width: isMobile ? '100%' : 'auto',
-                justifyContent: isMobile ? 'flex-start' : 'flex-end',
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: isMobile ? 'stretch' : 'flex-end',
+                }}
+              >
                 <button
                   onClick={() => router.push('/dashboard/jobs')}
                   style={{
-                    height: '34px',
-                    padding: '0 12px',
+                    height: '36px',
+                    padding: isMobile ? '0 10px' : '0 12px',
                     border: `1px solid ${BORDER}`,
-                    borderRadius: '9px',
+                    borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: TEXT2,
@@ -540,7 +597,10 @@ export default function DashboardPage() {
                     fontFamily: FONT,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '5px',
+                    flex: isMobile ? 1 : '0 0 auto',
+                    minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
                   <IconPlus size={12} /> Add Widget
@@ -548,10 +608,10 @@ export default function DashboardPage() {
 
                 <button
                   style={{
-                    height: '34px',
-                    padding: '0 12px',
+                    height: '36px',
+                    padding: isMobile ? '0 10px' : '0 12px',
                     border: `1px solid ${BORDER}`,
-                    borderRadius: '9px',
+                    borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: TEXT2,
@@ -560,7 +620,10 @@ export default function DashboardPage() {
                     fontFamily: FONT,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '5px',
+                    flex: isMobile ? 1 : '0 0 auto',
+                    minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
                   <IconFilter size={12} /> Filter
@@ -568,10 +631,10 @@ export default function DashboardPage() {
 
                 <button
                   style={{
-                    height: '34px',
-                    padding: '0 14px',
+                    height: '36px',
+                    padding: isMobile ? '0 12px' : '0 14px',
                     border: 'none',
-                    borderRadius: '9px',
+                    borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: WHITE,
@@ -580,7 +643,10 @@ export default function DashboardPage() {
                     fontFamily: FONT,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '6px',
+                    flex: isMobile ? 1 : '0 0 auto',
+                    minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
                   <IconDownload size={12} /> Export
@@ -757,7 +823,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 3: Visit by Time (heatmap) + Total Visit (donut) ─────── */}
+          {/* ── ROW 3: Visit by Time + Total Revenue ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
             <div style={card}>
@@ -767,12 +833,12 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                     <span>0</span>
                     {[0.2, 0.4, 0.65, 0.85, 1].map((o, i) => (
                       <div key={i} style={{ width: 16, height: 8, borderRadius: 8, background: `rgba(31,158,148,${o})` }} />
                     ))}
-                    <span>10,000+</span>
+                    <span>{visitMax}+ jobs</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '20px' }}>
@@ -788,8 +854,12 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div style={{ padding: '16px 20px' }}>
-                <HeatmapGrid jobs={allJobs} />
+              <div style={{ padding: '16px 20px 10px' }}>
+                <VisitByTimeGrid jobs={allJobs} />
+              </div>
+
+              <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
+                Based on scheduled service dates grouped by weekday and week of month.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
