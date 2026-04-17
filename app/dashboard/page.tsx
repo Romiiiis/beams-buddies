@@ -5,17 +5,17 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const TEAL      = '#1F9E94'
-const TEAL_DARK = '#177A72'
+const TEAL       = '#1F9E94'
+const TEAL_DARK  = '#177A72'
 const TEAL_LIGHT = '#E6F7F6'
-const TEXT      = '#0B1220'
-const TEXT2     = '#1F2937'
-const TEXT3     = '#64748B'
-const BORDER    = '#E8EDF2'
-const BG        = '#F4F6F9'
-const WHITE     = '#FFFFFF'
-const HEADER_BG = '#111111'
-const FONT      = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const TEXT       = '#0B1220'
+const TEXT2      = '#1F2937'
+const TEXT3      = '#64748B'
+const BORDER     = '#E8EDF2'
+const BG         = '#F4F6F9'
+const WHITE      = '#FFFFFF'
+const HEADER_BG  = '#111111'
+const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -71,27 +71,25 @@ function IconFilter({ size = 13 }: { size?: number }) {
 function IconDownload({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
-function IconInfo({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+function IconMoreH({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
 }
 
-// ── Mini sparkline (bar style like Orbit) ──────────────────────────────────
+// ── Sparkline bar chart (compact, used in stat cards) ──────────────────────
 function SparkBars({ data, color, width = 56, height = 32 }: { data: number[]; color: string; width?: number; height?: number }) {
   const max = Math.max(...data, 1)
-  const barW = Math.floor(width / data.length) - 2
+  const n = data.length
+  const barW = Math.floor((width - (n - 1) * 2) / n)
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       {data.map((v, i) => {
-        const h = Math.max(3, (v / max) * (height - 4))
+        const h = Math.max(3, (v / max) * (height - 2))
         const x = i * (barW + 2)
+        const isLast = i === n - 1
         return (
-          <rect
-            key={i}
-            x={x} y={height - h}
-            width={barW} height={h}
-            rx="2"
+          <rect key={i} x={x} y={height - h} width={barW} height={h} rx="3"
             fill={color}
-            opacity={i === data.length - 1 ? 1 : 0.35 + (i / data.length) * 0.55}
+            opacity={isLast ? 1 : 0.18 + (i / (n - 1)) * 0.55}
           />
         )
       })}
@@ -99,103 +97,81 @@ function SparkBars({ data, color, width = 56, height = 32 }: { data: number[]; c
   )
 }
 
-// ── Mini line sparkline ────────────────────────────────────────────────────
-function MiniSparkline({ data, color, width = 80, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
-  if (data.length < 2) return <div style={{ width, height }} />
-  const min = Math.min(...data)
-  const max = Math.max(...data) || 1
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width
-    const y = height - ((v - min) / (max - min || 1)) * (height - 6) - 3
-    return `${x},${y}`
-  })
-  const uid = `ms${color.replace('#', '')}`
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
-      <defs>
-        <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={`M ${pts[0]} L ${pts.join(' L ')} L ${width},${height} L 0,${height} Z`} fill={`url(#${uid})`} />
-      <path d={`M ${pts.join(' L ')}`} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-// ── Analytics bar chart (center panel, Orbit style) ────────────────────────
-function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number; revenue?: number }[]; height?: number }) {
+// ── Full-width monthly bar chart ──────────────────────────────────────────
+function AnalyticsBarChart({ data, height = 180 }: { data: { label: string; total: number }[]; height?: number }) {
   const [hovered, setHovered] = useState<number | null>(null)
   const yMax = Math.max(...data.map(d => d.total), 1)
   const now = new Date().getMonth()
-  const yTicks = [0, Math.round(yMax * 0.25), Math.round(yMax * 0.5), Math.round(yMax * 0.75), yMax]
+  const barGap = 6
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Y labels */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: height, paddingBottom: 24, width: 28, flexShrink: 0 }}>
-          {[...yTicks].reverse().map((t, i) => (
-            <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{t}</span>
+    <div style={{ display: 'flex', gap: 0, userSelect: 'none' }}>
+      {/* Y-axis */}
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: 32, height, paddingBottom: 20, flexShrink: 0, paddingRight: 4 }}>
+        {[yMax, Math.round(yMax * 0.75), Math.round(yMax * 0.5), Math.round(yMax * 0.25), 0].map((t, i) => (
+          <span key={i} style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, lineHeight: 1, textAlign: 'right' }}>{t}</span>
+        ))}
+      </div>
+
+      {/* Chart area */}
+      <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+        {/* Grid lines */}
+        <div style={{ position: 'absolute', inset: 0, bottom: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{ height: 1, background: i === 4 ? '#D1D9E0' : '#EDF2F7' }} />
           ))}
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', marginBottom: 8 }}>
-            {/* Grid */}
-            {yTicks.map((_, i) => (
-              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yTicks.length - 1)) * 100}%`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
-            ))}
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: '5px', alignItems: 'flex-end' }}>
-              {data.map((item, i) => {
-                const isCurrent = i === now
-                const isHov = hovered === i
-                const barH = Math.max(4, (item.total / yMax) * (height - 28))
 
-                return (
-                  <div
-                    key={item.label}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'default', position: 'relative', height: '100%', justifyContent: 'flex-end' }}
-                  >
-                    {/* Tooltip */}
-                    {isHov && item.total > 0 && (
-                      <div style={{
-                        position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)',
-                        background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px',
-                        fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                      }}>
-                        <div>{item.label}</div>
-                        <div style={{ color: TEAL_LIGHT, fontSize: '10px' }}>{item.total} jobs</div>
-                      </div>
-                    )}
-                    {/* Bar — hatched for non-current like Orbit, solid for current */}
-                    <div style={{
-                      width: '100%', height: barH,
-                      borderRadius: '5px 5px 2px 2px',
-                      background: isCurrent
-                        ? `linear-gradient(180deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`
-                        : isHov ? '#CBD5E1'
-                        : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)',
-                      transition: 'all 0.15s ease',
-                      boxShadow: isCurrent ? `0 4px 16px ${TEAL}44` : 'none',
-                      border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`,
-                    }} />
+        {/* Bars */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: `${barGap}px`, paddingBottom: 2 }}>
+          {data.map((item, i) => {
+            const isCurrent = i === now
+            const isHov = hovered === i
+            const barH = item.total > 0 ? Math.max(6, (item.total / yMax) * (height - 28)) : 0
+            return (
+              <div key={item.label}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', position: 'relative', cursor: 'default', height: height - 24 }}
+              >
+                {/* Tooltip */}
+                {isHov && item.total > 0 && (
+                  <div style={{
+                    position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)',
+                    background: TEXT, color: WHITE, padding: '6px 10px', borderRadius: '9px',
+                    fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.18)', pointerEvents: 'none',
+                  }}>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '9px', marginBottom: 1 }}>{item.label}</div>
+                    <div>{item.total} jobs</div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-          {/* X labels */}
-          <div style={{ display: 'flex', gap: '5px' }}>
-            {data.map((item, i) => (
-              <div key={item.label} style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>{item.label}</span>
+                )}
+                {/* Bar */}
+                <div style={{
+                  width: '100%',
+                  height: barH || 4,
+                  borderRadius: '5px 5px 3px 3px',
+                  background: isCurrent
+                    ? `linear-gradient(170deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`
+                    : isHov
+                    ? '#C8D6E2'
+                    : '#E2EBF2',
+                  boxShadow: isCurrent ? `0 6px 20px ${TEAL}3A` : 'none',
+                  transition: 'background 0.15s, height 0.2s',
+                  opacity: barH === 0 ? 0.4 : 1,
+                }} />
               </div>
-            ))}
-          </div>
+            )
+          })}
+        </div>
+
+        {/* X labels */}
+        <div style={{ display: 'flex', gap: `${barGap}px`, marginTop: 6 }}>
+          {data.map((item, i) => (
+            <div key={item.label} style={{ flex: 1, textAlign: 'center' }}>
+              <span style={{ fontSize: '9px', fontWeight: 800, color: i === now ? TEAL_DARK : TEXT3, letterSpacing: '0.02em', textTransform: 'uppercase' }}>{item.label.slice(0,1)}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -203,42 +179,42 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
 }
 
 // ── Donut chart ─────────────────────────────────────────────────────────────
-function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
+function DonutChart({ segments, size = 120, thickness = 20 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((s, x) => s + x.value, 0) || 1
-  const cx = size / 2, cy = size / 2
   const r = (size - thickness) / 2 - 2
   const circ = 2 * Math.PI * r
   let cum = 0
   const arcs = segments.map(seg => {
     const s = cum
-    const sw = (seg.value / total) * circ
-    cum += sw
+    const sw = (seg.value / total) * circ * 0.98  // tiny gap between segments
+    cum += (seg.value / total) * circ
     return { ...seg, s, sw }
   })
   const hov = segments.find(s => s.label === hovered)
+
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={thickness} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#EFF3F8" strokeWidth={thickness} />
         {arcs.map(arc => (
-          <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none"
+          <circle key={arc.label} cx={size/2} cy={size/2} r={r} fill="none"
             stroke={arc.color}
-            strokeWidth={hovered === arc.label ? thickness + 4 : thickness}
+            strokeWidth={hovered === arc.label ? thickness + 3 : thickness}
             strokeDasharray={`${arc.sw} ${circ}`}
             strokeDashoffset={-arc.s}
             strokeLinecap="butt"
-            style={{ transition: 'all 0.18s', opacity: hovered && hovered !== arc.label ? 0.3 : 1, cursor: 'pointer' }}
+            style={{ transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)', opacity: hovered && hovered !== arc.label ? 0.25 : 1, cursor: 'pointer' }}
             onMouseEnter={() => setHovered(arc.label)}
             onMouseLeave={() => setHovered(null)}
           />
         ))}
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div style={{ fontSize: '8px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 1 }}>
+        <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
           {hov ? hov.label : 'Total'}
         </div>
-        <div style={{ fontSize: '15px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+        <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
           {hov ? `${Math.round((hov.value / total) * 100)}%` : `${Math.round((total / 1000) * 10) / 10}k`}
         </div>
       </div>
@@ -246,69 +222,111 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Heatmap (pill/oval style like Orbit) ────────────────────────────────────
+// ── Heatmap (pill style) ─────────────────────────────────────────────────────
 function HeatmapGrid({ jobs }: { jobs: any[] }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const slots = ['12 AM – 8 AM', '8 AM – 4 PM', '4 PM – 12 AM']
+  const slots = ['12 AM–8 AM', '8 AM–4 PM', '4 PM–12 AM']
   const seed = jobs.length
   const grid = slots.map((_, si) => days.map((_, di) => {
     const base = ((si * 7 + di + seed) * 137) % 10
     return Math.max(0, base - 2)
   }))
   const maxVal = Math.max(...grid.flat(), 1)
-
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '88px repeat(7, 1fr)', gap: '6px', alignItems: 'center' }}>
-        {/* Header row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, 1fr)', gap: '5px', alignItems: 'center' }}>
         <div />
         {days.map(d => (
-          <div key={d} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>{d}</div>
+          <div key={d} style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, textAlign: 'center', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{d.slice(0,2)}</div>
         ))}
         {slots.map((slot, si) => (
           <React.Fragment key={slot}>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{slot}</div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, lineHeight: 1.3 }}>{slot}</div>
             {days.map((_, di) => {
               const v = grid[si][di]
               const intensity = v / maxVal
               return (
-                <div
-                  key={di}
-                  title={`${v} jobs`}
-                  style={{
-                    height: 26,
-                    borderRadius: 20,  // pill shape like Orbit
-                    background: intensity > 0
-                      ? `rgba(31,158,148,${0.15 + intensity * 0.75})`
-                      : '#F1F5F9',
-                    transition: 'background 0.15s',
-                    cursor: 'default',
-                  }}
-                />
+                <div key={di} title={`${v} jobs`} style={{
+                  height: 22, borderRadius: 99,
+                  background: intensity > 0 ? `rgba(31,158,148,${0.12 + intensity * 0.78})` : '#EFF3F8',
+                  transition: 'background 0.15s', cursor: 'default',
+                }} />
               )
             })}
           </React.Fragment>
         ))}
       </div>
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 10, justifyContent: 'flex-end' }}>
-        <span style={{ fontSize: '10px', color: TEXT3 }}>0</span>
-        {[0.15, 0.32, 0.5, 0.68, 0.9].map((o, i) => (
-          <div key={i} style={{ width: 14, height: 8, borderRadius: 10, background: `rgba(31,158,148,${o})` }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, justifyContent: 'flex-end' }}>
+        <span style={{ fontSize: '9px', color: TEXT3 }}>Low</span>
+        {[0.12, 0.3, 0.5, 0.7, 0.9].map((o, i) => (
+          <div key={i} style={{ width: 16, height: 7, borderRadius: 99, background: `rgba(31,158,148,${o})` }} />
         ))}
-        <span style={{ fontSize: '10px', color: TEXT3 }}>10+</span>
+        <span style={{ fontSize: '9px', color: TEXT3 }}>High</span>
       </div>
     </div>
   )
 }
 
+// ── Status pill helper ───────────────────────────────────────────────────────
 function statusPill(d: string | null, getDays: (s: string) => number) {
   if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
   const days = getDays(d)
   if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B' }
-  if (days <= 7) return { label: 'This week', bg: '#E6F7F6', color: TEAL_DARK }
+  if (days <= 7) return { label: 'This week', bg: TEAL_LIGHT, color: TEAL_DARK }
   if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E' }
   return { label: 'Scheduled', bg: '#F1F5F9', color: TEXT3 }
+}
+
+// ── Inline arc gauge ─────────────────────────────────────────────────────────
+function ArcGauge({ score }: { score: number }) {
+  const size = 180
+  const r = 70
+  const circ = Math.PI * r
+  const filled = (score / 100) * circ
+  return (
+    <div style={{ position: 'relative', width: size, height: 100 }}>
+      <svg width={size} height={100} viewBox={`0 0 ${size} 100`} style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="gaugeGradMain" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={TEAL_DARK} />
+            <stop offset="100%" stopColor={TEAL} />
+          </linearGradient>
+        </defs>
+        <path d={`M ${size/2-r} 94 A ${r} ${r} 0 0 1 ${size/2+r} 94`} fill="none" stroke="#EFF3F8" strokeWidth={16} strokeLinecap="round"/>
+        <path d={`M ${size/2-r} 94 A ${r} ${r} 0 0 1 ${size/2+r} 94`} fill="none" stroke="url(#gaugeGradMain)" strokeWidth={16} strokeLinecap="round"
+          strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.7s ease' }} />
+        {/* Dot at tip */}
+        {(() => {
+          const angle = Math.PI - (filled / circ) * Math.PI
+          const cx = size/2 + r * Math.cos(angle) * -1
+          const cy = 94 - r * Math.sin(angle)
+          return <circle cx={cx} cy={cy} r={5} fill={WHITE} stroke={TEAL} strokeWidth={2.5} />
+        })()}
+      </svg>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ fontSize: '38px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
+        <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: 1 }}>of 100</div>
+      </div>
+    </div>
+  )
+}
+
+// ── Section eyebrow label ────────────────────────────────────────────────────
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: '10px', fontWeight: 800, color: TEAL, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
+      {children}
+    </div>
+  )
+}
+
+// ── Card wrapper ─────────────────────────────────────────────────────────────
+const cardStyle: React.CSSProperties = {
+  background: WHITE,
+  border: `1px solid ${BORDER}`,
+  borderRadius: '18px',
+  overflow: 'hidden',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
 }
 
 export default function DashboardPage() {
@@ -325,11 +343,8 @@ export default function DashboardPage() {
   const [allJobs, setAllJobs] = useState<any[]>([])
 
   function startOfDay(date: Date) {
-    const d = new Date(date)
-    d.setHours(0, 0, 0, 0)
-    return d
+    const d = new Date(date); d.setHours(0,0,0,0); return d
   }
-
   function getDays(d: string) {
     const today = startOfDay(new Date()).getTime()
     const target = startOfDay(new Date(d)).getTime()
@@ -388,9 +403,9 @@ export default function DashboardPage() {
 
   const sparkData = monthlyData.map(m => m.total)
 
-  const dueSoonCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
-  const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
-  const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
+  const dueSoonCount    = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
+  const scheduledCount  = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
+  const completedCount  = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
 
   const revenueBreakdown = useMemo(() => {
     const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
@@ -411,64 +426,65 @@ export default function DashboardPage() {
 
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-  // ── Stat cards ─────────────────────────────────────────────────────────────
+  const score = stats.units > 0
+    ? Math.min(100, Math.round((completedCount / Math.max(stats.units, 1)) * 100 + 40))
+    : 72
+
+  // ── Stat card definitions ────────────────────────────────────────────────
   const statCards = [
     {
+      eyebrow: 'Revenue',
       label: 'Active Sales',
-      value: `$${stats.jobsThisMonth > 0 ? (stats.jobsThisMonth * 420).toLocaleString() : '0'}`,
-      delta: '+12%',
-      up: true,
-      icon: <IconBriefcase size={16} />,
-      iconBg: TEAL_LIGHT,
-      iconColor: TEAL,
+      value: stats.jobsThisMonth > 0 ? `$${(stats.jobsThisMonth * 420).toLocaleString()}` : '$0',
+      delta: '+12%', up: true,
+      icon: <IconBriefcase size={17} />,
+      iconBg: TEAL_LIGHT, iconColor: TEAL,
       sparkColor: TEAL,
       onClick: () => router.push('/dashboard/jobs'),
     },
     {
+      eyebrow: 'Finance',
       label: 'Product Revenue',
       value: invoiceStats.collected > 0 ? `$${invoiceStats.collected.toLocaleString('en-AU')}` : '$0',
-      delta: '+9%',
-      up: true,
-      icon: <IconDollar size={16} />,
-      iconBg: '#E8F5E9',
-      iconColor: '#2E7D32',
+      delta: '+9%', up: true,
+      icon: <IconDollar size={17} />,
+      iconBg: '#E8F5E9', iconColor: '#2E7D32',
       sparkColor: '#43A047',
       onClick: () => router.push('/dashboard/revenue'),
     },
     {
-      label: 'Product Sold',
-      value: stats.customers > 0 ? (stats.customers >= 1000 ? `${(stats.customers / 1000).toFixed(1)}k` : `${stats.customers}`) : '0',
-      delta: '+7%',
-      up: true,
-      icon: <IconUsers size={16} />,
-      iconBg: '#EDE7F6',
-      iconColor: '#6A1B9A',
+      eyebrow: 'Customers',
+      label: 'Total Clients',
+      value: stats.customers >= 1000 ? `${(stats.customers / 1000).toFixed(1)}k` : `${stats.customers || 0}`,
+      delta: '+7%', up: true,
+      icon: <IconUsers size={17} />,
+      iconBg: '#EDE7F6', iconColor: '#6A1B9A',
       sparkColor: '#9C27B0',
       onClick: () => router.push('/dashboard/customers'),
     },
     {
+      eyebrow: 'Performance',
       label: 'Conversion Rate',
       value: stats.units > 0 ? `${Math.round((stats.overdue / stats.units) * 100)}%` : '0%',
-      delta: stats.overdue > 0 ? `-2%` : '+2%',
-      up: stats.overdue === 0,
-      icon: <IconPercent size={16} />,
-      iconBg: '#FFF3E0',
-      iconColor: '#E65100',
+      delta: stats.overdue > 0 ? '-2%' : '+2%', up: stats.overdue === 0,
+      icon: <IconPercent size={17} />,
+      iconBg: '#FFF3E0', iconColor: '#E65100',
       sparkColor: '#FF7043',
       onClick: () => router.push('/dashboard/jobs'),
     },
   ]
 
-  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }
-  const cardP: React.CSSProperties = { ...card, padding: '20px' }
-
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard" />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>
-          Loading dashboard...
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', border: `3px solid ${TEAL_LIGHT}`, borderTopColor: TEAL, animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>Loading dashboard…</span>
+          </div>
         </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </div>
     )
   }
@@ -480,13 +496,11 @@ export default function DashboardPage() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           padding: isMobile ? '14px' : '20px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px',
+          display: 'flex', flexDirection: 'column', gap: '16px',
           paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
         }}>
 
-          {/* ── HEADER (unchanged) ─────────────────────────────────────────── */}
+          {/* ── HEADER (unchanged per request) ───────────────────────────── */}
           <div style={{
             background: HEADER_BG,
             border: '1px solid rgba(255,255,255,0.08)',
@@ -514,273 +528,274 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 1: 4 STAT CARDS (Orbit layout — value + sparkline + delta + See Details) */}
+          {/* ── ROW 1: 4 STAT CARDS ──────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
-              <div
-                key={sc.label}
-                onClick={sc.onClick}
-                style={{ ...card, padding: '18px 20px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+              <div key={sc.label} onClick={sc.onClick}
+                style={{ ...cardStyle, padding: '18px 20px', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.09)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'none' }}
               >
-                {/* Top: label + info */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
+                {/* Icon badge + eyebrow */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '10px', background: sc.iconBg, color: sc.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {sc.icon}
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{sc.eyebrow}</span>
+                  </div>
+                  <button style={{ width: 28, height: 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#FAFBFC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: TEXT3 }}>
+                    <IconMoreH size={14} />
+                  </button>
                 </div>
 
-                {/* Value + spark side by side */}
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <div>
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{sc.value}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 6px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FEF3C7', color: sc.up ? TEAL_DARK : '#92400E', fontSize: '10px', fontWeight: 800 }}>
-                        {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                        {sc.delta}
-                      </span>
-                      <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>vs last month</span>
-                    </div>
+                {/* Value */}
+                <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1, marginBottom: '6px' }}>
+                  {sc.value}
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>{sc.label}</div>
+
+                {/* Delta + sparkbars */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '3px',
+                      padding: '3px 7px', borderRadius: '99px',
+                      background: sc.up ? '#E6F7F6' : '#FEF3C7',
+                      color: sc.up ? TEAL_DARK : '#92400E',
+                      fontSize: '11px', fontWeight: 800,
+                    }}>
+                      {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {sc.delta}
+                    </span>
+                    <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs last mo.</span>
                   </div>
                   <SparkBars
-                    data={sparkData.length > 1 ? sparkData.slice(-6) : [1, 2, 3, 2, 4, 3]}
+                    data={sparkData.length > 1 ? sparkData.slice(-6) : [1,2,3,2,4,3]}
                     color={sc.sparkColor}
-                    width={52}
-                    height={34}
+                    width={50} height={30}
                   />
-                </div>
-
-                {/* See Details link */}
-                <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '10px', display: 'flex', alignItems: 'center', gap: '4px', color: TEXT3 }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
-                  <IconArrow size={11} />
                 </div>
               </div>
             ))}
           </div>
 
-          {/* ── ROW 2: Sales Performance (left) + Analytics Chart (right) ─────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '340px 1fr', gap: '14px', alignItems: 'start' }}>
+          {/* ── ROW 2: Performance (left) + Analytics (right) ────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
 
-            {/* Sales Performance card */}
-            <div style={cardP}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Sales Performance</span>
-                <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-              </div>
+            {/* ── Sales Performance ── */}
+            <div style={{ ...cardStyle, padding: '22px' }}>
+              <Eyebrow>Performance</Eyebrow>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: TEXT, marginBottom: '18px' }}>Sales Score</div>
 
               {/* Arc gauge */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-                {(() => {
-                  const score = stats.units > 0 ? Math.min(100, Math.round((completedCount / Math.max(stats.units, 1)) * 100 + 40)) : 72
-                  const size = 200
-                  const r = 80
-                  const circ = Math.PI * r
-                  const filled = (score / 100) * circ
-                  return (
-                    <div style={{ position: 'relative', width: size, height: 110 }}>
-                      <svg width={size} height={110} viewBox={`0 0 ${size} 110`} style={{ overflow: 'visible' }}>
-                        <path d={`M ${size/2 - r} ${104} A ${r} ${r} 0 0 1 ${size/2 + r} ${104}`} fill="none" stroke="#F1F5F9" strokeWidth={18} strokeLinecap="round" />
-                        <path d={`M ${size/2 - r} ${104} A ${r} ${r} 0 0 1 ${size/2 + r} ${104}`} fill="none" stroke="url(#gaugeGrad2)" strokeWidth={18} strokeLinecap="round"
-                          strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
-                        <defs>
-                          <linearGradient id="gaugeGrad2" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor={TEAL_DARK} />
-                            <stop offset="100%" stopColor={TEAL} />
-                          </linearGradient>
-                        </defs>
-                        {/* Tick mark at end of arc */}
-                        <circle cx={size/2 + r} cy={104} r={5} fill={TEAL} opacity={0.3} />
-                      </svg>
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ fontSize: '42px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>of 100 points</div>
-                      </div>
-                    </div>
-                  )
-                })()}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
+                <ArcGauge score={score} />
               </div>
 
-              {/* Insight box */}
-              <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: TEAL_DARK }}>
-                    {stats.overdue === 0 ? "You're all clear! ✦" : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}
+              {/* Mini stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                {[
+                  { label: 'Scheduled', value: scheduledCount, color: TEAL },
+                  { label: 'Completed', value: completedCount, color: '#43A047' },
+                  { label: 'Overdue', value: stats.overdue, color: '#E53935' },
+                  { label: 'Due Soon', value: dueSoonCount, color: '#FB8C00' },
+                ].map(item => (
+                  <div key={item.label} style={{ padding: '10px 12px', borderRadius: '12px', background: BG, border: `1px solid ${BORDER}` }}>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: item.color, letterSpacing: '-0.04em' }}>{item.value}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: 1 }}>{item.label}</div>
                   </div>
+                ))}
+              </div>
+
+              {/* Insight */}
+              <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px', borderLeft: `3px solid ${TEAL}` }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: TEAL_DARK, marginBottom: '3px' }}>
+                  {stats.overdue === 0 ? '✦  All clear!' : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}
                 </div>
-                <div style={{ fontSize: '11px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.5, paddingLeft: '12px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.5 }}>
                   {stats.overdue === 0
-                    ? 'All services are up to date. Great work keeping on top of the schedule.'
-                    : 'Review overdue jobs and reschedule as soon as possible.'}
+                    ? 'All services are up to date. Great work.'
+                    : 'Review overdue jobs and reschedule asap.'}
                 </div>
               </div>
 
               <button
                 onClick={() => router.push('/dashboard/jobs')}
-                style={{ width: '100%', height: '36px', background: 'transparent', color: TEAL, border: `1px solid ${TEAL}`, borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEAL }}
+                style={{ width: '100%', height: '38px', background: TEAL, color: WHITE, border: 'none', borderRadius: '12px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'background 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = TEAL_DARK)}
+                onMouseLeave={e => (e.currentTarget.style.background = TEAL)}
               >
                 {stats.overdue > 0 ? 'Improve Your Score' : 'View Schedule'} →
               </button>
             </div>
 
-            {/* Analytics chart card */}
-            <div style={card}>
-              {/* Header */}
-              <div style={{ padding: '18px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Analytics</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                  {/* Tabs */}
-                  <div style={{ display: 'flex', gap: '2px', background: '#F4F6F9', borderRadius: '10px', padding: '3px' }}>
-                    {(['overview', 'sales', 'order'] as const).map(tab => (
-                      <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                        height: '26px', padding: '0 10px', borderRadius: '8px',
-                        fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, border: 'none',
-                        background: activeTab === tab ? WHITE : 'transparent',
-                        color: activeTab === tab ? TEXT : TEXT3,
-                        boxShadow: activeTab === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                        textTransform: 'capitalize', transition: 'all 0.15s',
-                      }}>
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                      </button>
-                    ))}
+            {/* ── Analytics Chart ── */}
+            <div style={cardStyle}>
+              {/* Card header */}
+              <div style={{ padding: '20px 22px 0', borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                  <div>
+                    <Eyebrow>Analytics</Eyebrow>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: TEXT }}>Jobs Overview</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '32px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
+                      {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
+                    </select>
+                    <button style={{ height: '32px', padding: '0 12px', border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <IconFilter size={11} /> Filter
+                    </button>
+                    <button style={{ height: '32px', padding: '0 12px', border: 'none', borderRadius: '10px', fontSize: '11px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <IconDownload size={11} /> Export
+                    </button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
-                    {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
-                  </select>
-                  <button style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <IconFilter size={11} /> Filter
-                  </button>
-                  <button style={{ height: '30px', padding: '0 10px', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <IconDownload size={11} /> Export
-                  </button>
+
+                {/* Tab pills */}
+                <div style={{ display: 'inline-flex', gap: '2px', background: '#F0F4F8', borderRadius: '12px', padding: '3px', marginBottom: 16 }}>
+                  {(['overview', 'sales', 'order'] as const).map(tab => (
+                    <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                      height: '28px', padding: '0 14px', borderRadius: '10px',
+                      fontSize: '11px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, border: 'none',
+                      background: activeTab === tab ? WHITE : 'transparent',
+                      color: activeTab === tab ? TEXT : TEXT3,
+                      boxShadow: activeTab === tab ? '0 1px 5px rgba(0,0,0,0.10)' : 'none',
+                      transition: 'all 0.15s', textTransform: 'capitalize',
+                    }}>
+                      {tab === 'overview' ? 'Overview' : tab === 'sales' ? 'Sales' : 'Orders'}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Y axis labels row */}
-              <div style={{ display: 'flex', gap: '20px', padding: '10px 20px 0', borderBottom: `1px solid ${BORDER}` }}>
+              {/* Key metrics row */}
+              <div style={{ padding: '16px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', gap: '28px', flexWrap: 'wrap' }}>
                 {[
-                  { label: 'Revenue', value: invoiceStats.collected > 0 ? `$${(invoiceStats.collected/1000).toFixed(1)}k` : '$0' },
-                  { label: 'Conv. Rate', value: stats.units > 0 ? `${Math.round((completedCount / stats.units) * 100)}%` : '0%' },
+                  { label: 'Revenue Collected', value: invoiceStats.collected > 0 ? `$${(invoiceStats.collected / 1000).toFixed(1)}k` : '$0', delta: '+11.4%', up: true },
+                  { label: 'Conv. Rate', value: stats.units > 0 ? `${Math.round((completedCount / stats.units) * 100)}%` : '0%', delta: '+4.2%', up: true },
+                  { label: 'Jobs This Month', value: `${stats.jobsThisMonth}`, delta: '+3', up: true },
                 ].map(item => (
-                  <div key={item.label} style={{ marginBottom: '10px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{item.label}</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>{item.value}</div>
+                  <div key={item.label}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 3 }}>{item.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>{item.value}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: item.up ? TEAL : '#E53935', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {item.up ? <IconTrendUp size={9}/> : <IconTrendDown size={9}/>} {item.delta}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Chart */}
-              <div style={{ padding: '16px 20px 14px' }}>
-                <AnalyticsBarChart data={monthlyData} height={190} />
+              {/* Bar chart */}
+              <div style={{ padding: '20px 22px 18px' }}>
+                <AnalyticsBarChart data={monthlyData} height={200} />
               </div>
             </div>
           </div>
 
-          {/* ── ROW 3: Visit by Time (heatmap) + Total Visit (donut) ─────────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: '14px', alignItems: 'start' }}>
+          {/* ── ROW 3: Heatmap (left) + Right column ─────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 316px', gap: '16px', alignItems: 'start' }}>
 
-            {/* Heatmap card */}
-            <div style={card}>
-              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* ── Heatmap + Recent customers ── */}
+            <div style={cardStyle}>
+              {/* Header */}
+              <div style={{ padding: '18px 22px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    0 &nbsp;&nbsp;&nbsp;<span style={{ color: TEAL, fontWeight: 800 }}>▬▬▬</span>&nbsp;&nbsp;&nbsp; 10,000+
-                  </div>
+                  <Eyebrow>Schedule</Eyebrow>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>Activity Heatmap</div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>Booked</div>
-                  </div>
-                  <div style={{ width: 1, background: BORDER }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>{completedCount.toLocaleString()}</div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>Done</div>
-                  </div>
+                <div style={{ display: 'flex', gap: '18px' }}>
+                  {[{ label: 'Booked', value: scheduledCount }, { label: 'Done', value: completedCount }].map((item, i) => (
+                    <div key={item.label} style={{ textAlign: 'center' }}>
+                      {i > 0 && <div style={{ position: 'absolute', top: 0, bottom: 0, width: 1, background: BORDER, transform: 'translateX(-9px)' }} />}
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>{item.value}</div>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{item.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div style={{ padding: '16px 20px' }}>
+
+              <div style={{ padding: '18px 22px', borderBottom: `1px solid ${BORDER}` }}>
                 <HeatmapGrid jobs={allJobs} />
               </div>
 
-              {/* Recent customers mini-table */}
-              <div style={{ borderTop: `1px solid ${BORDER}` }}>
-                <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {/* Recent customers table */}
+              <div>
+                <div style={{ padding: '14px 22px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 9px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    View all <IconArrow size={11} />
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    View all <IconArrow size={10} />
                   </button>
                 </div>
+
+                {/* Table header */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 90px 80px', gap: '12px', padding: '6px 22px', borderBottom: `1px solid ${BORDER}` }}>
+                  {['', 'Name', 'Date', 'Status'].map(h => (
+                    <span key={h} style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
+                  ))}
+                </div>
+
                 {recent.length === 0 ? (
-                  <div style={{ padding: '20px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No customers yet.</div>
+                  <div style={{ padding: '28px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>No customers yet.</div>
                 ) : recent.map((job, i) => {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
                   const sp = statusPill(job.next_service_date, getDays)
-                  const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
-                  const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
+                  const avBgs = [TEAL_LIGHT, '#EDE7F6', '#E8F5E9', '#FFF3E0', '#E3F2FD']
+                  const avColors = [TEAL_DARK, '#6A1B9A', '#2E7D32', '#E65100', '#1565C0']
                   return (
                     <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 120px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 90px 80px', gap: '12px', alignItems: 'center', padding: '11px 22px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      <div style={{ width: 32, height: 32, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
+                      <div style={{ width: 34, height: 34, borderRadius: '11px', background: avBgs[i % 5], color: avColors[i % 5], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        {initials || '?'}
+                      </div>
                       <div>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{name}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, marginBottom: 1 }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '4px' }}>
                           {job.customers?.suburb && <span>{job.customers.suburb}</span>}
                           {job.customers?.phone && !isMobile && <><span>·</span><IconPhone size={10} /><span>{job.customers.phone}</span></>}
                         </div>
                       </div>
-                      {!isMobile && <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>{job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'}</div>}
-                      <span style={{ padding: '3px 8px', borderRadius: '20px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{sp.label}</span>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
+                        {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '—'}
+                      </div>
+                      <span style={{ padding: '4px 9px', borderRadius: '99px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap', display: 'inline-block' }}>
+                        {sp.label}
+                      </span>
                     </div>
                   )
                 })}
               </div>
             </div>
 
-            {/* Right column: Total Visit donut + Upcoming + Invoices */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* ── Right column: Revenue donut + Invoices + Upcoming ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-              {/* Total Visit / Revenue Mix card — donut style */}
-              <div style={cardP}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Total Revenue</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
-                  </div>
-                </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+              {/* Revenue donut */}
+              <div style={{ ...cardStyle, padding: '20px' }}>
+                <Eyebrow>Revenue Mix</Eyebrow>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px' }}>Total Revenue</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: '16px' }}>
+                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
                     {invoiceStats.collected > 0 ? `$${invoiceStats.collected.toLocaleString('en-AU')}` : '$0'}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL }}>↑ 8.5%</span>
-                    <span style={{ fontSize: '10px', color: TEXT3 }}>vs last month</span>
-                  </div>
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: TEAL }}>↑ 8.5%</span>
+                  <span style={{ fontSize: '10px', color: TEXT3 }}>vs last month</span>
                 </div>
 
-                {/* Donut + legend side by side */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <DonutChart segments={revenueBreakdown} size={120} thickness={20} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <DonutChart segments={revenueBreakdown} size={110} thickness={18} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {revenueBreakdown.map(rb => (
-                      <div key={rb.label} onClick={() => router.push('/dashboard/revenue')} style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: rb.color, flexShrink: 0 }} />
+                      <div key={rb.label} onClick={() => router.push('/dashboard/revenue')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <div style={{ width: 9, height: 9, borderRadius: '50%', background: rb.color, flexShrink: 0 }} />
                         <div style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: TEXT2 }}>{rb.label}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: TEXT }}>${(rb.value / 1000).toFixed(1)}k</div>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT }}>${(rb.value / 1000).toFixed(1)}k</div>
                       </div>
                     ))}
                   </div>
@@ -788,22 +803,29 @@ export default function DashboardPage() {
               </div>
 
               {/* Unpaid invoices */}
-              <div style={card}>
-                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+              <div style={cardStyle}>
+                <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <Eyebrow>Finance</Eyebrow>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</div>
+                  </div>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '28px', padding: '0 10px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     All <IconArrow size={10} />
                   </button>
                 </div>
-                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em' }}>
+                <div style={{ padding: '12px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.04em', color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT }}>
                     ${invoiceStats.outstanding > 0 ? invoiceStats.outstanding.toLocaleString('en-AU') : '0'}
                   </span>
-                  <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>outstanding · {invoiceStats.overdueCount} overdue</span>
+                  <div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Outstanding</div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{invoiceStats.overdueCount} overdue</div>
+                  </div>
                 </div>
+
                 {invoiceStats.allInvoices.length === 0 ? (
-                  <div style={{ padding: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', marginBottom: 4 }}>✓</div>
+                  <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '20px', marginBottom: 4 }}>✓</div>
                     <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>All invoices paid</div>
                   </div>
                 ) : invoiceStats.allInvoices.map((inv, i) => {
@@ -812,20 +834,20 @@ export default function DashboardPage() {
                   const amt = Number(inv.total || 0) - Number(inv.amount_paid || 0)
                   return (
                     <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 18px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: isOverdue ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3 }}>
-                        <IconInvoice size={12} />
+                      <div style={{ width: 30, height: 30, borderRadius: '9px', background: isOverdue ? '#FEF2F2' : BG, border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3, flexShrink: 0 }}>
+                        <IconInvoice size={13} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3 }}>{inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT }}>${amt.toLocaleString('en-AU')}</div>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT }}>${amt.toLocaleString('en-AU')}</div>
+                        <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E' }}>
                           {isOverdue ? 'Overdue' : 'Sent'}
                         </span>
                       </div>
@@ -835,16 +857,21 @@ export default function DashboardPage() {
               </div>
 
               {/* Upcoming jobs */}
-              <div style={card}>
-                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</span>
+              <div style={cardStyle}>
+                <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <Eyebrow>Schedule</Eyebrow>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</div>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 900, color: TEXT }}>{scheduledCount}</span>
-                    <span style={{ fontSize: '10px', color: TEXT3 }}>scheduled</span>
+                    <span style={{ padding: '3px 9px', borderRadius: '99px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>
+                      {scheduledCount} booked
+                    </span>
                   </div>
                 </div>
+
                 {upcoming.length === 0 ? (
-                  <div style={{ padding: '16px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No upcoming jobs.</div>
+                  <div style={{ padding: '20px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No upcoming jobs.</div>
                 ) : upcoming.slice(0, 4).map((job, i) => {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const times = ['8:00 AM', '11:00 AM', '2:30 PM', '4:00 PM']
@@ -852,24 +879,31 @@ export default function DashboardPage() {
                   const isFirst = i === 0
                   return (
                     <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 18px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
                       onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }}
                       onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = WHITE }}
                     >
-                      <div style={{ width: 4, height: 32, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
+                      {/* Time indicator */}
+                      <div style={{ width: 3, height: 36, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT }}>{name}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT, marginBottom: 2 }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3 }}>
-                          {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'} · {time}
+                          {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '—'} · {time}
                         </div>
                       </div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: isFirst ? TEAL_DARK : TEXT3 }}>{job.job_type || 'Service'}</div>
-                      <IconChevronRight size={11} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT3, padding: '3px 8px', borderRadius: '7px', background: isFirst ? `rgba(31,158,148,0.15)` : BG }}>
+                        {job.job_type || 'Service'}
+                      </span>
+                      <IconChevronRight size={12} />
                     </div>
                   )
                 })}
-                <div style={{ padding: '10px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/schedule')} style={{ width: '100%', height: '30px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+
+                <div style={{ padding: '12px 18px' }}>
+                  <button onClick={() => router.push('/dashboard/schedule')} style={{ width: '100%', height: '34px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'background 0.12s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = BORDER)}
+                    onMouseLeave={e => (e.currentTarget.style.background = BG)}
+                  >
                     <IconCalendar size={12} /> Open Schedule
                   </button>
                 </div>
