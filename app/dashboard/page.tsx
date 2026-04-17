@@ -157,9 +157,9 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
                 {isHov && (
                   <div style={{
                     position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)',
-                    background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '8px',
+                    background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '10px',
                     fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
-                    boxShadow: 'none',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
                   }}>
                     <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{item.label}, {new Date().getFullYear()}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
@@ -178,7 +178,7 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
                       ? '#CBD5E1'
                       : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)',
                   transition: 'all 0.15s ease',
-                  boxShadow: 'none',
+                  boxShadow: isCurrent ? `0 4px 18px ${TEAL}44` : 'none',
                   border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`,
                   cursor: 'default',
                 }} />
@@ -263,8 +263,8 @@ function VisitCalendarMonths({
   const months = useMemo(() => {
     const now = new Date()
     const result: Date[] = []
-    for (let i = 0; i < monthCount; i++) {
-      result.push(new Date(now.getFullYear(), now.getMonth() + i, 1))
+    for (let i = monthCount - 1; i >= 0; i--) {
+      result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
     }
     return result
   }, [monthCount])
@@ -282,8 +282,6 @@ function VisitCalendarMonths({
   }, [jobs])
 
   const maxCount = Math.max(1, ...Object.values(jobCountsByDate))
-  const today = new Date()
-  const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
 
   function buildMonth(monthDate: Date) {
     const year = monthDate.getFullYear()
@@ -313,7 +311,7 @@ function VisitCalendarMonths({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : monthCount === 1 ? '1fr' : 'repeat(2, 1fr)',
+        gridTemplateColumns: isMobile ? '1fr' : monthCount === 1 ? '1fr' : monthCount === 3 ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)',
         gap: '14px',
       }}
     >
@@ -343,49 +341,42 @@ function VisitCalendarMonths({
                 {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
               </div>
               <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
-                {cells.filter(c => c.count > 0).reduce((sum, c) => sum + c.count, 0)} bookings
+                {cells.filter(c => c.count > 0).reduce((sum, c) => sum + c.count, 0)} jobs
               </div>
             </div>
 
             <div style={{ padding: '10px 10px 12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px', marginBottom: '6px' }}>
                 {dayNames.map(day => (
-                  <div key={day} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, padding: '3px 0' }}>
+                  <div key={day} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, padding: '4px 0' }}>
                     {day}
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
                 {cells.map((cell, i) => {
                   if (!cell.date) {
-                    return <div key={i} style={{ minHeight: 40, borderRadius: '8px', background: 'transparent' }} />
+                    return <div key={i} style={{ minHeight: 54, borderRadius: '10px', background: 'transparent' }} />
                   }
 
                   const count = cell.count
                   const intensity = count > 0 ? count / maxCount : 0
-                  const key = `${cell.date.getFullYear()}-${cell.date.getMonth()}-${cell.date.getDate()}`
-                  const isToday = key === todayKey
-
                   const bg = count > 0 ? `rgba(31,158,148,${0.10 + intensity * 0.82})` : '#F8FAFC'
-                  const border = isToday
-                    ? TEAL
-                    : count > 0
-                      ? 'rgba(31,158,148,0.16)'
-                      : BORDER
+                  const border = count > 0 ? 'rgba(31,158,148,0.16)' : BORDER
                   const numberColor = count > 0 ? WHITE : TEXT
                   const subColor = count > 0 ? 'rgba(255,255,255,0.9)' : TEXT3
 
                   return (
                     <div
                       key={i}
-                      title={`${count} scheduled booking${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`}
+                      title={`${count} scheduled job${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`}
                       style={{
-                        minHeight: 40,
-                        borderRadius: '8px',
+                        minHeight: 54,
+                        borderRadius: '10px',
                         border: `1px solid ${border}`,
                         background: bg,
-                        padding: '5px 5px 4px',
+                        padding: '6px 6px 5px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -394,8 +385,8 @@ function VisitCalendarMonths({
                       <div style={{ fontSize: '11px', fontWeight: 800, color: numberColor, lineHeight: 1 }}>
                         {cell.date.getDate()}
                       </div>
-                      <div style={{ fontSize: '9px', fontWeight: 700, color: subColor, lineHeight: 1 }}>
-                        {count > 0 ? `${count}` : ''}
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: subColor, lineHeight: 1 }}>
+                        {count > 0 ? `${count} job${count !== 1 ? 's' : ''}` : ''}
                       </div>
                     </div>
                   )
@@ -802,14 +793,12 @@ export default function DashboardPage() {
                     gap: '5px',
                     flex: isMobile ? 1 : '0 0 auto',
                     minWidth: isMobile ? 0 : 'auto',
-                    boxShadow: 'none',
                   }}
                 >
-                  <IconPlus size={12} /> Add job
+                  <IconPlus size={12} /> Add Widget
                 </button>
 
                 <button
-                  onClick={() => router.push('/dashboard/quotes')}
                   style={{
                     height: '36px',
                     padding: isMobile ? '0 10px' : '0 12px',
@@ -827,14 +816,12 @@ export default function DashboardPage() {
                     gap: '5px',
                     flex: isMobile ? 1 : '0 0 auto',
                     minWidth: isMobile ? 0 : 'auto',
-                    boxShadow: 'none',
                   }}
                 >
-                  <IconFilter size={12} /> New quote
+                  <IconFilter size={12} /> Filter
                 </button>
 
                 <button
-                  onClick={() => router.push('/dashboard/schedule')}
                   style={{
                     height: '36px',
                     padding: isMobile ? '0 12px' : '0 14px',
@@ -852,10 +839,9 @@ export default function DashboardPage() {
                     gap: '6px',
                     flex: isMobile ? 1 : '0 0 auto',
                     minWidth: isMobile ? 0 : 'auto',
-                    boxShadow: 'none',
                   }}
                 >
-                  <IconCalendar size={12} /> Schedule
+                  <IconDownload size={12} /> Export
                 </button>
               </div>
             </div>
@@ -873,10 +859,11 @@ export default function DashboardPage() {
                   borderRadius: '14px',
                   padding: '18px 20px 0',
                   cursor: 'pointer',
-                  transition: 'none',
+                  transition: 'box-shadow 0.15s',
                   overflow: 'hidden',
-                  boxShadow: 'none',
                 }}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)')}
+                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
@@ -988,7 +975,9 @@ export default function DashboardPage() {
 
               <button
                 onClick={() => router.push('/dashboard/jobs')}
-                style={{ width: '100%', height: '36px', background: 'transparent', color: TEXT, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'none', boxShadow: 'none' }}
+                style={{ width: '100%', height: '36px', background: 'transparent', color: TEXT, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE; (e.currentTarget as HTMLButtonElement).style.borderColor = TEAL }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEXT; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER }}
               >
                 {stats.overdue > 0 ? 'Improve Your Score →' : 'View Schedule →'}
               </button>
@@ -1004,7 +993,7 @@ export default function DashboardPage() {
                   <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
                     {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
                   </select>
-                  <button style={{ height: '30px', width: '30px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '14px', color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}>⤢</button>
+                  <button style={{ height: '30px', width: '30px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '14px', color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>⤢</button>
                 </div>
               </div>
 
@@ -1039,7 +1028,7 @@ export default function DashboardPage() {
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Calendar view of booked dates
+                    Calendar view of scheduled jobs by month
                   </div>
                 </div>
 
@@ -1061,10 +1050,9 @@ export default function DashboardPage() {
                       outline: 'none',
                     }}
                   >
-                    <option value="1">Next 1 month</option>
-                    <option value="3">Next 3 months</option>
-                    <option value="6">Next 6 months</option>
-                    <option value="12">Next 12 months</option>
+                    <option value="1">Last 1 month</option>
+                    <option value="3">Last 3 months</option>
+                    <option value="6">Last 6 months</option>
                   </select>
 
                   <div style={{ display: 'flex', gap: '20px' }}>
@@ -1086,13 +1074,13 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Booked dates are highlighted based on next service dates stored in your CRM.
+                Each day shows the number of scheduled jobs from your CRM based on next service dates.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: 'none' }}>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     View all <IconArrow size={11} />
                   </button>
                 </div>
@@ -1110,6 +1098,8 @@ export default function DashboardPage() {
                       key={job.id}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 100px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
                       <div style={{ width: 34, height: 34, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
                       <div>
@@ -1164,7 +1154,7 @@ export default function DashboardPage() {
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px', boxShadow: 'none' }}>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     All <IconArrow size={10} />
                   </button>
                 </div>
@@ -1189,6 +1179,8 @@ export default function DashboardPage() {
                       key={inv.id || i}
                       onClick={() => router.push('/dashboard/invoices')}
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
                       <div style={{ width: 28, height: 28, borderRadius: '8px', background: isOverdue ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3 }}>
                         <IconInvoice size={12} />
@@ -1207,137 +1199,52 @@ export default function DashboardPage() {
                   )
                 })}
               </div>
-            </div>
-          </div>
 
-          {/* ── ROW 4: Upcoming + Invoice Summary ───────────────────────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 0.8fr', gap: '16px', alignItems: 'start' }}>
-            <div style={card}>
-              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Upcoming Services</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>
-                    Next booked services from your CRM
+              <div style={card}>
+                <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{scheduledCount}</span>
+                    <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>scheduled</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => router.push('/dashboard/jobs')}
-                  style={{
-                    height: '30px',
-                    padding: '0 10px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    color: TEXT2,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: 'none',
-                  }}
-                >
-                  View all <IconArrow size={10} />
-                </button>
-              </div>
-
-              {upcoming.length === 0 ? (
-                <div style={{ padding: '24px 18px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: TEXT3 }}>
-                  No upcoming services scheduled.
-                </div>
-              ) : (
-                upcoming.map((job, i) => {
+                {upcoming.length === 0 ? (
+                  <div style={{ padding: '16px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No upcoming jobs.</div>
+                ) : upcoming.slice(0, 4).map((job, i) => {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                  const days = job.next_service_date ? getDays(job.next_service_date) : null
-                  const isSoon = days !== null && days <= 7
-                  const dueText =
-                    days === null ? 'No date'
-                    : days === 0 ? 'Today'
-                    : days === 1 ? 'Tomorrow'
-                    : `${days} days`
+                  const isFirst = i === 0
+                  const dateText = job.next_service_date
+                    ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+                    : 'No date'
 
                   return (
                     <div
-                      key={job.id || i}
-                      onClick={() => router.push('/dashboard/jobs')}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr auto' : '1.2fr 0.9fr 0.6fr auto',
-                        gap: '12px',
-                        alignItems: 'center',
-                        padding: '12px 18px',
-                        borderBottom: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                      }}
+                      key={job.id}
+                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
+                      onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }}
+                      onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = isFirst ? TEAL_LIGHT : WHITE }}
                     >
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT }}>{name}</div>
-                        <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, marginTop: '3px' }}>
-                          {job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
+                      <div style={{ width: 4, height: 34, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT }}>{name}</div>
+                        <div style={{ fontSize: '10px', color: TEXT3 }}>
+                          {dateText}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
                         </div>
                       </div>
-
-                      {!isMobile && (
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>
-                          {job.next_service_date
-                            ? new Date(job.next_service_date).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
-                            : 'No date'}
-                        </div>
-                      )}
-
-                      {!isMobile && (
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: isSoon ? TEAL_DARK : TEXT3 }}>
-                          {dueText}
-                        </div>
-                      )}
-
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '999px',
-                        background: isSoon ? '#E6F7F6' : '#F1F5F9',
-                        color: isSoon ? TEAL_DARK : TEXT3,
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {isSoon ? 'Coming up' : 'Scheduled'}
-                      </span>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: isFirst ? TEAL_DARK : TEXT3 }}>{job.job_type || 'Service'}</div>
+                      <IconChevronRight size={11} />
                     </div>
                   )
-                })
-              )}
-            </div>
-
-            <div style={cardP}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, marginBottom: '14px' }}>
-                Invoice Summary
-              </div>
-
-              <div style={{ display: 'grid', gap: '10px' }}>
-                <div style={{ padding: '12px 14px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginBottom: '5px' }}>Paid invoices</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>{invoiceStats.paidCount}</div>
-                </div>
-
-                <div style={{ padding: '12px 14px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginBottom: '5px' }}>Outstanding</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>${invoiceStats.outstanding.toLocaleString('en-AU')}</div>
-                </div>
-
-                <div style={{ padding: '12px 14px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginBottom: '5px' }}>Overdue count</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: invoiceStats.overdueCount > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.03em' }}>
-                    {invoiceStats.overdueCount}
-                  </div>
+                })}
+                <div style={{ padding: '10px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/schedule')} style={{ width: '100%', height: '30px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                    <IconCalendar size={12} /> Open Schedule
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* ── ROW 5: Footer spacing ───────────────────────────────────── */}
-          <div style={{ height: 4 }} />
         </div>
       </div>
     </div>
