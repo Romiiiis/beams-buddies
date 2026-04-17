@@ -750,8 +750,8 @@ export default function LeadsPage() {
 
   const statCard: React.CSSProperties = {
     ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
+    padding: isMobile ? '12px 10px 11px' : '14px 16px 13px',
+    minHeight: isMobile ? 104 : 118,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -838,9 +838,12 @@ export default function LeadsPage() {
           <div
             style={{
               ...card,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
+              padding: isMobile ? '20px 16px 18px' : '22px 24px 20px',
               background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: isMobile ? '0' : '16px',
+              marginLeft: isMobile ? '-14px' : 0,
+              marginRight: isMobile ? '-14px' : 0,
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
@@ -901,23 +904,33 @@ export default function LeadsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(3, 1fr)',
               gap: '12px',
             }}
           >
             {overviewCards.map(item => (
               <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ ...TYPE.label, marginBottom: '6px', fontSize: isMobile ? '9px' : '10px' }}>{item.tag}</div>
+                    <div
+                      style={{
+                        ...TYPE.title,
+                        fontSize: isMobile ? '11px' : '13px',
+                        fontWeight: 800,
+                        marginBottom: '6px',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {item.label}
+                    </div>
                   </div>
                   <StatImageIcon src={item.iconSrc} alt={item.label} />
                 </div>
 
                 <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
+                  <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '22px' : '26px', color: item.accent }}>{item.value}</div>
+                  <div style={{ ...TYPE.bodySm, marginTop: '4px', fontSize: isMobile ? '10px' : '11px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
