@@ -181,15 +181,15 @@ function ReportsIcon() {
 function SettingsIcon() {
   return (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3.25" />
+      <circle cx="12" cy="12" r="3.1" />
       <path d="M12 2.75v2.1" />
       <path d="M12 19.15v2.1" />
-      <path d="M21.25 12h-2.1" />
-      <path d="M4.85 12h-2.1" />
-      <path d="m18.54 5.46-1.48 1.48" />
-      <path d="m6.94 17.06-1.48 1.48" />
-      <path d="m18.54 18.54-1.48-1.48" />
-      <path d="m6.94 6.94-1.48-1.48" />
+      <path d="m4.93 4.93 1.48 1.48" />
+      <path d="m17.59 17.59 1.48 1.48" />
+      <path d="M2.75 12h2.1" />
+      <path d="M19.15 12h2.1" />
+      <path d="m4.93 19.07 1.48-1.48" />
+      <path d="m17.59 6.41 1.48-1.48" />
     </svg>
   )
 }
@@ -279,15 +279,12 @@ export function Sidebar({ active }: { active: string }) {
   }
 
   function navigateTo(href: string) {
-    const shouldCollapse =
-      typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
-
+    const shouldCollapse = typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
     if (!isMobile) {
       setIsCollapsed(shouldCollapse)
     } else {
       setIsMobileMenuOpen(false)
     }
-
     router.push(href)
   }
 
@@ -316,10 +313,10 @@ export function Sidebar({ active }: { active: string }) {
           boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
           transition: 'background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (!isActive) e.currentTarget.style.background = '#F8FAFC'
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           if (!isActive) e.currentTarget.style.background = 'transparent'
         }}
       >
@@ -447,9 +444,8 @@ export function Sidebar({ active }: { active: string }) {
                 gap: 8,
               }}
             >
-              {mobileMenuItems.map((item) => {
+              {mobileMenuItems.map(item => {
                 const isActive = item.href === active
-
                 return (
                   <button
                     key={item.href}
@@ -557,7 +553,7 @@ export function Sidebar({ active }: { active: string }) {
               boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
             }}
           >
-            {mobilePrimaryTabs.map((tab) => {
+            {mobilePrimaryTabs.map(tab => {
               const isActive = tab.href === active
 
               return (
@@ -589,7 +585,7 @@ export function Sidebar({ active }: { active: string }) {
             })}
 
             <div
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
               className="mobile-tab"
               style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}
             >
