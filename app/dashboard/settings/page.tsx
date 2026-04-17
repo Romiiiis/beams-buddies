@@ -549,7 +549,10 @@ export default function SettingsPage() {
               ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: isMobile ? 0 : '16px',
+              marginLeft: isMobile ? '-14px' : 0,
+              marginRight: isMobile ? '-14px' : 0,
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
