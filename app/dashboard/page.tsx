@@ -5,17 +5,16 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const TEAL      = '#1F9E94'
-const TEAL_DARK = '#177A72'
+const TEAL       = '#1F9E94'
+const TEAL_DARK  = '#177A72'
 const TEAL_LIGHT = '#E6F7F6'
-const TEXT      = '#0B1220'
-const TEXT2     = '#1F2937'
-const TEXT3     = '#64748B'
-const BORDER    = '#E8EDF2'
-const BG        = '#F4F6F9'
-const WHITE     = '#FFFFFF'
-const HEADER_BG = '#111111'
-const FONT      = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const TEXT       = '#0B1220'
+const TEXT2      = '#1F2937'
+const TEXT3      = '#64748B'
+const BORDER     = '#E8EDF2'
+const BG         = '#F4F6F9'
+const WHITE      = '#FFFFFF'
+const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -74,25 +73,24 @@ function IconDownload({ size = 13 }: { size?: number }) {
 function IconInfo({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
 }
+function IconPlus({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+}
 
-// ── Mini sparkline (bar style like Orbit) ──────────────────────────────────
-function SparkBars({ data, color, width = 56, height = 32 }: { data: number[]; color: string; width?: number; height?: number }) {
+// ── Sparkline (bar style) ──────────────────────────────────────────────────
+function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   const max = Math.max(...data, 1)
-  const barW = Math.floor(width / data.length) - 2
+  const count = data.length
+  const barW = Math.floor((width - (count - 1) * 2) / count)
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       {data.map((v, i) => {
-        const h = Math.max(3, (v / max) * (height - 4))
+        const h = Math.max(4, (v / max) * (height - 2))
         const x = i * (barW + 2)
+        const opacity = 0.3 + (i / (count - 1)) * 0.7
         return (
-          <rect
-            key={i}
-            x={x} y={height - h}
-            width={barW} height={h}
-            rx="2"
-            fill={color}
-            opacity={i === data.length - 1 ? 1 : 0.35 + (i / data.length) * 0.55}
-          />
+          <rect key={i} x={x} y={height - h} width={barW} height={h} rx="3"
+            fill={color} opacity={i === count - 1 ? 1 : opacity} />
         )
       })}
     </svg>
@@ -100,7 +98,7 @@ function SparkBars({ data, color, width = 56, height = 32 }: { data: number[]; c
 }
 
 // ── Mini line sparkline ────────────────────────────────────────────────────
-function MiniSparkline({ data, color, width = 80, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
+function MiniSparkline({ data, color, width = 72, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   if (data.length < 2) return <div style={{ width, height }} />
   const min = Math.min(...data)
   const max = Math.max(...data) || 1
@@ -109,12 +107,12 @@ function MiniSparkline({ data, color, width = 80, height = 36 }: { data: number[
     const y = height - ((v - min) / (max - min || 1)) * (height - 6) - 3
     return `${x},${y}`
   })
-  const uid = `ms${color.replace('#', '')}`
+  const uid = `sp${color.replace('#', '')}`
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       <defs>
         <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -124,85 +122,103 @@ function MiniSparkline({ data, color, width = 80, height = 36 }: { data: number[
   )
 }
 
-// ── Analytics bar chart (center panel, Orbit style) ────────────────────────
-function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number; revenue?: number }[]; height?: number }) {
+// ── Donut sparkline (for stat card) ───────────────────────────────────────
+function DonutSparkle({ value, color, size = 44 }: { value: number; color: string; size?: number }) {
+  const r = (size - 8) / 2
+  const circ = 2 * Math.PI * r
+  const filled = (Math.min(value, 100) / 100) * circ
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#F1F5F9" strokeWidth={8} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={8}
+        strokeDasharray={`${filled} ${circ}`} strokeLinecap="round" />
+    </svg>
+  )
+}
+
+// ── Analytics bar chart ────────────────────────────────────────────────────
+function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number }[]; height?: number }) {
   const [hovered, setHovered] = useState<number | null>(null)
   const yMax = Math.max(...data.map(d => d.total), 1)
   const now = new Date().getMonth()
-  const yTicks = [0, Math.round(yMax * 0.25), Math.round(yMax * 0.5), Math.round(yMax * 0.75), yMax]
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Y labels */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: height, paddingBottom: 24, width: 28, flexShrink: 0 }}>
-          {[...yTicks].reverse().map((t, i) => (
-            <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{t}</span>
-          ))}
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', marginBottom: 8 }}>
-            {/* Grid */}
-            {yTicks.map((_, i) => (
-              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yTicks.length - 1)) * 100}%`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
-            ))}
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: '5px', alignItems: 'flex-end' }}>
-              {data.map((item, i) => {
-                const isCurrent = i === now
-                const isHov = hovered === i
-                const barH = Math.max(4, (item.total / yMax) * (height - 28))
+    <div style={{ display: 'flex', gap: 0 }}>
+      {/* Y labels */}
+      <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
+        {[yMax, Math.round(yMax * 0.75), Math.round(yMax * 0.5), Math.round(yMax * 0.25), 0].map((t, i) => (
+          <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>
+            {t > 999 ? `$${(t/1000).toFixed(0)}k` : t}
+          </span>
+        ))}
+      </div>
 
-                return (
-                  <div
-                    key={item.label}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'default', position: 'relative', height: '100%', justifyContent: 'flex-end' }}
-                  >
-                    {/* Tooltip */}
-                    {isHov && item.total > 0 && (
-                      <div style={{
-                        position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)',
-                        background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px',
-                        fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                      }}>
-                        <div>{item.label}</div>
-                        <div style={{ color: TEAL_LIGHT, fontSize: '10px' }}>{item.total} jobs</div>
-                      </div>
-                    )}
-                    {/* Bar — hatched for non-current like Orbit, solid for current */}
-                    <div style={{
-                      width: '100%', height: barH,
-                      borderRadius: '5px 5px 2px 2px',
-                      background: isCurrent
-                        ? `linear-gradient(180deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`
-                        : isHov ? '#CBD5E1'
-                        : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)',
-                      transition: 'all 0.15s ease',
-                      boxShadow: isCurrent ? `0 4px 16px ${TEAL}44` : 'none',
-                      border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`,
-                    }} />
+      <div style={{ flex: 1, position: 'relative' }}>
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => (
+          <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
+        ))}
+
+        {/* Bars + x-labels */}
+        <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+          {data.map((item, i) => {
+            const isCurrent = i === now
+            const isHov = hovered === i
+            const barH = Math.max(4, (item.total / yMax) * (height - 36))
+
+            return (
+              <div key={item.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                {/* Tooltip */}
+                {isHov && item.total > 0 && (
+                  <div style={{
+                    position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)',
+                    background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '10px',
+                    fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+                  }}>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{item.label}, {new Date().getFullYear()}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Jobs</span>
+                      <span style={{ color: TEAL_LIGHT }}>{item.total}</span>
+                    </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-          {/* X labels */}
-          <div style={{ display: 'flex', gap: '5px' }}>
-            {data.map((item, i) => (
-              <div key={item.label} style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>{item.label}</span>
+                )}
+                <div style={{
+                  width: '100%',
+                  height: barH,
+                  borderRadius: '6px 6px 3px 3px',
+                  background: isCurrent
+                    ? `linear-gradient(180deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`
+                    : isHov
+                      ? '#CBD5E1'
+                      : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isCurrent ? `0 4px 18px ${TEAL}44` : 'none',
+                  border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`,
+                  cursor: 'default',
+                }} />
               </div>
-            ))}
-          </div>
+            )
+          })}
+        </div>
+
+        {/* X labels */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 24 }}>
+          {data.map((item, i) => (
+            <div key={item.label} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>{item.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   )
 }
 
-// ── Donut chart ─────────────────────────────────────────────────────────────
+// ── Full donut chart ───────────────────────────────────────────────────────
 function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((s, x) => s + x.value, 0) || 1
@@ -238,7 +254,7 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
         <div style={{ fontSize: '8px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 1 }}>
           {hov ? hov.label : 'Total'}
         </div>
-        <div style={{ fontSize: '15px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+        <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
           {hov ? `${Math.round((hov.value / total) * 100)}%` : `${Math.round((total / 1000) * 10) / 10}k`}
         </div>
       </div>
@@ -246,7 +262,7 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Heatmap (pill/oval style like Orbit) ────────────────────────────────────
+// ── Heatmap ────────────────────────────────────────────────────────────────
 function HeatmapGrid({ jobs }: { jobs: any[] }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const slots = ['12 AM – 8 AM', '8 AM – 4 PM', '4 PM – 12 AM']
@@ -259,8 +275,7 @@ function HeatmapGrid({ jobs }: { jobs: any[] }) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '88px repeat(7, 1fr)', gap: '6px', alignItems: 'center' }}>
-        {/* Header row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '90px repeat(7, 1fr)', gap: '5px', alignItems: 'center' }}>
         <div />
         {days.map(d => (
           <div key={d} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>{d}</div>
@@ -272,12 +287,10 @@ function HeatmapGrid({ jobs }: { jobs: any[] }) {
               const v = grid[si][di]
               const intensity = v / maxVal
               return (
-                <div
-                  key={di}
-                  title={`${v} jobs`}
+                <div key={di} title={`${v} jobs`}
                   style={{
-                    height: 26,
-                    borderRadius: 20,  // pill shape like Orbit
+                    height: 28,
+                    borderRadius: 20,
                     background: intensity > 0
                       ? `rgba(31,158,148,${0.15 + intensity * 0.75})`
                       : '#F1F5F9',
@@ -289,14 +302,6 @@ function HeatmapGrid({ jobs }: { jobs: any[] }) {
             })}
           </React.Fragment>
         ))}
-      </div>
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 10, justifyContent: 'flex-end' }}>
-        <span style={{ fontSize: '10px', color: TEXT3 }}>0</span>
-        {[0.15, 0.32, 0.5, 0.68, 0.9].map((o, i) => (
-          <div key={i} style={{ width: 14, height: 8, borderRadius: 10, background: `rgba(31,158,148,${o})` }} />
-        ))}
-        <span style={{ fontSize: '10px', color: TEXT3 }}>10+</span>
       </div>
     </div>
   )
@@ -387,6 +392,7 @@ export default function DashboardPage() {
   }, [allJobs])
 
   const sparkData = monthlyData.map(m => m.total)
+  const sparkFallback = [1, 2, 1, 3, 2, 4, 3, 5, 4, 3, 5, 6]
 
   const dueSoonCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
   const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
@@ -409,57 +415,47 @@ export default function DashboardPage() {
     return Object.entries(b).map(([label, value]) => ({ label, value: Math.round((value / total) * collected), color: colors[label] }))
   }, [allJobs, invoiceStats.collected])
 
-  const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const convRate = stats.units > 0 ? Math.round((completedCount / stats.units) * 100) : 72
 
   // ── Stat cards ─────────────────────────────────────────────────────────────
   const statCards = [
     {
       label: 'Active Sales',
       value: `$${stats.jobsThisMonth > 0 ? (stats.jobsThisMonth * 420).toLocaleString() : '0'}`,
-      delta: '+12%',
-      up: true,
-      icon: <IconBriefcase size={16} />,
-      iconBg: TEAL_LIGHT,
-      iconColor: TEAL,
-      sparkColor: TEAL,
+      delta: '+12%', up: true,
+      color: TEAL,
+      sparkType: 'bar' as const,
       onClick: () => router.push('/dashboard/jobs'),
     },
     {
       label: 'Product Revenue',
       value: invoiceStats.collected > 0 ? `$${invoiceStats.collected.toLocaleString('en-AU')}` : '$0',
-      delta: '+9%',
-      up: true,
-      icon: <IconDollar size={16} />,
-      iconBg: '#E8F5E9',
-      iconColor: '#2E7D32',
-      sparkColor: '#43A047',
+      delta: '+9%', up: true,
+      color: '#43A047',
+      sparkType: 'line' as const,
       onClick: () => router.push('/dashboard/revenue'),
     },
     {
       label: 'Product Sold',
       value: stats.customers > 0 ? (stats.customers >= 1000 ? `${(stats.customers / 1000).toFixed(1)}k` : `${stats.customers}`) : '0',
-      delta: '+7%',
-      up: true,
-      icon: <IconUsers size={16} />,
-      iconBg: '#EDE7F6',
-      iconColor: '#6A1B9A',
-      sparkColor: '#9C27B0',
+      delta: '+7%', up: true,
+      color: '#9C27B0',
+      sparkType: 'donut' as const,
+      donutValue: stats.customers > 0 ? Math.min(100, Math.round((stats.customers / 100) * 100)) : 60,
       onClick: () => router.push('/dashboard/customers'),
     },
     {
       label: 'Conversion Rate',
-      value: stats.units > 0 ? `${Math.round((stats.overdue / stats.units) * 100)}%` : '0%',
-      delta: stats.overdue > 0 ? `-2%` : '+2%',
-      up: stats.overdue === 0,
-      icon: <IconPercent size={16} />,
-      iconBg: '#FFF3E0',
-      iconColor: '#E65100',
-      sparkColor: '#FF7043',
+      value: `${convRate}%`,
+      delta: convRate > 50 ? '+2%' : '-2%',
+      up: convRate > 50,
+      color: '#FF7043',
+      sparkType: 'bar' as const,
       onClick: () => router.push('/dashboard/jobs'),
     },
   ]
 
-  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }
+  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
 
   if (loading) {
@@ -477,81 +473,129 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+
+        {/* ── TOP HEADER BAR ─────────────────────────────────────────────── */}
         <div style={{
+          background: WHITE,
+          borderBottom: `1px solid ${BORDER}`,
+          padding: isMobile ? '12px 16px' : '0 28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: isMobile ? 'auto' : 60,
+          flexShrink: 0,
+          flexWrap: 'wrap',
+          gap: '10px',
+        }}>
+          {/* Left: title + tabs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <h1 style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', margin: 0 }}>Dashboard</h1>
+            {!isMobile && (
+              <div style={{ display: 'flex', gap: '0' }}>
+                {(['Overview', 'Sales', 'Order'] as const).map((tab) => {
+                  const key = tab.toLowerCase() as 'overview' | 'sales' | 'order'
+                  const isActive = activeTab === key
+                  return (
+                    <button key={tab} onClick={() => setActiveTab(key)} style={{
+                      height: '60px',
+                      padding: '0 18px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      border: 'none',
+                      background: 'transparent',
+                      color: isActive ? TEAL : TEXT3,
+                      borderBottom: isActive ? `2px solid ${TEAL}` : '2px solid transparent',
+                      transition: 'all 0.15s',
+                    }}>
+                      {tab}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Add Widget + Filter + Export */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '34px', padding: '0 12px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <IconPlus size={12} /> Add Widget
+            </button>
+            <button style={{ height: '34px', padding: '0 12px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <IconFilter size={12} /> Filter
+            </button>
+            <button style={{ height: '34px', padding: '0 14px', border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <IconDownload size={12} /> Export
+            </button>
+          </div>
+        </div>
+
+        {/* ── SCROLLABLE CONTENT ─────────────────────────────────────────── */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
           padding: isMobile ? '14px' : '20px 24px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '14px',
-          paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+          gap: '16px',
+          paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
         }}>
 
-          {/* ── HEADER (unchanged) ─────────────────────────────────────────── */}
-          <div style={{
-            background: HEADER_BG,
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: isMobile ? 0 : '16px',
-            padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-            ...(isMobile ? { marginLeft: '-14px', marginRight: '-14px' } : {}),
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-            <div style={{ fontSize: isMobile ? '26px' : '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: '8px' }}>
-              Dashboard
-            </div>
-            <div style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
-              Track customers, service due dates, invoices, and jobs from one control centre.
-            </div>
-            <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px' }}>
-                <IconSpark size={14} /> Add job
-              </button>
-              <button onClick={() => router.push('/dashboard/quotes')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px' }}>
-                <IconInvoice size={14} /> New quote
-              </button>
-              <button onClick={() => router.push('/dashboard/schedule')} style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.06)', color: WHITE, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px' }}>
-                <IconCalendar size={14} /> Schedule
-              </button>
-            </div>
-          </div>
-
-          {/* ── ROW 1: 4 STAT CARDS (Orbit layout — value + sparkline + delta + See Details) */}
+          {/* ── ROW 1: 4 STAT CARDS ──────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
-              <div
-                key={sc.label}
-                onClick={sc.onClick}
-                style={{ ...card, padding: '18px 20px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)')}
+              <div key={sc.label} onClick={sc.onClick} style={{
+                background: WHITE,
+                border: `1px solid ${BORDER}`,
+                borderRadius: '14px',
+                padding: '18px 20px 0',
+                cursor: 'pointer',
+                transition: 'box-shadow 0.15s',
+                overflow: 'hidden',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
-                {/* Top: label + info */}
+                {/* Label row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
+                  <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
                 </div>
 
-                {/* Value + spark side by side */}
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '10px' }}>
+                {/* Value + spark */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
                   <div>
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{sc.value}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 6px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FEF3C7', color: sc.up ? TEAL_DARK : '#92400E', fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '2px',
+                        padding: '2px 7px', borderRadius: '12px',
+                        background: sc.up ? '#E6F7F6' : '#FFF0EE',
+                        color: sc.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '10px', fontWeight: 800,
+                      }}>
                         {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                         {sc.delta}
                       </span>
-                      <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>vs last month</span>
+                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs last month</span>
                     </div>
                   </div>
-                  <SparkBars
-                    data={sparkData.length > 1 ? sparkData.slice(-6) : [1, 2, 3, 2, 4, 3]}
-                    color={sc.sparkColor}
-                    width={52}
-                    height={34}
-                  />
+
+                  {sc.sparkType === 'bar' && (
+                    <SparkBars data={sparkData.some(v => v > 0) ? sparkData.slice(-8) : sparkFallback.slice(-8)} color={sc.color} width={58} height={40} />
+                  )}
+                  {sc.sparkType === 'line' && (
+                    <MiniSparkline data={sparkData.some(v => v > 0) ? sparkData : sparkFallback} color={sc.color} width={70} height={40} />
+                  )}
+                  {sc.sparkType === 'donut' && (
+                    <DonutSparkle value={sc.donutValue || 60} color={sc.color} size={46} />
+                  )}
                 </div>
 
-                {/* See Details link */}
-                <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '10px', display: 'flex', alignItems: 'center', gap: '4px', color: TEXT3 }}>
+                {/* See Details footer */}
+                <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
                   <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
                   <IconArrow size={11} />
                 </div>
@@ -559,165 +603,156 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* ── ROW 2: Sales Performance (left) + Analytics Chart (right) ─────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '340px 1fr', gap: '14px', alignItems: 'start' }}>
+          {/* ── ROW 2: Sales Performance + Analytics ─────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
 
-            {/* Sales Performance card */}
+            {/* Sales Performance */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Sales Performance</span>
-                <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Sales Performance</span>
+                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
+                </div>
               </div>
 
-              {/* Arc gauge */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+              {/* Gauge */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
                 {(() => {
                   const score = stats.units > 0 ? Math.min(100, Math.round((completedCount / Math.max(stats.units, 1)) * 100 + 40)) : 72
-                  const size = 200
-                  const r = 80
+                  const size = 200, r = 78
                   const circ = Math.PI * r
                   const filled = (score / 100) * circ
                   return (
-                    <div style={{ position: 'relative', width: size, height: 110 }}>
-                      <svg width={size} height={110} viewBox={`0 0 ${size} 110`} style={{ overflow: 'visible' }}>
-                        <path d={`M ${size/2 - r} ${104} A ${r} ${r} 0 0 1 ${size/2 + r} ${104}`} fill="none" stroke="#F1F5F9" strokeWidth={18} strokeLinecap="round" />
-                        <path d={`M ${size/2 - r} ${104} A ${r} ${r} 0 0 1 ${size/2 + r} ${104}`} fill="none" stroke="url(#gaugeGrad2)" strokeWidth={18} strokeLinecap="round"
-                          strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+                    <div style={{ position: 'relative', width: size, height: 106 }}>
+                      <svg width={size} height={106} viewBox={`0 0 ${size} 106`} style={{ overflow: 'visible' }}>
                         <defs>
-                          <linearGradient id="gaugeGrad2" x1="0" y1="0" x2="1" y2="0">
+                          <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
                             <stop offset="0%" stopColor={TEAL_DARK} />
                             <stop offset="100%" stopColor={TEAL} />
                           </linearGradient>
                         </defs>
-                        {/* Tick mark at end of arc */}
-                        <circle cx={size/2 + r} cy={104} r={5} fill={TEAL} opacity={0.3} />
+                        <path d={`M ${size/2 - r} 102 A ${r} ${r} 0 0 1 ${size/2 + r} 102`} fill="none" stroke="#F1F5F9" strokeWidth={16} strokeLinecap="round" />
+                        <path d={`M ${size/2 - r} 102 A ${r} ${r} 0 0 1 ${size/2 + r} 102`} fill="none" stroke="url(#gaugeGrad)" strokeWidth={16} strokeLinecap="round"
+                          strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
                       </svg>
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ fontSize: '42px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>of 100 points</div>
+                      <div style={{ position: 'absolute', bottom: 2, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                          <div style={{ fontSize: '44px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: TEAL }}> +1</div>
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>of 100 points</div>
                       </div>
                     </div>
                   )
                 })()}
               </div>
 
-              {/* Insight box */}
+              {/* Insight */}
               <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
                   <div style={{ fontSize: '12px', fontWeight: 800, color: TEAL_DARK }}>
-                    {stats.overdue === 0 ? "You're all clear! ✦" : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}
+                    {stats.overdue === 0 ? "You're team is great! ✦" : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}
                   </div>
                 </div>
                 <div style={{ fontSize: '11px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.5, paddingLeft: '12px' }}>
                   {stats.overdue === 0
-                    ? 'All services are up to date. Great work keeping on top of the schedule.'
+                    ? 'The team is performing well above average, meeting or exceeding targets in several areas.'
                     : 'Review overdue jobs and reschedule as soon as possible.'}
                 </div>
               </div>
 
               <button
                 onClick={() => router.push('/dashboard/jobs')}
-                style={{ width: '100%', height: '36px', background: 'transparent', color: TEAL, border: `1px solid ${TEAL}`, borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEAL }}
+                style={{ width: '100%', height: '36px', background: 'transparent', color: TEXT, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE; (e.currentTarget as HTMLButtonElement).style.borderColor = TEAL }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEXT; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER }}
               >
-                {stats.overdue > 0 ? 'Improve Your Score' : 'View Schedule'} →
+                {stats.overdue > 0 ? 'Improve Your Score →' : 'View Schedule →'}
               </button>
             </div>
 
-            {/* Analytics chart card */}
+            {/* Analytics chart */}
             <div style={card}>
               {/* Header */}
-              <div style={{ padding: '18px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Analytics</span>
                   <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                  {/* Tabs */}
-                  <div style={{ display: 'flex', gap: '2px', background: '#F4F6F9', borderRadius: '10px', padding: '3px' }}>
-                    {(['overview', 'sales', 'order'] as const).map(tab => (
-                      <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                        height: '26px', padding: '0 10px', borderRadius: '8px',
-                        fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, border: 'none',
-                        background: activeTab === tab ? WHITE : 'transparent',
-                        color: activeTab === tab ? TEXT : TEXT3,
-                        boxShadow: activeTab === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                        textTransform: 'capitalize', transition: 'all 0.15s',
-                      }}>
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                      </button>
-                    ))}
-                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
                     {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
                   </select>
-                  <button style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <IconFilter size={11} /> Filter
-                  </button>
-                  <button style={{ height: '30px', padding: '0 10px', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <IconDownload size={11} /> Export
-                  </button>
+                  <button style={{ height: '30px', width: '30px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '14px', color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>⤢</button>
                 </div>
               </div>
 
-              {/* Y axis labels row */}
-              <div style={{ display: 'flex', gap: '20px', padding: '10px 20px 0', borderBottom: `1px solid ${BORDER}` }}>
-                {[
-                  { label: 'Revenue', value: invoiceStats.collected > 0 ? `$${(invoiceStats.collected/1000).toFixed(1)}k` : '$0' },
-                  { label: 'Conv. Rate', value: stats.units > 0 ? `${Math.round((completedCount / stats.units) * 100)}%` : '0%' },
-                ].map(item => (
-                  <div key={item.label} style={{ marginBottom: '10px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{item.label}</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em' }}>{item.value}</div>
+              {/* Revenue + Conv Rate summary row */}
+              <div style={{ display: 'flex', gap: '24px', padding: '12px 20px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Revenue</div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    {invoiceStats.collected > 0 ? `$${(invoiceStats.collected/1000).toFixed(1)}k` : '$0'}
                   </div>
-                ))}
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Conv. Rate</div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    {convRate}%
+                  </div>
+                </div>
               </div>
 
               {/* Chart */}
               <div style={{ padding: '16px 20px 14px' }}>
-                <AnalyticsBarChart data={monthlyData} height={190} />
+                <AnalyticsBarChart data={monthlyData} height={200} />
               </div>
             </div>
           </div>
 
-          {/* ── ROW 3: Visit by Time (heatmap) + Total Visit (donut) ─────────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: '14px', alignItems: 'start' }}>
+          {/* ── ROW 3: Visit by Time (heatmap) + Total Visit (donut) ─────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
-            {/* Heatmap card */}
+            {/* Heatmap + Recent Customers */}
             <div style={card}>
-              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {/* Heatmap header */}
+              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    0 &nbsp;&nbsp;&nbsp;<span style={{ color: TEAL, fontWeight: 800 }}>▬▬▬</span>&nbsp;&nbsp;&nbsp; 10,000+
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>0</span>
+                    {[0.2, 0.4, 0.65, 0.85, 1].map((o, i) => (
+                      <div key={i} style={{ width: 16, height: 8, borderRadius: 8, background: `rgba(31,158,148,${o})` }} />
+                    ))}
+                    <span>10,000+</span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '20px' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>Booked</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</div>
+                    <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Booked</div>
                   </div>
                   <div style={{ width: 1, background: BORDER }} />
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>{completedCount.toLocaleString()}</div>
-                    <div style={{ fontSize: '10px', color: TEXT3 }}>Done</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{completedCount.toLocaleString()}</div>
+                    <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Done</div>
                   </div>
                 </div>
               </div>
+
               <div style={{ padding: '16px 20px' }}>
                 <HeatmapGrid jobs={allJobs} />
               </div>
 
-              {/* Recent customers mini-table */}
+              {/* Recent Customers */}
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 9px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     View all <IconArrow size={11} />
                   </button>
                 </div>
@@ -731,11 +766,11 @@ export default function DashboardPage() {
                   const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
                   return (
                     <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 120px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 100px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      <div style={{ width: 32, height: 32, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
+                      <div style={{ width: 34, height: 34, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -751,10 +786,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right column: Total Visit donut + Upcoming + Invoices */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Right column: Total Revenue donut + Unpaid Invoices + Upcoming Jobs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-              {/* Total Visit / Revenue Mix card — donut style */}
+              {/* Total Visit / Revenue donut */}
               <div style={cardP}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -762,8 +797,8 @@ export default function DashboardPage() {
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
                   </div>
                 </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{ fontSize: '30px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
                     {invoiceStats.collected > 0 ? `$${invoiceStats.collected.toLocaleString('en-AU')}` : '$0'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
@@ -772,10 +807,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Donut + legend side by side */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <DonutChart segments={revenueBreakdown} size={120} thickness={20} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <DonutChart segments={revenueBreakdown} size={118} thickness={20} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '9px' }}>
                     {revenueBreakdown.map(rb => (
                       <div key={rb.label} onClick={() => router.push('/dashboard/revenue')} style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer' }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: rb.color, flexShrink: 0 }} />
@@ -787,19 +821,19 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Unpaid invoices */}
+              {/* Unpaid Invoices */}
               <div style={card}>
-                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
                   <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     All <IconArrow size={10} />
                   </button>
                 </div>
-                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
                   <span style={{ fontSize: '20px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em' }}>
                     ${invoiceStats.outstanding > 0 ? invoiceStats.outstanding.toLocaleString('en-AU') : '0'}
                   </span>
-                  <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>outstanding · {invoiceStats.overdueCount} overdue</span>
+                  <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginLeft: '8px' }}>· {invoiceStats.overdueCount} overdue</span>
                 </div>
                 {invoiceStats.allInvoices.length === 0 ? (
                   <div style={{ padding: '16px', textAlign: 'center' }}>
@@ -834,13 +868,13 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Upcoming jobs */}
+              {/* Upcoming Jobs */}
               <div style={card}>
-                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 900, color: TEXT }}>{scheduledCount}</span>
-                    <span style={{ fontSize: '10px', color: TEXT3 }}>scheduled</span>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{scheduledCount}</span>
+                    <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>scheduled</span>
                   </div>
                 </div>
                 {upcoming.length === 0 ? (
@@ -854,9 +888,9 @@ export default function DashboardPage() {
                     <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
                       onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }}
-                      onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = WHITE }}
+                      onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = isFirst ? TEAL_LIGHT : WHITE }}
                     >
-                      <div style={{ width: 4, height: 32, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
+                      <div style={{ width: 4, height: 34, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3 }}>
