@@ -34,53 +34,6 @@ function useIsMobile() {
   return isMobile
 }
 
-function DashboardImageIcon({ src, alt, size = 28 }: { src: string; alt: string; size?: number }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
-    />
-  )
-}
-
-function IconCustomers({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png"
-      alt="Customers"
-      size={size}
-    />
-  )
-}
-function IconJobs({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_4afce955c73b4057a4eb2d3957fa516d~mv2.png"
-      alt="Jobs"
-      size={size}
-    />
-  )
-}
-function IconService({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png"
-      alt="Service"
-      size={size}
-    />
-  )
-}
-function IconReports({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png"
-      alt="Reports"
-      size={size}
-    />
-  )
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -384,7 +337,6 @@ export default function CustomersPage() {
       value: stats.totalCustomers.toLocaleString('en-AU'),
       delta: '+8%',
       sub: 'Stored in your CRM',
-      icon: <IconCustomers size={isMobile ? 22 : 28} />,
       sparkColor: TEAL,
     },
     {
@@ -392,7 +344,6 @@ export default function CustomersPage() {
       value: stats.totalUnits.toLocaleString('en-AU'),
       delta: '+6%',
       sub: 'Linked to profiles',
-      icon: <IconJobs size={isMobile ? 22 : 28} />,
       sparkColor: '#43A047',
     },
     {
@@ -400,7 +351,6 @@ export default function CustomersPage() {
       value: stats.dueSoon.toLocaleString('en-AU'),
       delta: '+4%',
       sub: 'Need attention soon',
-      icon: <IconService size={isMobile ? 22 : 28} />,
       sparkColor: '#FF7043',
     },
     {
@@ -408,7 +358,6 @@ export default function CustomersPage() {
       value: stats.totalReviewClicks.toLocaleString('en-AU'),
       delta: engagedCustomers > 0 ? '+11%' : '+0%',
       sub: totalPlatforms > 0 ? `${totalPlatforms} platform${totalPlatforms === 1 ? '' : 's'}` : 'No platforms',
-      icon: <IconReports size={isMobile ? 22 : 28} />,
       sparkColor: '#9C27B0',
     },
   ]
@@ -592,12 +541,10 @@ export default function CustomersPage() {
                     paddingTop: '10px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: '8px',
                   }}
                 >
                   <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>{sc.sub}</span>
-                  <div style={{ flexShrink: 0 }}>{sc.icon}</div>
                 </div>
               </div>
             ))}
