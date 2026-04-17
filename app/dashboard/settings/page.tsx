@@ -279,12 +279,15 @@ export function Sidebar({ active }: { active: string }) {
   }
 
   function navigateTo(href: string) {
-    const shouldCollapse = typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
+    const shouldCollapse =
+      typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
+
     if (!isMobile) {
       setIsCollapsed(shouldCollapse)
     } else {
       setIsMobileMenuOpen(false)
     }
+
     router.push(href)
   }
 
@@ -313,10 +316,10 @@ export function Sidebar({ active }: { active: string }) {
           boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
           transition: 'background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
         }}
-        onMouseEnter={e => {
+        onMouseEnter={(e) => {
           if (!isActive) e.currentTarget.style.background = '#F8FAFC'
         }}
-        onMouseLeave={e => {
+        onMouseLeave={(e) => {
           if (!isActive) e.currentTarget.style.background = 'transparent'
         }}
       >
@@ -444,8 +447,9 @@ export function Sidebar({ active }: { active: string }) {
                 gap: 8,
               }}
             >
-              {mobileMenuItems.map(item => {
+              {mobileMenuItems.map((item) => {
                 const isActive = item.href === active
+
                 return (
                   <button
                     key={item.href}
@@ -553,7 +557,7 @@ export function Sidebar({ active }: { active: string }) {
               boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
             }}
           >
-            {mobilePrimaryTabs.map(tab => {
+            {mobilePrimaryTabs.map((tab) => {
               const isActive = tab.href === active
 
               return (
@@ -585,7 +589,7 @@ export function Sidebar({ active }: { active: string }) {
             })}
 
             <div
-              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
               className="mobile-tab"
               style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}
             >
