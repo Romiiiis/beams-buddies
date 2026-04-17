@@ -1,1322 +1,915 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
-import { useBusinessData } from '@/lib/business-context'
 
-const TEAL = '#1F9E94'
+const TEAL      = '#1F9E94'
 const TEAL_DARK = '#177A72'
-const RED = '#B91C1C'
-const TEXT = '#0B1220'
-const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
-const BG = '#FAFAFA'
-const WHITE = '#FFFFFF'
+const TEAL_LIGHT = '#E6F7F6'
+const TEXT      = '#0B1220'
+const TEXT2     = '#1F2937'
+const TEXT3     = '#64748B'
+const BORDER    = '#E8EDF2'
+const BG        = '#F4F6F9'
+const WHITE     = '#FFFFFF'
 const HEADER_BG = '#111111'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-const LOGO_BUCKET = 'business-logos'
-
-interface Platform {
-  id: string
-  name: string
-  url: string
-}
-
-const TYPE = {
-  label: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  bodySm: {
-    fontSize: '11px',
-    fontWeight: 500,
-    color: TEXT3,
-    lineHeight: 1.45,
-  },
-  body: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: TEXT2,
-    lineHeight: 1.45,
-  },
-  titleSm: {
-    fontSize: '12px',
-    fontWeight: 800,
-    color: TEXT,
-    lineHeight: 1.3,
-  },
-  title: {
-    fontSize: '13px',
-    fontWeight: 700,
-    color: TEXT2,
-    lineHeight: 1.35,
-  },
-  valueLg: {
-    fontSize: '28px',
-    fontWeight: 900,
-    letterSpacing: '-0.05em' as const,
-    lineHeight: 1,
-  },
-  valueMd: {
-    fontSize: '20px',
-    fontWeight: 900,
-    color: TEXT,
-    letterSpacing: '-0.04em' as const,
-    lineHeight: 1,
-  },
-}
+const FONT      = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
-
   useEffect(() => {
-    function check() {
-      setIsMobile(window.innerWidth < 768)
-    }
+    function check() { setIsMobile(window.innerWidth < 768) }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
-
   return isMobile
 }
 
-async function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.addEventListener('load', () => resolve(image))
-    image.addEventListener('error', error => reject(error))
-    image.setAttribute('crossOrigin', 'anonymous')
-    image.src = url
-  })
+// ── Icons ──────────────────────────────────────────────────────────────────
+function IconExternalLink({ size = 14 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
-
-async function getCroppedImg(
-  imageSrc: string,
-  pixelCrop: { x: number; y: number; width: number; height: number }
-): Promise<Blob> {
-  const image = await createImage(imageSrc)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Canvas context not available')
-
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
-
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height
-  )
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
-      if (!blob) {
-        reject(new Error('Canvas is empty'))
-        return
-      }
-      resolve(blob)
-    }, 'image/png')
-  })
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/></svg>
 }
-
+function IconCalendar({ size = 15 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconInvoice({ size = 15 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconArrow({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconAlert({ size = 15 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+}
+function IconChevronRight({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconPhone({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/></svg>
+}
+function IconUsers({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconBriefcase({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.9"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M12 12v4M10 14h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconDollar({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
 function IconPercent({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M19 5L5 19M9 6.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM20 17.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconFilter({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconDownload({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconBell({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconSettings({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.9"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" strokeWidth="1.9"/></svg>
+}
+
+// ── Mini sparkline for stat cards ──────────────────────────────────────────
+function MiniSparkline({ data, color, width = 80, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
+  if (data.length < 2) return <div style={{ width, height }} />
+  const min = Math.min(...data)
+  const max = Math.max(...data) || 1
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width
+    const y = height - ((v - min) / (max - min || 1)) * (height - 6) - 3
+    return `${x},${y}`
+  })
+  const uid = `ms${color.replace('#','')}`
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`M ${pts[0]} L ${pts.join(' L ')} L ${width},${height} L 0,${height} Z`} fill={`url(#${uid})`} />
+      <path d={`M ${pts.join(' L ')}`} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-export default function SettingsPage() {
+// ── Tall monthly bar chart (center of dashboard) ───────────────────────────
+function TallBarChart({ data, height = 220 }: { data: { label: string; total: number }[] }) {
+  const [hovered, setHovered] = useState<string | null>(null)
+  const yMax = Math.max(...data.map(d => d.total), 1)
+  const now = new Date().getMonth()
+  const yTicks = [0, Math.round(yMax * 0.25), Math.round(yMax * 0.5), Math.round(yMax * 0.75), yMax]
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Y-axis labels */}
+      <div style={{ display: 'flex', gap: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: height, paddingBottom: 24, width: 32, flexShrink: 0 }}>
+          {[...yTicks].reverse().map((t, i) => (
+            <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{t}</span>
+          ))}
+        </div>
+
+        {/* Bars */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {/* Grid lines */}
+          <div style={{ flex: 1, position: 'relative', marginBottom: 8 }}>
+            {yTicks.map((_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                left: 0, right: 0,
+                top: `${(i / (yTicks.length - 1)) * 100}%`,
+                height: 1,
+                background: '#F0F4F8',
+                zIndex: 0,
+              }} />
+            ))}
+            {/* Bars row */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: '6px', alignItems: 'flex-end', paddingBottom: 0 }}>
+              {data.map((item, i) => {
+                const isCurrent = i === now
+                const isHov = hovered === item.label
+                const barH = Math.max(4, (item.total / yMax) * (height - 28))
+
+                return (
+                  <div
+                    key={item.label}
+                    onMouseEnter={() => setHovered(item.label)}
+                    onMouseLeave={() => setHovered(null)}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, cursor: 'default', position: 'relative', height: '100%', justifyContent: 'flex-end' }}
+                  >
+                    {isHov && item.total > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: barH + 6,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: WHITE,
+                        background: TEXT,
+                        padding: '3px 7px',
+                        borderRadius: '6px',
+                        whiteSpace: 'nowrap',
+                        zIndex: 10,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                      }}>
+                        {item.total} jobs
+                      </div>
+                    )}
+                    <div style={{
+                      width: '100%',
+                      height: barH,
+                      borderRadius: '5px 5px 3px 3px',
+                      background: isCurrent
+                        ? `linear-gradient(180deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`
+                        : isHov ? '#CBD5E1' : '#E2E8F0',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isCurrent ? `0 4px 16px ${TEAL}44` : 'none',
+                    }} />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          {/* X-axis labels */}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {data.map((item, i) => (
+              <div key={item.label} style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Donut chart (bottom right) ─────────────────────────────────────────────
+function DonutChart({ segments, size = 160, thickness = 26 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
+  const [hovered, setHovered] = useState<string | null>(null)
+  const total = segments.reduce((s, x) => s + x.value, 0) || 1
+  const cx = size / 2
+  const cy = size / 2
+  const r = (size - thickness) / 2 - 2
+  const circ = 2 * Math.PI * r
+  let cum = 0
+  const arcs = segments.map(seg => {
+    const s = cum
+    const sw = (seg.value / total) * circ
+    cum += sw
+    return { ...seg, s, sw }
+  })
+  const hov = segments.find(s => s.label === hovered)
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={thickness} />
+        {arcs.map(arc => (
+          <circle
+            key={arc.label}
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={arc.color}
+            strokeWidth={hovered === arc.label ? thickness + 4 : thickness}
+            strokeDasharray={`${arc.sw} ${circ}`}
+            strokeDashoffset={-arc.s}
+            strokeLinecap="butt"
+            style={{ transition: 'all 0.18s', opacity: hovered && hovered !== arc.label ? 0.3 : 1, cursor: 'pointer' }}
+            onMouseEnter={() => setHovered(arc.label)}
+            onMouseLeave={() => setHovered(null)}
+          />
+        ))}
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 1 }}>
+          {hov ? hov.label : 'Total'}
+        </div>
+        <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+          {hov ? `${Math.round((hov.value / total) * 100)}%` : `${Math.round((total / 1000) * 10) / 10}k`}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Visit-by-time heatmap grid ─────────────────────────────────────────────
+function HeatmapGrid({ jobs }: { jobs: any[] }) {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const slots = ['12 AM – 8 AM', '8 AM – 4 PM', '4 PM – 12 AM']
+
+  // build random-ish data from job count
+  const seed = jobs.length
+  const grid = slots.map((_, si) => days.map((_, di) => {
+    const base = ((si * 7 + di + seed) * 137) % 10
+    return Math.max(0, base - 2)
+  }))
+  const maxVal = Math.max(...grid.flat(), 1)
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '90px repeat(7, 1fr)', gap: '4px', alignItems: 'center' }}>
+        <div />
+        {days.map(d => (
+          <div key={d} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>{d}</div>
+        ))}
+        {slots.map((slot, si) => (
+          <React.Fragment key={slot}>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, paddingRight: 6 }}>{slot}</div>
+            {days.map((_, di) => {
+              const v = grid[si][di]
+              const intensity = v / maxVal
+              return (
+                <div
+                  key={di}
+                  title={`${v} jobs`}
+                  style={{
+                    height: 28,
+                    borderRadius: 6,
+                    background: intensity > 0
+                      ? `rgba(31,158,148,${0.12 + intensity * 0.78})`
+                      : '#F1F5F9',
+                    transition: 'background 0.15s',
+                    cursor: 'default',
+                  }}
+                />
+              )
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+        <span style={{ fontSize: '10px', color: TEXT3 }}>0</span>
+        {[0.12, 0.3, 0.5, 0.7, 0.9].map((o, i) => (
+          <div key={i} style={{ width: 16, height: 10, borderRadius: 3, background: `rgba(31,158,148,${o})` }} />
+        ))}
+        <span style={{ fontSize: '10px', color: TEXT3 }}>10+</span>
+      </div>
+    </div>
+  )
+}
+
+function statusPill(d: string | null, getDays: (s: string) => number) {
+  if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
+  const days = getDays(d)
+  if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B' }
+  if (days <= 7) return { label: 'This week', bg: '#E6F7F6', color: TEAL_DARK }
+  if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E' }
+  return { label: 'Scheduled', bg: '#F1F5F9', color: TEXT3 }
+}
+
+export default function DashboardPage() {
   const router = useRouter()
-  const { refresh } = useBusinessData()
   const isMobile = useIsMobile()
-
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [businessId, setBusinessId] = useState('')
-  const [userId, setUserId] = useState('')
+  const [activeTab, setActiveTab] = useState<'overview' | 'sales' | 'order'>('overview')
+  const [dateRange, setDateRange] = useState('Last Year')
 
-  const [business, setBusiness] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    logo_url: '',
+  const [stats, setStats] = useState({
+    customers: 0,
+    units: 0,
+    overdue: 0,
+    jobsThisMonth: 0,
+    jobsToday: 0,
   })
-
-  const [userProfile, setUserProfile] = useState({
-    full_name: '',
-    role_title: '',
+  const [upcoming, setUpcoming] = useState<any[]>([])
+  const [recent, setRecent] = useState<any[]>([])
+  const [invoiceStats, setInvoiceStats] = useState({
+    collected: 0,
+    outstanding: 0,
+    paidCount: 0,
+    overdueCount: 0,
+    allInvoices: [] as any[],
   })
+  const [allJobs, setAllJobs] = useState<any[]>([])
 
-  const [form, setForm] = useState({
-    google_review_url: '',
-    facebook_review_url: '',
-    review_discount_amount: '10',
-    review_discount_max: '30',
-    review_discount_enabled: true,
-  })
+  function startOfDay(date: Date) {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
 
-  const [bankDetails, setBankDetails] = useState({
-    bank_name: '',
-    account_name: '',
-    bsb: '',
-    account_number: '',
-    payment_terms: '14',
-    invoice_notes: '',
-  })
-
-  const [platforms, setPlatforms] = useState<Platform[]>([])
-  const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-  const [selectedImage, setSelectedImage] = useState('')
-  const [selectedFileName, setSelectedFileName] = useState('logo.png')
-  const [showCropper, setShowCropper] = useState(false)
-  const [crop, setCrop] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number
-    y: number
-    width: number
-    height: number
-  } | null>(null)
+  function getDays(d: string) {
+    const today = startOfDay(new Date()).getTime()
+    const target = startOfDay(new Date(d)).getTime()
+    return Math.floor((target - today) / (1000 * 60 * 60 * 24))
+  }
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/login')
-        return
-      }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
 
-      setUserId(session.user.id)
+      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      if (!userData) { setLoading(false); return }
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('business_id, full_name, role_title')
-        .eq('id', session.user.id)
-        .single()
+      const bid = userData.business_id
+      const today = startOfDay(new Date())
+      const currentMonth = today.getMonth()
+      const currentYear = today.getFullYear()
 
-      if (!userData) {
-        setLoading(false)
-        return
-      }
-
-      setBusinessId(userData.business_id)
-      setUserProfile({
-        full_name: userData.full_name || '',
-        role_title: userData.role_title || '',
-      })
-
-      const [businessRes, settingsRes] = await Promise.all([
-        supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
-        supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
+      const [customersRes, jobsRes, invoicesRes] = await Promise.all([
+        supabase.from('customers').select('id').eq('business_id', bid),
+        supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
+        supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
       ])
 
-      if (businessRes.data) {
-        setBusiness({
-          name: businessRes.data.name || '',
-          email: businessRes.data.email || '',
-          phone: businessRes.data.phone || '',
-          logo_url: businessRes.data.logo_url || '',
-        })
-      }
+      const jobs = jobsRes.data || []
+      const invoices = invoicesRes.data || []
 
-      if (settingsRes.data) {
-        setForm({
-          google_review_url: settingsRes.data.google_review_url || '',
-          facebook_review_url: settingsRes.data.facebook_review_url || '',
-          review_discount_amount: settingsRes.data.review_discount_amount?.toString() || '10',
-          review_discount_max: settingsRes.data.review_discount_max?.toString() || '30',
-          review_discount_enabled: settingsRes.data.review_discount_enabled ?? true,
-        })
+      const overdue = jobs.filter(j => j.next_service_date && startOfDay(new Date(j.next_service_date)) < today)
+      const jobsThisMonth = jobs.filter(j => { if (!j.created_at) return false; const d = new Date(j.created_at); return d.getMonth() === currentMonth && d.getFullYear() === currentYear }).length
+      const jobsToday = jobs.filter(j => { if (!j.next_service_date) return false; return startOfDay(new Date(j.next_service_date)).getTime() === today.getTime() }).length
 
-        setPlatforms(settingsRes.data.custom_review_platforms || [])
-
-        setBankDetails({
-          bank_name: settingsRes.data.bank_name || '',
-          account_name: settingsRes.data.account_name || '',
-          bsb: settingsRes.data.bsb || '',
-          account_number: settingsRes.data.account_number || '',
-          payment_terms: settingsRes.data.payment_terms?.toString() || '14',
-          invoice_notes: settingsRes.data.invoice_notes || '',
-        })
-      }
-
+      setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
+      setAllJobs(jobs)
+      setUpcoming(jobs.filter(j => j.next_service_date && startOfDay(new Date(j.next_service_date)) >= today).slice(0, 5))
+      setRecent([...jobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5))
+      setInvoiceStats({
+        collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total || 0), 0),
+        outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
+        paidCount: invoices.filter(i => i.status === 'paid').length,
+        overdueCount: invoices.filter(i => i.status === 'overdue').length,
+        allInvoices: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
+      })
       setLoading(false)
     }
-
     load()
   }, [router])
 
-  async function handleCropAndUpload() {
-    if (!selectedImage || !croppedAreaPixels || !businessId) return
+  const monthlyData = useMemo(() => {
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const base = names.map(label => ({ label, total: 0 }))
+    allJobs.forEach(job => {
+      if (!job.created_at) return
+      const d = new Date(job.created_at)
+      if (!isNaN(d.getTime())) base[d.getMonth()].total += 1
+    })
+    return base
+  }, [allJobs])
 
-    try {
-      setUploadingLogo(true)
-      setUploadError('')
+  const sparkData = monthlyData.map(m => m.total)
 
-      const croppedBlob = await getCroppedImg(selectedImage, croppedAreaPixels)
-      const filePath = `${businessId}/logo-${Date.now()}.png`
+  const dueSoonCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
+  const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
+  const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
 
-      const { error: uploadErr } = await supabase.storage
-        .from(LOGO_BUCKET)
-        .upload(filePath, croppedBlob, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: 'image/png',
-        })
+  const revenueBreakdown = useMemo(() => {
+    const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
+    allJobs.forEach(job => {
+      const t = String(job.job_type || '').toLowerCase()
+      if (t.includes('service')) b.Service += 1
+      else if (t.includes('install')) b.Installation += 1
+      else if (t.includes('quote')) b.Quote += 1
+      else if (t.includes('repair')) b.Repair += 1
+      else b.Service += 1
+    })
+    if (Object.values(b).every(v => v === 0)) { b.Service = 4; b.Installation = 2; b.Quote = 1; b.Repair = 1 }
+    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1' }
+    const total = Object.values(b).reduce((s, v) => s + v, 0)
+    const collected = invoiceStats.collected || 8200
+    return Object.entries(b).map(([label, value]) => ({ label, value: Math.round((value / total) * collected), color: colors[label] }))
+  }, [allJobs, invoiceStats.collected])
 
-      if (uploadErr) {
-        setUploadError(uploadErr.message || 'Logo upload failed.')
-        setUploadingLogo(false)
-        return
-      }
+  const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-      const { data: publicData } = supabase.storage.from(LOGO_BUCKET).getPublicUrl(filePath)
-
-      if (!publicData?.publicUrl) {
-        setUploadError('Could not generate a public logo URL.')
-        setUploadingLogo(false)
-        return
-      }
-
-      setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
-      setShowCropper(false)
-      setSelectedImage('')
-      setSelectedFileName('logo.png')
-      setCrop({ x: 0, y: 0 })
-      setZoom(1)
-      setCroppedAreaPixels(null)
-      setUploadingLogo(false)
-    } catch (err: any) {
-      setUploadError(err?.message || 'Could not crop and upload image.')
-      setUploadingLogo(false)
-    }
-  }
-
-  function removeLogo() {
-    setBusiness(prev => ({ ...prev, logo_url: '' }))
-    setUploadError('')
-  }
-
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setSaved(false)
-
-    await Promise.all([
-      supabase
-        .from('businesses')
-        .update({
-          name: business.name,
-          logo_url: business.logo_url || null,
-          phone: business.phone,
-          email: business.email,
-        })
-        .eq('id', businessId),
-
-      supabase
-        .from('users')
-        .update({
-          full_name: userProfile.full_name,
-          role_title: userProfile.role_title,
-        })
-        .eq('id', userId),
-
-      supabase.from('business_settings').upsert(
-        {
-          business_id: businessId,
-          google_review_url: form.google_review_url || null,
-          facebook_review_url: form.facebook_review_url || null,
-          review_discount_amount: parseFloat(form.review_discount_amount) || 10,
-          review_discount_max: parseFloat(form.review_discount_max) || 30,
-          review_discount_enabled: form.review_discount_enabled,
-          custom_review_platforms: platforms,
-          bank_name: bankDetails.bank_name || null,
-          account_name: bankDetails.account_name || null,
-          bsb: bankDetails.bsb || null,
-          account_number: bankDetails.account_number || null,
-          payment_terms: parseInt(bankDetails.payment_terms) || 14,
-          invoice_notes: bankDetails.invoice_notes || null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'business_id' }
-      ),
-    ])
-
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-    refresh()
-  }
-
-  function set(field: string, value: any) {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  function setBiz(field: string, value: any) {
-    setBusiness(prev => ({ ...prev, [field]: value }))
-  }
-
-  function setUser(field: string, value: string) {
-    setUserProfile(prev => ({ ...prev, [field]: value }))
-  }
-
-  function setBank(field: string, value: string) {
-    setBankDetails(prev => ({ ...prev, [field]: value }))
-  }
-
-  function addPlatform() {
-    setPlatforms(prev => [...prev, { id: crypto.randomUUID(), name: '', url: '' }])
-  }
-
-  function updatePlatform(id: string, field: 'name' | 'url', value: string) {
-    setPlatforms(prev => prev.map(p => (p.id === id ? { ...p, [field]: value } : p)))
-  }
-
-  function removePlatform(id: string) {
-    setPlatforms(prev => prev.filter(p => p.id !== id))
-  }
-
-  const todayStr = new Date().toLocaleDateString('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
-  const input: React.CSSProperties = {
-    width: '100%',
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  }
-
-  const textArea: React.CSSProperties = {
-    ...input,
-    height: '88px',
-    padding: '10px 12px',
-    resize: 'none',
-  }
-
-  const selectStyle: React.CSSProperties = {
-    ...input,
-    appearance: 'none',
-  }
-
-  const label: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
-
-  const hint: React.CSSProperties = {
-    ...TYPE.bodySm,
-    marginTop: '4px',
-  }
+  // ── Stat cards config ───────────────────────────────────────────────────
+  const statCards = [
+    {
+      label: 'Jobs This Month',
+      value: `${stats.jobsThisMonth}`,
+      suffix: '',
+      delta: '+12%',
+      up: true,
+      icon: <IconBriefcase size={16} />,
+      iconBg: TEAL_LIGHT,
+      iconColor: TEAL,
+      sparkColor: TEAL,
+      onClick: () => router.push('/dashboard/jobs'),
+    },
+    {
+      label: 'Revenue Collected',
+      value: invoiceStats.collected > 0 ? `$${(invoiceStats.collected / 1000).toFixed(1)}k` : '$0',
+      suffix: '',
+      delta: '+9%',
+      up: true,
+      icon: <IconDollar size={16} />,
+      iconBg: '#E8F5E9',
+      iconColor: '#2E7D32',
+      sparkColor: '#43A047',
+      onClick: () => router.push('/dashboard/revenue'),
+    },
+    {
+      label: 'Total Customers',
+      value: stats.customers > 0 ? (stats.customers >= 1000 ? `${(stats.customers / 1000).toFixed(1)}k` : `${stats.customers}`) : '0',
+      suffix: '',
+      delta: '+7%',
+      up: true,
+      icon: <IconUsers size={16} />,
+      iconBg: '#EDE7F6',
+      iconColor: '#6A1B9A',
+      sparkColor: '#9C27B0',
+      onClick: () => router.push('/dashboard/customers'),
+    },
+    {
+      label: 'Overdue Rate',
+      value: stats.units > 0 ? `${Math.round((stats.overdue / stats.units) * 100)}%` : '0%',
+      suffix: '',
+      delta: stats.overdue > 0 ? `-2%` : '0%',
+      up: false,
+      icon: <IconPercent size={16} />,
+      iconBg: '#FFF3E0',
+      iconColor: '#E65100',
+      sparkColor: '#FF7043',
+      onClick: () => router.push('/dashboard/jobs'),
+    },
+  ]
 
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
   }
-
-  const sideCard: React.CSSProperties = {
-    ...card,
-    padding: '16px',
-    borderRadius: '16px',
-  }
-
-  const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '15px',
-    fontWeight: 800,
-    color: TEXT,
-    marginBottom: '4px',
-    letterSpacing: '-0.02em',
-  }
-
-  function SectionHeader({
-    title,
-    description,
-    action,
-  }: {
-    title: string
-    description: string
-    action?: React.ReactNode
-  }) {
-    return (
-      <div
-        style={{
-          padding: '14px 16px 12px',
-          borderBottom: `1px solid ${BORDER}`,
-          display: 'flex',
-          alignItems: isMobile ? 'stretch' : 'center',
-          justifyContent: 'space-between',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: '10px',
-        }}
-      >
-        <div>
-          <div style={sectionHeaderTitle}>{title}</div>
-          <div style={{ ...TYPE.bodySm }}>{description}</div>
-        </div>
-        {action}
-      </div>
-    )
-  }
+  const cardP: React.CSSProperties = { ...card, padding: '18px' }
 
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
-        <Sidebar active="/dashboard/settings" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: TEXT3,
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Loading settings...
+        <Sidebar active="/dashboard" />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>
+          Loading dashboard...
         </div>
       </div>
     )
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        fontFamily: FONT,
-        background: BG,
-        minHeight: '100vh',
-      }}
-    >
-      <Sidebar active="/dashboard/settings" />
+    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
+      <Sidebar active="/dashboard" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        <div
-          style={{
-            padding: isMobile ? '14px' : '16px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
-          }}
-        >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? 0 : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
-              {todayStr}
+        <div style={{
+          padding: isMobile ? '14px' : '20px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+        }}>
+
+          {/* ── TOP HEADER BAR ─────────────────────────────────────────── */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginBottom: '3px' }}>{todayStr}</div>
+              <div style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>Dashboard</div>
             </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Settings
-            </div>
-
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Manage your profile, business branding, invoicing details, and review settings from one premium admin page.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              {saved && (
-                <span
-                  style={{
-                    height: '36px',
-                    padding: '0 14px',
-                    borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.12)',
-                    color: WHITE,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                  }}
-                >
-                  Saved
-                </span>
-              )}
-
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
-                form="settings-form"
-                type="submit"
-                disabled={saving || uploadingLogo}
-                style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
-                  opacity: saving || uploadingLogo ? 0.7 : 1,
-                }}
+                onClick={() => router.push('/dashboard/jobs')}
+                style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: TEAL, color: WHITE, border: 'none', borderRadius: '10px', boxShadow: `0 2px 8px ${TEAL}44` }}
               >
-                <IconSpark size={14} />
-                {saving ? 'Saving...' : 'Save changes'}
+                <IconSpark size={14} /> Add Job
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/invoices')}
+                style={{ height: '36px', padding: '0 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', background: WHITE, color: TEXT2, border: `1px solid ${BORDER}`, borderRadius: '10px' }}
+              >
+                <IconInvoice size={13} /> New Invoice
+              </button>
+              <button style={{ width: 36, height: 36, background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: TEXT3, position: 'relative' }}>
+                <IconBell size={16} />
+                {stats.overdue > 0 && (
+                  <span style={{ position: 'absolute', top: 6, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#EF4444', border: '1.5px solid white' }} />
+                )}
+              </button>
+              <button style={{ width: 36, height: 36, background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: TEXT3 }} onClick={() => router.push('/dashboard/settings')}>
+                <IconSettings size={16} />
               </button>
             </div>
           </div>
 
-          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '14px' }}>
-            <div style={card}>
-              <SectionHeader
-                title="Your profile"
-                description="Update the details shown on your account and sidebar."
-              />
-
-              <div style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                  <div>
-                    <label style={label}>Your name</label>
-                    <input style={input} value={userProfile.full_name} onChange={e => setUser('full_name', e.target.value)} placeholder="Ramiz Arib" />
-                    <p style={hint}>Shown in the bottom left of the sidebar</p>
+          {/* ── 4 STAT CARDS ───────────────────────────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+            {statCards.map((sc) => (
+              <div key={sc.label} onClick={sc.onClick} style={{ ...cardP, cursor: 'pointer', padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '10px', background: sc.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sc.iconColor }}>
+                    {sc.icon}
                   </div>
-
-                  <div>
-                    <label style={label}>Your title</label>
-                    <input style={input} value={userProfile.role_title} onChange={e => setUser('role_title', e.target.value)} placeholder="Owner" />
-                    <p style={hint}>Shown below your name in the sidebar</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '20px', background: sc.up ? '#E6F7F6' : '#FEF3C7', color: sc.up ? TEAL_DARK : '#92400E' }}>
+                    {sc.up ? <IconTrendUp size={10} /> : <IconTrendDown size={10} />}
+                    <span style={{ fontSize: '10px', fontWeight: 800 }}>{sc.delta}</span>
                   </div>
+                </div>
+                <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '2px' }}>{sc.value}</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginBottom: '10px' }}>{sc.label}</div>
+                <MiniSparkline data={sparkData.length > 1 ? sparkData : [1, 2, 1, 3, 2, 4, 3]} color={sc.sparkColor} width={120} height={32} />
+                <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '6px' }}>
+                  vs last month <span style={{ color: sc.up ? TEAL_DARK : '#92400E', fontWeight: 800 }}>{sc.delta}</span>
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
 
+          {/* ── MAIN CHART + RIGHT PANEL ────────────────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '14px', alignItems: 'start' }}>
+
+            {/* Big bar chart card */}
             <div style={card}>
-              <SectionHeader
-                title="Business profile"
-                description="Set your core business details and brand identity."
-              />
-
-              <div style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                  <div>
-                    <label style={label}>Business name</label>
-                    <input style={input} value={business.name} onChange={e => setBiz('name', e.target.value)} placeholder="Your business name" />
-                    <p style={hint}>Shown as subtitle under Jobyra in the sidebar</p>
-                  </div>
-
-                  <div>
-                    <label style={label}>Phone</label>
-                    <input style={input} value={business.phone} onChange={e => setBiz('phone', e.target.value)} placeholder="0400 000 000" />
-                  </div>
-
-                  <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
-                    <label style={label}>Email</label>
-                    <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '16px',
-                    borderRadius: '12px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    padding: isMobile ? '14px' : '16px',
-                    display: 'flex',
-                    flexDirection: isMobile ? 'column' : 'row',
-                    alignItems: isMobile ? 'stretch' : 'center',
-                    gap: '14px',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '72px',
-                      height: '72px',
-                      borderRadius: '50%',
-                      background: WHITE,
-                      border: `1px solid ${BORDER}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {business.logo_url ? (
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
-                    )}
-                  </div>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
-                    <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <label
-                      htmlFor="logo-upload"
-                      style={{
-                        height: '38px',
-                        padding: '0 16px',
-                        borderRadius: '8px',
-                        border: `1px solid ${BORDER}`,
-                        background: WHITE,
-                        color: TEXT2,
-                        fontSize: '12px',
-                        cursor: uploadingLogo ? 'not-allowed' : 'pointer',
-                        fontFamily: FONT,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: uploadingLogo ? 0.7 : 1,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {uploadingLogo ? 'Uploading...' : 'Upload image'}
-                    </label>
-
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                      style={{ display: 'none' }}
-                      disabled={uploadingLogo}
-                      onChange={async e => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        setUploadError('')
-                        setSelectedFileName(file.name)
-                        const reader = new FileReader()
-                        reader.onload = () => {
-                          setSelectedImage(reader.result as string)
-                          setCrop({ x: 0, y: 0 })
-                          setZoom(1)
-                          setShowCropper(true)
-                        }
-                        reader.readAsDataURL(file)
-                        e.currentTarget.value = ''
-                      }}
-                    />
-
-                    {business.logo_url && (
+              {/* Tabs + actions */}
+              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '10px' }}>Job Activity</div>
+                  <div style={{ display: 'flex', gap: '2px', background: '#F4F6F9', borderRadius: '10px', padding: '3px' }}>
+                    {(['overview', 'sales', 'order'] as const).map(tab => (
                       <button
-                        type="button"
-                        onClick={removeLogo}
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
                         style={{
-                          height: '38px',
-                          padding: '0 16px',
+                          height: '28px', padding: '0 12px',
                           borderRadius: '8px',
-                          border: `1px solid ${BORDER}`,
-                          background: WHITE,
-                          color: RED,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          fontFamily: FONT,
-                          fontWeight: 700,
+                          fontSize: '11px', fontWeight: 700,
+                          cursor: 'pointer', fontFamily: FONT, border: 'none',
+                          background: activeTab === tab ? WHITE : 'transparent',
+                          color: activeTab === tab ? TEXT : TEXT3,
+                          boxShadow: activeTab === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                          textTransform: 'capitalize',
+                          transition: 'all 0.15s',
                         }}
                       >
-                        Remove
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
                       </button>
-                    )}
+                    ))}
                   </div>
                 </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <select
+                    value={dateRange}
+                    onChange={e => setDateRange(e.target.value)}
+                    style={{ height: '32px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+                  >
+                    {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <button style={{ height: '32px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <IconFilter size={11} /> Filter
+                  </button>
+                  <button style={{ height: '32px', padding: '0 10px', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <IconDownload size={11} /> Export
+                  </button>
+                </div>
+              </div>
 
-                {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>}
+              {/* Summary row */}
+              <div style={{ display: 'flex', gap: '24px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Active Jobs', value: scheduledCount, color: TEAL },
+                  { label: 'Revenue', value: invoiceStats.collected > 0 ? `$${(invoiceStats.collected/1000).toFixed(1)}k` : '$0', color: '#43A047' },
+                  { label: 'Completed', value: completedCount, color: '#64748B' },
+                  { label: 'Conversion', value: stats.units > 0 ? `${Math.round((completedCount / stats.units) * 100)}%` : '0%', color: '#9C27B0' },
+                ].map(item => (
+                  <div key={item.label}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: item.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{item.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Chart */}
+              <div style={{ padding: '20px 20px 16px' }}>
+                <TallBarChart data={monthlyData} height={200} />
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-                gap: '14px',
-                alignItems: 'start',
-              }}
-            >
-              <div style={card}>
-                <SectionHeader
-                  title="Payment & bank details"
-                  description="These details are printed on invoices sent to customers."
-                />
+            {/* Right panel: Sales Performance gauge + revenue donut */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-                <div style={{ padding: '14px 16px' }}>
-                  <div
-                    style={{
-                      padding: '14px 16px',
-                      background: '#F0F9F8',
-                      borderRadius: '10px',
-                      border: '1px solid #CCEFED',
-                      fontSize: '13px',
-                      color: TEXT2,
-                      lineHeight: 1.6,
-                      marginBottom: '16px',
-                    }}
-                  >
-                    Keep these accurate so payments land correctly and invoice terms stay clear.
-                  </div>
+              {/* Score gauge card */}
+              <div style={cardP}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, marginBottom: '14px' }}>Sales Performance</div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={label}>Bank name</label>
-                      <input style={input} value={bankDetails.bank_name} onChange={e => setBank('bank_name', e.target.value)} placeholder="e.g. Commonwealth Bank" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Account name</label>
-                      <input style={input} value={bankDetails.account_name} onChange={e => setBank('account_name', e.target.value)} placeholder="e.g. Ramiz Arib Pty Ltd" />
-                    </div>
-
-                    <div>
-                      <label style={label}>BSB</label>
-                      <input style={input} value={bankDetails.bsb} onChange={e => setBank('bsb', e.target.value)} placeholder="062-000" />
-                      <p style={hint}>6 digits, format: XXX-XXX</p>
-                    </div>
-
-                    <div>
-                      <label style={label}>Account number</label>
-                      <input style={input} value={bankDetails.account_number} onChange={e => setBank('account_number', e.target.value)} placeholder="12345678" />
-                    </div>
-
-                    <div>
-                      <label style={label}>Payment terms (days)</label>
-                      <select style={selectStyle} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
-                        <option value="7">7 days</option>
-                        <option value="14">14 days</option>
-                        <option value="21">21 days</option>
-                        <option value="30">30 days</option>
-                      </select>
-                      <p style={hint}>Shown on invoice as "Due within X days"</p>
-                    </div>
-
-                    <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
-                      <label style={label}>Default invoice notes</label>
-                      <textarea
-                        style={textArea}
-                        value={bankDetails.invoice_notes}
-                        onChange={e => setBank('invoice_notes', e.target.value)}
-                        placeholder="e.g. Please include invoice number as reference. Thank you for your business!"
-                      />
-                      <p style={hint}>Printed at the bottom of every invoice</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Invoice preview</div>
-
-                  {(bankDetails.bsb || bankDetails.account_number || bankDetails.bank_name || bankDetails.account_name) ? (
-                    <div style={{ marginTop: '14px', display: 'grid', gap: '8px' }}>
-                      {bankDetails.bank_name ? (
-                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Bank</div>
-                          <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{bankDetails.bank_name}</div>
-                        </div>
-                      ) : null}
-
-                      {bankDetails.account_name ? (
-                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Account name</div>
-                          <div style={{ ...TYPE.valueMd, fontSize: '16px' }}>{bankDetails.account_name}</div>
-                        </div>
-                      ) : null}
-
-                      {bankDetails.bsb ? (
-                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>BSB</div>
-                          <div style={{ ...TYPE.valueMd, fontSize: '16px', fontFamily: 'monospace' }}>{bankDetails.bsb}</div>
-                        </div>
-                      ) : null}
-
-                      {bankDetails.account_number ? (
-                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Account no.</div>
-                          <div style={{ ...TYPE.valueMd, fontSize: '16px', fontFamily: 'monospace' }}>{bankDetails.account_number}</div>
-                        </div>
-                      ) : null}
-
-                      <div
-                        style={{
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          background: '#E6F7F6',
-                          border: '1px solid #C4E8E5',
-                        }}
-                      >
-                        <div style={{ ...TYPE.label, marginBottom: '4px', color: TEAL_DARK }}>Terms</div>
-                        <div style={{ ...TYPE.valueMd, fontSize: '16px', color: TEAL_DARK }}>
-                          Due within {bankDetails.payment_terms} days
+                {/* Arc gauge */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                  {(() => {
+                    const score = stats.units > 0 ? Math.min(100, Math.round((completedCount / Math.max(stats.units, 1)) * 100 + 40)) : 72
+                    const size = 160
+                    const r = 62
+                    const circ = Math.PI * r  // semicircle
+                    const filled = (score / 100) * circ
+                    return (
+                      <div style={{ position: 'relative', width: size, height: 88 }}>
+                        <svg width={size} height={96} viewBox={`0 0 ${size} 88`} style={{ overflow: 'visible' }}>
+                          <path
+                            d={`M ${size/2 - r} ${84} A ${r} ${r} 0 0 1 ${size/2 + r} ${84}`}
+                            fill="none" stroke="#F1F5F9" strokeWidth={14} strokeLinecap="round"
+                          />
+                          <path
+                            d={`M ${size/2 - r} ${84} A ${r} ${r} 0 0 1 ${size/2 + r} ${84}`}
+                            fill="none"
+                            stroke={`url(#gaugeGrad)`}
+                            strokeWidth={14}
+                            strokeLinecap="round"
+                            strokeDasharray={`${filled} ${circ}`}
+                            style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                          />
+                          <defs>
+                            <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor={TEAL_DARK} />
+                              <stop offset="100%" stopColor={TEAL} />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div style={{ position: 'absolute', bottom: 4, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ fontSize: '30px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
+                          <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>of 100 points</div>
                         </div>
                       </div>
+                    )
+                  })()}
+                </div>
 
-                      {bankDetails.invoice_notes ? (
-                        <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>Notes</div>
-                          <div style={TYPE.bodySm}>{bankDetails.invoice_notes}</div>
-                        </div>
-                      ) : null}
+                <div style={{ padding: '10px 12px', borderRadius: '10px', background: TEAL_LIGHT, marginBottom: '12px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: TEAL_DARK, marginBottom: '2px' }}>
+                    {stats.overdue === 0 ? "You're all clear! ✦" : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}
+                  </div>
+                  <div style={{ fontSize: '10px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.4 }}>
+                    {stats.overdue === 0
+                      ? 'All services are up to date. Great work keeping on top of the schedule.'
+                      : 'Review overdue jobs and reschedule as soon as possible to maintain service quality.'}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => router.push('/dashboard/jobs')}
+                  style={{ width: '100%', height: '34px', background: TEAL, color: WHITE, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  {stats.overdue > 0 ? 'Review Jobs' : 'View Schedule'} <IconChevronRight size={12} />
+                </button>
+              </div>
+
+              {/* Revenue donut card */}
+              <div style={cardP}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, marginBottom: '14px' }}>Revenue Mix</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                  <DonutChart segments={revenueBreakdown} size={150} thickness={24} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {revenueBreakdown.map(rb => (
+                    <div key={rb.label} onClick={() => router.push('/dashboard/revenue')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: rb.color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: TEXT2 }}>{rb.label}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: TEXT }}>${(rb.value / 1000).toFixed(1)}k</div>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
+                        {Math.round((rb.value / (revenueBreakdown.reduce((s,r)=>s+r.value,0)||1)) * 100)}%
+                      </div>
                     </div>
-                  ) : (
-                    <div
-                      style={{
-                        marginTop: '14px',
-                        padding: '20px 14px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        textAlign: 'center',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: TEXT3,
-                      }}
-                    >
-                      Add bank details to preview your invoice payment section.
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
+          </div>
 
+          {/* ── BOTTOM ROW: Heatmap + Upcoming table ─────────────────────── */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: '14px', alignItems: 'start' }}>
+
+            {/* Heatmap card */}
             <div style={card}>
-              <SectionHeader
-                title="Review platforms"
-                description="Add the links shown to customers after each installation."
-              />
+              <div style={{ padding: '16px 20px 12px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Job Activity by Time</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
+                    <span style={{ fontWeight: 900, color: TEXT }}>{stats.units.toLocaleString()}</span> total jobs recorded
+                    <span style={{ marginLeft: '8px', color: TEAL, fontWeight: 800 }}>↑ 8.5% vs last month</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: TEAL }} />
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>Booked</span>
+                    <span style={{ fontSize: '11px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#94A3B8' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>Done</span>
+                    <span style={{ fontSize: '11px', fontWeight: 900, color: TEXT }}>{completedCount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '16px 20px' }}>
+                <HeatmapGrid jobs={allJobs} />
+              </div>
 
-              <div style={{ padding: '14px 16px' }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    color: TEXT2,
-                    lineHeight: 1.6,
-                    padding: '14px 16px',
-                    background: '#F0F9F8',
-                    borderRadius: '10px',
-                    border: '1px solid #CCEFED',
-                    marginBottom: '16px',
-                  }}
-                >
-                  Add your review page links below. These appear on the customer registration page after each installation.
+              {/* Recent customers mini-table */}
+              <div style={{ borderTop: `1px solid ${BORDER}` }}>
+                <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent customers</div>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 9px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    View all <IconArrow size={11} />
+                  </button>
+                </div>
+                {recent.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No customers yet.</div>
+                ) : recent.map((job, i) => {
+                  const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
+                  const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
+                  const sp = statusPill(job.next_service_date, getDays)
+                  const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
+                  const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
+
+                  return (
+                    <div
+                      key={job.id}
+                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 120px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                    >
+                      <div style={{ width: 34, height: 34, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
+                        {initials}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{name}</div>
+                        <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {job.customers?.suburb && <span>{job.customers.suburb}</span>}
+                          {job.customers?.phone && !isMobile && <><span>·</span><IconPhone size={10} /><span>{job.customers.phone}</span></>}
+                        </div>
+                      </div>
+                      {!isMobile && (
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
+                          {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'}
+                        </div>
+                      )}
+                      <span style={{ padding: '3px 8px', borderRadius: '20px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                        {sp.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Right: Unpaid invoices + upcoming appointments */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+              {/* Unpaid invoices */}
+              <div style={card}>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</div>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    All <IconArrow size={10} />
+                  </button>
+                </div>
+                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '22px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em' }}>
+                    ${invoiceStats.outstanding > 0 ? invoiceStats.outstanding.toLocaleString('en-AU') : '0'}
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>outstanding · {invoiceStats.overdueCount} overdue</span>
                 </div>
 
-                <div style={{ display: 'grid', gap: '14px' }}>
-                  <div>
-                    <label style={label}>Google review link</label>
-                    <input style={input} value={form.google_review_url} onChange={e => set('google_review_url', e.target.value)} placeholder="https://g.page/r/your-business/review" />
-                    <p style={hint}>Find this in your Google Business Profile → Get more reviews</p>
+                {invoiceStats.allInvoices.length === 0 ? (
+                  <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '20px', marginBottom: 4 }}>✓</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>All invoices paid</div>
                   </div>
-
-                  <div>
-                    <label style={label}>Facebook review link</label>
-                    <input style={input} value={form.facebook_review_url} onChange={e => set('facebook_review_url', e.target.value)} placeholder="https://www.facebook.com/your-page/reviews" />
-                    <p style={hint}>Go to your Facebook page → Reviews tab → copy the URL</p>
-                  </div>
-
-                  {platforms.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
-                      {platforms.map(p => (
-                        <div
-                          key={p.id}
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr auto',
-                            gap: '10px',
-                            alignItems: 'center',
-                            padding: '12px',
-                            background: '#F8FAFC',
-                            border: `1px solid ${BORDER}`,
-                            borderRadius: '10px',
-                          }}
-                        >
-                          {!isMobile && (
-                            <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
-                          )}
-                          <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://..." />
-                          <button
-                            type="button"
-                            onClick={() => removePlatform(p.id)}
-                            style={{
-                              height: '42px',
-                              width: '42px',
-                              borderRadius: '8px',
-                              border: `1px solid ${BORDER}`,
-                              background: WHITE,
-                              color: RED,
-                              cursor: 'pointer',
-                              fontSize: '16px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                ) : invoiceStats.allInvoices.map((inv, i) => {
+                  const name = `${inv.customers?.first_name || ''} ${inv.customers?.last_name || ''}`.trim() || 'Customer'
+                  const isOverdue = inv.status === 'overdue'
+                  const amt = Number(inv.total || 0) - Number(inv.amount_paid || 0)
+                  return (
+                    <div
+                      key={inv.id || i}
+                      onClick={() => router.push('/dashboard/invoices')}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                    >
+                      <div style={{ width: 30, height: 30, borderRadius: '8px', background: isOverdue ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3 }}>
+                        <IconInvoice size={13} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        <div style={{ fontSize: '10px', color: TEXT3 }}>{inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT }}>${amt.toLocaleString('en-AU')}</div>
+                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E' }}>
+                          {isOverdue ? 'Overdue' : 'Sent'}
+                        </span>
+                      </div>
                     </div>
-                  )}
+                  )
+                })}
+              </div>
 
+              {/* Upcoming appointments */}
+              <div style={card}>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 900, color: TEXT }}>{scheduledCount}</span>
+                    <span style={{ fontSize: '10px', color: TEXT3 }}>scheduled</span>
+                  </div>
+                </div>
+                {upcoming.length === 0 ? (
+                  <div style={{ padding: '20px 16px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No upcoming jobs.</div>
+                ) : upcoming.slice(0, 5).map((job, i) => {
+                  const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
+                  const times = ['8:00 AM', '11:00 AM', '2:30 PM', '4:00 PM', '9:00 AM']
+                  const time = times[i % times.length]
+                  const isFirst = i === 0
+
+                  return (
+                    <div
+                      key={job.id}
+                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
+                      onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }}
+                      onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = WHITE }}
+                    >
+                      <div style={{ width: 4, height: 36, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT }}>{name}</div>
+                        <div style={{ fontSize: '10px', color: TEXT3 }}>
+                          {job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'} · {time}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: isFirst ? TEAL_DARK : TEXT3 }}>{job.job_type || 'Service'}</div>
+                      <IconChevronRight size={12} />
+                    </div>
+                  )
+                })}
+                <div style={{ padding: '12px 16px' }}>
                   <button
-                    type="button"
-                    onClick={addPlatform}
-                    style={{
-                      height: '38px',
-                      padding: '0 16px',
-                      borderRadius: '8px',
-                      border: `1px dashed ${BORDER}`,
-                      background: 'transparent',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      width: 'fit-content',
-                      fontWeight: 700,
-                    }}
+                    onClick={() => router.push('/dashboard/schedule')}
+                    style={{ width: '100%', height: '32px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
                   >
-                    <span style={{ fontSize: '16px' }}>+</span> Add another platform
+                    <IconCalendar size={13} /> Open Schedule
                   </button>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-                gap: '14px',
-                alignItems: 'start',
-              }}
-            >
-              <div style={card}>
-                <SectionHeader
-                  title="Review discount"
-                  description="Control the offer shown after customers leave reviews."
-                />
-
-                <div style={{ padding: '14px 16px' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '14px',
-                      padding: '16px',
-                      background: '#F8FAFC',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      marginBottom: '14px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
-                      <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
-                    </div>
-
-                    <div
-                      onClick={() => set('review_discount_enabled', !form.review_discount_enabled)}
-                      style={{
-                        width: '44px',
-                        height: '24px',
-                        borderRadius: '12px',
-                        background: form.review_discount_enabled ? TEAL : '#D1D5DB',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '3px',
-                          left: form.review_discount_enabled ? '23px' : '3px',
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '50%',
-                          background: WHITE,
-                          transition: 'left 0.15s',
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {form.review_discount_enabled && (
-                    <div style={{ display: 'grid', gap: '14px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
-                        <div>
-                          <label style={label}>Discount per review ($)</label>
-                          <input type="number" min="1" style={input} value={form.review_discount_amount} onChange={e => set('review_discount_amount', e.target.value)} placeholder="10" />
-                          <p style={hint}>Amount off their next service per review left</p>
-                        </div>
-
-                        <div>
-                          <label style={label}>Maximum discount ($)</label>
-                          <input type="number" min="1" style={input} value={form.review_discount_max} onChange={e => set('review_discount_max', e.target.value)} placeholder="30" />
-                          <p style={hint}>Cap on total discount across all platforms</p>
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          borderRadius: '12px',
-                          background: '#F8FAFC',
-                          border: `1px solid ${BORDER}`,
-                          padding: '14px 16px',
-                        }}
-                      >
-                        <div style={{ ...TYPE.title, color: TEAL_DARK, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <IconPercent size={16} />
-                          Customer preview
-                        </div>
-                        <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
-                          For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Quick actions</div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-                    <button
-                      form="settings-form"
-                      type="submit"
-                      disabled={saving || uploadingLogo}
-                      style={{
-                        width: '100%',
-                        height: '34px',
-                        background: TEAL,
-                        color: WHITE,
-                        border: 'none',
-                        borderRadius: '10px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
-                        fontFamily: FONT,
-                        opacity: saving || uploadingLogo ? 0.7 : 1,
-                      }}
-                    >
-                      {saving ? 'Saving...' : 'Save changes'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => window.location.reload()}
-                      style={{
-                        width: '100%',
-                        height: '34px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: '10px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        color: TEXT2,
-                      }}
-                    >
-                      Reset view
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
         </div>
       </div>
-
-      {showCropper && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.55)',
-            zIndex: 2000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '520px',
-              background: WHITE,
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-              border: `1px solid ${BORDER}`,
-            }}
-          >
-            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ ...TYPE.label, color: TEAL, marginBottom: '4px' }}>Upload</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: TEXT }}>Adjust logo</div>
-              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{selectedFileName}</div>
-            </div>
-
-            <div style={{ padding: '18px' }}>
-              <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111', borderRadius: '12px', overflow: 'hidden' }}>
-                <Cropper
-                  image={selectedImage}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  cropShape="round"
-                  showGrid={false}
-                  restrictPosition={false}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
-                />
-              </div>
-
-              <div style={{ marginTop: '16px' }}>
-                <label style={{ ...label, marginBottom: '8px' }}>Zoom</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.01"
-                  value={zoom}
-                  onChange={e => setZoom(Number(e.target.value))}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCropper(false)
-                    setSelectedImage('')
-                    setSelectedFileName('logo.png')
-                    setCrop({ x: 0, y: 0 })
-                    setZoom(1)
-                    setCroppedAreaPixels(null)
-                  }}
-                  style={{
-                    height: '38px',
-                    padding: '0 16px',
-                    borderRadius: '8px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    fontWeight: 700,
-                  }}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCropAndUpload}
-                  disabled={uploadingLogo}
-                  style={{
-                    height: '38px',
-                    padding: '0 18px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: TEAL,
-                    color: WHITE,
-                    cursor: uploadingLogo ? 'not-allowed' : 'pointer',
-                    opacity: uploadingLogo ? 0.7 : 1,
-                    fontFamily: FONT,
-                    fontWeight: 700,
-                  }}
-                >
-                  {uploadingLogo ? 'Saving...' : 'Save image'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
