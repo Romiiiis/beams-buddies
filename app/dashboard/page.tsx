@@ -37,9 +37,6 @@ function IconInvoice({ size = 15 }: { size?: number }) {
 function IconArrow({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
-function IconChevronRight({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-}
 function IconTrendUp({ size = 11 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
@@ -51,9 +48,6 @@ function IconPhone({ size = 13 }: { size?: number }) {
 }
 function IconFilter({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
-}
-function IconDownload({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
 function IconInfo({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -156,9 +150,18 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
               >
                 {isHov && (
                   <div style={{
-                    position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)',
-                    background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '8px',
-                    fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10,
+                    position: 'absolute',
+                    bottom: barH + 10,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#0B1220',
+                    color: WHITE,
+                    padding: '7px 10px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                    zIndex: 10,
                     boxShadow: 'none',
                   }}>
                     <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{item.label}, {new Date().getFullYear()}</div>
@@ -263,9 +266,19 @@ function VisitCalendarMonths({
   const months = useMemo(() => {
     const now = new Date()
     const result: Date[] = []
-    for (let i = 0; i < monthCount; i++) {
+    const startOffset = Math.floor(monthCount / 2)
+
+    for (let i = startOffset; i > 0; i--) {
+      result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    }
+
+    result.push(new Date(now.getFullYear(), now.getMonth(), 1))
+
+    const remaining = monthCount - result.length
+    for (let i = 1; i <= remaining; i++) {
       result.push(new Date(now.getFullYear(), now.getMonth() + i, 1))
     }
+
     return result
   }, [monthCount])
 
@@ -283,6 +296,7 @@ function VisitCalendarMonths({
 
   const maxCount = Math.max(1, ...Object.values(jobCountsByDate))
   const today = new Date()
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
 
   function buildMonth(monthDate: Date) {
@@ -291,17 +305,19 @@ function VisitCalendarMonths({
     const firstDay = new Date(year, month, 1)
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const mondayStart = (firstDay.getDay() + 6) % 7
-    const cells: Array<{ date: Date | null; count: number }> = []
+    const cells: Array<{ date: Date | null; count: number; isPast: boolean }> = []
 
-    for (let i = 0; i < mondayStart; i++) cells.push({ date: null, count: 0 })
+    for (let i = 0; i < mondayStart; i++) cells.push({ date: null, count: 0, isPast: false })
 
     for (let day = 1; day <= daysInMonth; day++) {
       const d = new Date(year, month, day)
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-      cells.push({ date: d, count: jobCountsByDate[key] || 0 })
+      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+      const isPast = dayStart < todayStart
+      cells.push({ date: d, count: jobCountsByDate[key] || 0, isPast })
     }
 
-    while (cells.length % 7 !== 0) cells.push({ date: null, count: 0 })
+    while (cells.length % 7 !== 0) cells.push({ date: null, count: 0, isPast: false })
 
     return cells
   }
@@ -367,19 +383,33 @@ function VisitCalendarMonths({
                   const key = `${cell.date.getFullYear()}-${cell.date.getMonth()}-${cell.date.getDate()}`
                   const isToday = key === todayKey
 
-                  const bg = count > 0 ? `rgba(31,158,148,${0.10 + intensity * 0.82})` : '#F8FAFC'
-                  const border = isToday
-                    ? TEAL
-                    : count > 0
-                      ? 'rgba(31,158,148,0.16)'
-                      : BORDER
-                  const numberColor = count > 0 ? WHITE : TEXT
-                  const subColor = count > 0 ? 'rgba(255,255,255,0.9)' : TEXT3
+                  let bg = '#F8FAFC'
+                  let border = BORDER
+                  let numberColor = TEXT
+                  let subColor = TEXT3
+
+                  if (count > 0 && cell.isPast) {
+                    bg = `rgba(148,163,184,${0.10 + intensity * 0.32})`
+                    border = 'rgba(148,163,184,0.2)'
+                    numberColor = TEXT
+                    subColor = TEXT3
+                  }
+
+                  if (count > 0 && !cell.isPast) {
+                    bg = `rgba(31,158,148,${0.10 + intensity * 0.82})`
+                    border = 'rgba(31,158,148,0.16)'
+                    numberColor = WHITE
+                    subColor = 'rgba(255,255,255,0.9)'
+                  }
+
+                  if (isToday) {
+                    border = TEAL
+                  }
 
                   return (
                     <div
                       key={i}
-                      title={`${count} scheduled booking${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`}
+                      title={`${count} booking${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`}
                       style={{
                         minHeight: 40,
                         borderRadius: '8px',
@@ -435,7 +465,7 @@ export default function DashboardPage() {
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('Last Year')
-  const [visitMonths, setVisitMonths] = useState('1')
+  const [visitMonths, setVisitMonths] = useState('3')
 
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0, jobsToday: 0 })
   const [upcoming, setUpcoming] = useState<any[]>([])
@@ -605,8 +635,7 @@ export default function DashboardPage() {
   const currentConv = currentInvoicesWindow.length > 0 ? Math.round((currentPaidWindow / currentInvoicesWindow.length) * 100) : 0
   const prevConv = prevInvoicesWindow.length > 0 ? Math.round((prevPaidWindow / prevInvoicesWindow.length) * 100) : 0
 
-  const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
-  const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
+  const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date).length, [allJobs])
 
   const onTimeScore = stats.units > 0 ? Math.round(((stats.units - stats.overdue) / stats.units) * 100) : 0
 
@@ -740,7 +769,6 @@ export default function DashboardPage() {
             background: BG,
           }}
         >
-          {/* ── HEADER ───────────────────────────────────────────────────── */}
           <div
             style={{
               background: WHITE,
@@ -861,7 +889,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 1: 4 STAT CARDS ──────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
               <div
@@ -920,7 +947,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* ── ROW 2: Sales Performance + Analytics ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -1029,7 +1055,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 3: Visit by Time + Total Revenue ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
             <div style={card}>
               <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
@@ -1039,7 +1064,7 @@ export default function DashboardPage() {
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Calendar view of booked dates
+                    Calendar view of previous and upcoming bookings
                   </div>
                 </div>
 
@@ -1061,16 +1086,16 @@ export default function DashboardPage() {
                       outline: 'none',
                     }}
                   >
-                    <option value="1">Next 1 month</option>
-                    <option value="3">Next 3 months</option>
-                    <option value="6">Next 6 months</option>
-                    <option value="12">Next 12 months</option>
+                    <option value="1">This month</option>
+                    <option value="3">1 prev + current + 1 next</option>
+                    <option value="6">3 prev + current + 2 next</option>
+                    <option value="12">6 prev + current + 5 next</option>
                   </select>
 
                   <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</div>
-                      <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Booked</div>
+                      <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Total booked</div>
                     </div>
                     <div style={{ width: 1, background: BORDER }} />
                     <div style={{ textAlign: 'center' }}>
@@ -1086,7 +1111,7 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Booked dates are highlighted based on next service dates stored in your CRM.
+                Previous bookings are shown in muted grey. Upcoming bookings are highlighted in teal.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
@@ -1210,7 +1235,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 4: Upcoming + Invoice Summary ───────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 0.8fr', gap: '16px', alignItems: 'start' }}>
             <div style={card}>
               <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1336,7 +1360,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 5: Footer spacing ───────────────────────────────────── */}
           <div style={{ height: 4 }} />
         </div>
       </div>
