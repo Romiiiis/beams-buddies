@@ -402,7 +402,7 @@ export function Sidebar({ active }: { active: string }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: '1fr',
                 gap: 8,
               }}
             >
@@ -469,7 +469,6 @@ export function Sidebar({ active }: { active: string }) {
                   color: TEXT2,
                   cursor: 'pointer',
                   textAlign: 'left',
-                  gridColumn: '1 / -1',
                 }}
               >
                 <span
