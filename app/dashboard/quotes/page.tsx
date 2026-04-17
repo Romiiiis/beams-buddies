@@ -565,7 +565,10 @@ export default function QuotesPage() {
               ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: isMobile ? 0 : '16px',
+              marginLeft: isMobile ? '-14px' : 0,
+              marginRight: isMobile ? '-14px' : 0,
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
@@ -630,7 +633,7 @@ export default function QuotesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
@@ -739,58 +742,98 @@ export default function QuotesPage() {
 
                   <div
                     style={{
-                      height: '40px',
-                      padding: '0 12px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      display: 'inline-flex',
+                      display: 'flex',
                       alignItems: 'center',
-                      whiteSpace: 'nowrap',
-                      gap: '6px',
+                      gap: '8px',
+                      width: isMobile ? '100%' : 'auto',
                     }}
                   >
-                    <IconFilter size={14} />
-                    {filtered.length} shown
+                    <div
+                      style={{
+                        height: '40px',
+                        padding: '0 12px',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        whiteSpace: 'nowrap',
+                        gap: '6px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconFilter size={14} />
+                      {filtered.length} shown
+                    </div>
+
+                    {isMobile && (
+                      <select
+                        value={filterStatus}
+                        onChange={e => setFilterStatus(e.target.value)}
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          height: '40px',
+                          padding: '0 12px',
+                          borderRadius: '10px',
+                          border: `1px solid ${BORDER}`,
+                          background: WHITE,
+                          color: TEXT2,
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          fontFamily: FONT,
+                          outline: 'none',
+                        }}
+                      >
+                        <option value="all">All ({quotes.length})</option>
+                        <option value="draft">Draft ({statusCounts.draft})</option>
+                        <option value="sent">Sent ({statusCounts.sent})</option>
+                        <option value="accepted">Accepted ({statusCounts.accepted})</option>
+                        <option value="declined">Declined ({statusCounts.declined})</option>
+                        <option value="expired">Expired ({statusCounts.expired})</option>
+                      </select>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: '12px 16px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {['all', 'draft', 'sent', 'accepted', 'declined', 'expired'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setFilterStatus(s)}
-                    style={{
-                      height: '34px',
-                      padding: '0 13px',
-                      borderRadius: '999px',
-                      border: `1px solid ${filterStatus === s ? TEAL : BORDER}`,
-                      background: filterStatus === s ? '#E6F7F6' : WHITE,
-                      color: filterStatus === s ? TEAL_DARK : TEXT2,
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {s === 'all' ? `All (${quotes.length})` : `${STATUS_STYLES[s]?.label} (${statusCounts[s as keyof typeof statusCounts] ?? 0})`}
-                  </button>
-                ))}
-              </div>
+              {!isMobile && (
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    display: 'flex',
+                    gap: '6px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {['all', 'draft', 'sent', 'accepted', 'declined', 'expired'].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setFilterStatus(s)}
+                      style={{
+                        height: '34px',
+                        padding: '0 13px',
+                        borderRadius: '999px',
+                        border: `1px solid ${filterStatus === s ? TEAL : BORDER}`,
+                        background: filterStatus === s ? '#E6F7F6' : WHITE,
+                        color: filterStatus === s ? TEAL_DARK : TEXT2,
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {s === 'all' ? `All (${quotes.length})` : `${STATUS_STYLES[s]?.label} (${statusCounts[s as keyof typeof statusCounts] ?? 0})`}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {!isMobile && filtered.length > 0 && (
                 <div
