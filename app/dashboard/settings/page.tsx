@@ -936,3 +936,7 @@ export function Sidebar({ active }: { active: string }) {
     </>
   )
 }
+
+export default function SettingsPage() {
+  return <Sidebar active="/dashboard/settings" />
+}
