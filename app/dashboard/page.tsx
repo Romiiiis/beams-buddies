@@ -129,8 +129,8 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   const filled = (Math.min(value, 100) / 100) * circ
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#F1F5F9" strokeWidth={8} />
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={8}
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F1F5F9" strokeWidth={8} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={8}
         strokeDasharray={`${filled} ${circ}`} strokeLinecap="round" />
     </svg>
   )
@@ -144,22 +144,19 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
 
   return (
     <div style={{ display: 'flex', gap: 0 }}>
-      {/* Y labels */}
       <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
         {[yMax, Math.round(yMax * 0.75), Math.round(yMax * 0.5), Math.round(yMax * 0.25), 0].map((t, i) => (
           <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>
-            {t > 999 ? `$${(t/1000).toFixed(0)}k` : t}
+            {t > 999 ? `$${(t / 1000).toFixed(0)}k` : t}
           </span>
         ))}
       </div>
 
       <div style={{ flex: 1, position: 'relative' }}>
-        {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => (
           <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
         ))}
 
-        {/* Bars + x-labels */}
         <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
           {data.map((item, i) => {
             const isCurrent = i === now
@@ -167,11 +164,12 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
             const barH = Math.max(4, (item.total / yMax) * (height - 36))
 
             return (
-              <div key={item.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+              <div
+                key={item.label}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
               >
-                {/* Tooltip */}
                 {isHov && item.total > 0 && (
                   <div style={{
                     position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)',
@@ -205,7 +203,6 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
           })}
         </div>
 
-        {/* X labels */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 24 }}>
           {data.map((item, i) => (
             <div key={item.label} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -238,7 +235,12 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={thickness} />
         {arcs.map(arc => (
-          <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none"
+          <circle
+            key={arc.label}
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
             stroke={arc.color}
             strokeWidth={hovered === arc.label ? thickness + 4 : thickness}
             strokeDasharray={`${arc.sw} ${circ}`}
@@ -287,7 +289,9 @@ function HeatmapGrid({ jobs }: { jobs: any[] }) {
               const v = grid[si][di]
               const intensity = v / maxVal
               return (
-                <div key={di} title={`${v} jobs`}
+                <div
+                  key={di}
+                  title={`${v} jobs`}
                   style={{
                     height: 28,
                     borderRadius: 20,
@@ -394,7 +398,12 @@ export default function DashboardPage() {
   const sparkData = monthlyData.map(m => m.total)
   const sparkFallback = [1, 2, 1, 3, 2, 4, 3, 5, 4, 3, 5, 6]
 
-  const dueSoonCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = getDays(j.next_service_date); return d >= 0 && d <= 7 }).length, [allJobs])
+  const dueSoonCount = useMemo(() => allJobs.filter(j => {
+    if (!j.next_service_date) return false
+    const d = getDays(j.next_service_date)
+    return d >= 0 && d <= 7
+  }).length, [allJobs])
+
   const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
   const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
 
@@ -408,7 +417,12 @@ export default function DashboardPage() {
       else if (t.includes('repair')) b.Repair += 1
       else b.Service += 1
     })
-    if (Object.values(b).every(v => v === 0)) { b.Service = 4; b.Installation = 2; b.Quote = 1; b.Repair = 1 }
+    if (Object.values(b).every(v => v === 0)) {
+      b.Service = 4
+      b.Installation = 2
+      b.Quote = 1
+      b.Repair = 1
+    }
     const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1' }
     const total = Object.values(b).reduce((s, v) => s + v, 0)
     const collected = invoiceStats.collected || 8200
@@ -417,7 +431,6 @@ export default function DashboardPage() {
 
   const convRate = stats.units > 0 ? Math.round((completedCount / stats.units) * 100) : 72
 
-  // ── Stat cards ─────────────────────────────────────────────────────────────
   const statCards = [
     {
       label: 'Active Sales',
@@ -474,65 +487,6 @@ export default function DashboardPage() {
       <Sidebar active="/dashboard" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-
-        {/* ── TOP HEADER BAR ─────────────────────────────────────────────── */}
-        <div style={{
-          background: WHITE,
-          borderBottom: `1px solid ${BORDER}`,
-          padding: isMobile ? '12px 16px' : '0 28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: isMobile ? 'auto' : 60,
-          flexShrink: 0,
-          flexWrap: 'wrap',
-          gap: '10px',
-        }}>
-          {/* Left: title + tabs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <h1 style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', margin: 0 }}>Dashboard</h1>
-            {!isMobile && (
-              <div style={{ display: 'flex', gap: '0' }}>
-                {(['Overview', 'Sales', 'Order'] as const).map((tab) => {
-                  const key = tab.toLowerCase() as 'overview' | 'sales' | 'order'
-                  const isActive = activeTab === key
-                  return (
-                    <button key={tab} onClick={() => setActiveTab(key)} style={{
-                      height: '60px',
-                      padding: '0 18px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      border: 'none',
-                      background: 'transparent',
-                      color: isActive ? TEAL : TEXT3,
-                      borderBottom: isActive ? `2px solid ${TEAL}` : '2px solid transparent',
-                      transition: 'all 0.15s',
-                    }}>
-                      {tab}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Right: Add Widget + Filter + Export */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '34px', padding: '0 12px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-              <IconPlus size={12} /> Add Widget
-            </button>
-            <button style={{ height: '34px', padding: '0 12px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-              <IconFilter size={12} /> Filter
-            </button>
-            <button style={{ height: '34px', padding: '0 14px', border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <IconDownload size={12} /> Export
-            </button>
-          </div>
-        </div>
-
-        {/* ── SCROLLABLE CONTENT ─────────────────────────────────────────── */}
         <div style={{
           flex: 1,
           overflowY: 'auto',
@@ -543,28 +497,152 @@ export default function DashboardPage() {
           paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
         }}>
 
+          {/* ── HEADER ───────────────────────────────────────────────────── */}
+          <div style={{
+            background: WHITE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: isMobile ? 0 : '16px',
+            padding: isMobile ? '14px 16px' : '16px 20px',
+            ...(isMobile ? { marginLeft: '-14px', marginRight: '-14px' } : {}),
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: isMobile ? 'flex-start' : 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              flexDirection: isMobile ? 'column' : 'row',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0' : '22px', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>
+                  Dashboard
+                </h1>
+
+                {!isMobile && (
+                  <div style={{ display: 'flex', gap: '0' }}>
+                    {(['Overview', 'Sales', 'Order'] as const).map((tab) => {
+                      const key = tab.toLowerCase() as 'overview' | 'sales' | 'order'
+                      const isActive = activeTab === key
+                      return (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(key)}
+                          style={{
+                            height: '40px',
+                            padding: '0 16px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            fontFamily: FONT,
+                            border: 'none',
+                            background: 'transparent',
+                            color: isActive ? TEAL : TEXT3,
+                            borderBottom: isActive ? `2px solid ${TEAL}` : '2px solid transparent',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {tab}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: isMobile ? 'flex-start' : 'flex-end',
+              }}>
+                <button
+                  onClick={() => router.push('/dashboard/jobs')}
+                  style={{
+                    height: '34px',
+                    padding: '0 12px',
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: '9px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: TEXT2,
+                    background: WHITE,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <IconPlus size={12} /> Add Widget
+                </button>
+
+                <button
+                  style={{
+                    height: '34px',
+                    padding: '0 12px',
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: '9px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: TEXT2,
+                    background: WHITE,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <IconFilter size={12} /> Filter
+                </button>
+
+                <button
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    border: 'none',
+                    borderRadius: '9px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: WHITE,
+                    background: TEXT,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <IconDownload size={12} /> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* ── ROW 1: 4 STAT CARDS ──────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
-              <div key={sc.label} onClick={sc.onClick} style={{
-                background: WHITE,
-                border: `1px solid ${BORDER}`,
-                borderRadius: '14px',
-                padding: '18px 20px 0',
-                cursor: 'pointer',
-                transition: 'box-shadow 0.15s',
-                overflow: 'hidden',
-              }}
+              <div
+                key={sc.label}
+                onClick={sc.onClick}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: '18px 20px 0',
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.15s',
+                  overflow: 'hidden',
+                }}
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
-                {/* Label row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
                   <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
                 </div>
 
-                {/* Value + spark */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
                   <div>
                     <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
@@ -594,7 +672,6 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* See Details footer */}
                 <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
                   <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
                   <IconArrow size={11} />
@@ -606,7 +683,6 @@ export default function DashboardPage() {
           {/* ── ROW 2: Sales Performance + Analytics ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
 
-            {/* Sales Performance */}
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
@@ -615,7 +691,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Gauge */}
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
                 {(() => {
                   const score = stats.units > 0 ? Math.min(100, Math.round((completedCount / Math.max(stats.units, 1)) * 100 + 40)) : 72
@@ -631,9 +706,16 @@ export default function DashboardPage() {
                             <stop offset="100%" stopColor={TEAL} />
                           </linearGradient>
                         </defs>
-                        <path d={`M ${size/2 - r} 102 A ${r} ${r} 0 0 1 ${size/2 + r} 102`} fill="none" stroke="#F1F5F9" strokeWidth={16} strokeLinecap="round" />
-                        <path d={`M ${size/2 - r} 102 A ${r} ${r} 0 0 1 ${size/2 + r} 102`} fill="none" stroke="url(#gaugeGrad)" strokeWidth={16} strokeLinecap="round"
-                          strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+                        <path d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`} fill="none" stroke="#F1F5F9" strokeWidth={16} strokeLinecap="round" />
+                        <path
+                          d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`}
+                          fill="none"
+                          stroke="url(#gaugeGrad)"
+                          strokeWidth={16}
+                          strokeLinecap="round"
+                          strokeDasharray={`${filled} ${circ}`}
+                          style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                        />
                       </svg>
                       <div style={{ position: 'absolute', bottom: 2, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -647,7 +729,6 @@ export default function DashboardPage() {
                 })()}
               </div>
 
-              {/* Insight */}
               <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
@@ -672,9 +753,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* Analytics chart */}
             <div style={card}>
-              {/* Header */}
               <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Analytics</span>
@@ -688,12 +767,11 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Revenue + Conv Rate summary row */}
               <div style={{ display: 'flex', gap: '24px', padding: '12px 20px 12px', borderBottom: `1px solid ${BORDER}` }}>
                 <div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Revenue</div>
                   <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                    {invoiceStats.collected > 0 ? `$${(invoiceStats.collected/1000).toFixed(1)}k` : '$0'}
+                    {invoiceStats.collected > 0 ? `$${(invoiceStats.collected / 1000).toFixed(1)}k` : '$0'}
                   </div>
                 </div>
                 <div>
@@ -704,7 +782,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Chart */}
               <div style={{ padding: '16px 20px 14px' }}>
                 <AnalyticsBarChart data={monthlyData} height={200} />
               </div>
@@ -714,9 +791,7 @@ export default function DashboardPage() {
           {/* ── ROW 3: Visit by Time (heatmap) + Total Visit (donut) ─────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
-            {/* Heatmap + Recent Customers */}
             <div style={card}>
-              {/* Heatmap header */}
               <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -748,7 +823,6 @@ export default function DashboardPage() {
                 <HeatmapGrid jobs={allJobs} />
               </div>
 
-              {/* Recent Customers */}
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
@@ -765,7 +839,9 @@ export default function DashboardPage() {
                   const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
                   const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
                   return (
-                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                    <div
+                      key={job.id}
+                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 100px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
@@ -786,10 +862,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right column: Total Revenue donut + Unpaid Invoices + Upcoming Jobs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-              {/* Total Visit / Revenue donut */}
               <div style={cardP}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -821,7 +895,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Unpaid Invoices */}
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
@@ -845,7 +918,9 @@ export default function DashboardPage() {
                   const isOverdue = inv.status === 'overdue'
                   const amt = Number(inv.total || 0) - Number(inv.amount_paid || 0)
                   return (
-                    <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')}
+                    <div
+                      key={inv.id || i}
+                      onClick={() => router.push('/dashboard/invoices')}
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
@@ -868,7 +943,6 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Upcoming Jobs */}
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</span>
@@ -885,7 +959,9 @@ export default function DashboardPage() {
                   const time = times[i % times.length]
                   const isFirst = i === 0
                   return (
-                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                    <div
+                      key={job.id}
+                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }}
                       onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }}
                       onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = isFirst ? TEAL_LIGHT : WHITE }}
