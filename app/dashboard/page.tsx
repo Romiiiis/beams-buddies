@@ -324,7 +324,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'sales' | 'order'>('overview')
   const [dateRange, setDateRange] = useState('Last Year')
 
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0, jobsToday: 0 })
@@ -512,40 +511,10 @@ export default function DashboardPage() {
               gap: '12px',
               flexDirection: isMobile ? 'column' : 'row',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0' : '22px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <h1 style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1 }}>
                   Dashboard
                 </h1>
-
-                {!isMobile && (
-                  <div style={{ display: 'flex', gap: '0' }}>
-                    {(['Overview', 'Sales', 'Order'] as const).map((tab) => {
-                      const key = tab.toLowerCase() as 'overview' | 'sales' | 'order'
-                      const isActive = activeTab === key
-                      return (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveTab(key)}
-                          style={{
-                            height: '40px',
-                            padding: '0 16px',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            fontFamily: FONT,
-                            border: 'none',
-                            background: 'transparent',
-                            color: isActive ? TEAL : TEXT3,
-                            borderBottom: isActive ? `2px solid ${TEAL}` : '2px solid transparent',
-                            transition: 'all 0.15s',
-                          }}
-                        >
-                          {tab}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
               </div>
 
               <div style={{
