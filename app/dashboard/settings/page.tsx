@@ -181,15 +181,15 @@ function ReportsIcon() {
 function SettingsIcon() {
   return (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3.1" />
+      <circle cx="12" cy="12" r="3.25" />
       <path d="M12 2.75v2.1" />
       <path d="M12 19.15v2.1" />
-      <path d="m4.93 4.93 1.48 1.48" />
-      <path d="m17.59 17.59 1.48 1.48" />
-      <path d="M2.75 12h2.1" />
-      <path d="M19.15 12h2.1" />
-      <path d="m4.93 19.07 1.48-1.48" />
-      <path d="m17.59 6.41 1.48-1.48" />
+      <path d="M21.25 12h-2.1" />
+      <path d="M4.85 12h-2.1" />
+      <path d="m18.54 5.46-1.48 1.48" />
+      <path d="m6.94 17.06-1.48 1.48" />
+      <path d="m18.54 18.54-1.48-1.48" />
+      <path d="m6.94 6.94-1.48-1.48" />
     </svg>
   )
 }
@@ -263,6 +263,41 @@ export function Sidebar({ active }: { active: string }) {
       document.body.style.overflow = original
     }
   }, [isMobileMenuOpen])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const html = document.documentElement
+    const body = document.body
+
+    const prevHtmlOverscroll = html.style.overscrollBehaviorY
+    const prevHtmlOverflowX = html.style.overflowX
+    const prevBodyOverscroll = body.style.overscrollBehaviorY
+    const prevBodyOverflowX = body.style.overflowX
+    const prevBodyMinHeight = body.style.minHeight
+    const prevBodyPosition = body.style.position
+    const prevBodyWidth = body.style.width
+
+    if (isMobile) {
+      html.style.overscrollBehaviorY = 'none'
+      html.style.overflowX = 'hidden'
+      body.style.overscrollBehaviorY = 'none'
+      body.style.overflowX = 'hidden'
+      body.style.minHeight = '100svh'
+      body.style.position = 'relative'
+      body.style.width = '100%'
+    }
+
+    return () => {
+      html.style.overscrollBehaviorY = prevHtmlOverscroll
+      html.style.overflowX = prevHtmlOverflowX
+      body.style.overscrollBehaviorY = prevBodyOverscroll
+      body.style.overflowX = prevBodyOverflowX
+      body.style.minHeight = prevBodyMinHeight
+      body.style.position = prevBodyPosition
+      body.style.width = prevBodyWidth
+    }
+  }, [isMobile])
 
   const initials = business?.full_name
     ? business.full_name
@@ -365,6 +400,15 @@ export function Sidebar({ active }: { active: string }) {
     return (
       <>
         <style>{`
+          html, body {
+            overscroll-behavior-y: none;
+            overflow-x: hidden;
+          }
+
+          body {
+            min-height: 100svh;
+          }
+
           .mobile-tab {
             flex: 1;
             display: flex;
@@ -375,7 +419,9 @@ export function Sidebar({ active }: { active: string }) {
             cursor: pointer;
             gap: 4px;
             font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-tap-highlight-color: transparent;
           }
+
           .mobile-tab-icon {
             width: 22px;
             height: 22px;
@@ -385,6 +431,7 @@ export function Sidebar({ active }: { active: string }) {
             flex-shrink: 0;
             line-height: 0;
           }
+
           .mobile-tab-icon svg {
             display: block;
             width: 22px;
@@ -422,6 +469,8 @@ export function Sidebar({ active }: { active: string }) {
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             <div
@@ -551,6 +600,7 @@ export function Sidebar({ active }: { active: string }) {
               alignItems: 'stretch',
               paddingBottom: 'env(safe-area-inset-bottom)',
               boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
+              overscrollBehavior: 'none',
             }}
           >
             {mobilePrimaryTabs.map(tab => {
@@ -935,8 +985,4 @@ export function Sidebar({ active }: { active: string }) {
       </div>
     </>
   )
-}
-
-export default function SettingsPage() {
-  return <Sidebar active="/dashboard/settings" />
 }
