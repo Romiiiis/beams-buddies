@@ -514,7 +514,10 @@ export default function InvoicesPage() {
               ...card,
               padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
               background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: isMobile ? 0 : '16px',
+              marginLeft: isMobile ? '-14px' : 0,
+              marginRight: isMobile ? '-14px' : 0,
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
@@ -575,7 +578,7 @@ export default function InvoicesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)',
               gap: '12px',
             }}
           >
@@ -635,21 +638,60 @@ export default function InvoicesPage() {
 
                 <div
                   style={{
-                    height: '34px',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: '#FFFFFF',
-                    color: TEXT2,
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    padding: '0 12px',
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    fontFamily: FONT,
+                    width: isMobile ? '100%' : 'auto',
                   }}
                 >
-                  {filtered.length} shown
+                  <div
+                    style={{
+                      height: '34px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: '#FFFFFF',
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      padding: '0 12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontFamily: FONT,
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {filtered.length} shown
+                  </div>
+
+                  {isMobile && (
+                    <select
+                      value={filterStatus}
+                      onChange={e => setFilterStatus(e.target.value)}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        height: '34px',
+                        padding: '0 12px',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        fontFamily: FONT,
+                        outline: 'none',
+                      }}
+                    >
+                      <option value="all">All ({invoices.length})</option>
+                      <option value="draft">Draft</option>
+                      <option value="sent">Sent</option>
+                      <option value="paid">Paid</option>
+                      <option value="overdue">Overdue</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -678,42 +720,44 @@ export default function InvoicesPage() {
                 ))}
               </div>
 
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '6px',
-                  overflowX: 'auto',
-                  padding: '14px 18px',
-                  borderBottom: `1px solid ${BORDER}`,
-                }}
-              >
-                {['all', 'draft', 'sent', 'paid', 'overdue', 'cancelled'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setFilterStatus(s)}
-                    style={{
-                      height: '34px',
-                      padding: '0 14px',
-                      borderRadius: '999px',
-                      border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
-                      background: filterStatus === s ? TEAL : WHITE,
-                      color: filterStatus === s ? WHITE : TEXT2,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      fontWeight: filterStatus === s ? 700 : 600,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                    }}
-                  >
-                    {s === 'all' ? <IconFilter size={14} /> : null}
-                    {s === 'all' ? `All (${invoices.length})` : STATUS_STYLES[s]?.label}
-                  </button>
-                ))}
-              </div>
+              {!isMobile && (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '6px',
+                    overflowX: 'auto',
+                    padding: '14px 18px',
+                    borderBottom: `1px solid ${BORDER}`,
+                  }}
+                >
+                  {['all', 'draft', 'sent', 'paid', 'overdue', 'cancelled'].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setFilterStatus(s)}
+                      style={{
+                        height: '34px',
+                        padding: '0 14px',
+                        borderRadius: '999px',
+                        border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
+                        background: filterStatus === s ? TEAL : WHITE,
+                        color: filterStatus === s ? WHITE : TEXT2,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        fontWeight: filterStatus === s ? 700 : 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                      }}
+                    >
+                      {s === 'all' ? <IconFilter size={14} /> : null}
+                      {s === 'all' ? `All (${invoices.length})` : STATUS_STYLES[s]?.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {!loading && filtered.length > 0 && !isMobile ? (
                 <div
