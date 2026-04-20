@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL       = '#1F9E94'
 const TEAL_DARK  = '#177A72'
+const TEAL_MID   = '#5BBFB9'
 const TEAL_LIGHT = '#E6F7F6'
 const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
@@ -34,20 +35,12 @@ function formatDateParam(date: Date) {
   return `${y}-${m}-${d}`
 }
 
-// Parse a date string safely, always returning a local-midnight Date.
-// Handles:
-//   - "YYYY-MM-DD"                  → parse directly as local date (no timezone shift)
-//   - "YYYY-MM-DDTHH:MM:SS+HH:MM"  → parse via Date() then re-anchor to local calendar day
-//   - "YYYY-MM-DDTHH:MM:SSZ"        → same — converts UTC to local then extracts local date
 function parseDateLocal(dateStr: string): Date | null {
   if (!dateStr) return null
-  // Pure date string with no time component — parse as local midnight directly
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     const [y, m, d] = dateStr.split('-').map(Number)
     return new Date(y, m - 1, d)
   }
-  // Has time/timezone — let the browser parse it (gets UTC right),
-  // then re-anchor to the LOCAL calendar day so timezone shifts don't bleed
   const parsed = new Date(dateStr)
   if (isNaN(parsed.getTime())) return null
   return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
@@ -226,7 +219,7 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Job Preview Popup ──────────────────────────────────────────────────────
+// ── Job Day Popup ──────────────────────────────────────────────────────────
 function JobDayPopup({
   date,
   jobs,
@@ -257,7 +250,6 @@ function JobDayPopup({
           overflow: 'hidden', fontFamily: FONT,
         }}
       >
-        {/* Header */}
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
@@ -278,7 +270,6 @@ function JobDayPopup({
           </div>
         </div>
 
-        {/* Job list */}
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
@@ -321,7 +312,6 @@ function JobDayPopup({
           })}
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '12px 20px' }}>
           <button
             onClick={onClose}
@@ -335,6 +325,7 @@ function JobDayPopup({
   )
 }
 
+// ── Slim Heat-Map Calendar ─────────────────────────────────────────────────
 function VisitCalendarMonths({
   jobs,
   monthCount,
@@ -350,20 +341,16 @@ function VisitCalendarMonths({
     const now = new Date()
     const result: Date[] = []
     if (monthCount === 1) {
-      // Current month only
       result.push(new Date(now.getFullYear(), now.getMonth(), 1))
     } else if (monthCount === 3) {
-      // Last month + current month + next month
       for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
     } else {
-      // Last 5 months + current month
       for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
     }
     return result
   }, [monthCount])
 
-  // Key by "YYYY-MM-DD" raw string — slice first 10 chars of next_service_date
-  // This is timezone-proof: no Date parsing involved, matches exactly what Supabase stores
+  // Key by raw "YYYY-MM-DD" slice — timezone-proof
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
@@ -376,24 +363,11 @@ function VisitCalendarMonths({
     return map
   }, [jobs])
 
-  // Key created_at by "YYYY-MM-DD" raw string too
-  const recentJobsByDate = useMemo(() => {
-    const map: Record<string, number> = {}
-    jobs.forEach(job => {
-      if (!job.created_at) return
-      const key = String(job.created_at).slice(0, 10)
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
-      map[key] = (map[key] || 0) + 1
-    })
-    return map
-  }, [jobs])
-
   const maxCount = useMemo(() => {
     const counts = Object.values(jobsByDate).map(arr => arr.length)
     return Math.max(1, ...counts)
   }, [jobsByDate])
 
-  // Debug: log what keys exist in jobsByDate
   React.useEffect(() => {
     console.log('[Calendar] jobsByDate keys:', Object.keys(jobsByDate).sort())
     console.log('[Calendar] total jobs received:', jobs.length)
@@ -402,9 +376,17 @@ function VisitCalendarMonths({
     }
   }, [jobsByDate, jobs])
 
-  // Build a "YYYY-MM-DD" key from year/month/day integers — matches the raw string keys above
   function toRawKey(year: number, month: number, day: number): string {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+
+  // Returns bg/text colours based on job density
+  function heatColor(count: number): { bg: string; textColor: string; dotColor: string } | null {
+    if (count === 0) return null
+    const ratio = count / maxCount
+    if (ratio <= 0.33) return { bg: TEAL_LIGHT, textColor: TEAL_DARK, dotColor: TEAL_DARK }
+    if (ratio <= 0.66) return { bg: TEAL_MID, textColor: WHITE, dotColor: 'rgba(255,255,255,0.8)' }
+    return { bg: TEAL, textColor: WHITE, dotColor: 'rgba(255,255,255,0.7)' }
   }
 
   function buildMonth(monthDate: Date) {
@@ -412,94 +394,149 @@ function VisitCalendarMonths({
     const month = monthDate.getMonth()
     const firstDay = new Date(year, month, 1)
     const daysInMonth = new Date(year, month + 1, 0).getDate()
-    // Monday-based: Sunday=6, Monday=0, ..., Saturday=5
     const mondayStart = (firstDay.getDay() + 6) % 7
-    const cells: Array<{ date: Date | null; jobs: any[]; recentCount: number }> = []
-    for (let i = 0; i < mondayStart; i++) cells.push({ date: null, jobs: [], recentCount: 0 })
+    const cells: Array<{ date: Date | null; jobs: any[] }> = []
+    for (let i = 0; i < mondayStart; i++) cells.push({ date: null, jobs: [] })
     for (let day = 1; day <= daysInMonth; day++) {
-      const d = new Date(year, month, day)
       const key = toRawKey(year, month, day)
-      cells.push({
-        date: d,
-        jobs: jobsByDate[key] || [],
-        recentCount: recentJobsByDate[key] || 0,
-      })
+      cells.push({ date: new Date(year, month, day), jobs: jobsByDate[key] || [] })
     }
-    while (cells.length % 7 !== 0) cells.push({ date: null, jobs: [], recentCount: 0 })
+    while (cells.length % 7 !== 0) cells.push({ date: null, jobs: [] })
     return cells
   }
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const todayKey = dateToKey(new Date())
+
+  // Determine grid columns: on mobile always 1, else 2 (up to 4 months pairs nicely)
+  const cols = isMobile ? 1 : Math.min(2, months.length)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : monthCount === 1 ? '1fr' : 'repeat(2, 1fr)', gap: '14px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '12px' }}>
       {months.map((monthDate, idx) => {
         const cells = buildMonth(monthDate)
-        const totalBooked = cells.reduce((sum, c) => sum + c.jobs.length, 0)
-        return (
-          <div key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`} style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: '#FCFCFD' }}>
-            <div style={{ padding: '12px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: WHITE }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT }}>{monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}</div>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{totalBooked} booked</div>
-            </div>
-            <div style={{ padding: '10px 10px 12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px', marginBottom: '6px' }}>
-                {dayNames.map(day => <div key={day} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, padding: '4px 0' }}>{day}</div>)}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
-                {cells.map((cell, i) => {
-                  if (!cell.date) return <div key={i} style={{ minHeight: 58, borderRadius: '10px', background: 'transparent' }} />
-                  const scheduledCount = cell.jobs.length
-                  const recentCount = cell.recentCount
-                  const intensity = scheduledCount > 0 ? scheduledCount / maxCount : 0
-                  const bg = scheduledCount > 0 ? `rgba(31,158,148,${0.10 + intensity * 0.82})` : '#F8FAFC'
-                  const border = scheduledCount > 0 ? 'rgba(31,158,148,0.16)' : BORDER
-                  const numberColor = scheduledCount > 0 ? WHITE : TEXT
-                  const subColor = scheduledCount > 0 ? 'rgba(255,255,255,0.95)' : TEXT3
-                  const metaColor = scheduledCount > 0 ? 'rgba(255,255,255,0.82)' : '#94A3B8'
-                  const isClickable = scheduledCount > 0
+        const totalBooked = cells.reduce((s, c) => s + c.jobs.length, 0)
 
-                  // Today highlight
-                  const todayLocal = new Date()
-                  const isToday = dateToKey(cell.date) === dateToKey(todayLocal)
+        return (
+          <div
+            key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
+            style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
+          >
+            {/* Month header */}
+            <div style={{
+              padding: '10px 14px',
+              borderBottom: `1px solid ${BORDER}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: '#FCFCFD',
+            }}>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
+                {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
+              </span>
+              {totalBooked > 0 ? (
+                <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>
+                  {totalBooked} booked
+                </span>
+              ) : (
+                <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>
+              )}
+            </div>
+
+            <div style={{ padding: '8px 10px 10px' }}>
+              {/* Day-of-week headers */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
+                {dayNames.map(day => (
+                  <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Day cells */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
+                {cells.map((cell, i) => {
+                  if (!cell.date) {
+                    return <div key={i} style={{ height: 34 }} />
+                  }
+
+                  const count = cell.jobs.length
+                  const heat = heatColor(count)
+                  const isToday = dateToKey(cell.date) === todayKey
+                  const hasJobs = count > 0
+
+                  const bg = heat ? heat.bg : '#F8FAFC'
+                  const numColor = heat ? heat.textColor : TEXT3
+                  const borderStyle = isToday
+                    ? `2px solid ${TEAL}`
+                    : `1px solid ${heat ? 'transparent' : BORDER}`
+
+                  // Dot indicators (max 3 visible dots)
+                  const dotCount = Math.min(count, 3)
+                  const hasOverflow = count > 3
 
                   return (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => { if (!isClickable) return; onDateClick(cell.date!, cell.jobs) }}
-                      title={
-                        isClickable
-                          ? `${scheduledCount} job${scheduledCount !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`
-                          : cell.date.toLocaleDateString('en-AU')
-                      }
+                      onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
+                      title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
                       style={{
-                        minHeight: 58, borderRadius: '10px',
-                        border: isToday ? `2px solid ${TEAL}` : `1px solid ${border}`,
-                        background: bg, padding: '6px 6px 5px',
-                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        cursor: isClickable ? 'pointer' : 'default',
-                        textAlign: 'left', outline: 'none', fontFamily: FONT,
-                        transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-                        boxShadow: 'none',
+                        height: 34,
+                        borderRadius: '7px',
+                        border: borderStyle,
+                        background: bg,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '3px',
+                        cursor: hasJobs ? 'pointer' : 'default',
+                        padding: 0,
+                        outline: 'none',
+                        fontFamily: FONT,
+                        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
                       }}
                       onMouseEnter={e => {
-                        if (!isClickable) return
+                        if (!hasJobs) return
                         e.currentTarget.style.transform = 'translateY(-1px)'
-                        e.currentTarget.style.boxShadow = '0 6px 18px rgba(31,158,148,0.18)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)'
                       }}
                       onMouseLeave={e => {
-                        if (!isClickable) return
+                        if (!hasJobs) return
                         e.currentTarget.style.transform = 'translateY(0)'
                         e.currentTarget.style.boxShadow = 'none'
                       }}
                     >
-                      <div style={{ fontSize: '11px', fontWeight: 800, color: numberColor, lineHeight: 1 }}>{cell.date.getDate()}</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', lineHeight: 1 }}>
-                        {scheduledCount > 0 && <div style={{ fontSize: '10px', fontWeight: 700, color: subColor }}>{scheduledCount} booked</div>}
-                        {recentCount > 0 && <div style={{ fontSize: '9px', fontWeight: 700, color: metaColor }}>+{recentCount} new</div>}
-                      </div>
+                      {/* Date number */}
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: hasJobs ? 800 : 500,
+                        color: numColor,
+                        lineHeight: 1,
+                      }}>
+                        {cell.date.getDate()}
+                      </span>
+
+                      {/* Dot row */}
+                      {hasJobs && (
+                        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                          {Array.from({ length: dotCount }).map((_, di) => (
+                            <div
+                              key={di}
+                              style={{
+                                width: 3,
+                                height: 3,
+                                borderRadius: '50%',
+                                background: heat?.dotColor ?? TEAL,
+                                opacity: 1 - di * 0.15,
+                              }}
+                            />
+                          ))}
+                          {hasOverflow && (
+                            <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />
+                          )}
+                        </div>
+                      )}
                     </button>
                   )
                 })}
@@ -508,6 +545,26 @@ function VisitCalendarMonths({
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ── Legend strip ───────────────────────────────────────────────────────────
+function CalendarLegend() {
+  const items = [
+    { label: '1–2 jobs', bg: TEAL_LIGHT, border: `1px solid ${TEAL}` },
+    { label: '3–4 jobs', bg: TEAL_MID, border: 'none' },
+    { label: '5+ jobs',  bg: TEAL,      border: 'none' },
+    { label: 'Today',    bg: 'transparent', border: `2px solid ${TEAL}` },
+  ]
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+      {items.map(item => (
+        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: 10, height: 10, borderRadius: '3px', background: item.bg, border: item.border, flexShrink: 0 }} />
+          <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{item.label}</span>
+        </div>
+      ))}
     </div>
   )
 }
@@ -535,7 +592,6 @@ export default function DashboardPage() {
   const [dateRange, setDateRange] = useState('Last Year')
   const [visitMonths, setVisitMonths] = useState('1')
 
-  // Popup state
   const [popupDate, setPopupDate] = useState<Date | null>(null)
   const [popupJobs, setPopupJobs] = useState<any[]>([])
 
@@ -703,9 +759,8 @@ export default function DashboardPage() {
     const counts: Record<string, number> = {}
     allJobs.forEach(job => {
       if (!job.next_service_date) return
-      const d = parseDateLocal(job.next_service_date)
-      if (!d || isNaN(d.getTime())) return
-      const key = dateToKey(d)
+      const key = String(job.next_service_date).slice(0, 10)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
       counts[key] = (counts[key] || 0) + 1
     })
     return Math.max(0, ...Object.values(counts))
@@ -751,7 +806,6 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
 
-      {/* Job Day Popup */}
       {popupDate && (
         <JobDayPopup
           date={popupDate}
@@ -771,8 +825,6 @@ export default function DashboardPage() {
           {/* ── HEADER ── */}
           <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: isMobile ? '14px' : '16px', padding: isMobile ? '16px' : '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', gap: isMobile ? '14px' : '0', flexDirection: isMobile ? 'column' : 'row' }}>
-
-              {/* Title */}
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
                   {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -782,7 +834,6 @@ export default function DashboardPage() {
                 </h1>
               </div>
 
-              {/* Desktop: divider + quick stats */}
               {!isMobile && (
                 <>
                   <div style={{ width: 1, height: 44, background: BORDER, margin: '0 24px', flexShrink: 0 }} />
@@ -805,30 +856,14 @@ export default function DashboardPage() {
                 </>
               )}
 
-              {/* Buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'stretch' : 'flex-end', marginLeft: isMobile ? 0 : '24px', flexShrink: 0 }}>
-                <button
-                  onClick={() => router.push('/dashboard/jobs')}
-                  style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                >
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
                   <IconPlus size={12} /> Add Job
                 </button>
-                <button
-                  onClick={() => router.push('/dashboard/jobs')}
-                  style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                >
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
                   <IconCalendar size={12} /> Schedule
                 </button>
-                <button
-                  onClick={() => router.push('/dashboard/revenue')}
-                  style={{ height: '36px', padding: isMobile ? '0 14px' : '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 1 : '0 0 auto', transition: 'opacity 0.12s' }}
-                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-                >
+                <button onClick={() => router.push('/dashboard/revenue')} style={{ height: '36px', padding: isMobile ? '0 14px' : '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 1 : '0 0 auto', transition: 'opacity 0.12s' }} onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }} onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
                   <IconDownload size={12} /> Revenue
                 </button>
               </div>
@@ -944,36 +979,50 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* ── VISIT BY TIME + SIDE PANELS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
+
+            {/* Visit by Time card */}
             <div style={card}>
-              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              {/* Card header */}
+              <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Click a date to view scheduled jobs · Today highlighted with teal border</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
+                    Click a booked date to view jobs · Today has teal border
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <select value={visitMonths} onChange={e => setVisitMonths(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  {/* Stats */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Booked</div>
+                    </div>
+                    <div style={{ width: 1, height: 28, background: BORDER }} />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{visitMax}</div>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
+                    </div>
+                  </div>
+                  {/* Month selector */}
+                  <select
+                    value={visitMonths}
+                    onChange={e => setVisitMonths(e.target.value)}
+                    style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+                  >
                     <option value="1">Current month</option>
                     <option value="3">3 months</option>
                     <option value="6">6 months</option>
                   </select>
-                  <div style={{ display: 'flex', gap: '20px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{scheduledCount.toLocaleString()}</div>
-                      <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Booked</div>
-                    </div>
-                    <div style={{ width: 1, background: BORDER }} />
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{visitMax}</div>
-                      <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 600 }}>Peak day</div>
-                    </div>
-                  </div>
                 </div>
               </div>
-              <div style={{ padding: '16px 20px 10px' }}>
+
+              {/* Calendar grid */}
+              <div style={{ padding: '14px 16px 10px' }}>
                 <VisitCalendarMonths
                   jobs={allJobs}
                   monthCount={Number(visitMonths)}
@@ -984,9 +1033,16 @@ export default function DashboardPage() {
                   }}
                 />
               </div>
-              <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Booked dates come from service dates only. Recent jobs are shown separately as "+new" so the calendar matches the scheduled service dates.
+
+              {/* Legend + footnote */}
+              <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <CalendarLegend />
+                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
+                  Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code>
+                </span>
               </div>
+
+              {/* Recent Customers */}
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
@@ -1020,6 +1076,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={cardP}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
