@@ -34,17 +34,23 @@ function formatDateParam(date: Date) {
   return `${y}-${m}-${d}`
 }
 
-// Parse a YYYY-MM-DD date string safely without timezone shift
+// Parse a date string safely, always returning a local-midnight Date.
+// Handles:
+//   - "YYYY-MM-DD"                  → parse directly as local date (no timezone shift)
+//   - "YYYY-MM-DDTHH:MM:SS+HH:MM"  → parse via Date() then re-anchor to local calendar day
+//   - "YYYY-MM-DDTHH:MM:SSZ"        → same — converts UTC to local then extracts local date
 function parseDateLocal(dateStr: string): Date | null {
   if (!dateStr) return null
-  // If it's already in YYYY-MM-DD format, parse as local midnight
-  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (match) {
-    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  // Pure date string with no time component — parse as local midnight directly
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [y, m, d] = dateStr.split('-').map(Number)
+    return new Date(y, m - 1, d)
   }
-  // Fallback for ISO strings with time component
-  const d = new Date(dateStr)
-  return isNaN(d.getTime()) ? null : d
+  // Has time/timezone — let the browser parse it (gets UTC right),
+  // then re-anchor to the LOCAL calendar day so timezone shifts don't bleed
+  const parsed = new Date(dateStr)
+  if (isNaN(parsed.getTime())) return null
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
 }
 
 function dateToKey(d: Date): string {
