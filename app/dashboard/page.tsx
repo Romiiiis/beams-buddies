@@ -81,6 +81,12 @@ function IconInfo({ size = 13 }: { size?: number }) {
 function IconPlus({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
 }
+function IconUsers({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconTrendUpNav({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
 
 // ── Sparkline (bar style) ──────────────────────────────────────────────────
 function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
@@ -136,51 +142,224 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   )
 }
 
-function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number }[]; height?: number }) {
+type AnalyticsMetric = 'revenue' | 'jobs' | 'outstanding'
+type AnalyticsRange = 'This Year' | 'Last Year' | 'Last 6 Months' | 'Last 3 Months'
+
+function AnalyticsCard({
+  allJobs,
+  allInvoices,
+}: {
+  allJobs: any[]
+  allInvoices: any[]
+}) {
+  const [metric, setMetric] = useState<AnalyticsMetric>('revenue')
+  const [range, setRange] = useState<AnalyticsRange>('This Year')
   const [hovered, setHovered] = useState<number | null>(null)
+
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const now = new Date()
+  const thisYear = now.getFullYear()
+  const thisMonth = now.getMonth()
+
+  // Build the slice of months to display based on range
+  const months = useMemo((): { year: number; month: number; label: string }[] => {
+    if (range === 'This Year') {
+      return Array.from({ length: thisMonth + 1 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
+    }
+    if (range === 'Last Year') {
+      return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
+    }
+    if (range === 'Last 6 Months') {
+      return Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(thisYear, thisMonth - 5 + i, 1)
+        return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+      })
+    }
+    // Last 3 Months
+    return Array.from({ length: 3 }, (_, i) => {
+      const d = new Date(thisYear, thisMonth - 2 + i, 1)
+      return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+    })
+  }, [range, thisYear, thisMonth])
+
+  const data = useMemo(() => {
+    return months.map(({ year, month, label }) => {
+      const start = new Date(year, month, 1)
+      const end = new Date(year, month + 1, 1)
+
+      if (metric === 'revenue') {
+        const total = allInvoices
+          .filter(inv => inv.status === 'paid' && inv.created_at)
+          .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+          .reduce((s, inv) => s + Number(inv.total || 0), 0)
+        return { label, total }
+      }
+      if (metric === 'jobs') {
+        const total = allJobs
+          .filter(job => job.created_at)
+          .filter(job => { const d = parseDateLocal(job.created_at); return d && d >= start && d < end })
+          .length
+        return { label, total }
+      }
+      // outstanding
+      const total = allInvoices
+        .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at)
+        .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+        .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
+      return { label, total }
+    })
+  }, [metric, months, allJobs, allInvoices])
+
   const yMax = Math.max(...data.map(d => d.total), 1)
-  const now = new Date().getMonth()
+  const total = data.reduce((s, d) => s + d.total, 0)
+  const peak = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
+  const avg = data.length ? Math.round(total / data.length) : 0
+
+  const isCurrency = metric === 'revenue' || metric === 'outstanding'
+
+  function fmt(n: number) {
+    if (!isCurrency) return n.toString()
+    if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`
+    return `$${n}`
+  }
+  function fmtFull(n: number) {
+    if (!isCurrency) return n.toString()
+    return `$${n.toLocaleString('en-AU')}`
+  }
+
+  const metricColor: Record<AnalyticsMetric, string> = {
+    revenue: TEAL,
+    jobs: '#9C27B0',
+    outstanding: '#FF7043',
+  }
+  const barColor = metricColor[metric]
+
+  const metricTabs: { key: AnalyticsMetric; label: string }[] = [
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'jobs', label: 'Jobs' },
+    { key: 'outstanding', label: 'Outstanding' },
+  ]
+
+  const height = 200
 
   return (
-    <div style={{ display: 'flex', gap: 0 }}>
-      <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
-        {[yMax, Math.round(yMax * 0.75), Math.round(yMax * 0.5), Math.round(yMax * 0.25), 0].map((t, i) => (
-          <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>
-            {t > 999 ? `$${(t / 1000).toFixed(0)}k` : t}
-          </span>
-        ))}
-      </div>
-      <div style={{ flex: 1, position: 'relative' }}>
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => (
-          <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
-        ))}
-        <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
-          {data.map((item, i) => {
-            const isCurrent = i === now
-            const isHov = hovered === i
-            const barH = Math.max(4, (item.total / yMax) * (height - 36))
-            return (
-              <div key={item.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
-                {isHov && (
-                  <div style={{ position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)', background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.22)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{item.label}, {new Date().getFullYear()}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Jobs</span>
-                      <span style={{ color: TEAL_LIGHT }}>{item.total}</span>
-                    </div>
-                  </div>
-                )}
-                <div style={{ width: '100%', height: barH, borderRadius: '6px 6px 3px 3px', background: isCurrent ? TEAL : isHov ? '#CBD5E1' : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)', transition: 'all 0.15s ease', border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`, cursor: 'default' }} />
-              </div>
-            )
-          })}
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 24 }}>
-          {data.map((item, i) => (
-            <div key={item.label} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>{item.label}</span>
-            </div>
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
+      {/* Header row */}
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        {/* Metric tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '3px' }}>
+          {metricTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setMetric(tab.key)}
+              style={{
+                height: '28px', padding: '0 14px',
+                borderRadius: '7px',
+                border: 'none',
+                background: metric === tab.key ? WHITE : 'transparent',
+                boxShadow: metric === tab.key ? `0 1px 4px rgba(0,0,0,0.08)` : 'none',
+                color: metric === tab.key ? TEXT : TEXT3,
+                fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: FONT,
+                transition: 'all 0.15s',
+              }}
+            >
+              {tab.label}
+            </button>
           ))}
+        </div>
+
+        {/* Range selector */}
+        <select
+          value={range}
+          onChange={e => setRange(e.target.value as AnalyticsRange)}
+          style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+        >
+          {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
+        </select>
+      </div>
+
+      {/* Summary strip */}
+      <div style={{ display: 'flex', gap: '0', padding: '14px 20px 12px', borderBottom: `1px solid ${BORDER}` }}>
+        <div style={{ paddingRight: '24px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>
+            {range === 'This Year' ? `${thisYear} total` : range === 'Last Year' ? `${thisYear - 1} total` : 'Period total'}
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(total)}</div>
+        </div>
+        <div style={{ padding: '0 24px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Monthly avg</div>
+          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
+        </div>
+        <div style={{ paddingLeft: '24px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Best month</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{peak.label}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ padding: '16px 20px 14px' }}>
+        <div style={{ display: 'flex', gap: 0 }}>
+          {/* Y axis */}
+          <div style={{ width: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
+            {[yMax, Math.round(yMax * 0.5), 0].map((t, i) => (
+              <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmt(t)}</span>
+            ))}
+          </div>
+
+          {/* Bars */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            {[0, 0.5, 1].map((frac, i) => (
+              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
+            ))}
+            <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
+              {data.map((item, i) => {
+                const isHov = hovered === i
+                const barH = Math.max(4, (item.total / yMax) * (height - 36))
+                const isCurrentMonth = range === 'This Year' && i === thisMonth
+                const opacity = item.total === 0 ? 0.15 : isHov ? 1 : isCurrentMonth ? 1 : 0.55
+
+                return (
+                  <div
+                    key={item.label + i}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    {isHov && item.total > 0 && (
+                      <div style={{ position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '6px 10px', borderRadius: '9px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '2px' }}>{item.label}</div>
+                        <div style={{ color: WHITE }}>{fmtFull(item.total)}</div>
+                      </div>
+                    )}
+                    <div style={{
+                      width: '100%', height: barH,
+                      borderRadius: '5px 5px 2px 2px',
+                      background: barColor,
+                      opacity,
+                      transition: 'opacity 0.15s, height 0.2s',
+                      cursor: 'default',
+                    }} />
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* X labels */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '5px', height: 24 }}>
+              {data.map((item, i) => {
+                const isCurrentMonth = range === 'This Year' && i === thisMonth
+                return (
+                  <div key={item.label + i} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth ? barColor : TEXT3 }}>{item.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -350,7 +529,6 @@ function VisitCalendarMonths({
     return result
   }, [monthCount])
 
-  // Key by raw "YYYY-MM-DD" slice — timezone-proof
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
@@ -380,7 +558,6 @@ function VisitCalendarMonths({
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   }
 
-  // Returns bg/text colours based on job density
   function heatColor(count: number): { bg: string; textColor: string; dotColor: string } | null {
     if (count === 0) return null
     const ratio = count / maxCount
@@ -408,8 +585,6 @@ function VisitCalendarMonths({
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const todayKey = dateToKey(new Date())
-
-  // Determine grid columns: on mobile always 1, else 2 (up to 4 months pairs nicely)
   const cols = isMobile ? 1 : Math.min(2, months.length)
 
   return (
@@ -423,13 +598,7 @@ function VisitCalendarMonths({
             key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
             style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
           >
-            {/* Month header */}
-            <div style={{
-              padding: '10px 14px',
-              borderBottom: `1px solid ${BORDER}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: '#FCFCFD',
-            }}>
+            <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FCFCFD' }}>
               <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
                 {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
               </span>
@@ -443,7 +612,6 @@ function VisitCalendarMonths({
             </div>
 
             <div style={{ padding: '8px 10px 10px' }}>
-              {/* Day-of-week headers */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
                 {dayNames.map(day => (
                   <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
@@ -452,25 +620,16 @@ function VisitCalendarMonths({
                 ))}
               </div>
 
-              {/* Day cells */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                 {cells.map((cell, i) => {
-                  if (!cell.date) {
-                    return <div key={i} style={{ height: 34 }} />
-                  }
-
+                  if (!cell.date) return <div key={i} style={{ height: 34 }} />
                   const count = cell.jobs.length
                   const heat = heatColor(count)
                   const isToday = dateToKey(cell.date) === todayKey
                   const hasJobs = count > 0
-
                   const bg = heat ? heat.bg : '#F8FAFC'
                   const numColor = heat ? heat.textColor : TEXT3
-                  const borderStyle = isToday
-                    ? `2px solid ${TEAL}`
-                    : `1px solid ${heat ? 'transparent' : BORDER}`
-
-                  // Dot indicators (max 3 visible dots)
+                  const borderStyle = isToday ? `2px solid ${TEAL}` : `1px solid ${heat ? 'transparent' : BORDER}`
                   const dotCount = Math.min(count, 3)
                   const hasOverflow = count > 3
 
@@ -480,61 +639,19 @@ function VisitCalendarMonths({
                       type="button"
                       onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
                       title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
-                      style={{
-                        height: 34,
-                        borderRadius: '7px',
-                        border: borderStyle,
-                        background: bg,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '3px',
-                        cursor: hasJobs ? 'pointer' : 'default',
-                        padding: 0,
-                        outline: 'none',
-                        fontFamily: FONT,
-                        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
-                      }}
-                      onMouseEnter={e => {
-                        if (!hasJobs) return
-                        e.currentTarget.style.transform = 'translateY(-1px)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)'
-                      }}
-                      onMouseLeave={e => {
-                        if (!hasJobs) return
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }}
+                      style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }}
+                      onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }}
+                      onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                     >
-                      {/* Date number */}
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: hasJobs ? 800 : 500,
-                        color: numColor,
-                        lineHeight: 1,
-                      }}>
+                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>
                         {cell.date.getDate()}
                       </span>
-
-                      {/* Dot row */}
                       {hasJobs && (
                         <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
                           {Array.from({ length: dotCount }).map((_, di) => (
-                            <div
-                              key={di}
-                              style={{
-                                width: 3,
-                                height: 3,
-                                borderRadius: '50%',
-                                background: heat?.dotColor ?? TEAL,
-                                opacity: 1 - di * 0.15,
-                              }}
-                            />
+                            <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />
                           ))}
-                          {hasOverflow && (
-                            <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />
-                          )}
+                          {hasOverflow && <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />}
                         </div>
                       )}
                     </button>
@@ -589,7 +706,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [dateRange, setDateRange] = useState('Last Year')
   const [visitMonths, setVisitMonths] = useState('1')
 
   const [popupDate, setPopupDate] = useState<Date | null>(null)
@@ -685,25 +801,24 @@ export default function DashboardPage() {
   const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
   const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
 
-  const monthlyJobsData = useMemo(() => {
-    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const base = names.map(label => ({ label, total: 0 }))
+  const jobsSpark = useMemo(() => {
+    const base = Array(12).fill(0)
     allJobs.forEach(job => {
       if (!job.created_at) return
       const d = parseDateLocal(job.created_at)
-      if (d && !isNaN(d.getTime())) base[d.getMonth()].total += 1
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1
     })
     return base
   }, [allJobs])
 
-  const monthlyRevenueData = useMemo(() => {
-    const months = Array.from({ length: 12 }, (_, i) => ({ label: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i], total: 0 }))
+  const revenueSpark = useMemo(() => {
+    const base = Array(12).fill(0)
     allInvoices.forEach(inv => {
       if (!inv.created_at || inv.status !== 'paid') return
       const d = parseDateLocal(inv.created_at)
-      if (d && !isNaN(d.getTime())) months[d.getMonth()].total += Number(inv.total || 0)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0)
     })
-    return months
+    return base
   }, [allInvoices])
 
   const jobsCurrentMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth)).length, [allJobs])
@@ -730,30 +845,10 @@ export default function DashboardPage() {
     return d && getDays(j.next_service_date) >= 0
   }).length, [allJobs])
 
-  const onTimeScore = stats.units > 0 ? Math.round(((stats.units - stats.overdue) / stats.units) * 100) : 0
-
-  const currentMonthScore = useMemo(() => {
-    const currentMonthJobsOnly = allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth))
-    if (!currentMonthJobsOnly.length) return onTimeScore
-    const currentMonthOverdue = currentMonthJobsOnly.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length
-    return Math.round(((currentMonthJobsOnly.length - currentMonthOverdue) / currentMonthJobsOnly.length) * 100)
-  }, [allJobs, onTimeScore])
-
-  const prevMonthScore = useMemo(() => {
-    const prevMonthJobsOnly = allJobs.filter(job => isBetween(job.created_at, startPrevMonth, startCurrentMonth))
-    if (!prevMonthJobsOnly.length) return currentMonthScore
-    const prevMonthOverdue = prevMonthJobsOnly.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length
-    return Math.round(((prevMonthJobsOnly.length - prevMonthOverdue) / prevMonthJobsOnly.length) * 100)
-  }, [allJobs, currentMonthScore])
-
   const activeSalesDelta = pctChange(activeSalesCurrent, activeSalesPrev)
   const revenueDelta = pctChange(revenueCurrent30, revenuePrev30)
   const jobsDelta = pctChange(jobsCurrentMonth, jobsPrevMonth)
   const convDelta = currentConv - prevConv
-  const scoreDelta = currentMonthScore - prevMonthScore
-
-  const jobsSpark = monthlyJobsData.map(m => m.total)
-  const revenueSpark = monthlyRevenueData.map(m => m.total)
 
   const visitMax = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -767,15 +862,15 @@ export default function DashboardPage() {
   }, [allJobs])
 
   const revenueBreakdown = useMemo(() => {
-    const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
-    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1' }
+    const b: Record<string, number> = { Service: 0, Installation: 0, Repair: 0, Maintenance: 0 }
+    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Repair: '#94A3B8', Maintenance: '#CBD5E1' }
     allInvoices.forEach(inv => {
       const relatedJob = allJobs.find(job => job.id === inv.job_id)
       const t = String(relatedJob?.job_type || '').toLowerCase()
       if (t.includes('service')) b.Service += Number(inv.total || 0)
       else if (t.includes('install')) b.Installation += Number(inv.total || 0)
-      else if (t.includes('quote')) b.Quote += Number(inv.total || 0)
       else if (t.includes('repair')) b.Repair += Number(inv.total || 0)
+      else if (t.includes('maint')) b.Maintenance += Number(inv.total || 0)
       else b.Service += Number(inv.total || 0)
     })
     return Object.entries(b).filter(([, value]) => value > 0).map(([label, value]) => ({ label, value, color: colors[label] }))
@@ -784,14 +879,76 @@ export default function DashboardPage() {
   const revenueBreakdownSafe = revenueBreakdown.length ? revenueBreakdown : [{ label: 'Service', value: 0, color: TEAL }]
 
   const statCards = [
-    { label: 'Active Sales', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Product Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
-    { label: 'Product Sold', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, donutValue: stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0, onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Conversion Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Outstanding Invoices', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Jobs This Month', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, donutValue: stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0, onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
+
+  // ── shared btn styles for header ──────────────────────────────────────
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'opacity 0.12s',
+  }
+  const btnNavSm: React.CSSProperties = {
+    height: '30px',
+    padding: '0 12px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '8px',
+    fontSize: '11px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+  const btnNavSmTeal: React.CSSProperties = {
+    ...btnNavSm,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
+    color: WHITE,
+  }
 
   if (loading) {
     return (
@@ -823,52 +980,114 @@ export default function DashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
 
           {/* ── HEADER ── */}
-          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: isMobile ? '14px' : '16px', padding: isMobile ? '16px' : '20px 24px' }}>
-            <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', gap: isMobile ? '14px' : '0', flexDirection: isMobile ? 'column' : 'row' }}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </div>
-                <h1 style={{ fontSize: isMobile ? '26px' : '34px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                  Dashboard
-                </h1>
+          {isMobile ? (
+            // ── Mobile header (unchanged layout) ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
-
-              {!isMobile && (
-                <>
-                  <div style={{ width: 1, height: 44, background: BORDER, margin: '0 24px', flexShrink: 0 }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Customers</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                    </div>
-                    <div style={{ width: 1, height: 32, background: BORDER }} />
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                    </div>
-                    <div style={{ width: 1, height: 32, background: BORDER }} />
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Overdue</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: stats.overdue > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.overdue}</div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'stretch' : 'flex-end', marginLeft: isMobile ? 0 : '24px', flexShrink: 0 }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
+              <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: '0 0 14px', lineHeight: 1 }}>
+                Dashboard
+              </h1>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
                   <IconPlus size={12} /> Add Job
                 </button>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
                   <IconCalendar size={12} /> Schedule
                 </button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={{ height: '36px', padding: isMobile ? '0 14px' : '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 1 : '0 0 auto', transition: 'opacity 0.12s' }} onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }} onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                <button onClick={() => router.push('/dashboard/revenue')} style={{ ...btnDark, flex: 1 }}>
                   <IconDownload size={12} /> Revenue
                 </button>
               </div>
             </div>
-          </div>
+          ) : (
+            // ── Desktop B1 header ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }}>
+              {/* Top row */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                {/* Teal accent bar */}
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                {/* Title block */}
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Dashboard
+                  </h1>
+                </div>
+
+                {/* Divider */}
+                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
+
+                {/* KPI rail — Customers + Scheduled only */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Customers</div>
+                  </div>
+                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Scheduled</div>
+                  </div>
+                </div>
+
+                {/* Push actions to right */}
+                <div style={{ flex: 1 }} />
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconPlus size={12} /> Add Job
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconCalendar size={12} /> Schedule
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/revenue')}
+                    style={btnDark}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                  >
+                    <IconDownload size={12} /> Revenue
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer strip */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '9px 24px', borderTop: `1px solid ${BORDER}`, background: WHITE, gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                  {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                  ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8', flexShrink: 0 }} />
+                  {stats.overdue} overdue
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#94A3B8', flexShrink: 0 }} />
+                  ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
+                </div>
+              </div>
+            </div>
+          )}
           {/* ── END HEADER ── */}
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
@@ -900,91 +1119,13 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
-            <div style={cardP}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Sales Performance</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                {(() => {
-                  const score = onTimeScore
-                  const size = 200
-                  const r = 78
-                  const circ = Math.PI * r
-                  const filled = (score / 100) * circ
-                  return (
-                    <div style={{ position: 'relative', width: size, height: 106 }}>
-                      <svg width={size} height={106} viewBox={`0 0 ${size} 106`} style={{ overflow: 'visible' }}>
-                        <defs>
-                          <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor={TEAL_DARK} />
-                            <stop offset="100%" stopColor={TEAL} />
-                          </linearGradient>
-                        </defs>
-                        <path d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`} fill="none" stroke="#F1F5F9" strokeWidth={16} strokeLinecap="round" />
-                        <path d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`} fill="none" stroke="url(#gaugeGrad)" strokeWidth={16} strokeLinecap="round" strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
-                      </svg>
-                      <div style={{ position: 'absolute', bottom: 2, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                          <div style={{ fontSize: '44px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: scoreDelta >= 0 ? TEAL : '#C0392B' }}>{scoreDelta >= 0 ? '+' : ''}{scoreDelta}</div>
-                        </div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>of 100 points</div>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-              <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: TEAL_DARK }}>{stats.overdue === 0 ? 'No overdue jobs right now' : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}</div>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.5, paddingLeft: '12px' }}>{stats.overdue === 0 ? 'Your current schedule is clear based on the dates stored in the CRM.' : 'Review overdue jobs and reschedule as soon as possible.'}</div>
-              </div>
-              <button onClick={() => router.push('/dashboard/jobs')} style={{ width: '100%', height: '36px', background: 'transparent', color: TEXT, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE; (e.currentTarget as HTMLButtonElement).style.borderColor = TEAL }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEXT; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER }}>
-                {stats.overdue > 0 ? 'Improve Your Score →' : 'View Schedule →'}
-              </button>
-            </div>
-
-            <div style={card}>
-              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Analytics</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
-                    {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
-                  </select>
-                  <button style={{ height: '30px', width: '30px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '14px', color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>⤢</button>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '24px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}` }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Revenue</div>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>${revenueCurrent30.toLocaleString('en-AU')}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Conv. Rate</div>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{convRate}%</div>
-                </div>
-              </div>
-              <div style={{ padding: '16px 20px 14px' }}>
-                <AnalyticsBarChart data={monthlyJobsData} height={200} />
-              </div>
-            </div>
-          </div>
+          <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
 
           {/* ── VISIT BY TIME + SIDE PANELS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
             {/* Visit by Time card */}
             <div style={card}>
-              {/* Card header */}
               <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -996,7 +1137,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  {/* Stats */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
@@ -1008,7 +1148,6 @@ export default function DashboardPage() {
                       <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
                     </div>
                   </div>
-                  {/* Month selector */}
                   <select
                     value={visitMonths}
                     onChange={e => setVisitMonths(e.target.value)}
@@ -1021,7 +1160,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Calendar grid */}
               <div style={{ padding: '14px 16px 10px' }}>
                 <VisitCalendarMonths
                   jobs={allJobs}
@@ -1034,7 +1172,6 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {/* Legend + footnote */}
               <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <CalendarLegend />
                 <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
