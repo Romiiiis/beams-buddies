@@ -8,7 +8,7 @@ const pwaConfig = withPWA({
 });
 
 const nextConfig = {
-  /* config options here */
+  turbopack: {},
 };
 
 export default pwaConfig(nextConfig);
