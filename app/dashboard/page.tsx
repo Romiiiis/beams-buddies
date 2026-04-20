@@ -161,7 +161,6 @@ function AnalyticsCard({
   const thisYear = now.getFullYear()
   const thisMonth = now.getMonth()
 
-  // Build the slice of months to display based on range
   const months = useMemo((): { year: number; month: number; label: string }[] => {
     if (range === 'This Year') {
       return Array.from({ length: thisMonth + 1 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
@@ -175,7 +174,6 @@ function AnalyticsCard({
         return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
       })
     }
-    // Last 3 Months
     return Array.from({ length: 3 }, (_, i) => {
       const d = new Date(thisYear, thisMonth - 2 + i, 1)
       return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
@@ -186,7 +184,6 @@ function AnalyticsCard({
     return months.map(({ year, month, label }) => {
       const start = new Date(year, month, 1)
       const end = new Date(year, month + 1, 1)
-
       if (metric === 'revenue') {
         const total = allInvoices
           .filter(inv => inv.status === 'paid' && inv.created_at)
@@ -201,7 +198,6 @@ function AnalyticsCard({
           .length
         return { label, total }
       }
-      // outstanding
       const total = allInvoices
         .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at)
         .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
@@ -211,20 +207,20 @@ function AnalyticsCard({
   }, [metric, months, allJobs, allInvoices])
 
   const yMax = Math.max(...data.map(d => d.total), 1)
-  const total = data.reduce((s, d) => s + d.total, 0)
+  const periodTotal = data.reduce((s, d) => s + d.total, 0)
   const peak = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
-  const avg = data.length ? Math.round(total / data.length) : 0
+  const avg = data.length ? Math.round(periodTotal / data.length) : 0
 
   const isCurrency = metric === 'revenue' || metric === 'outstanding'
 
-  function fmt(n: number) {
-    if (!isCurrency) return n.toString()
-    if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`
-    return `$${n}`
+  function fmtAxis(n: number) {
+    if (!isCurrency) return String(Math.round(n))
+    if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`
+    return `$${Math.round(n)}`
   }
   function fmtFull(n: number) {
-    if (!isCurrency) return n.toString()
-    return `$${n.toLocaleString('en-AU')}`
+    if (!isCurrency) return String(Math.round(n))
+    return `$${Math.round(n).toLocaleString('en-AU')}`
   }
 
   const metricColor: Record<AnalyticsMetric, string> = {
@@ -234,93 +230,109 @@ function AnalyticsCard({
   }
   const barColor = metricColor[metric]
 
-  const metricTabs: { key: AnalyticsMetric; label: string }[] = [
-    { key: 'revenue', label: 'Revenue' },
-    { key: 'jobs', label: 'Jobs' },
-    { key: 'outstanding', label: 'Outstanding' },
+  const metricTabs: { key: AnalyticsMetric; label: string; sub: string }[] = [
+    { key: 'revenue', label: 'Revenue', sub: 'Paid invoices' },
+    { key: 'jobs', label: 'Jobs', sub: 'Created' },
+    { key: 'outstanding', label: 'Outstanding', sub: 'Unpaid' },
   ]
 
-  const height = 200
+  const chartH = 200
 
   return (
-    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
-      {/* Header row */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-        {/* Metric tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '3px' }}>
-          {metricTabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setMetric(tab.key)}
-              style={{
-                height: '28px', padding: '0 14px',
-                borderRadius: '7px',
-                border: 'none',
-                background: metric === tab.key ? WHITE : 'transparent',
-                boxShadow: metric === tab.key ? `0 1px 4px rgba(0,0,0,0.08)` : 'none',
-                color: metric === tab.key ? TEXT : TEXT3,
-                fontSize: '12px', fontWeight: 700,
-                cursor: 'pointer', fontFamily: FONT,
-                transition: 'all 0.15s',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', display: 'grid', gridTemplateColumns: '196px 1fr' }}>
+
+      {/* ── LEFT COLUMN ── */}
+      <div style={{ borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
+
+        {/* Title */}
+        <div style={{ padding: '16px 18px 14px', borderBottom: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Analytics</div>
+          <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
+            {range === 'This Year' ? `Jan – ${MONTH_NAMES[thisMonth]} ${thisYear}` : range === 'Last Year' ? String(thisYear - 1) : range}
+          </div>
+        </div>
+
+        {/* Metric selector */}
+        <div style={{ padding: '10px 10px 0' }}>
+          {metricTabs.map(tab => {
+            const active = metric === tab.key
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setMetric(tab.key)}
+                style={{
+                  width: '100%', padding: '9px 10px', marginBottom: '4px',
+                  borderRadius: '9px', border: active ? `1.5px solid ${barColor}` : `1px solid transparent`,
+                  background: active ? (metric === tab.key ? (metric === 'revenue' ? TEAL_LIGHT : metric === 'jobs' ? '#F3E8FF' : '#FFF0EC') : BG) : 'transparent',
+                  cursor: 'pointer', fontFamily: FONT, textAlign: 'left' as const,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = BG }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+              >
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: active ? (metric === 'revenue' ? TEAL_DARK : metric === 'jobs' ? '#6B21A8' : '#C2410C') : TEXT2, lineHeight: 1.1 }}>{tab.label}</div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>{tab.sub}</div>
+                </div>
+                {active && (
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: barColor, flexShrink: 0 }} />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Stats */}
+        <div style={{ padding: '14px 18px', marginTop: 'auto', borderTop: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Period total</div>
+            <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(periodTotal)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Monthly avg</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Best month</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: barColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
+          </div>
         </div>
 
         {/* Range selector */}
-        <select
-          value={range}
-          onChange={e => setRange(e.target.value as AnalyticsRange)}
-          style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
-        >
-          {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
-        </select>
-      </div>
-
-      {/* Summary strip */}
-      <div style={{ display: 'flex', gap: '0', padding: '14px 20px 12px', borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ paddingRight: '24px', borderRight: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>
-            {range === 'This Year' ? `${thisYear} total` : range === 'Last Year' ? `${thisYear - 1} total` : 'Period total'}
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(total)}</div>
-        </div>
-        <div style={{ padding: '0 24px', borderRight: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Monthly avg</div>
-          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
-        </div>
-        <div style={{ paddingLeft: '24px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Best month</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{peak.label}</div>
-          </div>
+        <div style={{ padding: '12px 18px', borderTop: `1px solid ${BORDER}` }}>
+          <select
+            value={range}
+            onChange={e => setRange(e.target.value as AnalyticsRange)}
+            style={{ width: '100%', height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+          >
+            {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
+          </select>
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ padding: '16px 20px 14px' }}>
-        <div style={{ display: 'flex', gap: 0 }}>
+      {/* ── RIGHT COLUMN — chart ── */}
+      <div style={{ padding: '20px 20px 16px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', gap: 0 }}>
           {/* Y axis */}
-          <div style={{ width: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
+          <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: chartH, paddingBottom: 26, flexShrink: 0 }}>
             {[yMax, Math.round(yMax * 0.5), 0].map((t, i) => (
-              <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmt(t)}</span>
+              <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(t)}</span>
             ))}
           </div>
 
           {/* Bars */}
-          <div style={{ flex: 1, position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative', height: chartH }}>
             {[0, 0.5, 1].map((frac, i) => (
-              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
+              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (chartH - 26)}px`, height: 1, background: '#F0F4F8' }} />
             ))}
-            <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
+            <div style={{ position: 'absolute', inset: 0, paddingBottom: 26, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
               {data.map((item, i) => {
                 const isHov = hovered === i
-                const barH = Math.max(4, (item.total / yMax) * (height - 36))
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
-                const opacity = item.total === 0 ? 0.15 : isHov ? 1 : isCurrentMonth ? 1 : 0.55
+                const barH = Math.max(3, (item.total / yMax) * (chartH - 34))
+                const opacity = item.total === 0 ? 0.12 : isHov || isCurrentMonth ? 1 : 0.4
 
                 return (
                   <div
@@ -330,18 +342,17 @@ function AnalyticsCard({
                     onMouseLeave={() => setHovered(null)}
                   >
                     {isHov && item.total > 0 && (
-                      <div style={{ position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '6px 10px', borderRadius: '9px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
-                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '2px' }}>{item.label}</div>
-                        <div style={{ color: WHITE }}>{fmtFull(item.total)}</div>
+                      <div style={{ position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                        <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
+                        <div>{fmtFull(item.total)}</div>
                       </div>
                     )}
                     <div style={{
                       width: '100%', height: barH,
-                      borderRadius: '5px 5px 2px 2px',
+                      borderRadius: '4px 4px 2px 2px',
                       background: barColor,
                       opacity,
-                      transition: 'opacity 0.15s, height 0.2s',
-                      cursor: 'default',
+                      transition: 'opacity 0.12s',
                     }} />
                   </div>
                 )
@@ -349,7 +360,7 @@ function AnalyticsCard({
             </div>
 
             {/* X labels */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '5px', height: 24 }}>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 22 }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 return (
