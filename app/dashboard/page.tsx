@@ -217,19 +217,17 @@ function AnalyticsCard({
     return `$${Math.round(n).toLocaleString('en-AU')}`
   }
 
-  const metricColor: Record<AnalyticsMetric, string> = {
-    revenue: TEAL,
-    jobs: TEAL,
-    outstanding: TEAL,
-  }
-  const dotColor = metricColor[metric]
-  const dotColorLight = TEAL_LIGHT
-
   const CHART_H = 220
   const LABEL_H = 24
   const DOT_SIZE = 8
   const DOT_GAP = 4
   const NUM_ROWS = Math.floor((CHART_H - LABEL_H) / (DOT_SIZE + DOT_GAP))
+
+  // Auto-scale: figure out what 1 dot represents so the peak month fills NUM_ROWS
+  const dotUnit = peak.total > 0 ? Math.ceil(peak.total / NUM_ROWS) : 1
+  const dotUnitLabel = isCurrency
+    ? dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`
+    : `${dotUnit}`
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
@@ -275,26 +273,21 @@ function AnalyticsCard({
             <div style={{ fontSize: '18px', fontWeight: 900, color: TEAL, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
           </div>
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '7px' }}>
+          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>High activity</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>1 dot = {dotUnitLabel}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL_LIGHT, border: `1.5px solid ${TEAL_MID}`, flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Low activity</span>
-            </div>
+            <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, paddingLeft: '15px' }}>scaled to peak month</div>
           </div>
         </div>
 
-        {/* Right bubble chart */}
+        {/* Right dot chart */}
         <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
           <div style={{ position: 'relative', height: CHART_H }}>
-
-            {/* Dot columns */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
               {data.map((item, i) => {
-                const ratio = yMax > 0 ? item.total / yMax : 0
+                const filledDots = dotUnit > 0 ? Math.round(item.total / dotUnit) : 0
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
@@ -313,16 +306,13 @@ function AnalyticsCard({
                       </div>
                     )}
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
-                      // di=0 is bottom dot, di=NUM_ROWS-1 is top dot
-                      // a dot is "filled" if its position is within the value ratio
-                      const threshold = di / NUM_ROWS
-                      const filled = threshold < ratio
-                      const dotOpacity = filled
-                        ? isHov || isBest || isCurrentMonth
-                          ? 0.25 + (di / NUM_ROWS) * 0.75
-                          : 0.15 + (di / NUM_ROWS) * 0.65
-                        : 0.07
-                      const bg = filled ? TEAL : '#E8EDF2'
+                      // di=0 is bottom, di=NUM_ROWS-1 is top
+                      const dotIndex = di + 1 // 1-based from bottom
+                      const filled = dotIndex <= filledDots
+                      const bg = filled ? TEAL : '#EDF2F7'
+                      const op = filled
+                        ? isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
+                        : 0.25
 
                       return (
                         <div
@@ -332,9 +322,9 @@ function AnalyticsCard({
                             height: DOT_SIZE,
                             borderRadius: '50%',
                             background: bg,
-                            opacity: dotOpacity,
+                            opacity: op,
                             flexShrink: 0,
-                            transition: 'opacity 0.15s',
+                            transition: 'opacity 0.12s',
                           }}
                         />
                       )
