@@ -694,15 +694,15 @@ export default function DashboardPage() {
   }, [allJobs])
 
   const revenueBreakdown = useMemo(() => {
-    const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
-    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1' }
+    const b: Record<string, number> = { Service: 0, Installation: 0, Repair: 0, Maintenance: 0 }
+    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Repair: '#94A3B8', Maintenance: '#CBD5E1' }
     allInvoices.forEach(inv => {
       const relatedJob = allJobs.find(job => job.id === inv.job_id)
       const t = String(relatedJob?.job_type || '').toLowerCase()
       if (t.includes('service')) b.Service += Number(inv.total || 0)
       else if (t.includes('install')) b.Installation += Number(inv.total || 0)
-      else if (t.includes('quote')) b.Quote += Number(inv.total || 0)
       else if (t.includes('repair')) b.Repair += Number(inv.total || 0)
+      else if (t.includes('maint')) b.Maintenance += Number(inv.total || 0)
       else b.Service += Number(inv.total || 0)
     })
     return Object.entries(b).filter(([, value]) => value > 0).map(([label, value]) => ({ label, value, color: colors[label] }))
@@ -711,10 +711,10 @@ export default function DashboardPage() {
   const revenueBreakdownSafe = revenueBreakdown.length ? revenueBreakdown : [{ label: 'Service', value: 0, color: TEAL }]
 
   const statCards = [
-    { label: 'Active Sales', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Product Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
-    { label: 'Product Sold', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, donutValue: stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0, onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Conversion Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Outstanding Invoices', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Jobs This Month', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, donutValue: stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0, onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }
