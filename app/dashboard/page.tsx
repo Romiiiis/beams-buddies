@@ -275,9 +275,6 @@ function AnalyticsCard({
                   <div style={{ fontSize: '12px', fontWeight: 800, color: active ? (metric === 'revenue' ? TEAL_DARK : metric === 'jobs' ? '#6B21A8' : '#C2410C') : TEXT2, lineHeight: 1.1 }}>{tab.label}</div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>{tab.sub}</div>
                 </div>
-                {active && (
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: barColor, flexShrink: 0 }} />
-                )}
               </button>
             )
           })}
@@ -325,7 +322,7 @@ function AnalyticsCard({
           {/* Bars */}
           <div style={{ flex: 1, position: 'relative', height: chartH }}>
             {[0, 0.5, 1].map((frac, i) => (
-              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (chartH - 26)}px`, height: 1, background: '#F0F4F8' }} />
+              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (chartH - 26)}px`, height: 1, background: i === 2 ? BORDER : '#F0F4F8' }} />
             ))}
             <div style={{ position: 'absolute', inset: 0, paddingBottom: 26, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
               {data.map((item, i) => {
@@ -348,8 +345,8 @@ function AnalyticsCard({
                       </div>
                     )}
                     <div style={{
-                      width: '100%', height: barH,
-                      borderRadius: '4px 4px 2px 2px',
+                      width: '100%', height: Math.max(barH, 1),
+                      borderRadius: '4px 4px 0 0',
                       background: barColor,
                       opacity,
                       transition: 'opacity 0.12s',
