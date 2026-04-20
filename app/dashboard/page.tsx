@@ -272,7 +272,6 @@ function VisitCalendarMonths({
 
   const jobCountsByDate = useMemo(() => {
     const map: Record<string, number> = {}
-
     jobs.forEach(job => {
       if (!job.next_service_date) return
       const d = new Date(job.next_service_date)
@@ -280,13 +279,11 @@ function VisitCalendarMonths({
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
       map[key] = (map[key] || 0) + 1
     })
-
     return map
   }, [jobs])
 
   const recentJobsByDate = useMemo(() => {
     const map: Record<string, number> = {}
-
     jobs.forEach(job => {
       if (!job.created_at) return
       const d = new Date(job.created_at)
@@ -294,7 +291,6 @@ function VisitCalendarMonths({
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
       map[key] = (map[key] || 0) + 1
     })
-
     return map
   }, [jobs])
 
@@ -309,13 +305,11 @@ function VisitCalendarMonths({
     const cells: Array<{ date: Date | null; count: number }> = []
 
     for (let i = 0; i < mondayStart; i++) cells.push({ date: null, count: 0 })
-
     for (let day = 1; day <= daysInMonth; day++) {
       const d = new Date(year, month, day)
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
       cells.push({ date: d, count: jobCountsByDate[key] || 0 })
     }
-
     while (cells.length % 7 !== 0) cells.push({ date: null, count: 0 })
 
     return cells
@@ -328,7 +322,7 @@ function VisitCalendarMonths({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : monthCount === 1 ? '1fr' : monthCount === 3 ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)',
+        gridTemplateColumns: isMobile ? '1fr' : monthCount === 1 ? '1fr' : 'repeat(2, 1fr)',
         gap: '14px',
       }}
     >
@@ -337,23 +331,9 @@ function VisitCalendarMonths({
         return (
           <div
             key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
-            style={{
-              border: `1px solid ${BORDER}`,
-              borderRadius: '12px',
-              overflow: 'hidden',
-              background: '#FCFCFD',
-            }}
+            style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: '#FCFCFD' }}
           >
-            <div
-              style={{
-                padding: '12px 14px',
-                borderBottom: `1px solid ${BORDER}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: WHITE,
-              }}
-            >
+            <div style={{ padding: '12px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: WHITE }}>
               <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT }}>
                 {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
               </div>
@@ -394,57 +374,26 @@ function VisitCalendarMonths({
                     <button
                       key={i}
                       type="button"
-                      onClick={() => {
-                        if (!isClickable) return
-                        onDateClick(cell.date!, scheduledCount)
-                      }}
-                      title={
-                        isClickable
-                          ? `Open ${scheduledCount} booked job${scheduledCount !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`
-                          : cell.date.toLocaleDateString('en-AU')
-                      }
+                      onClick={() => { if (!isClickable) return; onDateClick(cell.date!, scheduledCount) }}
+                      title={isClickable ? `Open ${scheduledCount} booked job${scheduledCount !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
                       style={{
-                        minHeight: 58,
-                        borderRadius: '10px',
-                        border: `1px solid ${border}`,
-                        background: bg,
-                        padding: '6px 6px 5px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        cursor: isClickable ? 'pointer' : 'default',
-                        textAlign: 'left',
-                        outline: 'none',
-                        fontFamily: FONT,
-                        transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-                        boxShadow: 'none',
+                        minHeight: 58, borderRadius: '10px', border: `1px solid ${border}`, background: bg,
+                        padding: '6px 6px 5px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        cursor: isClickable ? 'pointer' : 'default', textAlign: 'left', outline: 'none', fontFamily: FONT,
+                        transition: 'transform 0.12s ease, box-shadow 0.12s ease', boxShadow: 'none',
                       }}
-                      onMouseEnter={e => {
-                        if (!isClickable) return
-                        e.currentTarget.style.transform = 'translateY(-1px)'
-                        e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)'
-                      }}
-                      onMouseLeave={e => {
-                        if (!isClickable) return
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }}
+                      onMouseEnter={e => { if (!isClickable) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)' }}
+                      onMouseLeave={e => { if (!isClickable) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                     >
                       <div style={{ fontSize: '11px', fontWeight: 800, color: numberColor, lineHeight: 1 }}>
                         {cell.date.getDate()}
                       </div>
-
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', lineHeight: 1 }}>
                         {scheduledCount > 0 && (
-                          <div style={{ fontSize: '10px', fontWeight: 700, color: subColor }}>
-                            {scheduledCount} booked
-                          </div>
+                          <div style={{ fontSize: '10px', fontWeight: 700, color: subColor }}>{scheduledCount} booked</div>
                         )}
-
                         {recentCount > 0 && (
-                          <div style={{ fontSize: '9px', fontWeight: 700, color: metaColor }}>
-                            +{recentCount} new
-                          </div>
+                          <div style={{ fontSize: '9px', fontWeight: 700, color: metaColor }}>+{recentCount} new</div>
                         )}
                       </div>
                     </button>
@@ -469,10 +418,7 @@ function statusPill(d: string | null, getDays: (s: string) => number) {
 }
 
 function pctChange(current: number, previous: number) {
-  if (previous === 0) {
-    if (current === 0) return 0
-    return 100
-  }
+  if (previous === 0) { if (current === 0) return 0; return 100 }
   return Math.round(((current - previous) / previous) * 100)
 }
 
@@ -550,22 +496,16 @@ export default function DashboardPage() {
       setAllInvoices(invoices)
 
       setUpcoming(
-        jobs
-          .filter(j => j.next_service_date && startOfDay(new Date(j.next_service_date)) >= today)
-          .slice(0, 5)
+        jobs.filter(j => j.next_service_date && startOfDay(new Date(j.next_service_date)) >= today).slice(0, 5)
       )
 
       setRecent(
-        [...jobs]
-          .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
-          .slice(0, 5)
+        [...jobs].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5)
       )
 
       setInvoiceStats({
         collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total || 0), 0),
-        outstanding: invoices
-          .filter(i => i.status === 'sent' || i.status === 'overdue')
-          .reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
+        outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
         paidCount: invoices.filter(i => i.status === 'paid').length,
         overdueCount: invoices.filter(i => i.status === 'overdue').length,
         allInvoices: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
@@ -617,30 +557,22 @@ export default function DashboardPage() {
   )
 
   const revenueCurrent30 = useMemo(
-    () => allInvoices
-      .filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startCurrent30, now))
-      .reduce((s, inv) => s + Number(inv.total || 0), 0),
+    () => allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startCurrent30, now)).reduce((s, inv) => s + Number(inv.total || 0), 0),
     [allInvoices]
   )
 
   const revenuePrev30 = useMemo(
-    () => allInvoices
-      .filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startPrev30, startCurrent30))
-      .reduce((s, inv) => s + Number(inv.total || 0), 0),
+    () => allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startPrev30, startCurrent30)).reduce((s, inv) => s + Number(inv.total || 0), 0),
     [allInvoices]
   )
 
   const activeSalesCurrent = useMemo(
-    () => allInvoices
-      .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startCurrent30, now))
-      .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
+    () => allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startCurrent30, now)).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
     [allInvoices]
   )
 
   const activeSalesPrev = useMemo(
-    () => allInvoices
-      .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startPrev30, startCurrent30))
-      .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
+    () => allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startPrev30, startCurrent30)).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
     [allInvoices]
   )
 
@@ -697,21 +629,16 @@ export default function DashboardPage() {
   const revenueBreakdown = useMemo(() => {
     const b: Record<string, number> = { Service: 0, Installation: 0, Quote: 0, Repair: 0 }
     const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Quote: '#94A3B8', Repair: '#CBD5E1' }
-
     allInvoices.forEach(inv => {
       const relatedJob = allJobs.find(job => job.id === inv.job_id)
       const t = String(relatedJob?.job_type || '').toLowerCase()
-
       if (t.includes('service')) b.Service += Number(inv.total || 0)
       else if (t.includes('install')) b.Installation += Number(inv.total || 0)
       else if (t.includes('quote')) b.Quote += Number(inv.total || 0)
       else if (t.includes('repair')) b.Repair += Number(inv.total || 0)
       else b.Service += Number(inv.total || 0)
     })
-
-    return Object.entries(b)
-      .filter(([, value]) => value > 0)
-      .map(([label, value]) => ({ label, value, color: colors[label] }))
+    return Object.entries(b).filter(([, value]) => value > 0).map(([label, value]) => ({ label, value, color: colors[label] }))
   }, [allInvoices, allJobs])
 
   const revenueBreakdownSafe = revenueBreakdown.length
@@ -789,38 +716,86 @@ export default function DashboardPage() {
             background: BG,
           }}
         >
+          {/* ── UPDATED HEADER ── */}
           <div
             style={{
-              background: WHITE,
+              background: 'linear-gradient(135deg, #E6F7F6 0%, #F4FFFE 40%, #FFFFFF 100%)',
               border: `1px solid ${BORDER}`,
               borderRadius: isMobile ? '14px' : '16px',
-              padding: isMobile ? '14px' : '16px 20px',
+              padding: isMobile ? '16px' : '18px 22px',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
+            {/* Left accent bar */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '4px',
+                background: `linear-gradient(180deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`,
+                borderRadius: '16px 0 0 16px',
+              }}
+            />
+
+            {/* Decorative radial circle top-right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '-40px',
+                width: '140px',
+                height: '140px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(31,158,148,0.07) 0%, transparent 70%)',
+                pointerEvents: 'none',
+              }}
+            />
+
             <div
               style={{
                 display: 'flex',
                 alignItems: isMobile ? 'stretch' : 'center',
                 justifyContent: 'space-between',
-                gap: isMobile ? '12px' : '16px',
+                gap: isMobile ? '14px' : '16px',
                 flexDirection: isMobile ? 'column' : 'row',
               }}
             >
+              {/* Title block */}
               <div style={{ minWidth: 0 }}>
                 <h1
                   style={{
-                    fontSize: isMobile ? '22px' : '28px',
+                    fontSize: isMobile ? '26px' : '32px',
                     fontWeight: 900,
                     color: TEXT,
-                    letterSpacing: '-0.04em',
+                    letterSpacing: '-0.05em',
                     margin: 0,
                     lineHeight: 1,
                   }}
                 >
                   Dashboard
                 </h1>
+                <p
+                  style={{
+                    margin: '5px 0 0',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: TEXT3,
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {new Date().toLocaleDateString('en-AU', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
               </div>
 
+              {/* Action buttons */}
               <div
                 style={{
                   display: 'flex',
@@ -834,14 +809,14 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/dashboard/jobs')}
                   style={{
-                    height: '36px',
-                    padding: isMobile ? '0 10px' : '0 12px',
-                    border: `1px solid ${BORDER}`,
+                    height: '38px',
+                    padding: isMobile ? '0 12px' : '0 14px',
+                    border: `1.5px solid ${BORDER}`,
                     borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: TEXT2,
-                    background: WHITE,
+                    background: 'rgba(255,255,255,0.85)',
                     cursor: 'pointer',
                     fontFamily: FONT,
                     display: 'inline-flex',
@@ -849,7 +824,18 @@ export default function DashboardPage() {
                     justifyContent: 'center',
                     gap: '5px',
                     flex: isMobile ? 1 : '0 0 auto',
-                    minWidth: isMobile ? 0 : 'auto',
+                    transition: 'all 0.15s ease',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = TEAL
+                    e.currentTarget.style.color = TEAL_DARK
+                    e.currentTarget.style.background = TEAL_LIGHT
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = BORDER
+                    e.currentTarget.style.color = TEXT2
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.85)'
                   }}
                 >
                   <IconPlus size={12} /> Add Job
@@ -858,14 +844,14 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/dashboard/jobs')}
                   style={{
-                    height: '36px',
-                    padding: isMobile ? '0 10px' : '0 12px',
-                    border: `1px solid ${BORDER}`,
+                    height: '38px',
+                    padding: isMobile ? '0 12px' : '0 14px',
+                    border: `1.5px solid ${BORDER}`,
                     borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: TEXT2,
-                    background: WHITE,
+                    background: 'rgba(255,255,255,0.85)',
                     cursor: 'pointer',
                     fontFamily: FONT,
                     display: 'inline-flex',
@@ -873,7 +859,18 @@ export default function DashboardPage() {
                     justifyContent: 'center',
                     gap: '5px',
                     flex: isMobile ? 1 : '0 0 auto',
-                    minWidth: isMobile ? 0 : 'auto',
+                    transition: 'all 0.15s ease',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = TEAL
+                    e.currentTarget.style.color = TEAL_DARK
+                    e.currentTarget.style.background = TEAL_LIGHT
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = BORDER
+                    e.currentTarget.style.color = TEXT2
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.85)'
                   }}
                 >
                   <IconCalendar size={12} /> Schedule
@@ -882,14 +879,14 @@ export default function DashboardPage() {
                 <button
                   onClick={() => router.push('/dashboard/revenue')}
                   style={{
-                    height: '36px',
-                    padding: isMobile ? '0 12px' : '0 14px',
+                    height: '38px',
+                    padding: isMobile ? '0 14px' : '0 16px',
                     border: 'none',
                     borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     color: WHITE,
-                    background: TEXT,
+                    background: `linear-gradient(135deg, ${TEAL} 0%, ${TEAL_DARK} 100%)`,
                     cursor: 'pointer',
                     fontFamily: FONT,
                     display: 'inline-flex',
@@ -897,7 +894,16 @@ export default function DashboardPage() {
                     justifyContent: 'center',
                     gap: '6px',
                     flex: isMobile ? 1 : '0 0 auto',
-                    minWidth: isMobile ? 0 : 'auto',
+                    transition: 'all 0.15s ease',
+                    boxShadow: `0 2px 10px rgba(31,158,148,0.35)`,
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.boxShadow = `0 4px 18px rgba(31,158,148,0.45)`
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.boxShadow = `0 2px 10px rgba(31,158,148,0.35)`
+                    e.currentTarget.style.transform = 'translateY(0)'
                   }}
                 >
                   <IconDownload size={12} /> Revenue
@@ -905,6 +911,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          {/* ── END UPDATED HEADER ── */}
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
@@ -946,15 +953,9 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {sc.sparkType === 'bar' && (
-                    <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />
-                  )}
-                  {sc.sparkType === 'line' && (
-                    <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />
-                  )}
-                  {sc.sparkType === 'donut' && (
-                    <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />
-                  )}
+                  {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
+                  {sc.sparkType === 'line' && <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />}
+                  {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
                 </div>
 
                 <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
@@ -1092,19 +1093,7 @@ export default function DashboardPage() {
                   <select
                     value={visitMonths}
                     onChange={e => setVisitMonths(e.target.value)}
-                    style={{
-                      height: '30px',
-                      padding: '0 8px',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: TEXT2,
-                      background: WHITE,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      outline: 'none',
-                    }}
+                    style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
                   >
                     <option value="1">Last 1 month</option>
                     <option value="3">Last 3 months</option>
@@ -1130,14 +1119,12 @@ export default function DashboardPage() {
                   jobs={allJobs}
                   monthCount={Number(visitMonths)}
                   isMobile={isMobile}
-                  onDateClick={(date) => {
-                    router.push(`/dashboard/jobs?date=${formatDateParam(date)}`)
-                  }}
+                  onDateClick={(date) => { router.push(`/dashboard/jobs?date=${formatDateParam(date)}`) }}
                 />
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Booked dates come from service dates only. Recent jobs are shown separately as “+new” so the calendar matches the scheduled service dates.
+                Booked dates come from service dates only. Recent jobs are shown separately as "+new" so the calendar matches the scheduled service dates.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
