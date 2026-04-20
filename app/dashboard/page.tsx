@@ -311,7 +311,9 @@ function AnalyticsCard({
                       </div>
                     )}
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
-                      const dotIndex = di + 1
+                      // di=0 is bottom, di=NUM_ROWS-1 is top
+                      // filled dots grow from bottom up
+                      const dotIndex = NUM_ROWS - di // bottom dot = NUM_ROWS, top dot = 1
                       const filled = !isFuture && dotIndex <= filledDots
 
                       let bg: string
