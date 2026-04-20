@@ -271,13 +271,30 @@ function VisitCalendarMonths({
 
   const jobCountsByDate = useMemo(() => {
     const map: Record<string, number> = {}
+
     jobs.forEach(job => {
-      if (!job.next_service_date) return
-      const d = new Date(job.next_service_date)
-      if (isNaN(d.getTime())) return
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-      map[key] = (map[key] || 0) + 1
+      const datesToCount: Date[] = []
+
+      if (job.next_service_date) {
+        const serviceDate = new Date(job.next_service_date)
+        if (!isNaN(serviceDate.getTime())) datesToCount.push(serviceDate)
+      }
+
+      if (job.created_at) {
+        const createdDate = new Date(job.created_at)
+        if (!isNaN(createdDate.getTime())) datesToCount.push(createdDate)
+      }
+
+      const seen = new Set<string>()
+
+      datesToCount.forEach(d => {
+        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+        if (seen.has(key)) return
+        seen.add(key)
+        map[key] = (map[key] || 0) + 1
+      })
     })
+
     return map
   }, [jobs])
 
@@ -1030,7 +1047,7 @@ export default function DashboardPage() {
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Calendar view of scheduled jobs by month
+                    Calendar view of scheduled and recent customer jobs by month
                   </div>
                 </div>
 
@@ -1076,7 +1093,7 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Each day shows the number of scheduled jobs from your CRM based on next service dates.
+                Each day shows customer job activity from your CRM based on next service dates and recent job creation dates.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
