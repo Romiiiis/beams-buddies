@@ -349,7 +349,16 @@ function VisitCalendarMonths({
   const months = useMemo(() => {
     const now = new Date()
     const result: Date[] = []
-    for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    if (monthCount === 1) {
+      // Current month only
+      result.push(new Date(now.getFullYear(), now.getMonth(), 1))
+    } else if (monthCount === 3) {
+      // Last month + current month + next month
+      for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    } else {
+      // Last 5 months + current month
+      for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    }
     return result
   }, [monthCount])
 
@@ -383,6 +392,15 @@ function VisitCalendarMonths({
     const counts = Object.values(jobsByDate).map(arr => arr.length)
     return Math.max(1, ...counts)
   }, [jobsByDate])
+
+  // Debug: log what keys exist in jobsByDate
+  React.useEffect(() => {
+    console.log('[Calendar] jobsByDate keys:', Object.keys(jobsByDate).sort())
+    console.log('[Calendar] total jobs received:', jobs.length)
+    if (jobs.length > 0) {
+      console.log('[Calendar] sample next_service_date values:', jobs.slice(0, 5).map(j => j.next_service_date))
+    }
+  }, [jobsByDate, jobs])
 
   // Build a "YYYY-MM-DD" key from year/month/day integers — matches the raw string keys above
   function toRawKey(year: number, month: number, day: number): string {
@@ -938,9 +956,9 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <select value={visitMonths} onChange={e => setVisitMonths(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
-                    <option value="1">Last 1 month</option>
-                    <option value="3">Last 3 months</option>
-                    <option value="6">Last 6 months</option>
+                    <option value="1">Current month</option>
+                    <option value="3">3 months</option>
+                    <option value="6">6 months</option>
                   </select>
                   <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ textAlign: 'center' }}>
