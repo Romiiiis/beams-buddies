@@ -163,7 +163,7 @@ function AnalyticsCard({
 
   const months = useMemo((): { year: number; month: number; label: string }[] => {
     if (range === 'This Year') {
-      return Array.from({ length: thisMonth + 1 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
+      return Array.from({ length: 12 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
     }
     if (range === 'Last Year') {
       return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
@@ -278,6 +278,10 @@ function AnalyticsCard({
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
               <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>1 dot = {dotUnitLabel}</span>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E8EDF2', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Future months</span>
+            </div>
             <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, paddingLeft: '15px' }}>scaled to peak month</div>
           </div>
         </div>
@@ -291,6 +295,7 @@ function AnalyticsCard({
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
+                const isFuture = range === 'This Year' && i > thisMonth
 
                 return (
                   <div
@@ -306,13 +311,22 @@ function AnalyticsCard({
                       </div>
                     )}
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
-                      // di=0 is bottom, di=NUM_ROWS-1 is top
-                      const dotIndex = di + 1 // 1-based from bottom
-                      const filled = dotIndex <= filledDots
-                      const bg = filled ? TEAL : '#EDF2F7'
-                      const op = filled
-                        ? isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
-                        : 0.25
+                      const dotIndex = di + 1
+                      const filled = !isFuture && dotIndex <= filledDots
+
+                      let bg: string
+                      let op: number
+
+                      if (isFuture) {
+                        bg = '#E8EDF2'
+                        op = 0.18
+                      } else if (filled) {
+                        bg = TEAL
+                        op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
+                      } else {
+                        bg = '#E8EDF2'
+                        op = 0.25
+                      }
 
                       return (
                         <div
@@ -339,9 +353,10 @@ function AnalyticsCard({
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
+                const isFutureLabel = range === 'This Year' && i > thisMonth
                 return (
                   <div key={item.label + i} style={{ flex: 1, textAlign: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? TEAL : TEXT3 }}>{item.label}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? TEAL : isFutureLabel ? '#CBD5E1' : TEXT3 }}>{item.label}</span>
                   </div>
                 )
               })}
