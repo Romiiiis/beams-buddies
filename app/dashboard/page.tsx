@@ -795,10 +795,11 @@ export default function DashboardPage() {
                     minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
-                  <IconPlus size={12} /> Add Widget
+                  <IconPlus size={12} /> Add Job
                 </button>
 
                 <button
+                  onClick={() => router.push('/dashboard/jobs')}
                   style={{
                     height: '36px',
                     padding: isMobile ? '0 10px' : '0 12px',
@@ -818,10 +819,11 @@ export default function DashboardPage() {
                     minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
-                  <IconFilter size={12} /> Filter
+                  <IconCalendar size={12} /> Schedule
                 </button>
 
                 <button
+                  onClick={() => router.push('/dashboard/revenue')}
                   style={{
                     height: '36px',
                     padding: isMobile ? '0 12px' : '0 14px',
@@ -841,7 +843,7 @@ export default function DashboardPage() {
                     minWidth: isMobile ? 0 : 'auto',
                   }}
                 >
-                  <IconDownload size={12} /> Export
+                  <IconDownload size={12} /> Revenue
                 </button>
               </div>
             </div>
