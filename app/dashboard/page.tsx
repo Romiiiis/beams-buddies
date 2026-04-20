@@ -312,29 +312,33 @@ function AnalyticsCard({
       {/* ── RIGHT COLUMN — chart ── */}
       <div style={{ padding: '20px 20px 16px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, display: 'flex', gap: 0 }}>
-          {/* Y axis */}
-          <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: chartH, paddingBottom: 26, flexShrink: 0 }}>
-            {[yMax, Math.round(yMax * 0.5), 0].map((t, i) => (
-              <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(t)}</span>
-            ))}
+          {/* Y axis labels — sit above the x-label row */}
+          <div style={{ width: 36, flexShrink: 0, position: 'relative', height: chartH }}>
+            <span style={{ position: 'absolute', top: 0, left: 0, fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(yMax)}</span>
+            <span style={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-50%)', fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(Math.round(yMax * 0.5))}</span>
+            <span style={{ position: 'absolute', bottom: 22, left: 0, fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>0</span>
           </div>
 
-          {/* Bars */}
+          {/* Bars + gridlines + x labels */}
           <div style={{ flex: 1, position: 'relative', height: chartH }}>
-            {[0, 0.5, 1].map((frac, i) => (
-              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (chartH - 26)}px`, height: 1, background: i === 2 ? BORDER : '#F0F4F8' }} />
-            ))}
-            <div style={{ position: 'absolute', inset: 0, paddingBottom: 26, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+            {/* Gridlines: top, mid, baseline */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: '#F0F4F8' }} />
+            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: '#F0F4F8' }} />
+            <div style={{ position: 'absolute', bottom: 22, left: 0, right: 0, height: 1, background: BORDER }} />
+
+            {/* Bar columns — sit between top=0 and bottom=22px (x-label height) */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 22, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
               {data.map((item, i) => {
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
-                const barH = Math.max(3, (item.total / yMax) * (chartH - 34))
-                const opacity = item.total === 0 ? 0.12 : isHov || isCurrentMonth ? 1 : 0.4
+                const availH = chartH - 22
+                const barH = Math.max(1, (item.total / yMax) * availH)
+                const opacity = item.total === 0 ? 0.1 : isHov || isCurrentMonth ? 1 : 0.4
 
                 return (
                   <div
                     key={item.label + i}
-                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}
                     onMouseEnter={() => setHovered(i)}
                     onMouseLeave={() => setHovered(null)}
                   >
@@ -345,7 +349,8 @@ function AnalyticsCard({
                       </div>
                     )}
                     <div style={{
-                      width: '100%', height: Math.max(barH, 1),
+                      width: '100%',
+                      height: barH,
                       borderRadius: '4px 4px 0 0',
                       background: barColor,
                       opacity,
@@ -357,11 +362,11 @@ function AnalyticsCard({
             </div>
 
             {/* X labels */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 22 }}>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 22, display: 'flex', gap: '4px' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 return (
-                  <div key={item.label + i} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div key={item.label + i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth ? barColor : TEXT3 }}>{item.label}</span>
                   </div>
                 )
