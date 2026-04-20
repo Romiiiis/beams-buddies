@@ -27,6 +27,13 @@ function useIsMobile() {
   return isMobile
 }
 
+function formatDateParam(date: Date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 // ── Icons ──────────────────────────────────────────────────────────────────
 function IconCalendar({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
@@ -48,9 +55,6 @@ function IconTrendDown({ size = 11 }: { size?: number }) {
 }
 function IconPhone({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.4 19.4 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.8 9.8a16 16 0 0 0 6.4 6.4l1.3-1.3a2 2 0 0 1 1.8-.6l3 .5A2 2 0 0 1 22 16.9Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/></svg>
-}
-function IconFilter({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
 function IconDownload({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -82,7 +86,6 @@ function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; c
   )
 }
 
-// ── Mini line sparkline ────────────────────────────────────────────────────
 function MiniSparkline({ data, color, width = 72, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   if (data.length < 2) return <div style={{ width, height }} />
   const min = Math.min(...data)
@@ -107,7 +110,6 @@ function MiniSparkline({ data, color, width = 72, height = 36 }: { data: number[
   )
 }
 
-// ── Donut sparkline (for stat card) ───────────────────────────────────────
 function DonutSparkle({ value, color, size = 44 }: { value: number; color: string; size?: number }) {
   const r = (size - 8) / 2
   const circ = 2 * Math.PI * r
@@ -120,7 +122,6 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   )
 }
 
-// ── Analytics bar chart ────────────────────────────────────────────────────
 function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number }[]; height?: number }) {
   const [hovered, setHovered] = useState<number | null>(null)
   const yMax = Math.max(...data.map(d => d.total), 1)
@@ -199,7 +200,6 @@ function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; tota
   )
 }
 
-// ── Full donut chart ───────────────────────────────────────────────────────
 function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((s, x) => s + x.value, 0) || 1
@@ -250,15 +250,16 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Calendar style visit widget ────────────────────────────────────────────
 function VisitCalendarMonths({
   jobs,
   monthCount,
   isMobile,
+  onDateClick,
 }: {
   jobs: any[]
   monthCount: number
   isMobile: boolean
+  onDateClick: (date: Date, count: number) => void
 }) {
   const months = useMemo(() => {
     const now = new Date()
@@ -383,11 +384,19 @@ function VisitCalendarMonths({
                   const border = count > 0 ? 'rgba(31,158,148,0.16)' : BORDER
                   const numberColor = count > 0 ? WHITE : TEXT
                   const subColor = count > 0 ? 'rgba(255,255,255,0.9)' : TEXT3
+                  const isClickable = count > 0
 
                   return (
-                    <div
+                    <button
                       key={i}
-                      title={`${count} scheduled job${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`}
+                      type="button"
+                      onClick={() => {
+                        if (!isClickable) return
+                        onDateClick(cell.date!, count)
+                      }}
+                      title={isClickable
+                        ? `Open ${count} job${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`
+                        : cell.date.toLocaleDateString('en-AU')}
                       style={{
                         minHeight: 54,
                         borderRadius: '10px',
@@ -397,6 +406,22 @@ function VisitCalendarMonths({
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
+                        cursor: isClickable ? 'pointer' : 'default',
+                        textAlign: 'left',
+                        outline: 'none',
+                        fontFamily: FONT,
+                        transition: 'transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease',
+                        boxShadow: 'none',
+                      }}
+                      onMouseEnter={e => {
+                        if (!isClickable) return
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)'
+                      }}
+                      onMouseLeave={e => {
+                        if (!isClickable) return
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
                       }}
                     >
                       <div style={{ fontSize: '11px', fontWeight: 800, color: numberColor, lineHeight: 1 }}>
@@ -405,7 +430,7 @@ function VisitCalendarMonths({
                       <div style={{ fontSize: '10px', fontWeight: 700, color: subColor, lineHeight: 1 }}>
                         {count > 0 ? `${count} job${count !== 1 ? 's' : ''}` : ''}
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -613,7 +638,6 @@ export default function DashboardPage() {
   const currentConv = currentInvoicesWindow.length > 0 ? Math.round((currentPaidWindow / currentInvoicesWindow.length) * 100) : 0
   const prevConv = prevInvoicesWindow.length > 0 ? Math.round((prevPaidWindow / prevInvoicesWindow.length) * 100) : 0
 
-  const completedCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length, [allJobs])
   const scheduledCount = useMemo(() => allJobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0).length, [allJobs])
 
   const onTimeScore = stats.units > 0 ? Math.round(((stats.units - stats.overdue) / stats.units) * 100) : 0
@@ -644,11 +668,16 @@ export default function DashboardPage() {
   const visitMax = useMemo(() => {
     const counts: Record<string, number> = {}
     allJobs.forEach(job => {
-      if (!job.next_service_date) return
-      const d = new Date(job.next_service_date)
-      if (isNaN(d.getTime())) return
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-      counts[key] = (counts[key] || 0) + 1
+      const seen = new Set<string>()
+      ;[job.next_service_date, job.created_at].forEach(raw => {
+        if (!raw) return
+        const d = new Date(raw)
+        if (isNaN(d.getTime())) return
+        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+        if (seen.has(key)) return
+        seen.add(key)
+        counts[key] = (counts[key] || 0) + 1
+      })
     })
     return Math.max(0, ...Object.values(counts))
   }, [allJobs])
@@ -748,7 +777,6 @@ export default function DashboardPage() {
             background: BG,
           }}
         >
-          {/* ── HEADER ───────────────────────────────────────────────────── */}
           <div
             style={{
               background: WHITE,
@@ -866,7 +894,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 1: 4 STAT CARDS ──────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
               <div
@@ -926,7 +953,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* ── ROW 2: Sales Performance + Analytics ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
             <div style={cardP}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -1037,7 +1063,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── ROW 3: Visit by Time + Total Revenue ─────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
             <div style={card}>
               <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
@@ -1089,11 +1114,18 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ padding: '16px 20px 10px' }}>
-                <VisitCalendarMonths jobs={allJobs} monthCount={Number(visitMonths)} isMobile={isMobile} />
+                <VisitCalendarMonths
+                  jobs={allJobs}
+                  monthCount={Number(visitMonths)}
+                  isMobile={isMobile}
+                  onDateClick={(date) => {
+                    router.push(`/dashboard/jobs?date=${formatDateParam(date)}`)
+                  }}
+                />
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Each day shows customer job activity from your CRM based on next service dates and recent job creation dates.
+                Click a highlighted day to open the jobs booked or scheduled for that date.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
