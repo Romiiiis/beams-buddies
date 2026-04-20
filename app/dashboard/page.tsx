@@ -274,26 +274,25 @@ function VisitCalendarMonths({
     const map: Record<string, number> = {}
 
     jobs.forEach(job => {
-      const datesToCount: Date[] = []
+      if (!job.next_service_date) return
+      const d = new Date(job.next_service_date)
+      if (isNaN(d.getTime())) return
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      map[key] = (map[key] || 0) + 1
+    })
 
-      if (job.next_service_date) {
-        const serviceDate = new Date(job.next_service_date)
-        if (!isNaN(serviceDate.getTime())) datesToCount.push(serviceDate)
-      }
+    return map
+  }, [jobs])
 
-      if (job.created_at) {
-        const createdDate = new Date(job.created_at)
-        if (!isNaN(createdDate.getTime())) datesToCount.push(createdDate)
-      }
+  const recentJobsByDate = useMemo(() => {
+    const map: Record<string, number> = {}
 
-      const seen = new Set<string>()
-
-      datesToCount.forEach(d => {
-        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-        if (seen.has(key)) return
-        seen.add(key)
-        map[key] = (map[key] || 0) + 1
-      })
+    jobs.forEach(job => {
+      if (!job.created_at) return
+      const d = new Date(job.created_at)
+      if (isNaN(d.getTime())) return
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      map[key] = (map[key] || 0) + 1
     })
 
     return map
@@ -359,7 +358,7 @@ function VisitCalendarMonths({
                 {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
               </div>
               <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
-                {cells.filter(c => c.count > 0).reduce((sum, c) => sum + c.count, 0)} jobs
+                {cells.filter(c => c.count > 0).reduce((sum, c) => sum + c.count, 0)} booked
               </div>
             </div>
 
@@ -375,16 +374,21 @@ function VisitCalendarMonths({
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
                 {cells.map((cell, i) => {
                   if (!cell.date) {
-                    return <div key={i} style={{ minHeight: 54, borderRadius: '10px', background: 'transparent' }} />
+                    return <div key={i} style={{ minHeight: 58, borderRadius: '10px', background: 'transparent' }} />
                   }
 
-                  const count = cell.count
-                  const intensity = count > 0 ? count / maxCount : 0
-                  const bg = count > 0 ? `rgba(31,158,148,${0.10 + intensity * 0.82})` : '#F8FAFC'
-                  const border = count > 0 ? 'rgba(31,158,148,0.16)' : BORDER
-                  const numberColor = count > 0 ? WHITE : TEXT
-                  const subColor = count > 0 ? 'rgba(255,255,255,0.9)' : TEXT3
-                  const isClickable = count > 0
+                  const scheduledCount = cell.count
+                  const recentCount = recentJobsByDate[
+                    `${cell.date.getFullYear()}-${cell.date.getMonth()}-${cell.date.getDate()}`
+                  ] || 0
+
+                  const intensity = scheduledCount > 0 ? scheduledCount / maxCount : 0
+                  const bg = scheduledCount > 0 ? `rgba(31,158,148,${0.10 + intensity * 0.82})` : '#F8FAFC'
+                  const border = scheduledCount > 0 ? 'rgba(31,158,148,0.16)' : BORDER
+                  const numberColor = scheduledCount > 0 ? WHITE : TEXT
+                  const subColor = scheduledCount > 0 ? 'rgba(255,255,255,0.95)' : TEXT3
+                  const metaColor = scheduledCount > 0 ? 'rgba(255,255,255,0.82)' : '#94A3B8'
+                  const isClickable = scheduledCount > 0
 
                   return (
                     <button
@@ -392,13 +396,15 @@ function VisitCalendarMonths({
                       type="button"
                       onClick={() => {
                         if (!isClickable) return
-                        onDateClick(cell.date!, count)
+                        onDateClick(cell.date!, scheduledCount)
                       }}
-                      title={isClickable
-                        ? `Open ${count} job${count !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`
-                        : cell.date.toLocaleDateString('en-AU')}
+                      title={
+                        isClickable
+                          ? `Open ${scheduledCount} booked job${scheduledCount !== 1 ? 's' : ''} on ${cell.date.toLocaleDateString('en-AU')}`
+                          : cell.date.toLocaleDateString('en-AU')
+                      }
                       style={{
-                        minHeight: 54,
+                        minHeight: 58,
                         borderRadius: '10px',
                         border: `1px solid ${border}`,
                         background: bg,
@@ -410,7 +416,7 @@ function VisitCalendarMonths({
                         textAlign: 'left',
                         outline: 'none',
                         fontFamily: FONT,
-                        transition: 'transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease',
+                        transition: 'transform 0.12s ease, box-shadow 0.12s ease',
                         boxShadow: 'none',
                       }}
                       onMouseEnter={e => {
@@ -427,8 +433,19 @@ function VisitCalendarMonths({
                       <div style={{ fontSize: '11px', fontWeight: 800, color: numberColor, lineHeight: 1 }}>
                         {cell.date.getDate()}
                       </div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: subColor, lineHeight: 1 }}>
-                        {count > 0 ? `${count} job${count !== 1 ? 's' : ''}` : ''}
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', lineHeight: 1 }}>
+                        {scheduledCount > 0 && (
+                          <div style={{ fontSize: '10px', fontWeight: 700, color: subColor }}>
+                            {scheduledCount} booked
+                          </div>
+                        )}
+
+                        {recentCount > 0 && (
+                          <div style={{ fontSize: '9px', fontWeight: 700, color: metaColor }}>
+                            +{recentCount} new
+                          </div>
+                        )}
                       </div>
                     </button>
                   )
@@ -668,16 +685,11 @@ export default function DashboardPage() {
   const visitMax = useMemo(() => {
     const counts: Record<string, number> = {}
     allJobs.forEach(job => {
-      const seen = new Set<string>()
-      ;[job.next_service_date, job.created_at].forEach(raw => {
-        if (!raw) return
-        const d = new Date(raw)
-        if (isNaN(d.getTime())) return
-        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-        if (seen.has(key)) return
-        seen.add(key)
-        counts[key] = (counts[key] || 0) + 1
-      })
+      if (!job.next_service_date) return
+      const d = new Date(job.next_service_date)
+      if (isNaN(d.getTime())) return
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      counts[key] = (counts[key] || 0) + 1
     })
     return Math.max(0, ...Object.values(counts))
   }, [allJobs])
@@ -1072,7 +1084,7 @@ export default function DashboardPage() {
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Calendar view of scheduled and recent customer jobs by month
+                    Calendar view of booked service dates with recent jobs shown separately
                   </div>
                 </div>
 
@@ -1125,7 +1137,7 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ padding: '0 20px 16px', fontSize: '11px', color: TEXT3, fontWeight: 500 }}>
-                Click a highlighted day to open the jobs booked or scheduled for that date.
+                Booked dates come from service dates only. Recent jobs are shown separately as “+new” so the calendar matches the scheduled service dates.
               </div>
 
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
