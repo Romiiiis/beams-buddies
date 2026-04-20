@@ -900,53 +900,22 @@ export default function DashboardPage() {
               </div>
 
               {/* Footer strip */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 24px', borderTop: `1px solid ${BORDER}`, background: BG, gap: '12px' }}>
-                {/* Status chips */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-                    {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-                    ${invoiceStats.collected.toLocaleString('en-AU')} collected
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8', flexShrink: 0 }} />
-                    {stats.overdue} overdue
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#94A3B8', flexShrink: 0 }} />
-                    ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '9px 24px', borderTop: `1px solid ${BORDER}`, background: WHITE, gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                  {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
                 </div>
-
-                {/* Quick-nav buttons */}
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button
-                    onClick={() => router.push('/dashboard/invoices')}
-                    style={btnNavSm}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconInvoice size={11} /> Invoices
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={btnNavSm}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconUsers size={11} /> Customers
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnNavSmTeal}
-                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-                  >
-                    <IconTrendUpNav size={11} /> Jobs
-                  </button>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                  ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8', flexShrink: 0 }} />
+                  {stats.overdue} overdue
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#94A3B8', flexShrink: 0 }} />
+                  ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
                 </div>
               </div>
             </div>
