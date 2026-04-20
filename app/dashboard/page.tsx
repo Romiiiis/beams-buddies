@@ -850,9 +850,6 @@ export default function DashboardPage() {
   const jobsDelta = pctChange(jobsCurrentMonth, jobsPrevMonth)
   const convDelta = currentConv - prevConv
 
-  const jobsSpark = monthlyJobsData.map(m => m.total)
-  const revenueSpark = monthlyRevenueData.map(m => m.total)
-
   const visitMax = useMemo(() => {
     const counts: Record<string, number> = {}
     allJobs.forEach(job => {
