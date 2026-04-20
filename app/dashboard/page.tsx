@@ -142,51 +142,224 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   )
 }
 
-function AnalyticsBarChart({ data, height = 200 }: { data: { label: string; total: number }[]; height?: number }) {
+type AnalyticsMetric = 'revenue' | 'jobs' | 'outstanding'
+type AnalyticsRange = 'This Year' | 'Last Year' | 'Last 6 Months' | 'Last 3 Months'
+
+function AnalyticsCard({
+  allJobs,
+  allInvoices,
+}: {
+  allJobs: any[]
+  allInvoices: any[]
+}) {
+  const [metric, setMetric] = useState<AnalyticsMetric>('revenue')
+  const [range, setRange] = useState<AnalyticsRange>('This Year')
   const [hovered, setHovered] = useState<number | null>(null)
+
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const now = new Date()
+  const thisYear = now.getFullYear()
+  const thisMonth = now.getMonth()
+
+  // Build the slice of months to display based on range
+  const months = useMemo((): { year: number; month: number; label: string }[] => {
+    if (range === 'This Year') {
+      return Array.from({ length: thisMonth + 1 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
+    }
+    if (range === 'Last Year') {
+      return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
+    }
+    if (range === 'Last 6 Months') {
+      return Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(thisYear, thisMonth - 5 + i, 1)
+        return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+      })
+    }
+    // Last 3 Months
+    return Array.from({ length: 3 }, (_, i) => {
+      const d = new Date(thisYear, thisMonth - 2 + i, 1)
+      return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+    })
+  }, [range, thisYear, thisMonth])
+
+  const data = useMemo(() => {
+    return months.map(({ year, month, label }) => {
+      const start = new Date(year, month, 1)
+      const end = new Date(year, month + 1, 1)
+
+      if (metric === 'revenue') {
+        const total = allInvoices
+          .filter(inv => inv.status === 'paid' && inv.created_at)
+          .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+          .reduce((s, inv) => s + Number(inv.total || 0), 0)
+        return { label, total }
+      }
+      if (metric === 'jobs') {
+        const total = allJobs
+          .filter(job => job.created_at)
+          .filter(job => { const d = parseDateLocal(job.created_at); return d && d >= start && d < end })
+          .length
+        return { label, total }
+      }
+      // outstanding
+      const total = allInvoices
+        .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at)
+        .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+        .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
+      return { label, total }
+    })
+  }, [metric, months, allJobs, allInvoices])
+
   const yMax = Math.max(...data.map(d => d.total), 1)
-  const now = new Date().getMonth()
+  const total = data.reduce((s, d) => s + d.total, 0)
+  const peak = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
+  const avg = data.length ? Math.round(total / data.length) : 0
+
+  const isCurrency = metric === 'revenue' || metric === 'outstanding'
+
+  function fmt(n: number) {
+    if (!isCurrency) return n.toString()
+    if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`
+    return `$${n}`
+  }
+  function fmtFull(n: number) {
+    if (!isCurrency) return n.toString()
+    return `$${n.toLocaleString('en-AU')}`
+  }
+
+  const metricColor: Record<AnalyticsMetric, string> = {
+    revenue: TEAL,
+    jobs: '#9C27B0',
+    outstanding: '#FF7043',
+  }
+  const barColor = metricColor[metric]
+
+  const metricTabs: { key: AnalyticsMetric; label: string }[] = [
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'jobs', label: 'Jobs' },
+    { key: 'outstanding', label: 'Outstanding' },
+  ]
+
+  const height = 200
 
   return (
-    <div style={{ display: 'flex', gap: 0 }}>
-      <div style={{ width: 36, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
-        {[yMax, Math.round(yMax * 0.75), Math.round(yMax * 0.5), Math.round(yMax * 0.25), 0].map((t, i) => (
-          <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>
-            {t > 999 ? `$${(t / 1000).toFixed(0)}k` : t}
-          </span>
-        ))}
-      </div>
-      <div style={{ flex: 1, position: 'relative' }}>
-        {[0, 0.25, 0.5, 0.75, 1].map((frac, i) => (
-          <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
-        ))}
-        <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
-          {data.map((item, i) => {
-            const isCurrent = i === now
-            const isHov = hovered === i
-            const barH = Math.max(4, (item.total / yMax) * (height - 36))
-            return (
-              <div key={item.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
-                {isHov && (
-                  <div style={{ position: 'absolute', bottom: barH + 10, left: '50%', transform: 'translateX(-50%)', background: '#0B1220', color: WHITE, padding: '7px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.22)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{item.label}, {new Date().getFullYear()}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Jobs</span>
-                      <span style={{ color: TEAL_LIGHT }}>{item.total}</span>
-                    </div>
-                  </div>
-                )}
-                <div style={{ width: '100%', height: barH, borderRadius: '6px 6px 3px 3px', background: isCurrent ? TEAL : isHov ? '#CBD5E1' : 'repeating-linear-gradient(45deg, #E2E8F0, #E2E8F0 3px, #EDF2F7 3px, #EDF2F7 6px)', transition: 'all 0.15s ease', border: `1px solid ${isCurrent ? 'transparent' : '#D9E2EC'}`, cursor: 'default' }} />
-              </div>
-            )
-          })}
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '4px', height: 24 }}>
-          {data.map((item, i) => (
-            <div key={item.label} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: i === now ? TEAL_DARK : TEXT3 }}>{item.label}</span>
-            </div>
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
+      {/* Header row */}
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        {/* Metric tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: BG, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '3px' }}>
+          {metricTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setMetric(tab.key)}
+              style={{
+                height: '28px', padding: '0 14px',
+                borderRadius: '7px',
+                border: 'none',
+                background: metric === tab.key ? WHITE : 'transparent',
+                boxShadow: metric === tab.key ? `0 1px 4px rgba(0,0,0,0.08)` : 'none',
+                color: metric === tab.key ? TEXT : TEXT3,
+                fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: FONT,
+                transition: 'all 0.15s',
+              }}
+            >
+              {tab.label}
+            </button>
           ))}
+        </div>
+
+        {/* Range selector */}
+        <select
+          value={range}
+          onChange={e => setRange(e.target.value as AnalyticsRange)}
+          style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+        >
+          {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
+        </select>
+      </div>
+
+      {/* Summary strip */}
+      <div style={{ display: 'flex', gap: '0', padding: '14px 20px 12px', borderBottom: `1px solid ${BORDER}` }}>
+        <div style={{ paddingRight: '24px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>
+            {range === 'This Year' ? `${thisYear} total` : range === 'Last Year' ? `${thisYear - 1} total` : 'Period total'}
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(total)}</div>
+        </div>
+        <div style={{ padding: '0 24px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Monthly avg</div>
+          <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
+        </div>
+        <div style={{ paddingLeft: '24px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '3px' }}>Best month</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{peak.label}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ padding: '16px 20px 14px' }}>
+        <div style={{ display: 'flex', gap: 0 }}>
+          {/* Y axis */}
+          <div style={{ width: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height, paddingBottom: 28, flexShrink: 0 }}>
+            {[yMax, Math.round(yMax * 0.5), 0].map((t, i) => (
+              <span key={i} style={{ fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmt(t)}</span>
+            ))}
+          </div>
+
+          {/* Bars */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            {[0, 0.5, 1].map((frac, i) => (
+              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${frac * (height - 28)}px`, height: 1, background: '#F0F4F8', zIndex: 0 }} />
+            ))}
+            <div style={{ position: 'absolute', inset: 0, paddingBottom: 28, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
+              {data.map((item, i) => {
+                const isHov = hovered === i
+                const barH = Math.max(4, (item.total / yMax) * (height - 36))
+                const isCurrentMonth = range === 'This Year' && i === thisMonth
+                const opacity = item.total === 0 ? 0.15 : isHov ? 1 : isCurrentMonth ? 1 : 0.55
+
+                return (
+                  <div
+                    key={item.label + i}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    {isHov && item.total > 0 && (
+                      <div style={{ position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '6px 10px', borderRadius: '9px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '2px' }}>{item.label}</div>
+                        <div style={{ color: WHITE }}>{fmtFull(item.total)}</div>
+                      </div>
+                    )}
+                    <div style={{
+                      width: '100%', height: barH,
+                      borderRadius: '5px 5px 2px 2px',
+                      background: barColor,
+                      opacity,
+                      transition: 'opacity 0.15s, height 0.2s',
+                      cursor: 'default',
+                    }} />
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* X labels */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: '5px', height: 24 }}>
+              {data.map((item, i) => {
+                const isCurrentMonth = range === 'This Year' && i === thisMonth
+                return (
+                  <div key={item.label + i} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth ? barColor : TEXT3 }}>{item.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -533,7 +706,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [dateRange, setDateRange] = useState('Last Year')
   const [visitMonths, setVisitMonths] = useState('1')
 
   const [popupDate, setPopupDate] = useState<Date | null>(null)
@@ -629,25 +801,24 @@ export default function DashboardPage() {
   const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
   const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
 
-  const monthlyJobsData = useMemo(() => {
-    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const base = names.map(label => ({ label, total: 0 }))
+  const jobsSpark = useMemo(() => {
+    const base = Array(12).fill(0)
     allJobs.forEach(job => {
       if (!job.created_at) return
       const d = parseDateLocal(job.created_at)
-      if (d && !isNaN(d.getTime())) base[d.getMonth()].total += 1
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1
     })
     return base
   }, [allJobs])
 
-  const monthlyRevenueData = useMemo(() => {
-    const months = Array.from({ length: 12 }, (_, i) => ({ label: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i], total: 0 }))
+  const revenueSpark = useMemo(() => {
+    const base = Array(12).fill(0)
     allInvoices.forEach(inv => {
       if (!inv.created_at || inv.status !== 'paid') return
       const d = parseDateLocal(inv.created_at)
-      if (d && !isNaN(d.getTime())) months[d.getMonth()].total += Number(inv.total || 0)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0)
     })
-    return months
+    return base
   }, [allInvoices])
 
   const jobsCurrentMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth)).length, [allJobs])
@@ -951,35 +1122,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr', gap: '16px', alignItems: 'start' }}>
-            <div style={card}>
-              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Analytics</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
-                    {['Last Year', 'This Year', 'Last 6 Months', 'Last 3 Months'].map(o => <option key={o}>{o}</option>)}
-                  </select>
-                  <button style={{ height: '30px', width: '30px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '14px', color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>⤢</button>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '24px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}` }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Revenue</div>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>${revenueCurrent30.toLocaleString('en-AU')}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginBottom: '2px' }}>Conv. Rate</div>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{convRate}%</div>
-                </div>
-              </div>
-              <div style={{ padding: '16px 20px 14px' }}>
-                <AnalyticsBarChart data={monthlyJobsData} height={200} />
-              </div>
-            </div>
-          </div>
+          <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
 
           {/* ── VISIT BY TIME + SIDE PANELS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
