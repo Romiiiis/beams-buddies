@@ -212,12 +212,6 @@ function AnalyticsCard({
   const avg = data.length ? Math.round(periodTotal / data.length) : 0
 
   const isCurrency = metric === 'revenue' || metric === 'outstanding'
-
-  function fmtAxis(n: number) {
-    if (!isCurrency) return String(Math.round(n))
-    if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`
-    return `$${Math.round(n)}`
-  }
   function fmtFull(n: number) {
     if (!isCurrency) return String(Math.round(n))
     return `$${Math.round(n).toLocaleString('en-AU')}`
@@ -228,150 +222,136 @@ function AnalyticsCard({
     jobs: '#9C27B0',
     outstanding: '#FF7043',
   }
-  const barColor = metricColor[metric]
+  const dotColor = metricColor[metric]
+  const dotColorLight = metric === 'revenue' ? TEAL_LIGHT : metric === 'jobs' ? '#F3E8FF' : '#FFF0EC'
 
-  const metricTabs: { key: AnalyticsMetric; label: string; sub: string }[] = [
-    { key: 'revenue', label: 'Revenue', sub: 'Paid invoices' },
-    { key: 'jobs', label: 'Jobs', sub: 'Created' },
-    { key: 'outstanding', label: 'Outstanding', sub: 'Unpaid' },
-  ]
-
-  const chartH = 200
+  const CHART_H = 220
+  const LABEL_H = 24
+  const DOT_GAP = 3
 
   return (
-    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', display: 'grid', gridTemplateColumns: '196px 1fr' }}>
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
 
-      {/* ── LEFT COLUMN ── */}
-      <div style={{ borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column' }}>
-
-        {/* Title */}
-        <div style={{ padding: '16px 18px 14px', borderBottom: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Analytics</div>
-          <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-            {range === 'This Year' ? `Jan – ${MONTH_NAMES[thisMonth]} ${thisYear}` : range === 'Last Year' ? String(thisYear - 1) : range}
-          </div>
-        </div>
-
-        {/* Metric selector */}
-        <div style={{ padding: '10px 10px 0' }}>
-          {metricTabs.map(tab => {
-            const active = metric === tab.key
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setMetric(tab.key)}
-                style={{
-                  width: '100%', padding: '9px 10px', marginBottom: '4px',
-                  borderRadius: '9px', border: active ? `1.5px solid ${barColor}` : `1px solid transparent`,
-                  background: active ? (metric === tab.key ? (metric === 'revenue' ? TEAL_LIGHT : metric === 'jobs' ? '#F3E8FF' : '#FFF0EC') : BG) : 'transparent',
-                  cursor: 'pointer', fontFamily: FONT, textAlign: 'left' as const,
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  transition: 'all 0.12s',
-                }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = BG }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-              >
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: active ? (metric === 'revenue' ? TEAL_DARK : metric === 'jobs' ? '#6B21A8' : '#C2410C') : TEXT2, lineHeight: 1.1 }}>{tab.label}</div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>{tab.sub}</div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Stats */}
-        <div style={{ padding: '14px 18px', marginTop: 'auto', borderTop: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Period total</div>
-            <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(periodTotal)}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Monthly avg</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Best month</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: barColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
-          </div>
-        </div>
-
-        {/* Range selector */}
-        <div style={{ padding: '12px 18px', borderTop: `1px solid ${BORDER}` }}>
+      {/* Header */}
+      <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Revenue Analytics</div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <select
+            value={metric}
+            onChange={e => setMetric(e.target.value as AnalyticsMetric)}
+            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
+          >
+            <option value="revenue">Revenue</option>
+            <option value="jobs">Jobs</option>
+            <option value="outstanding">Outstanding</option>
+          </select>
           <select
             value={range}
             onChange={e => setRange(e.target.value as AnalyticsRange)}
-            style={{ width: '100%', height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
           >
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
           </select>
         </div>
       </div>
 
-      {/* ── RIGHT COLUMN — chart ── */}
-      <div style={{ padding: '20px 20px 16px', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, display: 'flex', gap: 0 }}>
-          {/* Y axis labels — sit above the x-label row */}
-          <div style={{ width: 36, flexShrink: 0, position: 'relative', height: chartH }}>
-            <span style={{ position: 'absolute', top: 0, left: 0, fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(yMax)}</span>
-            <span style={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-50%)', fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>{fmtAxis(Math.round(yMax * 0.5))}</span>
-            <span style={{ position: 'absolute', bottom: 22, left: 0, fontSize: '10px', color: TEXT3, fontWeight: 600, lineHeight: 1 }}>0</span>
+      {/* Body: left stats + right chart */}
+      <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+
+        {/* Left stats */}
+        <div style={{ borderRight: `1px solid ${BORDER}`, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Period total</div>
+            <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(periodTotal)}</div>
           </div>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Monthly avg</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(avg)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Best month</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: dotColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
+          </div>
+          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>This period</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColorLight, border: `1.5px solid ${dotColor}`, flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Lower activity</span>
+            </div>
+          </div>
+        </div>
 
-          {/* Bars + gridlines + x labels */}
-          <div style={{ flex: 1, position: 'relative', height: chartH }}>
-            {/* Gridlines: top, mid, baseline */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: '#F0F4F8' }} />
-            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: '#F0F4F8' }} />
-            <div style={{ position: 'absolute', bottom: 22, left: 0, right: 0, height: 1, background: BORDER }} />
+        {/* Right bubble chart */}
+        <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
+          <div style={{ position: 'relative', height: CHART_H }}>
 
-            {/* Bar columns — sit between top=0 and bottom=22px (x-label height) */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 22, display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+            {/* Bubble columns */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
               {data.map((item, i) => {
+                const ratio = item.total / yMax
+                const availH = CHART_H - LABEL_H
+                const colH = Math.max(0, Math.round(ratio * (availH - 8)))
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
-                const availH = chartH - 22
-                const barH = Math.max(1, (item.total / yMax) * availH)
-                const opacity = item.total === 0 ? 0.1 : isHov || isCurrentMonth ? 1 : 0.4
+                const isBest = item.label === peak.label && item.total === peak.total
+
+                const dotSize = isHov || isBest ? 10 : 8
+                const numDots = colH > 0 ? Math.max(1, Math.floor(colH / (dotSize + DOT_GAP))) : 0
 
                 return (
                   <div
                     key={item.label + i}
-                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}
+                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }}
                     onMouseEnter={() => setHovered(i)}
                     onMouseLeave={() => setHovered(null)}
                   >
                     {isHov && item.total > 0 && (
-                      <div style={{ position: 'absolute', bottom: barH + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                      <div style={{ position: 'absolute', bottom: numDots * (dotSize + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
                         <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
                         <div>{fmtFull(item.total)}</div>
                       </div>
                     )}
-                    <div style={{
-                      width: '100%',
-                      height: barH,
-                      borderRadius: '4px 4px 0 0',
-                      background: barColor,
-                      opacity,
-                      transition: 'opacity 0.12s',
-                    }} />
+                    {Array.from({ length: numDots }).map((_, di) => {
+                      const isTopDot = di === numDots - 1
+                      const bg = isTopDot || isHov || isBest || isCurrentMonth ? dotColor : dotColorLight
+                      const op = isTopDot || isBest ? 1 : isHov ? 0.85 : 0.35 + (di / Math.max(numDots - 1, 1)) * 0.55
+                      return (
+                        <div
+                          key={di}
+                          style={{
+                            width: dotSize,
+                            height: dotSize,
+                            borderRadius: '50%',
+                            background: bg,
+                            opacity: op,
+                            flexShrink: 0,
+                            transition: 'all 0.12s',
+                          }}
+                        />
+                      )
+                    })}
                   </div>
                 )
               })}
             </div>
 
             {/* X labels */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 22, display: 'flex', gap: '4px' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: LABEL_H, display: 'flex', gap: '5px', alignItems: 'center' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
+                const isBest = item.label === peak.label && item.total === peak.total
                 return (
-                  <div key={item.label + i} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth ? barColor : TEXT3 }}>{item.label}</span>
+                  <div key={item.label + i} style={{ flex: 1, textAlign: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? dotColor : TEXT3 }}>{item.label}</span>
                   </div>
                 )
               })}
             </div>
+
           </div>
         </div>
       </div>
