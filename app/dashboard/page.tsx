@@ -81,6 +81,12 @@ function IconInfo({ size = 13 }: { size?: number }) {
 function IconPlus({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
 }
+function IconUsers({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconTrendUpNav({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
 
 // ── Sparkline (bar style) ──────────────────────────────────────────────────
 function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
@@ -350,7 +356,6 @@ function VisitCalendarMonths({
     return result
   }, [monthCount])
 
-  // Key by raw "YYYY-MM-DD" slice — timezone-proof
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
@@ -380,7 +385,6 @@ function VisitCalendarMonths({
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   }
 
-  // Returns bg/text colours based on job density
   function heatColor(count: number): { bg: string; textColor: string; dotColor: string } | null {
     if (count === 0) return null
     const ratio = count / maxCount
@@ -408,8 +412,6 @@ function VisitCalendarMonths({
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const todayKey = dateToKey(new Date())
-
-  // Determine grid columns: on mobile always 1, else 2 (up to 4 months pairs nicely)
   const cols = isMobile ? 1 : Math.min(2, months.length)
 
   return (
@@ -423,13 +425,7 @@ function VisitCalendarMonths({
             key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
             style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
           >
-            {/* Month header */}
-            <div style={{
-              padding: '10px 14px',
-              borderBottom: `1px solid ${BORDER}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: '#FCFCFD',
-            }}>
+            <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FCFCFD' }}>
               <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
                 {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
               </span>
@@ -443,7 +439,6 @@ function VisitCalendarMonths({
             </div>
 
             <div style={{ padding: '8px 10px 10px' }}>
-              {/* Day-of-week headers */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
                 {dayNames.map(day => (
                   <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
@@ -452,25 +447,16 @@ function VisitCalendarMonths({
                 ))}
               </div>
 
-              {/* Day cells */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                 {cells.map((cell, i) => {
-                  if (!cell.date) {
-                    return <div key={i} style={{ height: 34 }} />
-                  }
-
+                  if (!cell.date) return <div key={i} style={{ height: 34 }} />
                   const count = cell.jobs.length
                   const heat = heatColor(count)
                   const isToday = dateToKey(cell.date) === todayKey
                   const hasJobs = count > 0
-
                   const bg = heat ? heat.bg : '#F8FAFC'
                   const numColor = heat ? heat.textColor : TEXT3
-                  const borderStyle = isToday
-                    ? `2px solid ${TEAL}`
-                    : `1px solid ${heat ? 'transparent' : BORDER}`
-
-                  // Dot indicators (max 3 visible dots)
+                  const borderStyle = isToday ? `2px solid ${TEAL}` : `1px solid ${heat ? 'transparent' : BORDER}`
                   const dotCount = Math.min(count, 3)
                   const hasOverflow = count > 3
 
@@ -480,61 +466,19 @@ function VisitCalendarMonths({
                       type="button"
                       onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
                       title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
-                      style={{
-                        height: 34,
-                        borderRadius: '7px',
-                        border: borderStyle,
-                        background: bg,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '3px',
-                        cursor: hasJobs ? 'pointer' : 'default',
-                        padding: 0,
-                        outline: 'none',
-                        fontFamily: FONT,
-                        transition: 'transform 0.1s ease, box-shadow 0.1s ease',
-                      }}
-                      onMouseEnter={e => {
-                        if (!hasJobs) return
-                        e.currentTarget.style.transform = 'translateY(-1px)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)'
-                      }}
-                      onMouseLeave={e => {
-                        if (!hasJobs) return
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }}
+                      style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }}
+                      onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }}
+                      onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                     >
-                      {/* Date number */}
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: hasJobs ? 800 : 500,
-                        color: numColor,
-                        lineHeight: 1,
-                      }}>
+                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>
                         {cell.date.getDate()}
                       </span>
-
-                      {/* Dot row */}
                       {hasJobs && (
                         <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
                           {Array.from({ length: dotCount }).map((_, di) => (
-                            <div
-                              key={di}
-                              style={{
-                                width: 3,
-                                height: 3,
-                                borderRadius: '50%',
-                                background: heat?.dotColor ?? TEAL,
-                                opacity: 1 - di * 0.15,
-                              }}
-                            />
+                            <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />
                           ))}
-                          {hasOverflow && (
-                            <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />
-                          )}
+                          {hasOverflow && <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />}
                         </div>
                       )}
                     </button>
@@ -730,27 +674,10 @@ export default function DashboardPage() {
     return d && getDays(j.next_service_date) >= 0
   }).length, [allJobs])
 
-  const onTimeScore = stats.units > 0 ? Math.round(((stats.units - stats.overdue) / stats.units) * 100) : 0
-
-  const currentMonthScore = useMemo(() => {
-    const currentMonthJobsOnly = allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth))
-    if (!currentMonthJobsOnly.length) return onTimeScore
-    const currentMonthOverdue = currentMonthJobsOnly.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length
-    return Math.round(((currentMonthJobsOnly.length - currentMonthOverdue) / currentMonthJobsOnly.length) * 100)
-  }, [allJobs, onTimeScore])
-
-  const prevMonthScore = useMemo(() => {
-    const prevMonthJobsOnly = allJobs.filter(job => isBetween(job.created_at, startPrevMonth, startCurrentMonth))
-    if (!prevMonthJobsOnly.length) return currentMonthScore
-    const prevMonthOverdue = prevMonthJobsOnly.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length
-    return Math.round(((prevMonthJobsOnly.length - prevMonthOverdue) / prevMonthJobsOnly.length) * 100)
-  }, [allJobs, currentMonthScore])
-
   const activeSalesDelta = pctChange(activeSalesCurrent, activeSalesPrev)
   const revenueDelta = pctChange(revenueCurrent30, revenuePrev30)
   const jobsDelta = pctChange(jobsCurrentMonth, jobsPrevMonth)
   const convDelta = currentConv - prevConv
-  const scoreDelta = currentMonthScore - prevMonthScore
 
   const jobsSpark = monthlyJobsData.map(m => m.total)
   const revenueSpark = monthlyRevenueData.map(m => m.total)
@@ -793,6 +720,68 @@ export default function DashboardPage() {
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
 
+  // ── shared btn styles for header ──────────────────────────────────────
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'opacity 0.12s',
+  }
+  const btnNavSm: React.CSSProperties = {
+    height: '30px',
+    padding: '0 12px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '8px',
+    fontSize: '11px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+  const btnNavSmTeal: React.CSSProperties = {
+    ...btnNavSm,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
+    color: WHITE,
+  }
+
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
@@ -823,52 +812,145 @@ export default function DashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
 
           {/* ── HEADER ── */}
-          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: isMobile ? '14px' : '16px', padding: isMobile ? '16px' : '20px 24px' }}>
-            <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', gap: isMobile ? '14px' : '0', flexDirection: isMobile ? 'column' : 'row' }}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </div>
-                <h1 style={{ fontSize: isMobile ? '26px' : '34px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                  Dashboard
-                </h1>
+          {isMobile ? (
+            // ── Mobile header (unchanged layout) ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
-
-              {!isMobile && (
-                <>
-                  <div style={{ width: 1, height: 44, background: BORDER, margin: '0 24px', flexShrink: 0 }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Customers</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                    </div>
-                    <div style={{ width: 1, height: 32, background: BORDER }} />
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                    </div>
-                    <div style={{ width: 1, height: 32, background: BORDER }} />
-                    <div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Overdue</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: stats.overdue > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.overdue}</div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'stretch' : 'flex-end', marginLeft: isMobile ? 0 : '24px', flexShrink: 0 }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
+              <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: '0 0 14px', lineHeight: 1 }}>
+                Dashboard
+              </h1>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
                   <IconPlus size={12} /> Add Job
                 </button>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ height: '36px', padding: isMobile ? '0 12px' : '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: isMobile ? 1 : '0 0 auto', transition: 'border-color 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
                   <IconCalendar size={12} /> Schedule
                 </button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={{ height: '36px', padding: isMobile ? '0 14px' : '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 1 : '0 0 auto', transition: 'opacity 0.12s' }} onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }} onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                <button onClick={() => router.push('/dashboard/revenue')} style={{ ...btnDark, flex: 1 }}>
                   <IconDownload size={12} /> Revenue
                 </button>
               </div>
             </div>
-          </div>
+          ) : (
+            // ── Desktop B1 header ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }}>
+              {/* Top row */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                {/* Teal accent bar */}
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                {/* Title block */}
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Dashboard
+                  </h1>
+                </div>
+
+                {/* Divider */}
+                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
+
+                {/* KPI rail — Customers + Scheduled only */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Customers</div>
+                  </div>
+                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Scheduled</div>
+                  </div>
+                </div>
+
+                {/* Push actions to right */}
+                <div style={{ flex: 1 }} />
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconPlus size={12} /> Add Job
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconCalendar size={12} /> Schedule
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/revenue')}
+                    style={btnDark}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                  >
+                    <IconDownload size={12} /> Revenue
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer strip */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 24px', borderTop: `1px solid ${BORDER}`, background: BG, gap: '12px' }}>
+                {/* Status chips */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                    {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+                    ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8', flexShrink: 0 }} />
+                    {stats.overdue} overdue
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#94A3B8', flexShrink: 0 }} />
+                    ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
+                  </div>
+                </div>
+
+                {/* Quick-nav buttons */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/invoices')}
+                    style={btnNavSm}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconInvoice size={11} /> Invoices
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/customers')}
+                    style={btnNavSm}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconUsers size={11} /> Customers
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnNavSmTeal}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                  >
+                    <IconTrendUpNav size={11} /> Jobs
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* ── END HEADER ── */}
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
@@ -900,56 +982,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '320px 1fr', gap: '16px', alignItems: 'start' }}>
-            <div style={cardP}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Sales Performance</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                {(() => {
-                  const score = onTimeScore
-                  const size = 200
-                  const r = 78
-                  const circ = Math.PI * r
-                  const filled = (score / 100) * circ
-                  return (
-                    <div style={{ position: 'relative', width: size, height: 106 }}>
-                      <svg width={size} height={106} viewBox={`0 0 ${size} 106`} style={{ overflow: 'visible' }}>
-                        <defs>
-                          <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor={TEAL_DARK} />
-                            <stop offset="100%" stopColor={TEAL} />
-                          </linearGradient>
-                        </defs>
-                        <path d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`} fill="none" stroke="#F1F5F9" strokeWidth={16} strokeLinecap="round" />
-                        <path d={`M ${size / 2 - r} 102 A ${r} ${r} 0 0 1 ${size / 2 + r} 102`} fill="none" stroke="url(#gaugeGrad)" strokeWidth={16} strokeLinecap="round" strokeDasharray={`${filled} ${circ}`} style={{ transition: 'stroke-dasharray 0.6s ease' }} />
-                      </svg>
-                      <div style={{ position: 'absolute', bottom: 2, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                          <div style={{ fontSize: '44px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{score}</div>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: scoreDelta >= 0 ? TEAL : '#C0392B' }}>{scoreDelta >= 0 ? '+' : ''}{scoreDelta}</div>
-                        </div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>of 100 points</div>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-              <div style={{ padding: '12px 14px', borderRadius: '12px', background: TEAL_LIGHT, marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: TEAL_DARK }}>{stats.overdue === 0 ? 'No overdue jobs right now' : `${stats.overdue} job${stats.overdue !== 1 ? 's' : ''} need attention`}</div>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 500, color: TEAL_DARK, lineHeight: 1.5, paddingLeft: '12px' }}>{stats.overdue === 0 ? 'Your current schedule is clear based on the dates stored in the CRM.' : 'Review overdue jobs and reschedule as soon as possible.'}</div>
-              </div>
-              <button onClick={() => router.push('/dashboard/jobs')} style={{ width: '100%', height: '36px', background: 'transparent', color: TEXT, border: `1px solid ${BORDER}`, borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.15s' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = TEAL; (e.currentTarget as HTMLButtonElement).style.color = WHITE; (e.currentTarget as HTMLButtonElement).style.borderColor = TEAL }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = TEXT; (e.currentTarget as HTMLButtonElement).style.borderColor = BORDER }}>
-                {stats.overdue > 0 ? 'Improve Your Score →' : 'View Schedule →'}
-              </button>
-            </div>
-
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr', gap: '16px', alignItems: 'start' }}>
             <div style={card}>
               <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -984,7 +1017,6 @@ export default function DashboardPage() {
 
             {/* Visit by Time card */}
             <div style={card}>
-              {/* Card header */}
               <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -996,7 +1028,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  {/* Stats */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
@@ -1008,7 +1039,6 @@ export default function DashboardPage() {
                       <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
                     </div>
                   </div>
-                  {/* Month selector */}
                   <select
                     value={visitMonths}
                     onChange={e => setVisitMonths(e.target.value)}
@@ -1021,7 +1051,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Calendar grid */}
               <div style={{ padding: '14px 16px 10px' }}>
                 <VisitCalendarMonths
                   jobs={allJobs}
@@ -1034,7 +1063,6 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {/* Legend + footnote */}
               <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <CalendarLegend />
                 <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
