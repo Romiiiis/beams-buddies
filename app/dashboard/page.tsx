@@ -353,28 +353,27 @@ function VisitCalendarMonths({
     return result
   }, [monthCount])
 
-  // Build a map of dateKey -> jobs[] using timezone-safe parsing
+  // Key by "YYYY-MM-DD" raw string — slice first 10 chars of next_service_date
+  // This is timezone-proof: no Date parsing involved, matches exactly what Supabase stores
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
       if (!job.next_service_date) return
-      const d = parseDateLocal(job.next_service_date)
-      if (!d || isNaN(d.getTime())) return
-      const key = dateToKey(d)
+      const key = String(job.next_service_date).slice(0, 10)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
       if (!map[key]) map[key] = []
       map[key].push(job)
     })
     return map
   }, [jobs])
 
-  // Build a map of dateKey -> count for recently created jobs
+  // Key created_at by "YYYY-MM-DD" raw string too
   const recentJobsByDate = useMemo(() => {
     const map: Record<string, number> = {}
     jobs.forEach(job => {
       if (!job.created_at) return
-      const d = parseDateLocal(job.created_at)
-      if (!d || isNaN(d.getTime())) return
-      const key = dateToKey(d)
+      const key = String(job.created_at).slice(0, 10)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
       map[key] = (map[key] || 0) + 1
     })
     return map
@@ -384,6 +383,11 @@ function VisitCalendarMonths({
     const counts = Object.values(jobsByDate).map(arr => arr.length)
     return Math.max(1, ...counts)
   }, [jobsByDate])
+
+  // Build a "YYYY-MM-DD" key from year/month/day integers — matches the raw string keys above
+  function toRawKey(year: number, month: number, day: number): string {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
 
   function buildMonth(monthDate: Date) {
     const year = monthDate.getFullYear()
@@ -396,7 +400,7 @@ function VisitCalendarMonths({
     for (let i = 0; i < mondayStart; i++) cells.push({ date: null, jobs: [], recentCount: 0 })
     for (let day = 1; day <= daysInMonth; day++) {
       const d = new Date(year, month, day)
-      const key = dateToKey(d)
+      const key = toRawKey(year, month, day)
       cells.push({
         date: d,
         jobs: jobsByDate[key] || [],
