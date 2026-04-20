@@ -219,15 +219,17 @@ function AnalyticsCard({
 
   const metricColor: Record<AnalyticsMetric, string> = {
     revenue: TEAL,
-    jobs: '#9C27B0',
-    outstanding: '#FF7043',
+    jobs: TEAL,
+    outstanding: TEAL,
   }
   const dotColor = metricColor[metric]
-  const dotColorLight = metric === 'revenue' ? TEAL_LIGHT : metric === 'jobs' ? '#F3E8FF' : '#FFF0EC'
+  const dotColorLight = TEAL_LIGHT
 
   const CHART_H = 220
   const LABEL_H = 24
-  const DOT_GAP = 3
+  const DOT_SIZE = 8
+  const DOT_GAP = 4
+  const NUM_ROWS = Math.floor((CHART_H - LABEL_H) / (DOT_SIZE + DOT_GAP))
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
@@ -255,7 +257,7 @@ function AnalyticsCard({
         </div>
       </div>
 
-      {/* Body: left stats + right chart */}
+      {/* Body */}
       <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
 
         {/* Left stats */}
@@ -270,17 +272,17 @@ function AnalyticsCard({
           </div>
           <div>
             <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Best month</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: dotColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: TEAL, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
           </div>
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '7px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>This period</span>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>High activity</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColorLight, border: `1.5px solid ${dotColor}`, flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Lower activity</span>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL_LIGHT, border: `1.5px solid ${TEAL_MID}`, flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Low activity</span>
             </div>
           </div>
         </div>
@@ -289,18 +291,13 @@ function AnalyticsCard({
         <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
           <div style={{ position: 'relative', height: CHART_H }}>
 
-            {/* Bubble columns */}
+            {/* Dot columns */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
               {data.map((item, i) => {
-                const ratio = item.total / yMax
-                const availH = CHART_H - LABEL_H
-                const colH = Math.max(0, Math.round(ratio * (availH - 8)))
+                const ratio = yMax > 0 ? item.total / yMax : 0
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
-                const isBest = item.label === peak.label && item.total === peak.total
-
-                const dotSize = isHov || isBest ? 10 : 8
-                const numDots = colH > 0 ? Math.max(1, Math.floor(colH / (dotSize + DOT_GAP))) : 0
+                const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
 
                 return (
                   <div
@@ -310,26 +307,34 @@ function AnalyticsCard({
                     onMouseLeave={() => setHovered(null)}
                   >
                     {isHov && item.total > 0 && (
-                      <div style={{ position: 'absolute', bottom: numDots * (dotSize + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
+                      <div style={{ position: 'absolute', bottom: NUM_ROWS * (DOT_SIZE + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
                         <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
                         <div>{fmtFull(item.total)}</div>
                       </div>
                     )}
-                    {Array.from({ length: numDots }).map((_, di) => {
-                      const isTopDot = di === numDots - 1
-                      const bg = isTopDot || isHov || isBest || isCurrentMonth ? dotColor : dotColorLight
-                      const op = isTopDot || isBest ? 1 : isHov ? 0.85 : 0.35 + (di / Math.max(numDots - 1, 1)) * 0.55
+                    {Array.from({ length: NUM_ROWS }).map((_, di) => {
+                      // di=0 is bottom dot, di=NUM_ROWS-1 is top dot
+                      // a dot is "filled" if its position is within the value ratio
+                      const threshold = di / NUM_ROWS
+                      const filled = threshold < ratio
+                      const dotOpacity = filled
+                        ? isHov || isBest || isCurrentMonth
+                          ? 0.25 + (di / NUM_ROWS) * 0.75
+                          : 0.15 + (di / NUM_ROWS) * 0.65
+                        : 0.07
+                      const bg = filled ? TEAL : '#E8EDF2'
+
                       return (
                         <div
                           key={di}
                           style={{
-                            width: dotSize,
-                            height: dotSize,
+                            width: DOT_SIZE,
+                            height: DOT_SIZE,
                             borderRadius: '50%',
                             background: bg,
-                            opacity: op,
+                            opacity: dotOpacity,
                             flexShrink: 0,
-                            transition: 'all 0.12s',
+                            transition: 'opacity 0.15s',
                           }}
                         />
                       )
@@ -343,15 +348,14 @@ function AnalyticsCard({
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: LABEL_H, display: 'flex', gap: '5px', alignItems: 'center' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
-                const isBest = item.label === peak.label && item.total === peak.total
+                const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
                 return (
                   <div key={item.label + i} style={{ flex: 1, textAlign: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? dotColor : TEXT3 }}>{item.label}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? TEAL : TEXT3 }}>{item.label}</span>
                   </div>
                 )
               })}
             </div>
-
           </div>
         </div>
       </div>
