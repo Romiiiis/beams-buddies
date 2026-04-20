@@ -1,65 +1,25 @@
-'use client'
+import type { Metadata } from 'next'
+import './globals.css'
 
-import React, { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { BusinessContext } from '@/lib/business-context'
-
-type BusinessData = {
-  name: string
-  logo_url: string | null
-  full_name: string | null
-  role_title: string | null
+export const metadata: Metadata = {
+  title: 'Jobyra',
+  description: 'HVAC job and customer management',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Jobyra',
+  },
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [business, setBusiness] = useState<BusinessData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [tick, setTick] = useState(0)
-
-  function refresh() { setTick(t => t + 1) }
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { setLoading(false); return }
-
-      const { data: userData } = await supabase
-        .from('users')
-        .select('business_id, full_name, role_title')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!userData) { setLoading(false); return }
-
-      const { data: bizData } = await supabase
-        .from('businesses')
-        .select('name, logo_url')
-        .eq('id', userData.business_id)
-        .single()
-
-      if (bizData) {
-        setBusiness({
-          name: bizData.name,
-          logo_url: bizData.logo_url,
-          full_name: userData.full_name,
-          role_title: userData.role_title,
-        })
-      }
-
-      setLoading(false)
-    }
-
-    load()
-  }, [tick])
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <BusinessContext.Provider value={{ business, loading, refresh }}>
-      <style>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: #F1F5F9; }
-      `}</style>
-      {children}
-    </BusinessContext.Provider>
+    <html lang="en">
+      <head>
+        <meta name="theme-color" content="#2AA198" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
+      <body>{children}</body>
+    </html>
   )
 }
