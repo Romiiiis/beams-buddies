@@ -13,7 +13,7 @@ const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
 const BORDER     = '#E8EDF2'
-const BG         = '#F4F6F8'
+const BG         = '#FFFFFF'
 const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
