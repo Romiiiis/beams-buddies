@@ -455,10 +455,11 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               position: 'fixed',
-              top: 12,
+              top: 'max(14px, calc(env(safe-area-inset-top) + 8px))',
               right: isMobileMenuOpen ? 12 : -320,
-              bottom: 84,
+              bottom: 'calc(98px + env(safe-area-inset-bottom))',
               width: 268,
+              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 112px)',
               zIndex: 110,
               background: WHITE,
               border: `1px solid ${BORDER}`,
@@ -469,6 +470,7 @@ export function Sidebar({ active }: { active: string }) {
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
+              overflowX: 'hidden',
               overscrollBehavior: 'contain',
               WebkitOverflowScrolling: 'touch',
             }}
