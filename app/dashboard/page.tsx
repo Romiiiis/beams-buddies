@@ -978,33 +978,33 @@ export default function DashboardPage() {
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: isMobile ? WHITE : BG }}>
 
           {/* ── HEADER ── */}
           {isMobile ? (
             // ── Mobile header: edge-to-edge, BG colour top, white card bottom ──
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              {/* Top section — white, matching bottom half */}
-              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: TEAL }}>
+              {/* Top section — teal */}
+              <div style={{ background: TEAL, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 {/* Left: date + title */}
                 <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                   </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
                     Dashboard
                   </h1>
                 </div>
                 {/* Right: KPI numbers */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Customers</div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Customers</div>
                   </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.25)' }} />
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
                   </div>
                 </div>
               </div>
