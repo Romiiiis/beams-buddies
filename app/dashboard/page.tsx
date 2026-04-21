@@ -984,8 +984,8 @@ export default function DashboardPage() {
           {isMobile ? (
             // ── Mobile header: edge-to-edge, BG colour top, white card bottom ──
             <div style={{ margin: '-12px -12px 0', overflow: 'hidden' }}>
-              {/* Top section — page BG colour, side-to-side title + KPIs */}
-              <div style={{ background: BG, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              {/* Top section — white, matching bottom half */}
+              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 {/* Left: date + title */}
                 <div style={{ flexShrink: 0 }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
