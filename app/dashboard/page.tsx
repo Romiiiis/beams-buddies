@@ -982,62 +982,62 @@ export default function DashboardPage() {
 
           {/* ── HEADER ── */}
           {isMobile ? (
-            // ── Mobile header: left = date + title, right = KPIs, bottom = actions ──
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              {/* Top row: title left, KPI chips right */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', gap: '12px' }}>
+            // ── Mobile header: edge-to-edge, BG colour top, white card bottom ──
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden' }}>
+              {/* Top section — page BG colour, side-to-side title + KPIs */}
+              <div style={{ background: BG, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 {/* Left: date + title */}
                 <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                   </div>
-                  <h1 style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
                     Dashboard
                   </h1>
                 </div>
-                {/* Right: KPI pills stacked */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                      <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Customers</div>
-                    </div>
-                    <div style={{ width: 1, height: 28, background: BORDER }} />
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                      <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Scheduled</div>
-                    </div>
+                {/* Right: KPI numbers */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Customers</div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
                   </div>
                 </div>
               </div>
 
-              {/* Status chips row */}
-              <div style={{ display: 'flex', gap: '6px', padding: '0 16px 12px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
-                  {stats.jobsToday} today
+              {/* Bottom section — white card with chips + buttons */}
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                {/* Status chips */}
+                <div style={{ display: 'flex', gap: '6px', padding: '10px 16px 10px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                    {stats.jobsToday} today
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                    ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8' }} />
+                    {stats.overdue} overdue
+                  </div>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
-                  ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 14px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconPlus size={12} /> Add Job
+                  </button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconCalendar size={12} /> Schedule
+                  </button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
+                    <IconDownload size={12} /> Revenue
+                  </button>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8' }} />
-                  {stats.overdue} overdue
-                </div>
-              </div>
-
-              {/* Action buttons row */}
-              <div style={{ display: 'flex', gap: '8px', padding: '10px 16px 14px', borderTop: `1px solid ${BORDER}` }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconPlus size={12} /> Add Job
-                </button>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconCalendar size={12} /> Schedule
-                </button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
-                  <IconDownload size={12} /> Revenue
-                </button>
               </div>
             </div>
           ) : (
