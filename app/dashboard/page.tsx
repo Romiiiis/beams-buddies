@@ -13,7 +13,7 @@ const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
 const BORDER     = '#E8EDF2'
-const BG         = '#FAFAFA'
+const BG         = '#F4F6F8'
 const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
@@ -223,14 +223,13 @@ function AnalyticsCard({
   const DOT_GAP = 4
   const NUM_ROWS = Math.floor((CHART_H - LABEL_H) / (DOT_SIZE + DOT_GAP))
 
-  // Auto-scale: figure out what 1 dot represents so the peak month fills NUM_ROWS
   const dotUnit = peak.total > 0 ? Math.ceil(peak.total / NUM_ROWS) : 1
   const dotUnitLabel = isCurrency
     ? dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`
     : `${dotUnit}`
 
   return (
-    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }}>
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
 
       {/* Header */}
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
@@ -311,9 +310,7 @@ function AnalyticsCard({
                       </div>
                     )}
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
-                      // di=0 is bottom, di=NUM_ROWS-1 is top
-                      // filled dots grow from bottom up
-                      const dotIndex = NUM_ROWS - di // bottom dot = NUM_ROWS, top dot = 1
+                      const dotIndex = NUM_ROWS - di
                       const filled = !isFuture && dotIndex <= filledDots
 
                       let bg: string
@@ -889,10 +886,9 @@ export default function DashboardPage() {
     { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
-  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden' }
+  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
 
-  // ── shared btn styles for header ──────────────────────────────────────
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
@@ -929,12 +925,14 @@ export default function DashboardPage() {
     whiteSpace: 'nowrap' as const,
     transition: 'opacity 0.12s',
   }
-  const btnNavSm: React.CSSProperties = {
-    height: '30px',
-    padding: '0 12px',
+
+  // Mobile button styles — compact, equal width
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
     border: `1px solid ${BORDER}`,
-    borderRadius: '8px',
-    fontSize: '11px',
+    borderRadius: '9px',
+    fontSize: '12px',
     fontWeight: 700,
     color: TEXT2,
     background: WHITE,
@@ -944,13 +942,12 @@ export default function DashboardPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
-    whiteSpace: 'nowrap' as const,
-    transition: 'border-color 0.12s, color 0.12s',
+    flex: 1,
   }
-  const btnNavSmTeal: React.CSSProperties = {
-    ...btnNavSm,
-    background: TEAL,
-    border: `1px solid ${TEAL}`,
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
     color: WHITE,
   }
 
@@ -985,35 +982,70 @@ export default function DashboardPage() {
 
           {/* ── HEADER ── */}
           {isMobile ? (
-            // ── Mobile header (unchanged layout) ──
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            // ── Mobile header: left = date + title, right = KPIs, bottom = actions ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              {/* Top row: title left, KPI chips right */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', gap: '12px' }}>
+                {/* Left: date + title */}
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+                  <h1 style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Dashboard
+                  </h1>
+                </div>
+                {/* Right: KPI pills stacked */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                      <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Customers</div>
+                    </div>
+                    <div style={{ width: 1, height: 28, background: BORDER }} />
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                      <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Scheduled</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: '0 0 14px', lineHeight: 1 }}>
-                Dashboard
-              </h1>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
+
+              {/* Status chips row */}
+              <div style={{ display: 'flex', gap: '6px', padding: '0 16px 12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                  {stats.jobsToday} today
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                  ${invoiceStats.collected.toLocaleString('en-AU')} collected
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8' }} />
+                  {stats.overdue} overdue
+                </div>
+              </div>
+
+              {/* Action buttons row */}
+              <div style={{ display: 'flex', gap: '8px', padding: '10px 16px 14px', borderTop: `1px solid ${BORDER}` }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                   <IconPlus size={12} /> Add Job
                 </button>
-                <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                   <IconCalendar size={12} /> Schedule
                 </button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={{ ...btnDark, flex: 1 }}>
+                <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
                   <IconDownload size={12} /> Revenue
                 </button>
               </div>
             </div>
           ) : (
-            // ── Desktop B1 header ──
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden' }}>
+            // ── Desktop header (unchanged) ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
               {/* Top row */}
               <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                {/* Teal accent bar */}
                 <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-
-                {/* Title block */}
                 <div style={{ flexShrink: 0 }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -1022,11 +1054,7 @@ export default function DashboardPage() {
                     Dashboard
                   </h1>
                 </div>
-
-                {/* Divider */}
                 <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-
-                {/* KPI rail — Customers + Scheduled only */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
                   <div style={{ textAlign: 'center', padding: '0 18px' }}>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
@@ -1038,11 +1066,7 @@ export default function DashboardPage() {
                     <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Scheduled</div>
                   </div>
                 </div>
-
-                {/* Push actions to right */}
                 <div style={{ flex: 1 }} />
-
-                {/* Action buttons */}
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
@@ -1096,7 +1120,7 @@ export default function DashboardPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
-              <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>
+              <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
                   <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
@@ -1108,7 +1132,7 @@ export default function DashboardPage() {
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FFF0EE', color: sc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
                         {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{sc.delta}
                       </span>
-                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs previous period</span>
+                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
                     </div>
                   </div>
                   {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
