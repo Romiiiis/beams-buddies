@@ -455,11 +455,11 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               position: 'fixed',
-              top: 'max(14px, calc(env(safe-area-inset-top) + 8px))',
+              top: 'max(28px, calc(env(safe-area-inset-top) + 22px))',
               right: isMobileMenuOpen ? 12 : -320,
-              bottom: 'calc(98px + env(safe-area-inset-bottom))',
+              bottom: 'calc(132px + env(safe-area-inset-bottom))',
               width: 268,
-              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 112px)',
+              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 170px)',
               zIndex: 110,
               background: WHITE,
               border: `1px solid ${BORDER}`,
