@@ -14,9 +14,8 @@ const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
-const BG = '#F4F6F9'
+const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
@@ -52,6 +51,7 @@ function IconSpark({ size = 16 }: { size?: number }) {
     </svg>
   )
 }
+
 function IconSearch({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -60,6 +60,7 @@ function IconSearch({ size = 16 }: { size?: number }) {
     </svg>
   )
 }
+
 function IconArrow({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -73,6 +74,7 @@ function IconArrow({ size = 15 }: { size?: number }) {
     </svg>
   )
 }
+
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -86,6 +88,7 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
     </svg>
   )
 }
+
 function IconInfo({ size = 13 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -94,6 +97,7 @@ function IconInfo({ size = 13 }: { size?: number }) {
     </svg>
   )
 }
+
 function IconTrendUp({ size = 11 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -119,14 +123,18 @@ function SparkBars({
   width?: number
   height?: number
 }) {
-  const max = Math.max(...data, 1)
-  const barW = Math.floor(width / data.length) - 2
+  const safeData = data.length ? data : [0]
+  const max = Math.max(...safeData, 1)
+  const count = safeData.length
+  const barW = Math.max(3, Math.floor((width - (count - 1) * 2) / count))
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
-      {data.map((v, i) => {
+      {safeData.map((v, i) => {
         const h = Math.max(3, (v / max) * (height - 4))
         const x = i * (barW + 2)
+        const opacity = count === 1 ? 1 : 0.35 + (i / Math.max(count - 1, 1)) * 0.55
+
         return (
           <rect
             key={i}
@@ -134,9 +142,9 @@ function SparkBars({
             y={height - h}
             width={barW}
             height={h}
-            rx="2"
+            rx="3"
             fill={color}
-            opacity={i === data.length - 1 ? 1 : 0.35 + (i / data.length) * 0.55}
+            opacity={i === count - 1 ? 1 : opacity}
           />
         )
       })}
@@ -309,6 +317,7 @@ export default function CustomersPage() {
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const cardP: React.CSSProperties = {
@@ -329,6 +338,44 @@ export default function CustomersPage() {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+  }
+
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
   }
 
   const statCards = [
@@ -387,81 +434,108 @@ export default function CustomersPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/customers" />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '20px 24px',
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            background: BG,
           }}
         >
-          <div
-            style={{
-              background: HEADER_BG,
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? 0 : '16px',
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              ...(isMobile ? { marginLeft: '-14px', marginRight: '-14px' } : {}),
-            }}
-          >
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.68)',
-                marginBottom: '6px',
-              }}
-            >
-              {todayStr}
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {todayStr}
+                  </div>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Customers
+                  </h1>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginTop: '6px', lineHeight: 1.5 }}>
+                    Manage customer records, unit counts, service status, and review activity.
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={{
+                      ...btnOutline,
+                      flex: 1,
+                      height: '36px',
+                    }}
+                  >
+                    <IconSpark size={13} /> Add Job
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/customers')}
+                    style={{
+                      ...btnDark,
+                      flex: 1,
+                      height: '36px',
+                    }}
+                  >
+                    View Customers
+                  </button>
+                </div>
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Customers
+          ) : (
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {todayStr}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Customers
+                  </h1>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginTop: '6px', lineHeight: 1.5 }}>
+                    Manage customer records, unit counts, service status, and review activity.
+                  </div>
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
+                    <IconSpark size={13} /> Add Job
+                  </button>
+
+                  <button
+                    onClick={() => router.push('/dashboard/customers')}
+                    style={btnDark}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.92'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
+                    View Customers
+                  </button>
+                </div>
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              View customer records, unit counts, service status, and review activity from one control centre.
-            </div>
-            <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => router.push('/dashboard/jobs')}
-                style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
-                }}
-              >
-                <IconSpark size={14} /> Add job
-              </button>
-            </div>
-          </div>
+          )}
 
           <div
             style={{
