@@ -983,7 +983,7 @@ export default function DashboardPage() {
           {/* ── HEADER ── */}
           {isMobile ? (
             // ── Mobile header: edge-to-edge, BG colour top, white card bottom ──
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden' }}>
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
               {/* Top section — white, matching bottom half */}
               <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 {/* Left: date + title */}
