@@ -1009,32 +1009,32 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Bottom section — white card with chips + buttons */}
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+              {/* Bottom section — teal with chips + buttons */}
+              <div style={{ background: TEAL, borderBottom: `1px solid ${TEAL_DARK}` }}>
                 {/* Status chips */}
                 <div style={{ display: 'flex', gap: '6px', padding: '10px 16px 10px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.2)', color: WHITE, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: WHITE }} />
                     {stats.jobsToday} today
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.2)', color: WHITE, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: WHITE }} />
                     ${invoiceStats.collected.toLocaleString('en-AU')} collected
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8' }} />
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? 'rgba(153,27,27,0.35)' : 'rgba(255,255,255,0.15)', color: stats.overdue > 0 ? '#FCA5A5' : WHITE, fontSize: '10px', fontWeight: 800 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#FCA5A5' : WHITE }} />
                     {stats.overdue} overdue
                   </div>
                 </div>
                 {/* Action buttons */}
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 14px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnMobileSm, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: WHITE }}>
                     <IconPlus size={12} /> Add Job
                   </button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnMobileSm, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: WHITE }}>
                     <IconCalendar size={12} /> Schedule
                   </button>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={{ ...btnMobileDark, background: WHITE, border: `1px solid ${WHITE}`, color: TEAL }}>
                     <IconDownload size={12} /> Revenue
                   </button>
                 </div>
