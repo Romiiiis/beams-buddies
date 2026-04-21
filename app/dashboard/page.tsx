@@ -13,7 +13,7 @@ const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
 const BORDER     = '#E8EDF2'
-const BG         = '#F4F6F8'
+const BG         = '#FAFAFA'
 const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
@@ -978,7 +978,7 @@ export default function DashboardPage() {
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: isMobile ? WHITE : BG }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
 
           {/* ── HEADER ── */}
           {isMobile ? (
