@@ -103,14 +103,6 @@ function IconArrowLeft({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -170,14 +162,6 @@ function IconClock({ size = 16 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9" />
       <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -408,16 +392,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     display: 'block',
   }
 
-  const cardArrowBtn: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: TEXT3,
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
-  }
-
   const sectionHeaderTitle: React.CSSProperties = {
     fontSize: '15px',
     fontWeight: 800,
@@ -495,7 +469,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       value: stats.jobs.toLocaleString('en-AU'),
       sub: 'Tracked on this customer',
       accent: TEXT,
-      tag: 'Equipment total',
       up: stats.jobs > 0,
       delta: `${stats.jobs} total`,
     },
@@ -504,7 +477,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       value: stats.serviceRecords.toLocaleString('en-AU'),
       sub: 'Logged visit history',
       accent: TEAL_DARK,
-      tag: 'History',
       up: stats.serviceRecords > 0,
       delta: `${stats.serviceRecords} logged`,
     },
@@ -513,7 +485,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       value: stats.dueSoon.toLocaleString('en-AU'),
       sub: 'Units needing attention soon',
       accent: AMBER,
-      tag: 'Service watch',
       up: stats.dueSoon === 0,
       delta: stats.dueSoon === 0 ? 'All clear' : `${stats.dueSoon} pending`,
     },
@@ -522,7 +493,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       value: stats.reviewClicks.toLocaleString('en-AU'),
       sub: uniquePlatforms.length > 0 ? `Across ${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No review activity yet',
       accent: stats.reviewClicks > 0 ? TEAL_DARK : TEXT,
-      tag: 'Engagement',
       up: stats.reviewClicks > 0,
       delta: `${reviewRate}% of units`,
     },
@@ -816,45 +786,37 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   background: WHITE,
                   border: `1px solid ${BORDER}`,
                   borderRadius: '14px',
-                  padding: '18px 20px 0',
-                  overflow: 'hidden',
+                  padding: isMobile ? '14px 14px 12px' : '16px 16px 14px',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '122px' : '132px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                 }}
               >
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    {item.tag}
-                  </div>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{item.label}</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontSize: '26px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{item.value}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          padding: '2px 7px',
-                          borderRadius: '12px',
-                          background: item.up ? '#E6F7F6' : '#FFF0EE',
-                          color: item.up ? TEAL_DARK : '#C0392B',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                        }}
-                      >
-                        {item.delta}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 500, marginTop: '5px' }}>{item.sub}</div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT3, marginBottom: '10px' }}>{item.label}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    {item.value}
                   </div>
                 </div>
 
-                <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700 }}>Customer stats</span>
-                  <IconArrow size={11} />
+                <div style={{ marginTop: '10px' }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      background: item.up ? '#E6F7F6' : '#FFF0EE',
+                      color: item.up ? TEAL_DARK : '#C0392B',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {item.delta}
+                  </span>
+                  <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 500, marginTop: '7px', lineHeight: 1.35 }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -885,8 +847,26 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   {!editingCustomer && (
-                    <button onClick={() => setEditingCustomer(true)} style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
+                    <button
+                      onClick={() => setEditingCustomer(true)}
+                      style={{
+                        height: '34px',
+                        padding: '0 12px',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                      }}
+                    >
+                      <IconEdit size={14} />
+                      Edit
                     </button>
                   )}
                 </div>
@@ -1170,7 +1150,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     label: 'Serial number',
                                     value: job.serial_number || '—',
                                     mono: true,
-                                    icon: <IconArrow size={12} />,
+                                    icon: <IconArrowLeft size={12} />,
                                   },
                                   {
                                     label: 'Installed',
