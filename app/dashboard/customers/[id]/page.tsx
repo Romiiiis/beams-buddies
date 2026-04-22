@@ -182,47 +182,6 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
   )
 }
 
-function IconInfo({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function StatImageIcon({ src, alt }: { src: string; alt: string }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: '30px',
-        height: '30px',
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -407,7 +366,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }, [jobs, totalServiceRecords, reviewClicks])
 
   const reviewRate = stats.jobs > 0 ? Math.round((stats.reviewClicks / stats.jobs) * 100) : 0
-  const activeUnitsRate = stats.jobs > 0 ? Math.round((stats.scheduled / stats.jobs) * 100) : 0
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -536,7 +494,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Units installed',
       value: stats.jobs.toLocaleString('en-AU'),
       sub: 'Tracked on this customer',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_036667b7dfd5426cbc717f8ce989bc5a~mv2.png',
       accent: TEXT,
       tag: 'Equipment total',
       up: stats.jobs > 0,
@@ -546,7 +503,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Service records',
       value: stats.serviceRecords.toLocaleString('en-AU'),
       sub: 'Logged visit history',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_4038d62685f44d5395fda0f6dbb265fc~mv2.png',
       accent: TEAL_DARK,
       tag: 'History',
       up: stats.serviceRecords > 0,
@@ -556,7 +512,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
       sub: 'Units needing attention soon',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png',
       accent: AMBER,
       tag: 'Service watch',
       up: stats.dueSoon === 0,
@@ -566,7 +521,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       label: 'Review clicks',
       value: stats.reviewClicks.toLocaleString('en-AU'),
       sub: uniquePlatforms.length > 0 ? `Across ${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No review activity yet',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png',
       accent: stats.reviewClicks > 0 ? TEAL_DARK : TEXT,
       tag: 'Engagement',
       up: stats.reviewClicks > 0,
@@ -867,14 +821,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <div>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>{item.tag}</div>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{item.label}</span>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    {item.tag}
                   </div>
-                  <div style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <StatImageIcon src={item.iconSrc} alt={item.label} />
-                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{item.label}</span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
@@ -894,13 +845,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           fontWeight: 800,
                         }}
                       >
-                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                         {item.delta}
                       </span>
                     </div>
                     <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 500, marginTop: '5px' }}>{item.sub}</div>
                   </div>
-                  <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
                 </div>
 
                 <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
@@ -1454,104 +1403,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '13px 16px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Activity summary</span>
-                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: stats.overdue > 0 ? RED : TEXT, letterSpacing: '-0.04em' }}>
-                    {stats.overdue > 0 ? `${stats.overdue} overdue` : `${activeUnitsRate}% active`}
-                  </span>
-                  <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginLeft: '8px' }}>
-                    · {stats.scheduled} scheduled
-                  </span>
-                </div>
-
-                {[
-                  { label: 'Overdue', value: stats.overdue, bg: '#FEF2F2', border: '#FECACA' },
-                  { label: 'Due soon', value: stats.dueSoon, bg: '#FFFBF2', border: '#F4E5B8' },
-                  { label: 'Review clicks', value: stats.reviewClicks, bg: '#FCFCFD', border: BORDER },
-                ].map((row, index) => (
-                  <div
-                    key={row.label}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 16px',
-                      borderBottom: index === 2 ? 'none' : `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{row.label}</span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 900,
-                        color: TEXT,
-                        background: row.bg,
-                        border: `1px solid ${row.border}`,
-                        borderRadius: '999px',
-                        padding: '5px 10px',
-                        minWidth: '46px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {row.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '13px 16px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick details</span>
-                </div>
-
-                <div style={{ display: 'grid' }}>
-                  {[
-                    { label: 'Suburb', value: customer.suburb || '—' },
-                    { label: 'Platforms', value: uniquePlatforms.length || 0 },
-                    { label: 'Units', value: stats.jobs },
-                    { label: 'History', value: stats.serviceRecords },
-                  ].map((row, index) => (
-                    <div
-                      key={row.label}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '11px 16px',
-                        borderBottom: index === 3 ? 'none' : `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{row.label}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {reviewClicks.length > 0 && (
                 <div style={card}>
                   <div
