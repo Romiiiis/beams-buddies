@@ -343,13 +343,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const reviewRate = stats.jobs > 0 ? Math.round((stats.reviewClicks / stats.jobs) * 100) : 0
 
-  const todayStr = new Date().toLocaleDateString('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
@@ -560,19 +553,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     Customers
                   </button>
 
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-
                   <h1
                     style={{
                       fontSize: '26px',
@@ -648,19 +628,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <IconArrowLeft size={13} />
                     Customers
                   </button>
-
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    {todayStr}
-                  </div>
 
                   <h1
                     style={{
@@ -829,30 +796,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer profile</div>
                   <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
                 </div>
-
-                {!editingCustomer && (
-                  <button
-                    onClick={() => setEditingCustomer(true)}
-                    style={{
-                      height: '34px',
-                      padding: '0 12px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                    }}
-                  >
-                    <IconEdit size={14} />
-                    Edit
-                  </button>
-                )}
               </div>
 
               {!editingCustomer ? (
