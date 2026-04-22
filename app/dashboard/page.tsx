@@ -28,19 +28,36 @@ function useIsMobile() {
   return isMobile
 }
 
-function parseDateLocal(dateStr: string): Date | null {
+/**
+ * Parse a date string as LOCAL midnight — avoids UTC-offset shifting.
+ * Handles both YYYY-MM-DD (Supabase date columns) and ISO timestamp strings.
+ */
+function parseDateLocal(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null
+  // Pure date: YYYY-MM-DD → treat as local midnight
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     const [y, m, d] = dateStr.split('-').map(Number)
     return new Date(y, m - 1, d)
   }
-  const parsed = new Date(dateStr)
-  if (isNaN(parsed.getTime())) return null
-  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
+  // Timestamp: take only the date portion so we still get local midnight
+  const datePart = dateStr.slice(0, 10)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+    const [y, m, d] = datePart.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return null
 }
 
-function dateToKey(d: Date): string {
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+/** Zero-out hours so two dates representing the same calendar day compare equal. */
+function startOfDay(date: Date): Date {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+/** Canonical YYYY-MM-DD key for a Date object (local). */
+function dateToYMD(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -158,14 +175,26 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
       const start = new Date(year, month, 1)
       const end = new Date(year, month + 1, 1)
       if (metric === 'revenue') {
-        const total = allInvoices.filter(inv => inv.status === 'paid' && inv.created_at).filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end }).reduce((s, inv) => s + Number(inv.total || 0), 0)
+        const total = allInvoices
+          .filter(inv => inv.status === 'paid')
+          .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+          .reduce((s, inv) => s + Number(inv.total || 0), 0)
         return { label, total }
       }
       if (metric === 'jobs') {
-        const total = allJobs.filter(job => job.created_at).filter(job => { const d = parseDateLocal(job.created_at); return d && d >= start && d < end }).length
+        // Jobs chart: bucket by next_service_date (when the job is actually scheduled)
+        const total = allJobs
+          .filter(job => {
+            const d = parseDateLocal(job.next_service_date)
+            return d && d >= start && d < end
+          }).length
         return { label, total }
       }
-      const total = allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at).filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end }).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
+      // outstanding
+      const total = allInvoices
+        .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
+        .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
+        .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
       return { label, total }
     })
   }, [metric, months, allJobs, allInvoices])
@@ -216,7 +245,6 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
             <div style={{ fontSize: '18px', fontWeight: 900, color: TEAL, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
           </div>
-          {/* Legend — only the dot unit, no future months */}
           <div style={{ marginTop: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
@@ -293,12 +321,23 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
             const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
             const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
             const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
+            // Show the actual scheduled service date in the popup
+            const serviceDate = job.next_service_date
+              ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+              : null
             return (
               <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
                 <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>
+                    {job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
+                  </div>
+                  {serviceDate && (
+                    <div style={{ fontSize: '10px', color: TEAL_DARK, fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <IconCalendar size={9} /> {serviceDate}
+                    </div>
+                  )}
                   {job.customers?.phone && <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}><IconPhone size={10} /> {job.customers.phone}</div>}
                 </div>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
@@ -314,7 +353,7 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
   )
 }
 
-// ── Calendar Widget (intrac-style) ─────────────────────────────────────────
+// ── Calendar Widget ────────────────────────────────────────────────────────
 const MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_NAMES_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
@@ -327,16 +366,23 @@ function VisitCalendarWidget({
   isMobile: boolean
   onDateClick: (date: Date, jobsOnDay: any[]) => void
 }) {
-  const today = useMemo(() => new Date(), [])
+  const today = useMemo(() => startOfDay(new Date()), [])
+  const todayKey = useMemo(() => dateToYMD(today), [today])
+
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
 
+  /**
+   * Build a map of YYYY-MM-DD → jobs[] keyed strictly by next_service_date.
+   * We normalise every date through parseDateLocal → dateToYMD so the key
+   * format is always identical to the cell dateKey built below.
+   */
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
-      if (!job.next_service_date) return
-      const key = String(job.next_service_date).slice(0, 10)
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
+      const d = parseDateLocal(job.next_service_date)
+      if (!d) return
+      const key = dateToYMD(d)
       if (!map[key]) map[key] = []
       map[key].push(job)
     })
@@ -352,7 +398,6 @@ function VisitCalendarWidget({
     else setViewMonth(m => m + 1)
   }
 
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   const todayJobs = jobsByDate[todayKey] || []
 
   // Build Sunday-start grid
@@ -362,12 +407,13 @@ function VisitCalendarWidget({
   const cells: Array<{ day: number | null; dateKey: string | null; colIndex: number }> = []
   for (let i = 0; i < sundayOffset; i++) cells.push({ day: null, dateKey: null, colIndex: i })
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    // Use dateToYMD on a real Date so format is guaranteed consistent
+    const dateKey = dateToYMD(new Date(viewYear, viewMonth, day))
     cells.push({ day, dateKey, colIndex: (sundayOffset + day - 1) % 7 })
   }
   while (cells.length % 7 !== 0) cells.push({ day: null, dateKey: null, colIndex: cells.length % 7 })
 
-  // Month job list for "Today: X bookings" line
+  // Month prefix for job list below calendar
   const monthPrefix = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-`
   const monthJobEntries = Object.entries(jobsByDate)
     .filter(([key]) => key.startsWith(monthPrefix))
@@ -393,7 +439,7 @@ function VisitCalendarWidget({
 
       {/* Day headers */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 16px 4px' }}>
-        {DAY_NAMES_SHORT.map((d, i) => (
+        {DAY_NAMES_SHORT.map((d) => (
           <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', paddingBottom: '4px' }}>
             {d}
           </div>
@@ -408,14 +454,12 @@ function VisitCalendarWidget({
           const count = jobsOnDay.length
           const isToday = cell.dateKey === todayKey
           const hasJobs = count > 0
-          const isWeekend = (cell.colIndex === 0 || cell.colIndex === 6)
-
           return (
             <button
               key={i}
               type="button"
               onClick={() => { if (hasJobs || isToday) onDateClick(new Date(viewYear, viewMonth, cell.day!), jobsOnDay) }}
-              title={hasJobs ? `${count} job${count !== 1 ? 's' : ''}` : undefined}
+              title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} on ${cell.dateKey}` : undefined}
               style={{
                 height: 38,
                 borderRadius: '9px',
@@ -443,7 +487,6 @@ function VisitCalendarWidget({
               }}>
                 {cell.day}
               </span>
-              {/* Job dot indicators */}
               {hasJobs && (
                 <div style={{ display: 'flex', gap: '2px' }}>
                   {Array.from({ length: Math.min(count, 3) }).map((_, di) => (
@@ -456,7 +499,7 @@ function VisitCalendarWidget({
         })}
       </div>
 
-      {/* Today summary + job list */}
+      {/* Today summary + upcoming job list for the month */}
       <div style={{ padding: '12px 20px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '10px' }}>
         <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '10px' }}>
           Today: <span style={{ color: TEAL, fontWeight: 800 }}>{todayJobs.length} booking{todayJobs.length !== 1 ? 's' : ''}</span>
@@ -467,8 +510,11 @@ function VisitCalendarWidget({
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {monthJobEntries.slice(0, 3).flatMap(([dateKey, dayJobs]) => {
+              // Parse using our canonical helper — guaranteed to match the map key
               const d = parseDateLocal(dateKey)
-              const dateLabel = d ? d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }) : dateKey
+              const dateLabel = d
+                ? d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+                : dateKey
               return dayJobs.slice(0, 1).map((job) => {
                 const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                 const jobType = job.job_type || 'Service'
@@ -500,9 +546,13 @@ function VisitCalendarWidget({
 }
 
 // ── Status pill ────────────────────────────────────────────────────────────
-function statusPill(d: string | null, getDays: (s: string) => number) {
+function statusPill(nextServiceDate: string | null | undefined) {
+  if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
+  const d = parseDateLocal(nextServiceDate)
   if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
-  const days = getDays(d)
+  const today = startOfDay(new Date())
+  const target = startOfDay(d)
+  const days = Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B' }
   if (days <= 7) return { label: 'This week', bg: '#E6F7F6', color: TEAL_DARK }
   if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E' }
@@ -513,7 +563,6 @@ function pctChange(current: number, previous: number) {
   if (previous === 0) { if (current === 0) return 0; return 100 }
   return Math.round(((current - previous) / previous) * 100)
 }
-
 function formatDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
 
 // ── Page ───────────────────────────────────────────────────────────────────
@@ -532,18 +581,10 @@ export default function DashboardPage() {
   const [allJobs, setAllJobs] = useState<any[]>([])
   const [allInvoices, setAllInvoices] = useState<any[]>([])
 
-  function startOfDay(date: Date) { const d = new Date(date); d.setHours(0, 0, 0, 0); return d }
-  function getDays(d: string) {
-    const today = startOfDay(new Date()).getTime()
-    const parsed = parseDateLocal(d)
-    if (!parsed) return 0
-    const target = startOfDay(parsed).getTime()
-    return Math.floor((target - today) / (1000 * 60 * 60 * 24))
-  }
   function isBetween(dateStr: string | null | undefined, start: Date, end: Date) {
     if (!dateStr) return false
     const d = parseDateLocal(dateStr)
-    if (!d || isNaN(d.getTime())) return false
+    if (!d) return false
     return d >= start && d < end
   }
 
@@ -556,6 +597,7 @@ export default function DashboardPage() {
 
       const bid = userData.business_id
       const today = startOfDay(new Date())
+      const todayKey = dateToYMD(today)
       const currentMonth = today.getMonth()
       const currentYear = today.getFullYear()
 
@@ -570,14 +612,39 @@ export default function DashboardPage() {
 
       const jobs = jobsRes.data || []
       const invoices = invoicesRes.data || []
-      const overdue = jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d) < today })
-      const jobsThisMonth = jobs.filter(j => { if (!j.created_at) return false; const d = parseDateLocal(j.created_at); return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear }).length
-      const jobsToday = jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() === today.getTime() }).length
+
+      // All date comparisons use parseDateLocal + startOfDay for consistency
+      const overdue = jobs.filter(j => {
+        const d = parseDateLocal(j.next_service_date)
+        return d && startOfDay(d) < today
+      })
+
+      // Jobs this month: bucket by next_service_date (the scheduled service date)
+      const jobsThisMonth = jobs.filter(j => {
+        const d = parseDateLocal(j.next_service_date)
+        return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear
+      }).length
+
+      // Jobs today: match by next_service_date key
+      const jobsToday = jobs.filter(j => {
+        const d = parseDateLocal(j.next_service_date)
+        return d && dateToYMD(d) === todayKey
+      }).length
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
       setAllJobs(jobs)
       setAllInvoices(invoices)
-      setUpcoming(jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d) >= today }).slice(0, 5))
+
+      // Upcoming: jobs whose next_service_date is today or in the future
+      setUpcoming(
+        jobs
+          .filter(j => {
+            const d = parseDateLocal(j.next_service_date)
+            return d && startOfDay(d) >= today
+          })
+          .slice(0, 5)
+      )
+
       setRecent((customersRes.data || []).slice(0, 8))
       setInvoiceStats({
         collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total || 0), 0),
@@ -598,15 +665,51 @@ export default function DashboardPage() {
   const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
   const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
 
-  const jobsSpark = useMemo(() => { const base = Array(12).fill(0); allJobs.forEach(job => { if (!job.created_at) return; const d = parseDateLocal(job.created_at); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1 }); return base }, [allJobs])
-  const revenueSpark = useMemo(() => { const base = Array(12).fill(0); allInvoices.forEach(inv => { if (!inv.created_at || inv.status !== 'paid') return; const d = parseDateLocal(inv.created_at); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0) }); return base }, [allInvoices])
+  // Sparklines: revenue uses created_at (invoice date), jobs uses next_service_date
+  const jobsSpark = useMemo(() => {
+    const base = Array(12).fill(0)
+    allJobs.forEach(job => {
+      const d = parseDateLocal(job.next_service_date)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1
+    })
+    return base
+  }, [allJobs])
 
-  const jobsCurrentMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth)).length, [allJobs])
-  const jobsPrevMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startPrevMonth, startCurrentMonth)).length, [allJobs])
-  const revenueCurrent30 = useMemo(() => allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startCurrent30, now)).reduce((s, inv) => s + Number(inv.total || 0), 0), [allInvoices])
-  const revenuePrev30 = useMemo(() => allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startPrev30, startCurrent30)).reduce((s, inv) => s + Number(inv.total || 0), 0), [allInvoices])
-  const activeSalesCurrent = useMemo(() => allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startCurrent30, now)).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0), [allInvoices])
-  const activeSalesPrev = useMemo(() => allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startPrev30, startCurrent30)).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0), [allInvoices])
+  const revenueSpark = useMemo(() => {
+    const base = Array(12).fill(0)
+    allInvoices.forEach(inv => {
+      if (inv.status !== 'paid') return
+      const d = parseDateLocal(inv.created_at)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0)
+    })
+    return base
+  }, [allInvoices])
+
+  // Stat card deltas — jobs buckets use next_service_date
+  const jobsCurrentMonth = useMemo(() =>
+    allJobs.filter(job => isBetween(job.next_service_date, startCurrentMonth, startNextMonth)).length,
+  [allJobs])
+  const jobsPrevMonth = useMemo(() =>
+    allJobs.filter(job => isBetween(job.next_service_date, startPrevMonth, startCurrentMonth)).length,
+  [allJobs])
+
+  const revenueCurrent30 = useMemo(() =>
+    allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startCurrent30, now))
+      .reduce((s, inv) => s + Number(inv.total || 0), 0),
+  [allInvoices])
+  const revenuePrev30 = useMemo(() =>
+    allInvoices.filter(inv => inv.status === 'paid' && isBetween(inv.created_at, startPrev30, startCurrent30))
+      .reduce((s, inv) => s + Number(inv.total || 0), 0),
+  [allInvoices])
+
+  const activeSalesCurrent = useMemo(() =>
+    allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startCurrent30, now))
+      .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
+  [allInvoices])
+  const activeSalesPrev = useMemo(() =>
+    allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && isBetween(inv.created_at, startPrev30, startCurrent30))
+      .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0),
+  [allInvoices])
 
   const totalInvoices = allInvoices.length
   const paidInvoices = allInvoices.filter(inv => inv.status === 'paid').length
@@ -618,7 +721,12 @@ export default function DashboardPage() {
   const currentConv = currentInvoicesWindow.length > 0 ? Math.round((currentPaidWindow / currentInvoicesWindow.length) * 100) : 0
   const prevConv = prevInvoicesWindow.length > 0 ? Math.round((prevPaidWindow / prevInvoicesWindow.length) * 100) : 0
 
-  const scheduledCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && getDays(j.next_service_date) >= 0 }).length, [allJobs])
+  const scheduledCount = useMemo(() =>
+    allJobs.filter(j => {
+      const d = parseDateLocal(j.next_service_date)
+      return d && startOfDay(d) >= startOfDay(new Date())
+    }).length,
+  [allJobs])
 
   const activeSalesDelta = pctChange(activeSalesCurrent, activeSalesPrev)
   const revenueDelta = pctChange(revenueCurrent30, revenuePrev30)
@@ -771,7 +879,7 @@ export default function DashboardPage() {
           {/* ── LOWER SECTION ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
-            {/* Left column: Bookings + Recent Customers */}
+            {/* Left column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
               {/* Bookings card */}
@@ -801,9 +909,8 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {/* Recent Customers — standalone redesigned card */}
+              {/* Recent Customers */}
               <div style={card}>
-                {/* Header */}
                 <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Recent Customers</div>
@@ -817,14 +924,12 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {/* Column headers */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', padding: '8px 20px 6px', borderBottom: `1px solid ${BORDER}` }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Customer</div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'center' }}>Next Job</div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'center' }}>Service Date</div>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'right' }}>Status</div>
                 </div>
 
-                {/* Rows */}
                 {recent.length === 0 ? (
                   <div style={{ padding: '32px', textAlign: 'center' }}>
                     <div style={{ fontSize: '24px', marginBottom: '8px' }}>👤</div>
@@ -832,16 +937,30 @@ export default function DashboardPage() {
                   </div>
                 ) : recent.map((customer: any, i: number) => {
                   const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer'
-                  // Find the next upcoming job for this customer
-                  const customerJobs = allJobs.filter(j => j.customer_id === customer.id && j.next_service_date)
-                  const nextJob = customerJobs.find(j => {
-                    const d = parseDateLocal(j.next_service_date)
-                    return d && d >= new Date(new Date().setHours(0,0,0,0))
-                  }) || customerJobs[customerJobs.length - 1]
-                  const sp = statusPill(nextJob?.next_service_date || null, getDays)
+
+                  // Find next upcoming job for this customer by next_service_date
+                  const today = startOfDay(new Date())
+                  const customerJobs = allJobs
+                    .filter(j => j.customer_id === customer.id && j.next_service_date)
+                    .sort((a, b) => {
+                      const da = parseDateLocal(a.next_service_date)
+                      const db = parseDateLocal(b.next_service_date)
+                      return (da?.getTime() ?? 0) - (db?.getTime() ?? 0)
+                    })
+
+                  // Prefer a future/today job; fall back to most recent past
+                  const nextJob =
+                    customerJobs.find(j => {
+                      const d = parseDateLocal(j.next_service_date)
+                      return d && startOfDay(d) >= today
+                    }) ?? customerJobs[customerJobs.length - 1]
+
+                  // Display the service date (next_service_date), not created_at
+                  const sp = statusPill(nextJob?.next_service_date)
                   const jobDate = nextJob?.next_service_date
                     ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                     : '—'
+
                   const accentColors = [TEAL, '#9C27B0', '#FF7043', '#43A047', '#2196F3', '#FF6B35', '#E040FB']
                   const accent = accentColors[i % accentColors.length]
                   return (
@@ -852,7 +971,6 @@ export default function DashboardPage() {
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      {/* Name + suburb */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '8px' }}>
                         <div style={{ width: 3, height: 32, borderRadius: '2px', background: accent, flexShrink: 0 }} />
                         <div style={{ minWidth: 0 }}>
@@ -864,9 +982,7 @@ export default function DashboardPage() {
                           </div>
                         </div>
                       </div>
-                      {/* Next job date */}
                       <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>{jobDate}</div>
-                      {/* Status */}
                       <div style={{ textAlign: 'right' }}>
                         <span style={{ padding: '3px 9px', borderRadius: '20px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{sp.label}</span>
                       </div>
@@ -925,7 +1041,10 @@ export default function DashboardPage() {
                 ) : upcoming.slice(0, 4).map((job, i) => {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const isFirst = i === 0
-                  const dateText = job.next_service_date ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'
+                  // Always show next_service_date as the job date
+                  const dateText = job.next_service_date
+                    ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+                    : 'No date'
                   return (
                     <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }} onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }} onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = isFirst ? TEAL_LIGHT : WHITE }}>
                       <div style={{ width: 4, height: 34, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
