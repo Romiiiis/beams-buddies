@@ -734,35 +734,6 @@ function DashboardHeader({
         </div>
       </div>
 
-      {/* Bottom: status strip */}
-      <div style={{ display: 'flex', alignItems: 'center', padding: '10px 28px', background: WHITE, gap: '8px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-            {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-            <IconDollarSign size={10} />
-            ${invoiceStats.collected.toLocaleString('en-AU')} collected
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-            <IconAlertCircle size={10} />
-            {stats.overdue} overdue
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
-            <IconDollarSign size={10} />
-            ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
-          </span>
-        </div>
-        {/* Revenue trend micro-badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-          <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>30-day revenue</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '12px', background: revenueDelta >= 0 ? TEAL_LIGHT : '#FFF0EE', color: revenueDelta >= 0 ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
-            {revenueDelta >= 0 ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-            {revenueDelta >= 0 ? '+' : ''}{revenueDelta}%
-          </span>
-        </div>
-      </div>
     </div>
   )
 }
