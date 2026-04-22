@@ -5,16 +5,16 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 
-const TEAL       = '#2DD4BF'
-const TEAL_DARK  = '#14B8A6'
+const TEAL       = '#1F9E94'
+const TEAL_DARK  = '#177A72'
 const TEAL_MID   = '#5BBFB9'
-const TEAL_LIGHT = 'rgba(45,212,191,0.12)'
-const TEXT       = '#F1F5F9'
-const TEXT2      = '#CBD5E1'
+const TEAL_LIGHT = '#E6F7F6'
+const TEXT       = '#0B1220'
+const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
-const BORDER     = 'rgba(255,255,255,0.07)'
-const BG         = '#0A0D14'
-const WHITE      = '#141928'
+const BORDER     = '#E8EDF2'
+const BG         = '#FAFAFA'
+const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
@@ -126,7 +126,7 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   const filled = (Math.min(Math.max(value, 0), 100) / 100) * circ
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={8} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F1F5F9" strokeWidth={8} />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={8} strokeDasharray={`${filled} ${circ}`} strokeLinecap="round" />
     </svg>
   )
@@ -185,16 +185,16 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
   const dotUnitLabel = isCurrency ? (dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`) : `${dotUnit}`
 
   return (
-    <div style={{ background: 'linear-gradient(145deg, #161C2D 0%, #0F1218 100%)', border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+    <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Analytics</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: '#1A2235', outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
+          <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
             <option value="outstanding">Outstanding</option>
           </select>
-          <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: '#1A2235', outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
+          <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
           </select>
         </div>
@@ -245,7 +245,7 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
                       const dotIndex = NUM_ROWS - di
                       const filled = dotIndex <= filledDots
-                      const bg = filled ? TEAL : 'rgba(255,255,255,0.06)'
+                      const bg = filled ? TEAL : '#E8EDF2'
                       const op = filled ? (isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5) : 0.25
                       return <div key={di} style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: bg, opacity: op, flexShrink: 0, transition: 'opacity 0.12s' }} />
                     })}
@@ -271,67 +271,43 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
   )
 }
 
-// ── DonutChart ─────────────────────────────────────────────────────────────
-function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
-  const [hovered, setHovered] = useState<string | null>(null)
-  const total = segments.reduce((s, x) => s + x.value, 0) || 1
-  const cx = size / 2; const cy = size / 2
-  const r = (size - thickness) / 2 - 2
-  const circ = 2 * Math.PI * r
-  let cum = 0
-  const arcs = segments.map(seg => { const s = cum; const sw = (seg.value / total) * circ; cum += sw; return { ...seg, s, sw } })
-  const hov = segments.find(s => s.label === hovered)
-  return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={thickness} />
-        {arcs.map(arc => <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none" stroke={arc.color} strokeWidth={hovered === arc.label ? thickness + 4 : thickness} strokeDasharray={`${arc.sw} ${circ}`} strokeDashoffset={-arc.s} strokeLinecap="butt" style={{ transition: 'all 0.18s', opacity: hovered && hovered !== arc.label ? 0.3 : 1, cursor: 'pointer' }} onMouseEnter={() => setHovered(arc.label)} onMouseLeave={() => setHovered(null)} />)}
-      </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div style={{ fontSize: '8px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 1 }}>{hov ? hov.label : 'Total'}</div>
-        <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{hov ? `${Math.round((hov.value / total) * 100)}%` : `${Math.round((total / 1000) * 10) / 10}k`}</div>
-      </div>
-    </div>
-  )
-}
-
 // ── Job Day Popup ──────────────────────────────────────────────────────────
 function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(5,8,16,0.75)', backdropFilter: 'blur(8px)' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'linear-gradient(145deg, #161C2D 0%, #0F1218 100%)', borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.6)', overflow: 'hidden', fontFamily: FONT, border: `1px solid ${BORDER}` }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled Jobs</div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
           </div>
         </div>
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
             const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
-            const avBg = ['rgba(45,212,191,0.15)', 'rgba(124,77,255,0.15)', 'rgba(255,107,53,0.15)', 'rgba(224,64,251,0.15)', 'rgba(45,212,191,0.1)'][i % 5]
-            const avColor = ['#2DD4BF', '#A78BFA', '#FF6B35', '#E040FB', '#2DD4BF'][i % 5]
+            const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
+            const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
             return (
-              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
                 <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
                   <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
                   {job.customers?.phone && <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}><IconPhone size={10} /> {job.customers.phone}</div>}
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
               </div>
             )
           })}
         </div>
         <div style={{ padding: '12px 20px' }}>
-          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEAL, color: '#0A0D14', border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, boxShadow: '0 0 16px rgba(45,212,191,0.3)' }}>Close</button>
+          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Close</button>
         </div>
       </div>
     </div>
@@ -406,10 +382,10 @@ function VisitCalendarWidget({
         </span>
         <span style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{viewYear}</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
-          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
+          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
             <IconChevronLeft size={13} />
           </button>
-          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
+          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
             <IconChevronRight size={13} />
           </button>
         </div>
@@ -456,7 +432,7 @@ function VisitCalendarWidget({
                 fontFamily: FONT,
                 transition: 'background 0.12s',
               }}
-              onMouseEnter={e => { if (!isToday && hasJobs) e.currentTarget.style.background = 'rgba(45,212,191,0.12)' }}
+              onMouseEnter={e => { if (!isToday && hasJobs) e.currentTarget.style.background = TEAL_LIGHT }}
               onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent' }}
             >
               <span style={{
@@ -502,7 +478,8 @@ function VisitCalendarWidget({
                     onClick={() => onDateClick(d!, dayJobs)}
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.65'}
-                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}                  >
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
                     <div style={{ width: 3, height: 34, borderRadius: '2px', background: TEAL, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -522,166 +499,14 @@ function VisitCalendarWidget({
   )
 }
 
-// ── Growth Performance-style Donut ────────────────────────────────────────
-function GrowthDonut({
-  segments,
-  total,
-  delta,
-}: {
-  segments: { label: string; value: number; color: string }[]
-  total: number
-  delta: number
-}) {
-  const [hovered, setHovered] = useState<string | null>(null)
-  const totalVal = segments.reduce((s, x) => s + x.value, 0) || 1
-  const SIZE = 220
-  const THICKNESS = 38
-  const cx = SIZE / 2; const cy = SIZE / 2
-  const r = (SIZE - THICKNESS) / 2 - 4
-  const circ = 2 * Math.PI * r
-
-  // Vivid colors matching the screenshot palette (orange→pink→purple→teal)
-  const VIVID = ['#FF6B35', '#E040FB', '#7C4DFF', '#1F9E94', '#FFB300']
-  const colored = segments.map((seg, i) => ({ ...seg, vivid: VIVID[i % VIVID.length] }))
-
-  const GAP = 6
-  let cum = 0
-  const arcs = colored.map(seg => {
-    const pct = seg.value / totalVal
-    const sw = Math.max(0, pct * circ - GAP)
-    const s = cum + GAP / 2
-    cum += pct * circ
-    return { ...seg, s, sw, pct }
-  })
-
-  const hov = arcs.find(a => a.label === hovered)
-  const centerAmount = total > 0
-    ? `$${total >= 1000 ? (total / 1000).toFixed(1) + 'k' : total}`
-    : '$0'
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* Dark card housing */}
-      <div style={{
-        background: 'linear-gradient(145deg, #1A1F2E 0%, #0F1218 100%)',
-        borderRadius: '18px',
-        padding: '20px',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-      }}>
-        {/* Ambient glow blobs behind donut */}
-        <div style={{ position: 'absolute', top: '30%', left: '15%', width: 80, height: 80, borderRadius: '50%', background: arcs[0]?.vivid || '#FF6B35', opacity: 0.18, filter: 'blur(28px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '20%', right: '15%', width: 70, height: 70, borderRadius: '50%', background: arcs[1]?.vivid || '#E040FB', opacity: 0.15, filter: 'blur(24px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '20%', left: '30%', width: 60, height: 60, borderRadius: '50%', background: arcs[2]?.vivid || '#7C4DFF', opacity: 0.12, filter: 'blur(20px)', pointerEvents: 'none' }} />
-
-        {/* Donut SVG */}
-        <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
-          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
-            {/* Track */}
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={THICKNESS} />
-            {/* Segments */}
-            {arcs.map((arc, i) => {
-              const isHov = hovered === arc.label
-              return (
-                <circle
-                  key={arc.label}
-                  cx={cx} cy={cy} r={r}
-                  fill="none"
-                  stroke={arc.vivid}
-                  strokeWidth={isHov ? THICKNESS + 8 : THICKNESS}
-                  strokeDasharray={`${arc.sw} ${circ}`}
-                  strokeDashoffset={-arc.s}
-                  strokeLinecap="round"
-                  style={{
-                    transition: 'stroke-width 0.2s, opacity 0.2s',
-                    opacity: hovered && !isHov ? 0.2 : 1,
-                    cursor: 'pointer',
-                    filter: isHov ? `drop-shadow(0 0 10px ${arc.vivid}99)` : `drop-shadow(0 0 6px ${arc.vivid}55)`,
-                  }}
-                  onMouseEnter={() => setHovered(arc.label)}
-                  onMouseLeave={() => setHovered(null)}
-                />
-              )
-            })}
-          </svg>
-
-          {/* Center */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-            <div style={{ fontSize: '26px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.04em', lineHeight: 1 }}>
-              {hov ? `${Math.round(hov.pct * 100)}%` : centerAmount}
-            </div>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginTop: '4px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {hov ? hov.label : 'Collected'}
-            </div>
-          </div>
-
-          {/* Floating bubble labels — like screenshot */}
-          {arcs.map((arc) => {
-            if (arc.sw <= 4) return null
-            const midAngle = (-arc.s - arc.sw / 2) / r + Math.PI / 2
-            const labelR = r + THICKNESS / 2 + 22
-            const lx = cx + labelR * Math.cos(-midAngle - Math.PI / 2)
-            const ly = cy + labelR * Math.sin(-midAngle - Math.PI / 2)
-            const isHov = hovered === arc.label
-            return (
-              <div
-                key={arc.label + '-bubble'}
-                onMouseEnter={() => setHovered(arc.label)}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  position: 'absolute',
-                  left: lx,
-                  top: ly,
-                  transform: isHov ? 'translate(-50%, -50%) scale(1.1)' : 'translate(-50%, -50%)',
-                  background: arc.vivid,
-                  borderRadius: '12px',
-                  padding: '5px 9px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  boxShadow: `0 4px 16px ${arc.vivid}66`,
-                  transition: 'transform 0.15s, box-shadow 0.15s',
-                  zIndex: isHov ? 10 : 1,
-                  minWidth: 52,
-                }}
-              >
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1, marginBottom: '2px' }}>
-                  {arc.label.slice(0, 6)}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
-                  ${arc.value >= 1000 ? (arc.value / 1000).toFixed(1) + 'k' : arc.value}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Delta */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '4px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: delta >= 0 ? '#4ADE80' : '#F87171' }}>
-            {delta >= 0 ? '↑' : '↓'} {Math.abs(delta)}%
-          </span>
-          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>vs prev 30 days</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Status pill ────────────────────────────────────────────────────────────
 function statusPill(d: string | null, getDays: (s: string) => number) {
-  if (!d) return { label: 'No date', bg: 'rgba(255,255,255,0.06)', color: '#64748B' }
+  if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
   const days = getDays(d)
-  if (days < 0) return { label: 'Overdue', bg: 'rgba(248,113,113,0.15)', color: '#F87171' }
-  if (days <= 7) return { label: 'This week', bg: 'rgba(45,212,191,0.15)', color: '#2DD4BF' }
-  if (days <= 30) return { label: 'Due soon', bg: 'rgba(251,191,36,0.15)', color: '#FBB724' }
-  return { label: 'Scheduled', bg: 'rgba(255,255,255,0.06)', color: '#64748B' }
+  if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B' }
+  if (days <= 7) return { label: 'This week', bg: '#E6F7F6', color: TEAL_DARK }
+  if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E' }
+  return { label: 'Scheduled', bg: '#F1F5F9', color: TEXT3 }
 }
 
 function pctChange(current: number, previous: number) {
@@ -797,22 +622,6 @@ export default function DashboardPage() {
   const jobsDelta = pctChange(jobsCurrentMonth, jobsPrevMonth)
   const convDelta = currentConv - prevConv
 
-  const revenueBreakdown = useMemo(() => {
-    const b: Record<string, number> = { Service: 0, Installation: 0, Repair: 0, Maintenance: 0 }
-    const colors: Record<string, string> = { Service: TEAL, Installation: TEAL_DARK, Repair: '#94A3B8', Maintenance: '#CBD5E1' }
-    allInvoices.forEach(inv => {
-      const relatedJob = allJobs.find(job => job.id === inv.job_id)
-      const t = String(relatedJob?.job_type || '').toLowerCase()
-      if (t.includes('service')) b.Service += Number(inv.total || 0)
-      else if (t.includes('install')) b.Installation += Number(inv.total || 0)
-      else if (t.includes('repair')) b.Repair += Number(inv.total || 0)
-      else if (t.includes('maint')) b.Maintenance += Number(inv.total || 0)
-      else b.Service += Number(inv.total || 0)
-    })
-    return Object.entries(b).filter(([, value]) => value > 0).map(([label, value]) => ({ label, value, color: colors[label] }))
-  }, [allInvoices, allJobs])
-  const revenueBreakdownSafe = revenueBreakdown.length ? revenueBreakdown : [{ label: 'Service', value: 0, color: TEAL }]
-
   const statCards = [
     { label: 'Outstanding Invoices', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
     { label: 'Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
@@ -820,19 +629,20 @@ export default function DashboardPage() {
     { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
-  const card: React.CSSProperties = { background: 'linear-gradient(145deg, #161C2D 0%, #0F1218 100%)', border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }
+  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
-  const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'border-color 0.12s, color 0.12s, background 0.12s' }
-  const btnDark: React.CSSProperties = { height: '34px', padding: '0 16px', border: '1px solid rgba(45,212,191,0.4)', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: '#0A0D14', background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'opacity 0.12s', boxShadow: '0 0 16px rgba(45,212,191,0.3)' }
-  const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: 1 }
-  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: '1px solid rgba(45,212,191,0.4)', color: '#0A0D14', boxShadow: '0 0 14px rgba(45,212,191,0.25)' }
+  const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'border-color 0.12s, color 0.12s' }
+  const btnDark: React.CSSProperties = { height: '34px', padding: '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'opacity 0.12s' }
+  const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: 1 }
+  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEXT, border: `1px solid ${TEXT}`, color: WHITE }
 
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard" />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>Loading dashboard...</div>
-      </div>    )
+      </div>
+    )
   }
 
   return (
@@ -853,8 +663,8 @@ export default function DashboardPage() {
 
           {/* ── HEADER ── */}
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: '#0F1218' }}>
-              <div style={{ background: 'linear-gradient(135deg, #161C2D 0%, #0F1218 100%)', padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 <div style={{ flexShrink: 0 }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
@@ -878,7 +688,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ background: '#0F1218', borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /> Add Job</button>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconCalendar size={12} /> Schedule</button>
@@ -887,7 +697,7 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div style={{ background: 'linear-gradient(135deg, #161C2D 0%, #0F1218 100%)', border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
                 <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
                 <div style={{ flexShrink: 0 }}>
@@ -915,8 +725,8 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.color = TEAL }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconPlus size={12} /> Add Job</button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.color = TEAL }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconCalendar size={12} /> Schedule</button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconPlus size={12} /> Add Job</button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconCalendar size={12} /> Schedule</button>
                   <button onClick={() => router.push('/dashboard/revenue')} style={btnDark} onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }} onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
@@ -925,41 +735,32 @@ export default function DashboardPage() {
 
           {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
-            {statCards.map((sc, idx) => {
-            const glowColors = ['rgba(45,212,191,0.15)', 'rgba(67,160,71,0.15)', 'rgba(156,39,176,0.15)', 'rgba(255,112,67,0.15)']
-            const glowShadows = ['0 0 24px rgba(45,212,191,0.12)', '0 0 24px rgba(67,160,71,0.12)', '0 0 24px rgba(156,39,176,0.12)', '0 0 24px rgba(255,112,67,0.12)']
-            return (
-            <div key={sc.label} onClick={sc.onClick} style={{ background: 'linear-gradient(145deg, #161C2D 0%, #0F1218 100%)', border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s, border-color 0.15s', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', position: 'relative' }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = glowShadows[idx]; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)'; e.currentTarget.style.borderColor = BORDER }}
-            >
-              {/* Ambient glow blob */}
-              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: sc.color, opacity: 0.08, filter: 'blur(24px)', pointerEvents: 'none' }} />
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
-                <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                <div>
-                  <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: sc.up ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)', color: sc.up ? '#4ADE80' : '#F87171', fontSize: '10px', fontWeight: 800 }}>
-                      {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{sc.delta}
-                    </span>
-                    <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
-                  </div>
+            {statCards.map((sc) => (
+              <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
+                  <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
                 </div>
-                {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
-                {sc.sparkType === 'line' && <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />}
-                {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FFF0EE', color: sc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
+                        {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{sc.delta}
+                      </span>
+                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
+                    </div>
+                  </div>
+                  {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
+                  {sc.sparkType === 'line' && <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />}
+                  {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
+                </div>
+                <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
+                  <IconArrow size={11} />
+                </div>
               </div>
-              <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
-                <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
-                <IconArrow size={11} />
-              </div>
-            </div>
-          )})}
-
+            ))}
           </div>
 
           <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
@@ -1002,7 +803,7 @@ export default function DashboardPage() {
               <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     View all <IconArrow size={11} />
                   </button>
                 </div>
@@ -1012,10 +813,10 @@ export default function DashboardPage() {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
                   const sp = statusPill(job.next_service_date, getDays)
-                  const avBg = ['rgba(45,212,191,0.12)', 'rgba(124,77,255,0.12)', 'rgba(255,107,53,0.12)', 'rgba(224,64,251,0.12)', 'rgba(45,212,191,0.08)'][i % 5]
-                  const avColor = ['#2DD4BF', '#A78BFA', '#FF6B35', '#E040FB', '#2DD4BF'][i % 5]
+                  const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
+                  const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
                   return (
-                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 100px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr 100px auto', gap: '12px', alignItems: 'center', padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
                       <div style={{ width: 34, height: 34, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{name}</div>
@@ -1034,27 +835,13 @@ export default function DashboardPage() {
 
             {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ ...card, padding: '18px 20px 16px', overflow: 'visible' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Total Revenue</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
-                </div>
-
-                {/* Large Growth-style donut */}
-                <GrowthDonut
-                  segments={revenueBreakdownSafe}
-                  total={invoiceStats.collected}
-                  delta={revenueDelta}
-                />
-              </div>
-
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>All <IconArrow size={10} /></button>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>All <IconArrow size={10} /></button>
                 </div>
                 <div style={{ padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#F87171' : TEXT, letterSpacing: '-0.04em' }}>${invoiceStats.outstanding.toLocaleString('en-AU')}</span>
+                  <span style={{ fontSize: '20px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em' }}>${invoiceStats.outstanding.toLocaleString('en-AU')}</span>
                   <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginLeft: '8px' }}>· {invoiceStats.overdueCount} overdue</span>
                 </div>
                 {invoiceStats.allInvoices.length === 0 ? (
@@ -1067,15 +854,15 @@ export default function DashboardPage() {
                   const isOverdue = inv.status === 'overdue'
                   const amt = Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0))
                   return (
-                    <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: isOverdue ? 'rgba(248,113,113,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${isOverdue ? 'rgba(248,113,113,0.3)' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#F87171' : TEXT3 }}><IconInvoice size={12} /></div>
+                    <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: isOverdue ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3 }}><IconInvoice size={12} /></div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3 }}>{inv.created_at ? parseDateLocal(inv.created_at)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: isOverdue ? '#F87171' : TEXT }}>${amt.toLocaleString('en-AU')}</div>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: isOverdue ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)', color: isOverdue ? '#F87171' : '#FBB724' }}>{isOverdue ? 'Overdue' : 'Sent'}</span>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT }}>${amt.toLocaleString('en-AU')}</div>
+                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E' }}>{isOverdue ? 'Overdue' : 'Sent'}</span>
                       </div>
                     </div>
                   )
@@ -1097,19 +884,19 @@ export default function DashboardPage() {
                   const isFirst = i === 0
                   const dateText = job.next_service_date ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'
                   return (
-                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : 'transparent', transition: 'background 0.12s' }} onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }} onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = 'transparent' }}>
-                      <div style={{ width: 4, height: 34, borderRadius: '2px', background: isFirst ? TEAL : 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                    <div key={job.id} onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', background: isFirst ? TEAL_LIGHT : WHITE, transition: 'background 0.12s' }} onMouseEnter={e => { if (!isFirst) e.currentTarget.style.background = '#F8FAFC' }} onMouseLeave={e => { if (!isFirst) e.currentTarget.style.background = isFirst ? TEAL_LIGHT : WHITE }}>
+                      <div style={{ width: 4, height: 34, borderRadius: '2px', background: isFirst ? TEAL : BORDER, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEAL : TEXT }}>{name}</div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: isFirst ? TEAL_DARK : TEXT }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3 }}>{dateText}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
                       </div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: isFirst ? TEAL : TEXT3 }}>{job.job_type || 'Service'}</div>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: isFirst ? TEAL_DARK : TEXT3 }}>{job.job_type || 'Service'}</div>
                       <IconChevronRight size={11} />
                     </div>
                   )
                 })}
                 <div style={{ padding: '10px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/schedule')} style={{ width: '100%', height: '30px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                  <button onClick={() => router.push('/dashboard/schedule')} style={{ width: '100%', height: '30px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                     <IconCalendar size={12} /> Open Schedule
                   </button>
                 </div>
