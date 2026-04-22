@@ -810,66 +810,40 @@ export default function CustomersPage() {
 
               <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: isMobile ? '100%' : 'auto',
-                  flexWrap: 'wrap',
+                  width: isMobile ? '100%' : '300px',
+                  maxWidth: '100%',
+                  position: 'relative',
                 }}
               >
-                <div
+                <span
                   style={{
-                    position: 'relative',
-                    width: isMobile ? '100%' : '300px',
-                    maxWidth: '100%',
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: TEXT3,
+                    display: 'inline-flex',
                   }}
                 >
-                  <span
-                    style={{
-                      position: 'absolute',
-                      left: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: TEXT3,
-                      display: 'inline-flex',
-                    }}
-                  >
-                    <IconSearch size={15} />
-                  </span>
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search customers..."
-                    style={{
-                      height: '40px',
-                      width: '100%',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      padding: '0 12px 0 38px',
-                      fontSize: '12px',
-                      background: WHITE,
-                      color: TEXT,
-                      fontFamily: FONT,
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                      {filtered.length}
-                    </div>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Shown</div>
-                  </div>
-                  <div style={{ width: 1, height: 28, background: BORDER }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                      {engagedCustomers}
-                    </div>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Engaged</div>
-                  </div>
-                </div>
+                  <IconSearch size={15} />
+                </span>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search customers..."
+                  style={{
+                    height: '40px',
+                    width: '100%',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    padding: '0 12px 0 38px',
+                    fontSize: '12px',
+                    background: WHITE,
+                    color: TEXT,
+                    fontFamily: FONT,
+                    outline: 'none',
+                  }}
+                />
               </div>
             </div>
 
