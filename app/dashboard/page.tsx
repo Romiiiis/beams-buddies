@@ -535,106 +535,141 @@ function GrowthDonut({
 }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const totalVal = segments.reduce((s, x) => s + x.value, 0) || 1
-  const SIZE = 190
-  const THICKNESS = 28
+  const SIZE = 220
+  const THICKNESS = 38
   const cx = SIZE / 2; const cy = SIZE / 2
-  const r = (SIZE - THICKNESS) / 2 - 2
+  const r = (SIZE - THICKNESS) / 2 - 4
   const circ = 2 * Math.PI * r
-  // Gap between segments
-  const GAP = 3
+
+  // Vivid colors matching the screenshot palette (orange→pink→purple→teal)
+  const VIVID = ['#FF6B35', '#E040FB', '#7C4DFF', '#1F9E94', '#FFB300']
+  const colored = segments.map((seg, i) => ({ ...seg, vivid: VIVID[i % VIVID.length] }))
+
+  const GAP = 6
   let cum = 0
-  const arcs = segments.map(seg => {
+  const arcs = colored.map(seg => {
     const pct = seg.value / totalVal
     const sw = Math.max(0, pct * circ - GAP)
     const s = cum + GAP / 2
     cum += pct * circ
     return { ...seg, s, sw, pct }
   })
+
   const hov = arcs.find(a => a.label === hovered)
-  const centerPct = hov ? Math.round(hov.pct * 100) : Math.round((delta >= 0 ? delta : 0))
-  const centerLabel = hov ? hov.label : 'Revenue'
+  const centerAmount = total > 0
+    ? `$${total >= 1000 ? (total / 1000).toFixed(1) + 'k' : total}`
+    : '$0'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* Donut */}
-      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
-        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={THICKNESS} />
-          {arcs.map(arc => (
-            <circle
-              key={arc.label}
-              cx={cx} cy={cy} r={r}
-              fill="none"
-              stroke={arc.color}
-              strokeWidth={hovered === arc.label ? THICKNESS + 5 : THICKNESS}
-              strokeDasharray={`${arc.sw} ${circ}`}
-              strokeDashoffset={-arc.s}
-              strokeLinecap="round"
-              style={{ transition: 'all 0.2s', opacity: hovered && hovered !== arc.label ? 0.25 : 1, cursor: 'pointer' }}
-              onMouseEnter={() => setHovered(arc.label)}
-              onMouseLeave={() => setHovered(null)}
-            />
-          ))}
-        </svg>
-        {/* Center text */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-          <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>
-            ${Math.round(total / 1000) > 0 ? `${(total / 1000).toFixed(1)}k` : total.toLocaleString('en-AU')}
-          </div>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: '3px', letterSpacing: '0.03em' }}>
-            {hov ? hov.label : 'Total'}
-          </div>
-        </div>
-        {/* Floating pct labels near arcs (like screenshot) */}
-        {arcs.map(arc => {
-          if (arc.sw <= 0) return null
-          // Midpoint angle of this arc
-          const midAngle = (arc.s + arc.sw / 2) / r - Math.PI / 2
-          const labelR = r + THICKNESS / 2 + 18
-          const lx = cx + labelR * Math.cos(midAngle)
-          const ly = cy + labelR * Math.sin(midAngle)
-          return (
-            <div
-              key={arc.label + 'lbl'}
-              style={{
-                position: 'absolute',
-                left: lx,
-                top: ly,
-                transform: 'translate(-50%, -50%)',
-                fontSize: '11px',
-                fontWeight: 800,
-                color: TEXT2,
-                pointerEvents: 'none',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {Math.round(arc.pct * 100)}%
+      {/* Dark card housing */}
+      <div style={{
+        background: 'linear-gradient(145deg, #1A1F2E 0%, #0F1218 100%)',
+        borderRadius: '18px',
+        padding: '20px',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+      }}>
+        {/* Ambient glow blobs behind donut */}
+        <div style={{ position: 'absolute', top: '30%', left: '15%', width: 80, height: 80, borderRadius: '50%', background: arcs[0]?.vivid || '#FF6B35', opacity: 0.18, filter: 'blur(28px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '20%', right: '15%', width: 70, height: 70, borderRadius: '50%', background: arcs[1]?.vivid || '#E040FB', opacity: 0.15, filter: 'blur(24px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '20%', left: '30%', width: 60, height: 60, borderRadius: '50%', background: arcs[2]?.vivid || '#7C4DFF', opacity: 0.12, filter: 'blur(20px)', pointerEvents: 'none' }} />
+
+        {/* Donut SVG */}
+        <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
+            {/* Track */}
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={THICKNESS} />
+            {/* Segments */}
+            {arcs.map((arc, i) => {
+              const isHov = hovered === arc.label
+              return (
+                <circle
+                  key={arc.label}
+                  cx={cx} cy={cy} r={r}
+                  fill="none"
+                  stroke={arc.vivid}
+                  strokeWidth={isHov ? THICKNESS + 8 : THICKNESS}
+                  strokeDasharray={`${arc.sw} ${circ}`}
+                  strokeDashoffset={-arc.s}
+                  strokeLinecap="round"
+                  style={{
+                    transition: 'stroke-width 0.2s, opacity 0.2s',
+                    opacity: hovered && !isHov ? 0.2 : 1,
+                    cursor: 'pointer',
+                    filter: isHov ? `drop-shadow(0 0 10px ${arc.vivid}99)` : `drop-shadow(0 0 6px ${arc.vivid}55)`,
+                  }}
+                  onMouseEnter={() => setHovered(arc.label)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              )
+            })}
+          </svg>
+
+          {/* Center */}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div style={{ fontSize: '26px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.04em', lineHeight: 1 }}>
+              {hov ? `${Math.round(hov.pct * 100)}%` : centerAmount}
             </div>
-          )
-        })}
-      </div>
-
-      {/* Delta pill */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px', marginBottom: '14px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 800, color: delta >= 0 ? TEAL : '#C0392B' }}>
-          {delta >= 0 ? '↑' : '↓'} {Math.abs(delta)}%
-        </span>
-        <span style={{ fontSize: '10px', color: TEXT3 }}>vs previous 30 days</span>
-      </div>
-
-      {/* Legend — horizontal like screenshot */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 16px', paddingTop: '10px', borderTop: `1px solid ${BORDER}`, width: '100%' }}>
-        {segments.map(seg => (
-          <div
-            key={seg.label}
-            onMouseEnter={() => setHovered(seg.label)}
-            onMouseLeave={() => setHovered(null)}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', opacity: hovered && hovered !== seg.label ? 0.4 : 1, transition: 'opacity 0.15s' }}
-          >
-            <div style={{ width: 9, height: 9, borderRadius: '3px', background: seg.color, flexShrink: 0 }} />
-            <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT2 }}>{seg.label}</span>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginTop: '4px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {hov ? hov.label : 'Collected'}
+            </div>
           </div>
-        ))}
+
+          {/* Floating bubble labels — like screenshot */}
+          {arcs.map((arc) => {
+            if (arc.sw <= 4) return null
+            const midAngle = (-arc.s - arc.sw / 2) / r + Math.PI / 2
+            const labelR = r + THICKNESS / 2 + 22
+            const lx = cx + labelR * Math.cos(-midAngle - Math.PI / 2)
+            const ly = cy + labelR * Math.sin(-midAngle - Math.PI / 2)
+            const isHov = hovered === arc.label
+            return (
+              <div
+                key={arc.label + '-bubble'}
+                onMouseEnter={() => setHovered(arc.label)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  position: 'absolute',
+                  left: lx,
+                  top: ly,
+                  transform: isHov ? 'translate(-50%, -50%) scale(1.1)' : 'translate(-50%, -50%)',
+                  background: arc.vivid,
+                  borderRadius: '12px',
+                  padding: '5px 9px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  boxShadow: `0 4px 16px ${arc.vivid}66`,
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  zIndex: isHov ? 10 : 1,
+                  minWidth: 52,
+                }}
+              >
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1, marginBottom: '2px' }}>
+                  {arc.label.slice(0, 6)}
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  ${arc.value >= 1000 ? (arc.value / 1000).toFixed(1) + 'k' : arc.value}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Delta */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '4px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: delta >= 0 ? '#4ADE80' : '#F87171' }}>
+            {delta >= 0 ? '↑' : '↓'} {Math.abs(delta)}%
+          </span>
+          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>vs prev 30 days</span>
+        </div>
       </div>
     </div>
   )
