@@ -109,20 +109,6 @@ function IconArrow({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M7 17L17 7M17 7H7M17 7v10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 function IconInfo({ size = 13 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -320,10 +306,9 @@ export default function CustomersPage() {
     const totalUnits = customers.reduce((sum, c) => sum + (c.jobs?.length || 0), 0)
     const dueSoon = customers.filter((c) => statusPill(c.jobs).label === 'Due soon').length
     const overdue = customers.filter((c) => statusPill(c.jobs).label === 'Overdue').length
-    const scheduled = customers.filter((c) => statusPill(c.jobs).label === 'Scheduled').length
     const totalReviewClicks = Object.values(reviewClicks).reduce((sum, val) => sum + val, 0)
 
-    return { totalCustomers, totalUnits, dueSoon, overdue, scheduled, totalReviewClicks }
+    return { totalCustomers, totalUnits, dueSoon, overdue, totalReviewClicks }
   }, [customers, reviewClicks])
 
   const sparkData = useMemo(() => {
@@ -341,8 +326,6 @@ export default function CustomersPage() {
     () => Object.values(reviewClicks).filter((v) => v > 0).length,
     [reviewClicks]
   )
-
-  const healthyCount = Math.max(stats.totalCustomers - stats.overdue - stats.dueSoon, 0)
 
   const now = new Date()
   const todayStr = now.toLocaleDateString('en-AU', {
@@ -380,16 +363,7 @@ export default function CustomersPage() {
         .reduce((sum, c) => sum + (c.jobs?.length || 0), 0),
     [customers]
   )
-  const dueSoonDelta = pctChange(
-    stats.dueSoon,
-    Math.max(
-      customers.filter((c) => {
-        const s = statusPill(c.jobs).label
-        return s === 'Scheduled'
-      }).length,
-      1
-    )
-  )
+  const dueSoonDelta = pctChange(stats.dueSoon, Math.max(stats.totalCustomers - stats.dueSoon, 1))
   const reviewDelta = pctChange(
     stats.totalReviewClicks,
     Math.max(stats.totalReviewClicks - engagedCustomers, 0)
@@ -411,11 +385,6 @@ export default function CustomersPage() {
     borderRadius: '14px',
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-  }
-
-  const cardP: React.CSSProperties = {
-    ...card,
-    padding: '20px',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -632,11 +601,8 @@ export default function CustomersPage() {
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                     <IconSpark size={12} /> Add Job
                   </button>
-                  <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>
-                    <IconSearch size={12} /> Search
-                  </button>
-                  <button onClick={() => router.push('/dashboard/customers')} style={btnMobileDark}>
-                    View Customers
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileDark}>
+                    View Jobs
                   </button>
                 </div>
               </div>
@@ -721,21 +687,7 @@ export default function CustomersPage() {
                     <IconSpark size={12} /> Add Job
                   </button>
                   <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={btnOutline}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconSearch size={12} /> Search
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
+                    onClick={() => router.push('/dashboard/jobs')}
                     style={btnDark}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.82'
@@ -744,7 +696,7 @@ export default function CustomersPage() {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
-                    View Customers
+                    View Jobs
                   </button>
                 </div>
               </div>
@@ -835,658 +787,423 @@ export default function CustomersPage() {
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 300px',
-              gap: '16px',
-              alignItems: 'start',
-            }}
-          >
-            <div style={card}>
-              <div
-                style={{
-                  padding: '14px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '12px',
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer Directory</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}>
-                      <IconInfo size={13} />
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    width: isMobile ? '100%' : 'auto',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: isMobile ? '100%' : '300px',
-                      maxWidth: '100%',
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: TEXT3,
-                        display: 'inline-flex',
-                      }}
-                    >
-                      <IconSearch size={15} />
-                    </span>
-                    <input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search customers..."
-                      style={{
-                        height: '40px',
-                        width: '100%',
-                        borderRadius: '10px',
-                        border: `1px solid ${BORDER}`,
-                        padding: '0 12px 0 38px',
-                        fontSize: '12px',
-                        background: WHITE,
-                        color: TEXT,
-                        fontFamily: FONT,
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        {filtered.length}
-                      </div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Shown</div>
-                    </div>
-                    <div style={{ width: 1, height: 28, background: BORDER }} />
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        {engagedCustomers}
-                      </div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Engaged</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {!isMobile && filtered.length > 0 && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
-                    gap: '12px',
-                    alignItems: 'center',
-                    padding: '10px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    background: '#FCFCFD',
-                  }}
-                >
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Customer
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Units
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Next service
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Review activity
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Status
-                  </div>
-                  <div />
-                </div>
-              )}
-
-              {filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
-                  No matching customers.
-                </div>
-              ) : (
-                filtered.map((c, i) => {
-                  const av = avColors[i % avColors.length]
-                  const s = statusPill(c.jobs)
-                  const clicks = reviewClicks[c.id] || 0
-                  const nextJob = [...(c.jobs || [])]
-                    .filter((j: any) => j?.next_service_date)
-                    .sort((a: any, b: any) => {
-                      const ad = parseDateLocal(a.next_service_date)?.getTime() || 0
-                      const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
-                      return ad - bd
-                    })[0]
-
-                  return (
-                    <div
-                      key={c.id}
-                      onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile
-                          ? '1fr'
-                          : 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
-                        gap: '12px',
-                        alignItems: 'center',
-                        padding: '14px 20px',
-                        borderBottom: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                        transition: 'background 0.12s',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = WHITE)}
-                    >
-                      {isMobile ? (
-                        <div style={{ display: 'grid', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                            <div
-                              style={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: '11px',
-                                background: av.bg,
-                                color: av.color,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                            </div>
-
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div
-                                style={{
-                                  fontSize: '13px',
-                                  fontWeight: 700,
-                                  color: TEXT,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {c.first_name} {c.last_name}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '11px',
-                                  color: TEXT3,
-                                  marginTop: '2px',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {c.suburb || c.address || 'No suburb'}
-                              </div>
-                            </div>
-
-                            <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
-                              <IconArrow size={12} />
-                            </span>
-                          </div>
-
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                            <div
-                              style={{
-                                padding: '10px 11px',
-                                borderRadius: '12px',
-                                border: `1px solid ${BORDER}`,
-                                background: '#FCFCFD',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  fontWeight: 700,
-                                  color: TEXT3,
-                                  letterSpacing: '0.04em',
-                                  textTransform: 'uppercase',
-                                  marginBottom: '4px',
-                                }}
-                              >
-                                Units
-                              </div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                                {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
-                              </div>
-                            </div>
-
-                            <div
-                              style={{
-                                padding: '10px 11px',
-                                borderRadius: '12px',
-                                border: `1px solid ${BORDER}`,
-                                background: '#FCFCFD',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  fontWeight: 700,
-                                  color: TEXT3,
-                                  letterSpacing: '0.04em',
-                                  textTransform: 'uppercase',
-                                  marginBottom: '4px',
-                                }}
-                              >
-                                Next service
-                              </div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                                {nextJob?.next_service_date
-                                  ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                    })
-                                  : 'Not set'}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '10px',
-                              flexWrap: 'wrap',
-                            }}
-                          >
-                            <div style={{ fontSize: '11px', color: TEXT3 }}>
-                              {totalPlatforms > 0
-                                ? clicks > 0
-                                  ? `${clicks}/${totalPlatforms} review clicks`
-                                  : 'No review clicks'
-                                : 'No review platforms connected'}
-                            </div>
-
-                            <span
-                              style={{
-                                background: s.bg,
-                                color: s.color,
-                                border: `1px solid ${s.border}`,
-                                padding: '6px 9px',
-                                borderRadius: '999px',
-                                fontSize: '10px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {s.label}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                            <div
-                              style={{
-                                width: 38,
-                                height: 38,
-                                borderRadius: '10px',
-                                background: av.bg,
-                                color: av.color,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                            </div>
-
-                            <div style={{ minWidth: 0 }}>
-                              <div
-                                style={{
-                                  fontSize: '13px',
-                                  fontWeight: 700,
-                                  color: TEXT,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {c.first_name} {c.last_name}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '11px',
-                                  color: TEXT3,
-                                  marginTop: '2px',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {c.suburb || c.address || 'No suburb'}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                            {c.jobs?.length || 0}
-                          </div>
-
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                            {nextJob?.next_service_date
-                              ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                })
-                              : 'Not set'}
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              fontWeight: 600,
-                              color: TEXT3,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {totalPlatforms > 0
-                              ? clicks > 0
-                                ? `${clicks}/${totalPlatforms} platform clicks`
-                                : 'No review clicks'
-                              : 'No platforms connected'}
-                          </div>
-
-                          <div>
-                            <span
-                              style={{
-                                background: s.bg,
-                                color: s.color,
-                                border: `1px solid ${s.border}`,
-                                padding: '6px 9px',
-                                borderRadius: '999px',
-                                fontSize: '10px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                              }}
-                            >
-                              {s.label}
-                            </span>
-                          </div>
-
-                          <div
-                            style={{
-                              color: TEXT3,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'flex-end',
-                            }}
-                          >
-                            <IconArrow size={12} />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })
-              )}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '14px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Service Status</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}>
-                      <IconInfo size={13} />
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: TEXT3,
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ padding: '18px 20px' }}>
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.overdue > 0 ? stats.overdue : healthyCount}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          padding: '2px 7px',
-                          borderRadius: '12px',
-                          background: stats.overdue > 0 ? '#FEE2E2' : '#E6F7F6',
-                          color: stats.overdue > 0 ? '#991B1B' : TEAL_DARK,
-                          fontSize: '10px',
-                          fontWeight: 800,
-                        }}
-                      >
-                        <IconTrendUp size={9} />
-                        {stats.overdue > 0 ? 'Needs review' : 'Healthy base'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {[
-                      { label: 'Overdue', val: stats.overdue, bg: '#FFF7F7', border: '#FECACA' },
-                      { label: 'Due soon', val: stats.dueSoon, bg: '#FFFBF2', border: '#FDE68A' },
-                      { label: 'Scheduled', val: stats.scheduled, bg: '#F7FCFA', border: '#BFE7E3' },
-                    ].map((row) => (
-                      <div
-                        key={row.label}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          background: row.bg,
-                          border: `1px solid ${row.border}`,
-                        }}
-                      >
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{row.label}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{row.val}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '14px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Review Stats</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}>
-                      <IconInfo size={13} />
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: TEXT3,
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ padding: '18px 20px' }}>
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.totalReviewClicks.toLocaleString('en-AU')}
-                    </div>
-                    <div style={{ fontSize: '10px', color: TEXT3, marginTop: '4px' }}>
-                      total clicks across customer profiles
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#FCFCFD',
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          color: TEXT3,
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        Active platforms
-                      </div>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{totalPlatforms}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#FAFCFB',
-                        border: '1px solid #D9ECE6',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          color: TEXT3,
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        Customers engaged
-                      </div>
-                      <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{engagedCustomers}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={cardP}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
+          <div style={card}>
+            <div
+              style={{
+                padding: '14px 20px',
+                borderBottom: `1px solid ${BORDER}`,
+                display: 'flex',
+                alignItems: isMobile ? 'stretch' : 'center',
+                justifyContent: 'space-between',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: '12px',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer Directory</span>
                   <span style={{ color: TEXT3, opacity: 0.5 }}>
-                    <IconInfo size={12} />
+                    <IconInfo size={13} />
                   </span>
                 </div>
+              </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: isMobile ? '100%' : 'auto',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'relative',
+                    width: isMobile ? '100%' : '300px',
+                    maxWidth: '100%',
+                  }}
+                >
+                  <span
                     style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: TEXT3,
+                      display: 'inline-flex',
                     }}
                   >
-                    Add job
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
+                    <IconSearch size={15} />
+                  </span>
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search customers..."
                     style={{
+                      height: '40px',
                       width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
+                      borderRadius: '10px',
                       border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
+                      padding: '0 12px 0 38px',
                       fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
+                      background: WHITE,
+                      color: TEXT,
                       fontFamily: FONT,
-                      color: TEXT2,
+                      outline: 'none',
                     }}
-                  >
-                    View customers
-                  </button>
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                      {filtered.length}
+                    </div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Shown</div>
+                  </div>
+                  <div style={{ width: 1, height: 28, background: BORDER }} />
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                      {engagedCustomers}
+                    </div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Engaged</div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {!isMobile && filtered.length > 0 && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
+                  gap: '12px',
+                  alignItems: 'center',
+                  padding: '10px 20px',
+                  borderBottom: `1px solid ${BORDER}`,
+                  background: '#FCFCFD',
+                }}
+              >
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Customer
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Units
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Next service
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Review activity
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Status
+                </div>
+                <div />
+              </div>
+            )}
+
+            {filtered.length === 0 ? (
+              <div
+                style={{
+                  padding: '32px 18px',
+                  textAlign: 'center',
+                  color: TEXT3,
+                  fontSize: '13px',
+                }}
+              >
+                No matching customers.
+              </div>
+            ) : (
+              filtered.map((c, i) => {
+                const av = avColors[i % avColors.length]
+                const s = statusPill(c.jobs)
+                const clicks = reviewClicks[c.id] || 0
+                const nextJob = [...(c.jobs || [])]
+                  .filter((j: any) => j?.next_service_date)
+                  .sort((a: any, b: any) => {
+                    const ad = parseDateLocal(a.next_service_date)?.getTime() || 0
+                    const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
+                    return ad - bd
+                  })[0]
+
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => router.push(`/dashboard/customers/${c.id}`)}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: isMobile
+                        ? '1fr'
+                        : 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
+                      gap: '12px',
+                      alignItems: 'center',
+                      padding: '14px 20px',
+                      borderBottom: `1px solid ${BORDER}`,
+                      cursor: 'pointer',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = WHITE)}
+                  >
+                    {isMobile ? (
+                      <div style={{ display: 'grid', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: '11px',
+                              background: av.bg,
+                              color: av.color,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                          </div>
+
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: TEXT,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.first_name} {c.last_name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                color: TEXT3,
+                                marginTop: '2px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.suburb || c.address || 'No suburb'}
+                            </div>
+                          </div>
+
+                          <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+                            <IconArrow size={12} />
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '12px',
+                              border: `1px solid ${BORDER}`,
+                              background: '#FCFCFD',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                color: TEXT3,
+                                letterSpacing: '0.04em',
+                                textTransform: 'uppercase',
+                                marginBottom: '4px',
+                              }}
+                            >
+                              Units
+                            </div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                              {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              padding: '10px 11px',
+                              borderRadius: '12px',
+                              border: `1px solid ${BORDER}`,
+                              background: '#FCFCFD',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                color: TEXT3,
+                                letterSpacing: '0.04em',
+                                textTransform: 'uppercase',
+                                marginBottom: '4px',
+                              }}
+                            >
+                              Next service
+                            </div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                              {nextJob?.next_service_date
+                                ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
+                                : 'Not set'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '10px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <div style={{ fontSize: '11px', color: TEXT3 }}>
+                            {totalPlatforms > 0
+                              ? clicks > 0
+                                ? `${clicks}/${totalPlatforms} review clicks`
+                                : 'No review clicks'
+                              : 'No review platforms connected'}
+                          </div>
+
+                          <span
+                            style={{
+                              background: s.bg,
+                              color: s.color,
+                              border: `1px solid ${s.border}`,
+                              padding: '6px 9px',
+                              borderRadius: '999px',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {s.label}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 38,
+                              height: 38,
+                              borderRadius: '10px',
+                              background: av.bg,
+                              color: av.color,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: TEXT,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.first_name} {c.last_name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                color: TEXT3,
+                                marginTop: '2px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.suburb || c.address || 'No suburb'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                          {c.jobs?.length || 0}
+                        </div>
+
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                          {nextJob?.next_service_date
+                            ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
+                                day: 'numeric',
+                                month: 'short',
+                              })
+                            : 'Not set'}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: TEXT3,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {totalPlatforms > 0
+                            ? clicks > 0
+                              ? `${clicks}/${totalPlatforms} platform clicks`
+                              : 'No review clicks'
+                            : 'No platforms connected'}
+                        </div>
+
+                        <div>
+                          <span
+                            style={{
+                              background: s.bg,
+                              color: s.color,
+                              border: `1px solid ${s.border}`,
+                              padding: '6px 9px',
+                              borderRadius: '999px',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {s.label}
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            color: TEXT3,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <IconArrow size={12} />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </div>

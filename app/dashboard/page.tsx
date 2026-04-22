@@ -560,10 +560,13 @@ export default function DashboardPage() {
       const currentYear = today.getFullYear()
 
       const [customersRes, jobsRes, invoicesRes] = await Promise.all([
-        supabase.from('customers').select('id, first_name, last_name, suburb, phone, created_at').eq('business_id', bid).order('created_at', { ascending: false }),
+        supabase.from('customers').select('id, first_name, last_name, suburb, phone').eq('business_id', bid).order('id', { ascending: false }),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
         supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
       ])
+
+      if (customersRes.error) console.error('customers error:', customersRes.error)
+      if (jobsRes.error) console.error('jobs error:', jobsRes.error)
 
       const jobs = jobsRes.data || []
       const invoices = invoicesRes.data || []
