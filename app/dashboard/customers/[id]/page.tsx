@@ -387,11 +387,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const cardP: React.CSSProperties = {
-    ...card,
-    padding: '18px',
-  }
-
   const inputStyle: React.CSSProperties = {
     width: '100%',
     height: '40px',
@@ -515,36 +510,32 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const topCards = [
     {
-      label: 'Units installed',
+      label: 'Units',
       value: stats.jobs.toLocaleString('en-AU'),
-      sub: 'Tracked on this customer',
+      sub: 'Tracked equipment',
       iconSrc: 'https://static.wixstatic.com/media/48c433_036667b7dfd5426cbc717f8ce989bc5a~mv2.png',
       accent: TEXT,
-      tag: 'Equipment total',
     },
     {
-      label: 'Service records',
+      label: 'Service history',
       value: stats.serviceRecords.toLocaleString('en-AU'),
-      sub: 'Logged visit history',
+      sub: 'Visit records',
       iconSrc: 'https://static.wixstatic.com/media/48c433_4038d62685f44d5395fda0f6dbb265fc~mv2.png',
       accent: TEAL_DARK,
-      tag: 'History',
     },
     {
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
-      sub: 'Units needing attention soon',
+      sub: 'Upcoming items',
       iconSrc: 'https://static.wixstatic.com/media/48c433_a21c16c29e1c4cd08ce49e66af3922df~mv2.png',
       accent: AMBER,
-      tag: 'Service watch',
     },
     {
       label: 'Review clicks',
       value: stats.reviewClicks.toLocaleString('en-AU'),
-      sub: uniquePlatforms.length > 0 ? `Across ${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No review activity yet',
+      sub: 'Customer engagement',
       iconSrc: 'https://static.wixstatic.com/media/48c433_4bf0ee696e8c4f149b76dd4f6a6d49b6~mv2.png',
       accent: stats.reviewClicks > 0 ? TEAL_DARK : TEXT,
-      tag: 'Engagement',
     },
   ]
 
@@ -821,8 +812,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div key={item.label} style={statCard}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
+                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '8px' }}>{item.label}</div>
                   </div>
                   <div
                     style={{
