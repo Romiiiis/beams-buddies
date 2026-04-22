@@ -801,10 +801,10 @@ export default function DashboardPage() {
               {/* Recent Customers — standalone redesigned card */}
               <div style={card}>
                 {/* Header */}
-                <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Recent Customers</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>{recent.length} most recent jobs</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Last {recent.length} job{recent.length !== 1 ? 's' : ''} added</div>
                   </div>
                   <button
                     onClick={() => router.push('/dashboard/customers')}
@@ -814,71 +814,53 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {/* Avatar strip */}
-                {recent.length > 0 && (
-                  <div style={{ padding: '0 20px 14px', display: 'flex', gap: '10px', overflowX: 'auto' }}>
-                    {recent.map((job, i) => {
-                      const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                      const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
-                      const palette = [
-                        { bg: TEAL_LIGHT, color: TEAL_DARK },
-                        { bg: '#EEF2F6', color: '#334155' },
-                        { bg: '#F3EEFF', color: '#6D28D9' },
-                        { bg: '#FFF4E5', color: '#B45309' },
-                        { bg: '#FEF2F2', color: '#B91C1C' },
-                      ]
-                      const p = palette[i % palette.length]
-                      return (
-                        <div
-                          key={job.id}
-                          onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer', flexShrink: 0 }}
-                        >
-                          <div style={{ width: 42, height: 42, borderRadius: '14px', background: p.bg, color: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, border: `1.5px solid ${p.color}22` }}>
-                            {initials || '?'}
-                          </div>
-                          <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT2, maxWidth: 48, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {job.customers?.first_name || 'Unknown'}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                {/* Column headers */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', gap: '0', padding: '8px 20px 6px', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Customer</div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'center' }}>Next Job</div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'right' }}>Status</div>
+                </div>
 
-                {/* Divider */}
-                <div style={{ height: 1, background: BORDER, margin: '0 20px' }} />
-
-                {/* Table rows */}
+                {/* Rows */}
                 {recent.length === 0 ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No customers yet.</div>
+                  <div style={{ padding: '32px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>👤</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>No customers yet</div>
+                  </div>
                 ) : recent.map((job, i) => {
                   const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                   const sp = statusPill(job.next_service_date, getDays)
                   const jobDate = job.next_service_date
                     ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                     : '—'
+                  const accentColors = [TEAL, '#9C27B0', '#FF7043', '#43A047', '#2196F3']
+                  const accent = accentColors[i % accentColors.length]
                   return (
                     <div
                       key={job.id}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ display: 'flex', alignItems: 'center', padding: '11px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', gap: '12px', transition: 'background 0.12s' }}
+                      style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', alignItems: 'center', padding: '0 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s', minHeight: '52px' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      {/* Name + suburb */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                        <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {job.customers?.suburb && <span>{job.customers.suburb}</span>}
-                          {job.job_type && <><span style={{ opacity: 0.4 }}>·</span><span>{job.job_type}</span></>}
+                      {/* Name + meta */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '8px' }}>
+                        <div style={{ width: 3, height: 32, borderRadius: '2px', background: accent, flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
+                            {job.customers?.suburb && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers.suburb}</span>}
+                            {job.job_type && job.customers?.suburb && <span style={{ opacity: 0.35, flexShrink: 0 }}>·</span>}
+                            {job.job_type && <span style={{ flexShrink: 0, color: accent, fontWeight: 600 }}>{job.job_type}</span>}
+                          </div>
                         </div>
                       </div>
                       {/* Date */}
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, flexShrink: 0, minWidth: 60, textAlign: 'right' }}>{jobDate}</div>
-                      {/* Status pill */}
-                      <span style={{ padding: '3px 9px', borderRadius: '20px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 }}>{sp.label}</span>
-                      <IconChevronRight size={12} />
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>{jobDate}</div>
+                      {/* Status */}
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ padding: '3px 9px', borderRadius: '20px', background: sp.bg, color: sp.color, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{sp.label}</span>
+                      </div>
                     </div>
                   )
                 })}
