@@ -418,7 +418,7 @@ function VisitCalendarWidget({
       {/* Day headers */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 16px 4px' }}>
         {DAY_NAMES_SHORT.map((d, i) => (
-          <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: (i === 0 || i === 6) ? '#EF4444' : TEXT3, letterSpacing: '0.04em', paddingBottom: '4px' }}>
+          <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', paddingBottom: '4px' }}>
             {d}
           </div>
         ))}
@@ -461,8 +461,8 @@ function VisitCalendarWidget({
             >
               <span style={{
                 fontSize: '12px',
-                fontWeight: isToday ? 800 : hasJobs ? 700 : 400,
-                color: isToday ? WHITE : isWeekend ? '#EF4444' : hasJobs ? TEXT : TEXT3,
+                fontWeight: isToday ? 800 : hasJobs ? 700 : 500,
+                color: isToday ? WHITE : TEXT,
                 lineHeight: 1,
               }}>
                 {cell.day}
@@ -518,6 +518,123 @@ function VisitCalendarWidget({
             })}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ── Growth Performance-style Donut ────────────────────────────────────────
+function GrowthDonut({
+  segments,
+  total,
+  delta,
+}: {
+  segments: { label: string; value: number; color: string }[]
+  total: number
+  delta: number
+}) {
+  const [hovered, setHovered] = useState<string | null>(null)
+  const totalVal = segments.reduce((s, x) => s + x.value, 0) || 1
+  const SIZE = 190
+  const THICKNESS = 28
+  const cx = SIZE / 2; const cy = SIZE / 2
+  const r = (SIZE - THICKNESS) / 2 - 2
+  const circ = 2 * Math.PI * r
+  // Gap between segments
+  const GAP = 3
+  let cum = 0
+  const arcs = segments.map(seg => {
+    const pct = seg.value / totalVal
+    const sw = Math.max(0, pct * circ - GAP)
+    const s = cum + GAP / 2
+    cum += pct * circ
+    return { ...seg, s, sw, pct }
+  })
+  const hov = arcs.find(a => a.label === hovered)
+  const centerPct = hov ? Math.round(hov.pct * 100) : Math.round((delta >= 0 ? delta : 0))
+  const centerLabel = hov ? hov.label : 'Revenue'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* Donut */}
+      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={THICKNESS} />
+          {arcs.map(arc => (
+            <circle
+              key={arc.label}
+              cx={cx} cy={cy} r={r}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth={hovered === arc.label ? THICKNESS + 5 : THICKNESS}
+              strokeDasharray={`${arc.sw} ${circ}`}
+              strokeDashoffset={-arc.s}
+              strokeLinecap="round"
+              style={{ transition: 'all 0.2s', opacity: hovered && hovered !== arc.label ? 0.25 : 1, cursor: 'pointer' }}
+              onMouseEnter={() => setHovered(arc.label)}
+              onMouseLeave={() => setHovered(null)}
+            />
+          ))}
+        </svg>
+        {/* Center text */}
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>
+            ${Math.round(total / 1000) > 0 ? `${(total / 1000).toFixed(1)}k` : total.toLocaleString('en-AU')}
+          </div>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: '3px', letterSpacing: '0.03em' }}>
+            {hov ? hov.label : 'Total'}
+          </div>
+        </div>
+        {/* Floating pct labels near arcs (like screenshot) */}
+        {arcs.map(arc => {
+          if (arc.sw <= 0) return null
+          // Midpoint angle of this arc
+          const midAngle = (arc.s + arc.sw / 2) / r - Math.PI / 2
+          const labelR = r + THICKNESS / 2 + 18
+          const lx = cx + labelR * Math.cos(midAngle)
+          const ly = cy + labelR * Math.sin(midAngle)
+          return (
+            <div
+              key={arc.label + 'lbl'}
+              style={{
+                position: 'absolute',
+                left: lx,
+                top: ly,
+                transform: 'translate(-50%, -50%)',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: TEXT2,
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {Math.round(arc.pct * 100)}%
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Delta pill */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px', marginBottom: '14px' }}>
+        <span style={{ fontSize: '11px', fontWeight: 800, color: delta >= 0 ? TEAL : '#C0392B' }}>
+          {delta >= 0 ? '↑' : '↓'} {Math.abs(delta)}%
+        </span>
+        <span style={{ fontSize: '10px', color: TEXT3 }}>vs previous 30 days</span>
+      </div>
+
+      {/* Legend — horizontal like screenshot */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 16px', paddingTop: '10px', borderTop: `1px solid ${BORDER}`, width: '100%' }}>
+        {segments.map(seg => (
+          <div
+            key={seg.label}
+            onMouseEnter={() => setHovered(seg.label)}
+            onMouseLeave={() => setHovered(null)}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', opacity: hovered && hovered !== seg.label ? 0.4 : 1, transition: 'opacity 0.15s' }}
+          >
+            <div style={{ width: 9, height: 9, borderRadius: '3px', background: seg.color, flexShrink: 0 }} />
+            <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT2 }}>{seg.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -818,7 +935,6 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Click a booked date to view jobs</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ textAlign: 'center' }}>
@@ -876,32 +992,19 @@ export default function DashboardPage() {
 
             {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={cardP}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Total Revenue</span>
-                    <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
-                  </div>
+              <div style={{ ...card, padding: '18px 20px 16px' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Total Revenue</span>
+                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={12} /></span>
                 </div>
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '30px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>${invoiceStats.collected.toLocaleString('en-AU')}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '3px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: revenueDelta >= 0 ? TEAL : '#C0392B' }}>{revenueDelta >= 0 ? '↑' : '↓'} {Math.abs(revenueDelta)}%</span>
-                    <span style={{ fontSize: '10px', color: TEXT3 }}>vs previous 30 days</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <DonutChart segments={revenueBreakdownSafe} size={118} thickness={20} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                    {revenueBreakdownSafe.map(rb => (
-                      <div key={rb.label} onClick={() => router.push('/dashboard/revenue')} style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: rb.color, flexShrink: 0 }} />
-                        <div style={{ flex: 1, fontSize: '11px', fontWeight: 600, color: TEXT2 }}>{rb.label}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: TEXT }}>${rb.value.toLocaleString('en-AU')}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
+                {/* Large Growth-style donut */}
+                <GrowthDonut
+                  segments={revenueBreakdownSafe}
+                  total={invoiceStats.collected}
+                  delta={revenueDelta}
+                />
               </div>
 
               <div style={card}>
