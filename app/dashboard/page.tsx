@@ -84,8 +84,14 @@ function IconPlus({ size = 13 }: { size?: number }) {
 function IconUsers({ size = 12 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
-function IconTrendUpNav({ size = 12 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+function IconBriefcase({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M12 12v.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+}
+function IconAlertCircle({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+}
+function IconDollarSign({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
 
 // ── Sparkline (bar style) ──────────────────────────────────────────────────
@@ -230,34 +236,20 @@ function AnalyticsCard({
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-
-      {/* Header */}
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Revenue Analytics</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <select
-            value={metric}
-            onChange={e => setMetric(e.target.value as AnalyticsMetric)}
-            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
-          >
+          <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
             <option value="outstanding">Outstanding</option>
           </select>
-          <select
-            value={range}
-            onChange={e => setRange(e.target.value as AnalyticsRange)}
-            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
-          >
+          <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
           </select>
         </div>
       </div>
-
-      {/* Body */}
       <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
-
-        {/* Left stats */}
         <div style={{ borderRight: `1px solid ${BORDER}`, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Period total</div>
@@ -284,8 +276,6 @@ function AnalyticsCard({
             <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, paddingLeft: '15px' }}>scaled to peak month</div>
           </div>
         </div>
-
-        {/* Right dot chart */}
         <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
           <div style={{ position: 'relative', height: CHART_H }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
@@ -295,14 +285,8 @@ function AnalyticsCard({
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
                 const isFuture = range === 'This Year' && i > thisMonth
-
                 return (
-                  <div
-                    key={item.label + i}
-                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                  >
+                  <div key={item.label + i} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
                     {isHov && item.total > 0 && (
                       <div style={{ position: 'absolute', bottom: NUM_ROWS * (DOT_SIZE + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
                         <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
@@ -312,42 +296,17 @@ function AnalyticsCard({
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
                       const dotIndex = NUM_ROWS - di
                       const filled = !isFuture && dotIndex <= filledDots
-
                       let bg: string
                       let op: number
-
-                      if (isFuture) {
-                        bg = '#E8EDF2'
-                        op = 0.18
-                      } else if (filled) {
-                        bg = TEAL
-                        op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
-                      } else {
-                        bg = '#E8EDF2'
-                        op = 0.25
-                      }
-
-                      return (
-                        <div
-                          key={di}
-                          style={{
-                            width: DOT_SIZE,
-                            height: DOT_SIZE,
-                            borderRadius: '50%',
-                            background: bg,
-                            opacity: op,
-                            flexShrink: 0,
-                            transition: 'opacity 0.12s',
-                          }}
-                        />
-                      )
+                      if (isFuture) { bg = '#E8EDF2'; op = 0.18 }
+                      else if (filled) { bg = TEAL; op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5 }
+                      else { bg = '#E8EDF2'; op = 0.25 }
+                      return <div key={di} style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: bg, opacity: op, flexShrink: 0, transition: 'opacity 0.12s' }} />
                     })}
                   </div>
                 )
               })}
             </div>
-
-            {/* X labels */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: LABEL_H, display: 'flex', gap: '5px', alignItems: 'center' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
@@ -382,7 +341,6 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
     return { ...seg, s, sw }
   })
   const hov = segments.find(s => s.label === hovered)
-
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
@@ -399,57 +357,21 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-// ── Job Day Popup ──────────────────────────────────────────────────────────
-function JobDayPopup({
-  date,
-  jobs,
-  onClose,
-  onJobClick,
-}: {
-  date: Date
-  jobs: any[]
-  onClose: () => void
-  onJobClick: (job: any) => void
-}) {
+function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)',
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px',
-          margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
-          overflow: 'hidden', fontFamily: FONT,
-        }}
-      >
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
-              Scheduled Jobs
-            </div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled Jobs</div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>
-              {jobs.length} job{jobs.length !== 1 ? 's' : ''}
-            </span>
-            <button
-              onClick={onClose}
-              style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-            >
-              ×
-            </button>
+            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
           </div>
         </div>
-
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
@@ -457,76 +379,35 @@ function JobDayPopup({
             const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
             const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
             return (
-              <div
-                key={job.id}
-                onClick={() => onJobClick(job)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '12px 20px', borderBottom: `1px solid ${BORDER}`,
-                  cursor: 'pointer', transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
-                onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>
-                  {initials || '?'}
-                </div>
+              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>
-                    {job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
-                  </div>
-                  {job.customers?.phone && (
-                    <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                      <IconPhone size={10} /> {job.customers.phone}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
+                  {job.customers?.phone && <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}><IconPhone size={10} /> {job.customers.phone}</div>}
                 </div>
-                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    View <IconChevronRight size={11} />
-                  </span>
+                <div style={{ flexShrink: 0 }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
                 </div>
               </div>
             )
           })}
         </div>
-
         <div style={{ padding: '12px 20px' }}>
-          <button
-            onClick={onClose}
-            style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
-          >
-            Close
-          </button>
+          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Close</button>
         </div>
       </div>
     </div>
   )
 }
 
-// ── Slim Heat-Map Calendar ─────────────────────────────────────────────────
-function VisitCalendarMonths({
-  jobs,
-  monthCount,
-  isMobile,
-  onDateClick,
-}: {
-  jobs: any[]
-  monthCount: number
-  isMobile: boolean
-  onDateClick: (date: Date, jobsOnDay: any[]) => void
-}) {
+function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs: any[]; monthCount: number; isMobile: boolean; onDateClick: (date: Date, jobsOnDay: any[]) => void }) {
   const months = useMemo(() => {
     const now = new Date()
     const result: Date[] = []
-    if (monthCount === 1) {
-      result.push(new Date(now.getFullYear(), now.getMonth(), 1))
-    } else if (monthCount === 3) {
-      for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
-    } else {
-      for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
-    }
+    if (monthCount === 1) { result.push(new Date(now.getFullYear(), now.getMonth(), 1)) }
+    else if (monthCount === 3) { for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1)) }
+    else { for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1)) }
     return result
   }, [monthCount])
 
@@ -542,18 +423,7 @@ function VisitCalendarMonths({
     return map
   }, [jobs])
 
-  const maxCount = useMemo(() => {
-    const counts = Object.values(jobsByDate).map(arr => arr.length)
-    return Math.max(1, ...counts)
-  }, [jobsByDate])
-
-  React.useEffect(() => {
-    console.log('[Calendar] jobsByDate keys:', Object.keys(jobsByDate).sort())
-    console.log('[Calendar] total jobs received:', jobs.length)
-    if (jobs.length > 0) {
-      console.log('[Calendar] sample next_service_date values:', jobs.slice(0, 5).map(j => j.next_service_date))
-    }
-  }, [jobsByDate, jobs])
+  const maxCount = useMemo(() => { const counts = Object.values(jobsByDate).map(arr => arr.length); return Math.max(1, ...counts) }, [jobsByDate])
 
   function toRawKey(year: number, month: number, day: number): string {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -593,34 +463,16 @@ function VisitCalendarMonths({
       {months.map((monthDate, idx) => {
         const cells = buildMonth(monthDate)
         const totalBooked = cells.reduce((s, c) => s + c.jobs.length, 0)
-
         return (
-          <div
-            key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
-            style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
-          >
+          <div key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`} style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}>
             <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FCFCFD' }}>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
-                {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
-              </span>
-              {totalBooked > 0 ? (
-                <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>
-                  {totalBooked} booked
-                </span>
-              ) : (
-                <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>
-              )}
+              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}</span>
+              {totalBooked > 0 ? <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>{totalBooked} booked</span> : <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>}
             </div>
-
             <div style={{ padding: '8px 10px 10px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
-                {dayNames.map(day => (
-                  <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
-                    {day}
-                  </div>
-                ))}
+                {dayNames.map(day => <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>{day}</div>)}
               </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                 {cells.map((cell, i) => {
                   if (!cell.date) return <div key={i} style={{ height: 34 }} />
@@ -633,25 +485,12 @@ function VisitCalendarMonths({
                   const borderStyle = isToday ? `2px solid ${TEAL}` : `1px solid ${heat ? 'transparent' : BORDER}`
                   const dotCount = Math.min(count, 3)
                   const hasOverflow = count > 3
-
                   return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
-                      title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
-                      style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }}
-                      onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }}
-                      onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
-                    >
-                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>
-                        {cell.date.getDate()}
-                      </span>
+                    <button key={i} type="button" onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }} title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')} style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }} onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }} onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
+                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>{cell.date.getDate()}</span>
                       {hasJobs && (
                         <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                          {Array.from({ length: dotCount }).map((_, di) => (
-                            <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />
-                          ))}
+                          {Array.from({ length: dotCount }).map((_, di) => <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />)}
                           {hasOverflow && <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />}
                         </div>
                       )}
@@ -667,7 +506,6 @@ function VisitCalendarMonths({
   )
 }
 
-// ── Legend strip ───────────────────────────────────────────────────────────
 function CalendarLegend() {
   const items = [
     { label: '1–2 jobs', bg: TEAL_LIGHT, border: `1px solid ${TEAL}` },
@@ -702,6 +540,226 @@ function pctChange(current: number, previous: number) {
 }
 
 function formatDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
+
+// ── REDESIGNED HEADER ──────────────────────────────────────────────────────
+function DashboardHeader({
+  isMobile,
+  stats,
+  scheduledCount,
+  invoiceStats,
+  revenueDelta,
+  onAddJob,
+  onSchedule,
+  onRevenue,
+}: {
+  isMobile: boolean
+  stats: { customers: number; units: number; overdue: number; jobsThisMonth: number; jobsToday: number }
+  scheduledCount: number
+  invoiceStats: { collected: number; outstanding: number; paidCount: number; overdueCount: number; allInvoices: any[] }
+  revenueDelta: number
+  onAddJob: () => void
+  onSchedule: () => void
+  onRevenue: () => void
+}) {
+  const dayName = new Date().toLocaleDateString('en-AU', { weekday: 'long' })
+  const dateStr = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  const btnBase: React.CSSProperties = {
+    height: '36px',
+    padding: '0 16px',
+    borderRadius: '10px',
+    fontSize: '12px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '7px',
+    border: 'none',
+    transition: 'all 0.15s',
+    whiteSpace: 'nowrap' as const,
+    letterSpacing: '-0.01em',
+  }
+
+  if (isMobile) {
+    return (
+      <div style={{ margin: '-12px -12px 0', background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+        {/* Mobile: teal band at top */}
+        <div style={{ background: `linear-gradient(135deg, ${TEAL_DARK} 0%, ${TEAL} 100%)`, padding: '18px 16px 16px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>
+            {dayName}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+              Dashboard
+            </h1>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Clients</div>
+              </div>
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: chips + actions */}
+        <div style={{ padding: '10px 16px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+            {stats.jobsToday} today
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+            <IconDollarSign size={10} />
+            ${invoiceStats.collected.toLocaleString('en-AU')} collected
+          </span>
+          {stats.overdue > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#FEE2E2', color: '#991B1B', fontSize: '10px', fontWeight: 800 }}>
+              <IconAlertCircle size={10} />
+              {stats.overdue} overdue
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', padding: '0 16px 14px' }}>
+          <button onClick={onAddJob} style={{ ...btnBase, flex: 1, background: '#F1F5F9', color: TEXT2 }}>
+            <IconPlus size={12} /> Add Job
+          </button>
+          <button onClick={onSchedule} style={{ ...btnBase, flex: 1, background: '#F1F5F9', color: TEXT2 }}>
+            <IconCalendar size={12} /> Schedule
+          </button>
+          <button onClick={onRevenue} style={{ ...btnBase, flex: 1, background: TEXT, color: WHITE }}>
+            <IconDownload size={12} /> Revenue
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Desktop header ──
+  return (
+    <div style={{
+      borderRadius: '18px',
+      overflow: 'hidden',
+      border: `1px solid ${BORDER}`,
+      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+      background: WHITE,
+    }}>
+      {/* Top: teal gradient band */}
+      <div style={{
+        background: `linear-gradient(135deg, ${TEAL_DARK} 0%, ${TEAL} 60%, ${TEAL_MID} 100%)`,
+        padding: '22px 28px 20px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative background rings */}
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -10, right: -10, width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -30, left: '38%', width: 120, height: 120, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 0 }}>
+          {/* Title block */}
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: '5px' }}>
+              {dayName} · {dateStr}
+            </div>
+            <h1 style={{ fontSize: '30px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+              Dashboard
+            </h1>
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.18)', alignSelf: 'stretch', margin: '0 24px', flexShrink: 0 }} />
+
+          {/* KPI row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+            {[
+              { value: stats.customers, label: 'Customers', icon: <IconUsers size={12} /> },
+              { value: scheduledCount, label: 'Scheduled', icon: <IconCalendar size={12} /> },
+              { value: stats.jobsToday, label: 'Today', icon: <IconBriefcase size={12} /> },
+            ].map((kpi, i) => (
+              <React.Fragment key={kpi.label}>
+                {i > 0 && <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.18)', flexShrink: 0 }} />}
+                <div style={{ textAlign: 'center', padding: '0 20px' }}>
+                  <div style={{ fontSize: '22px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{kpi.value}</div>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                    <span style={{ opacity: 0.7 }}>{kpi.icon}</span>
+                    {kpi.label}
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+
+          <div style={{ flex: 1 }} />
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+            <button
+              onClick={onAddJob}
+              style={{ ...btnBase, background: 'rgba(255,255,255,0.14)', color: WHITE, border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.22)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)' }}
+            >
+              <IconPlus size={12} /> Add Job
+            </button>
+            <button
+              onClick={onSchedule}
+              style={{ ...btnBase, background: 'rgba(255,255,255,0.14)', color: WHITE, border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.22)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)' }}
+            >
+              <IconCalendar size={12} /> Schedule
+            </button>
+            <button
+              onClick={onRevenue}
+              style={{ ...btnBase, background: WHITE, color: TEAL_DARK }}
+              onMouseEnter={e => { e.currentTarget.style.background = TEAL_LIGHT }}
+              onMouseLeave={e => { e.currentTarget.style.background = WHITE }}
+            >
+              <IconDownload size={12} /> Revenue
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: status strip */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '10px 28px', background: WHITE, gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
+            {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
+            <IconDollarSign size={10} />
+            ${invoiceStats.collected.toLocaleString('en-AU')} collected
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
+            <IconAlertCircle size={10} />
+            {stats.overdue} overdue
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 11px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
+            <IconDollarSign size={10} />
+            ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
+          </span>
+        </div>
+        {/* Revenue trend micro-badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+          <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>30-day revenue</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '12px', background: revenueDelta >= 0 ? TEAL_LIGHT : '#FFF0EE', color: revenueDelta >= 0 ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
+            {revenueDelta >= 0 ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+            {revenueDelta >= 0 ? '+' : ''}{revenueDelta}%
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+// ── END REDESIGNED HEADER ──────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -889,68 +947,6 @@ export default function DashboardPage() {
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
 
-  const btnOutline: React.CSSProperties = {
-    height: '34px',
-    padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap' as const,
-    transition: 'border-color 0.12s, color 0.12s',
-  }
-  const btnDark: React.CSSProperties = {
-    height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEXT}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: WHITE,
-    background: TEXT,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap' as const,
-    transition: 'opacity 0.12s',
-  }
-
-  // Mobile button styles — compact, equal width
-  const btnMobileSm: React.CSSProperties = {
-    height: '36px',
-    padding: '0 10px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-    flex: 1,
-  }
-  const btnMobileDark: React.CSSProperties = {
-    ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
-    color: WHITE,
-  }
-
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
@@ -981,143 +977,18 @@ export default function DashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
 
           {/* ── HEADER ── */}
-          {isMobile ? (
-            // ── Mobile header: edge-to-edge, BG colour top, white card bottom ──
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              {/* Top section — white */}
-              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                {/* Left: date + title */}
-                <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Dashboard
-                  </h1>
-                </div>
-                {/* Right: KPI numbers */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Customers</div>
-                  </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
-                  </div>
-                </div>
-              </div>
+          <DashboardHeader
+            isMobile={isMobile}
+            stats={stats}
+            scheduledCount={scheduledCount}
+            invoiceStats={invoiceStats}
+            revenueDelta={revenueDelta}
+            onAddJob={() => router.push('/dashboard/jobs')}
+            onSchedule={() => router.push('/dashboard/jobs')}
+            onRevenue={() => router.push('/dashboard/revenue')}
+          />
 
-              {/* Bottom section — white with chips + buttons */}
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-                {/* Status chips */}
-                <div style={{ display: 'flex', gap: '6px', padding: '10px 16px 10px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
-                    {stats.jobsToday} today
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
-                    ${invoiceStats.collected.toLocaleString('en-AU')} collected
-                  </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8' }} />
-                    {stats.overdue} overdue
-                  </div>
-                </div>
-                {/* Action buttons */}
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconPlus size={12} /> Add Job
-                  </button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconCalendar size={12} /> Schedule
-                  </button>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
-                    <IconDownload size={12} /> Revenue
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // ── Desktop header (unchanged) ──
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              {/* Top row */}
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-                <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                  </div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Dashboard
-                  </h1>
-                </div>
-                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Customers</div>
-                  </div>
-                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
-                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Scheduled</div>
-                  </div>
-                </div>
-                <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconPlus size={12} /> Add Job
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconCalendar size={12} /> Schedule
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/revenue')}
-                    style={btnDark}
-                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-                  >
-                    <IconDownload size={12} /> Revenue
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer strip */}
-              <div style={{ display: 'flex', alignItems: 'center', padding: '9px 24px', borderTop: `1px solid ${BORDER}`, background: WHITE, gap: '8px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-                  {stats.jobsToday} job{stats.jobsToday !== 1 ? 's' : ''} today
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
-                  ${invoiceStats.collected.toLocaleString('en-AU')} collected
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: stats.overdue > 0 ? '#FEE2E2' : '#F1F5F9', color: stats.overdue > 0 ? '#991B1B' : TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: stats.overdue > 0 ? '#991B1B' : '#94A3B8', flexShrink: 0 }} />
-                  {stats.overdue} overdue
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#94A3B8', flexShrink: 0 }} />
-                  ${invoiceStats.outstanding.toLocaleString('en-AU')} outstanding
-                </div>
-              </div>
-            </div>
-          )}
-          {/* ── END HEADER ── */}
-
+          {/* ── STAT CARDS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
               <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
@@ -1151,8 +1022,6 @@ export default function DashboardPage() {
 
           {/* ── VISIT BY TIME + SIDE PANELS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
-
-            {/* Visit by Time card */}
             <div style={card}>
               <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
@@ -1160,9 +1029,7 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Click a booked date to view jobs · Today has teal border
-                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Click a booked date to view jobs · Today has teal border</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1176,44 +1043,24 @@ export default function DashboardPage() {
                       <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
                     </div>
                   </div>
-                  <select
-                    value={visitMonths}
-                    onChange={e => setVisitMonths(e.target.value)}
-                    style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
-                  >
+                  <select value={visitMonths} onChange={e => setVisitMonths(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
                     <option value="1">Current month</option>
                     <option value="3">3 months</option>
                     <option value="6">6 months</option>
                   </select>
                 </div>
               </div>
-
               <div style={{ padding: '14px 16px 10px' }}>
-                <VisitCalendarMonths
-                  jobs={allJobs}
-                  monthCount={Number(visitMonths)}
-                  isMobile={isMobile}
-                  onDateClick={(date, jobsOnDay) => {
-                    setPopupDate(date)
-                    setPopupJobs(jobsOnDay)
-                  }}
-                />
+                <VisitCalendarMonths jobs={allJobs} monthCount={Number(visitMonths)} isMobile={isMobile} onDateClick={(date, jobsOnDay) => { setPopupDate(date); setPopupJobs(jobsOnDay) }} />
               </div>
-
               <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <CalendarLegend />
-                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
-                  Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code>
-                </span>
+                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code></span>
               </div>
-
-              {/* Recent Customers */}
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    View all <IconArrow size={11} />
-                  </button>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>View all <IconArrow size={11} /></button>
                 </div>
                 {recent.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No customers yet.</div>
@@ -1241,7 +1088,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={cardP}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
