@@ -594,20 +594,20 @@ function DashboardHeader({
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
               Dashboard
             </h1>
-            <div style={{ display: 'flex', gap: '0', background: 'rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Clients</div>
+            <div style={{ display: 'flex', gap: '0', flexShrink: 0 }}>
+              <div style={{ padding: '0 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Clients</div>
               </div>
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.15)' }} />
-              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Booked</div>
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
+              <div style={{ padding: '0 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Booked</div>
               </div>
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.15)' }} />
-              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Today</div>
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
+              <div style={{ padding: '0 0 0 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Today</div>
               </div>
             </div>
           </div>
