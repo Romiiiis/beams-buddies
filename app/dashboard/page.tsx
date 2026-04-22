@@ -28,13 +28,6 @@ function useIsMobile() {
   return isMobile
 }
 
-function formatDateParam(date: Date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 function parseDateLocal(dateStr: string): Date | null {
   if (!dateStr) return null
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
@@ -63,6 +56,9 @@ function IconArrow({ size = 13 }: { size?: number }) {
 function IconChevronRight({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+function IconChevronLeft({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
 function IconTrendUp({ size = 11 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
@@ -81,14 +77,8 @@ function IconInfo({ size = 13 }: { size?: number }) {
 function IconPlus({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
 }
-function IconUsers({ size = 12 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
-}
-function IconTrendUpNav({ size = 12 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-}
 
-// ── Sparkline (bar style) ──────────────────────────────────────────────────
+// ── Sparklines ─────────────────────────────────────────────────────────────
 function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   const safeData = data.length ? data : [0]
   const max = Math.max(...safeData, 1)
@@ -142,16 +132,11 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   )
 }
 
+// ── Analytics Card ─────────────────────────────────────────────────────────
 type AnalyticsMetric = 'revenue' | 'jobs' | 'outstanding'
 type AnalyticsRange = 'This Year' | 'Last Year' | 'Last 6 Months' | 'Last 3 Months'
 
-function AnalyticsCard({
-  allJobs,
-  allInvoices,
-}: {
-  allJobs: any[]
-  allInvoices: any[]
-}) {
+function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: any[] }) {
   const [metric, setMetric] = useState<AnalyticsMetric>('revenue')
   const [range, setRange] = useState<AnalyticsRange>('This Year')
   const [hovered, setHovered] = useState<number | null>(null)
@@ -162,22 +147,10 @@ function AnalyticsCard({
   const thisMonth = now.getMonth()
 
   const months = useMemo((): { year: number; month: number; label: string }[] => {
-    if (range === 'This Year') {
-      return Array.from({ length: 12 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
-    }
-    if (range === 'Last Year') {
-      return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
-    }
-    if (range === 'Last 6 Months') {
-      return Array.from({ length: 6 }, (_, i) => {
-        const d = new Date(thisYear, thisMonth - 5 + i, 1)
-        return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
-      })
-    }
-    return Array.from({ length: 3 }, (_, i) => {
-      const d = new Date(thisYear, thisMonth - 2 + i, 1)
-      return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
-    })
+    if (range === 'This Year') return Array.from({ length: 12 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
+    if (range === 'Last Year') return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
+    if (range === 'Last 6 Months') return Array.from({ length: 6 }, (_, i) => { const d = new Date(thisYear, thisMonth - 5 + i, 1); return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] } })
+    return Array.from({ length: 3 }, (_, i) => { const d = new Date(thisYear, thisMonth - 2 + i, 1); return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] } })
   }, [range, thisYear, thisMonth])
 
   const data = useMemo(() => {
@@ -185,78 +158,49 @@ function AnalyticsCard({
       const start = new Date(year, month, 1)
       const end = new Date(year, month + 1, 1)
       if (metric === 'revenue') {
-        const total = allInvoices
-          .filter(inv => inv.status === 'paid' && inv.created_at)
-          .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
-          .reduce((s, inv) => s + Number(inv.total || 0), 0)
+        const total = allInvoices.filter(inv => inv.status === 'paid' && inv.created_at).filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end }).reduce((s, inv) => s + Number(inv.total || 0), 0)
         return { label, total }
       }
       if (metric === 'jobs') {
-        const total = allJobs
-          .filter(job => job.created_at)
-          .filter(job => { const d = parseDateLocal(job.created_at); return d && d >= start && d < end })
-          .length
+        const total = allJobs.filter(job => job.created_at).filter(job => { const d = parseDateLocal(job.created_at); return d && d >= start && d < end }).length
         return { label, total }
       }
-      const total = allInvoices
-        .filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at)
-        .filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end })
-        .reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
+      const total = allInvoices.filter(inv => (inv.status === 'sent' || inv.status === 'overdue') && inv.created_at).filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end }).reduce((s, inv) => s + Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0)), 0)
       return { label, total }
     })
   }, [metric, months, allJobs, allInvoices])
 
-  const yMax = Math.max(...data.map(d => d.total), 1)
   const periodTotal = data.reduce((s, d) => s + d.total, 0)
   const peak = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
   const avg = data.length ? Math.round(periodTotal / data.length) : 0
-
   const isCurrency = metric === 'revenue' || metric === 'outstanding'
-  function fmtFull(n: number) {
-    if (!isCurrency) return String(Math.round(n))
-    return `$${Math.round(n).toLocaleString('en-AU')}`
-  }
+  function fmtFull(n: number) { return isCurrency ? `$${Math.round(n).toLocaleString('en-AU')}` : String(Math.round(n)) }
 
   const CHART_H = 220
   const LABEL_H = 24
   const DOT_SIZE = 8
   const DOT_GAP = 4
   const NUM_ROWS = Math.floor((CHART_H - LABEL_H) / (DOT_SIZE + DOT_GAP))
-
   const dotUnit = peak.total > 0 ? Math.ceil(peak.total / NUM_ROWS) : 1
-  const dotUnitLabel = isCurrency
-    ? dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`
-    : `${dotUnit}`
+  const dotUnitLabel = isCurrency ? (dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`) : `${dotUnit}`
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-
-      {/* Header */}
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Revenue Analytics</div>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Analytics</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <select
-            value={metric}
-            onChange={e => setMetric(e.target.value as AnalyticsMetric)}
-            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
-          >
+          <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
             <option value="outstanding">Outstanding</option>
           </select>
-          <select
-            value={range}
-            onChange={e => setRange(e.target.value as AnalyticsRange)}
-            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
-          >
+          <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
           </select>
         </div>
       </div>
 
-      {/* Body */}
       <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
-
         {/* Left stats */}
         <div style={{ borderRight: `1px solid ${BORDER}`, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
@@ -272,20 +216,16 @@ function AnalyticsCard({
             <div style={{ fontSize: '18px', fontWeight: 900, color: TEAL, letterSpacing: '-0.04em', lineHeight: 1 }}>{fmtFull(peak.total)}</div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{peak.label}</div>
           </div>
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* Legend — only the dot unit, no future months */}
+          <div style={{ marginTop: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL, flexShrink: 0 }} />
               <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT }}>1 dot = {dotUnitLabel}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E8EDF2', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Future months</span>
-            </div>
-            <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, paddingLeft: '15px' }}>scaled to peak month</div>
           </div>
         </div>
 
-        {/* Right dot chart */}
+        {/* Dot chart */}
         <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
           <div style={{ position: 'relative', height: CHART_H }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
@@ -294,15 +234,8 @@ function AnalyticsCard({
                 const isHov = hovered === i
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
-                const isFuture = range === 'This Year' && i > thisMonth
-
                 return (
-                  <div
-                    key={item.label + i}
-                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                  >
+                  <div key={item.label + i} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
                     {isHov && item.total > 0 && (
                       <div style={{ position: 'absolute', bottom: NUM_ROWS * (DOT_SIZE + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
                         <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
@@ -311,51 +244,22 @@ function AnalyticsCard({
                     )}
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
                       const dotIndex = NUM_ROWS - di
-                      const filled = !isFuture && dotIndex <= filledDots
-
-                      let bg: string
-                      let op: number
-
-                      if (isFuture) {
-                        bg = '#E8EDF2'
-                        op = 0.18
-                      } else if (filled) {
-                        bg = TEAL
-                        op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
-                      } else {
-                        bg = '#E8EDF2'
-                        op = 0.25
-                      }
-
-                      return (
-                        <div
-                          key={di}
-                          style={{
-                            width: DOT_SIZE,
-                            height: DOT_SIZE,
-                            borderRadius: '50%',
-                            background: bg,
-                            opacity: op,
-                            flexShrink: 0,
-                            transition: 'opacity 0.12s',
-                          }}
-                        />
-                      )
+                      const filled = dotIndex <= filledDots
+                      const bg = filled ? TEAL : '#E8EDF2'
+                      const op = filled ? (isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5) : 0.25
+                      return <div key={di} style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: bg, opacity: op, flexShrink: 0, transition: 'opacity 0.12s' }} />
                     })}
                   </div>
                 )
               })}
             </div>
-
-            {/* X labels */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: LABEL_H, display: 'flex', gap: '5px', alignItems: 'center' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
-                const isFutureLabel = range === 'This Year' && i > thisMonth
                 return (
                   <div key={item.label + i} style={{ flex: 1, textAlign: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? TEAL : isFutureLabel ? '#CBD5E1' : TEXT3 }}>{item.label}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: isCurrentMonth || isBest ? TEAL : TEXT3 }}>{item.label}</span>
                   </div>
                 )
               })}
@@ -367,29 +271,21 @@ function AnalyticsCard({
   )
 }
 
+// ── DonutChart ─────────────────────────────────────────────────────────────
 function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { label: string; value: number; color: string }[]; size?: number; thickness?: number }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = segments.reduce((s, x) => s + x.value, 0) || 1
-  const cx = size / 2
-  const cy = size / 2
+  const cx = size / 2; const cy = size / 2
   const r = (size - thickness) / 2 - 2
   const circ = 2 * Math.PI * r
   let cum = 0
-  const arcs = segments.map(seg => {
-    const s = cum
-    const sw = (seg.value / total) * circ
-    cum += sw
-    return { ...seg, s, sw }
-  })
+  const arcs = segments.map(seg => { const s = cum; const sw = (seg.value / total) * circ; cum += sw; return { ...seg, s, sw } })
   const hov = segments.find(s => s.label === hovered)
-
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F1F5F9" strokeWidth={thickness} />
-        {arcs.map(arc => (
-          <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none" stroke={arc.color} strokeWidth={hovered === arc.label ? thickness + 4 : thickness} strokeDasharray={`${arc.sw} ${circ}`} strokeDashoffset={-arc.s} strokeLinecap="butt" style={{ transition: 'all 0.18s', opacity: hovered && hovered !== arc.label ? 0.3 : 1, cursor: 'pointer' }} onMouseEnter={() => setHovered(arc.label)} onMouseLeave={() => setHovered(null)} />
-        ))}
+        {arcs.map(arc => <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none" stroke={arc.color} strokeWidth={hovered === arc.label ? thickness + 4 : thickness} strokeDasharray={`${arc.sw} ${circ}`} strokeDashoffset={-arc.s} strokeLinecap="butt" style={{ transition: 'all 0.18s', opacity: hovered && hovered !== arc.label ? 0.3 : 1, cursor: 'pointer' }} onMouseEnter={() => setHovered(arc.label)} onMouseLeave={() => setHovered(null)} />)}
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
         <div style={{ fontSize: '8px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 1 }}>{hov ? hov.label : 'Total'}</div>
@@ -400,56 +296,21 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
 }
 
 // ── Job Day Popup ──────────────────────────────────────────────────────────
-function JobDayPopup({
-  date,
-  jobs,
-  onClose,
-  onJobClick,
-}: {
-  date: Date
-  jobs: any[]
-  onClose: () => void
-  onJobClick: (job: any) => void
-}) {
+function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)',
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px',
-          margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
-          overflow: 'hidden', fontFamily: FONT,
-        }}
-      >
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
-              Scheduled Jobs
-            </div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled Jobs</div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>
-              {jobs.length} job{jobs.length !== 1 ? 's' : ''}
-            </span>
-            <button
-              onClick={onClose}
-              style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-            >
-              ×
-            </button>
+            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
           </div>
         </div>
-
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
@@ -457,78 +318,42 @@ function JobDayPopup({
             const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
             const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
             return (
-              <div
-                key={job.id}
-                onClick={() => onJobClick(job)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '12px 20px', borderBottom: `1px solid ${BORDER}`,
-                  cursor: 'pointer', transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
-                onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>
-                  {initials || '?'}
-                </div>
+              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>
-                    {job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
-                  </div>
-                  {job.customers?.phone && (
-                    <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                      <IconPhone size={10} /> {job.customers.phone}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
+                  {job.customers?.phone && <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}><IconPhone size={10} /> {job.customers.phone}</div>}
                 </div>
-                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    View <IconChevronRight size={11} />
-                  </span>
-                </div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
               </div>
             )
           })}
         </div>
-
         <div style={{ padding: '12px 20px' }}>
-          <button
-            onClick={onClose}
-            style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
-          >
-            Close
-          </button>
+          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Close</button>
         </div>
       </div>
     </div>
   )
 }
 
-// ── Slim Heat-Map Calendar ─────────────────────────────────────────────────
-function VisitCalendarMonths({
+// ── Calendar Widget (intrac-style) ─────────────────────────────────────────
+const MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const DAY_NAMES_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+
+function VisitCalendarWidget({
   jobs,
-  monthCount,
   isMobile,
   onDateClick,
 }: {
   jobs: any[]
-  monthCount: number
   isMobile: boolean
   onDateClick: (date: Date, jobsOnDay: any[]) => void
 }) {
-  const months = useMemo(() => {
-    const now = new Date()
-    const result: Date[] = []
-    if (monthCount === 1) {
-      result.push(new Date(now.getFullYear(), now.getMonth(), 1))
-    } else if (monthCount === 3) {
-      for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
-    } else {
-      for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
-    }
-    return result
-  }, [monthCount])
+  const today = useMemo(() => new Date(), [])
+  const [viewYear, setViewYear] = useState(today.getFullYear())
+  const [viewMonth, setViewMonth] = useState(today.getMonth())
 
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
@@ -542,151 +367,163 @@ function VisitCalendarMonths({
     return map
   }, [jobs])
 
-  const maxCount = useMemo(() => {
-    const counts = Object.values(jobsByDate).map(arr => arr.length)
-    return Math.max(1, ...counts)
-  }, [jobsByDate])
-
-  React.useEffect(() => {
-    console.log('[Calendar] jobsByDate keys:', Object.keys(jobsByDate).sort())
-    console.log('[Calendar] total jobs received:', jobs.length)
-    if (jobs.length > 0) {
-      console.log('[Calendar] sample next_service_date values:', jobs.slice(0, 5).map(j => j.next_service_date))
-    }
-  }, [jobsByDate, jobs])
-
-  function toRawKey(year: number, month: number, day: number): string {
-    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  function prevMonth() {
+    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
+    else setViewMonth(m => m - 1)
+  }
+  function nextMonth() {
+    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
+    else setViewMonth(m => m + 1)
   }
 
-  function heatColor(count: number): { bg: string; textColor: string; dotColor: string } | null {
-    if (count === 0) return null
-    const ratio = count / maxCount
-    if (ratio <= 0.33) return { bg: TEAL_LIGHT, textColor: TEAL_DARK, dotColor: TEAL_DARK }
-    if (ratio <= 0.66) return { bg: TEAL_MID, textColor: WHITE, dotColor: 'rgba(255,255,255,0.8)' }
-    return { bg: TEAL, textColor: WHITE, dotColor: 'rgba(255,255,255,0.7)' }
-  }
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const todayJobs = jobsByDate[todayKey] || []
 
-  function buildMonth(monthDate: Date) {
-    const year = monthDate.getFullYear()
-    const month = monthDate.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const mondayStart = (firstDay.getDay() + 6) % 7
-    const cells: Array<{ date: Date | null; jobs: any[] }> = []
-    for (let i = 0; i < mondayStart; i++) cells.push({ date: null, jobs: [] })
-    for (let day = 1; day <= daysInMonth; day++) {
-      const key = toRawKey(year, month, day)
-      cells.push({ date: new Date(year, month, day), jobs: jobsByDate[key] || [] })
-    }
-    while (cells.length % 7 !== 0) cells.push({ date: null, jobs: [] })
-    return cells
+  // Build Sunday-start grid
+  const firstDay = new Date(viewYear, viewMonth, 1)
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
+  const sundayOffset = firstDay.getDay()
+  const cells: Array<{ day: number | null; dateKey: string | null; colIndex: number }> = []
+  for (let i = 0; i < sundayOffset; i++) cells.push({ day: null, dateKey: null, colIndex: i })
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    cells.push({ day, dateKey, colIndex: (sundayOffset + day - 1) % 7 })
   }
+  while (cells.length % 7 !== 0) cells.push({ day: null, dateKey: null, colIndex: cells.length % 7 })
 
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const todayKey = dateToKey(new Date())
-  const cols = isMobile ? 1 : Math.min(2, months.length)
+  // Month job list for "Today: X bookings" line
+  const monthPrefix = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-`
+  const monthJobEntries = Object.entries(jobsByDate)
+    .filter(([key]) => key.startsWith(monthPrefix))
+    .sort(([a], [b]) => a.localeCompare(b))
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '12px' }}>
-      {months.map((monthDate, idx) => {
-        const cells = buildMonth(monthDate)
-        const totalBooked = cells.reduce((s, c) => s + c.jobs.length, 0)
-
-        return (
-          <div
-            key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
-            style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
-          >
-            <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FCFCFD' }}>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
-                {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
-              </span>
-              {totalBooked > 0 ? (
-                <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>
-                  {totalBooked} booked
-                </span>
-              ) : (
-                <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>
-              )}
-            </div>
-
-            <div style={{ padding: '8px 10px 10px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
-                {dayNames.map(day => (
-                  <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
-                {cells.map((cell, i) => {
-                  if (!cell.date) return <div key={i} style={{ height: 34 }} />
-                  const count = cell.jobs.length
-                  const heat = heatColor(count)
-                  const isToday = dateToKey(cell.date) === todayKey
-                  const hasJobs = count > 0
-                  const bg = heat ? heat.bg : '#F8FAFC'
-                  const numColor = heat ? heat.textColor : TEXT3
-                  const borderStyle = isToday ? `2px solid ${TEAL}` : `1px solid ${heat ? 'transparent' : BORDER}`
-                  const dotCount = Math.min(count, 3)
-                  const hasOverflow = count > 3
-
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
-                      title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
-                      style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }}
-                      onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }}
-                      onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
-                    >
-                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>
-                        {cell.date.getDate()}
-                      </span>
-                      {hasJobs && (
-                        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                          {Array.from({ length: dotCount }).map((_, di) => (
-                            <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />
-                          ))}
-                          {hasOverflow && <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />}
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ── Legend strip ───────────────────────────────────────────────────────────
-function CalendarLegend() {
-  const items = [
-    { label: '1–2 jobs', bg: TEAL_LIGHT, border: `1px solid ${TEAL}` },
-    { label: '3–4 jobs', bg: TEAL_MID, border: 'none' },
-    { label: '5+ jobs',  bg: TEAL,      border: 'none' },
-    { label: 'Today',    bg: 'transparent', border: `2px solid ${TEAL}` },
-  ]
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-      {items.map(item => (
-        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: 10, height: 10, borderRadius: '3px', background: item.bg, border: item.border, flexShrink: 0 }} />
-          <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{item.label}</span>
+    <div>
+      {/* Month + year + nav */}
+      <div style={{ padding: '14px 20px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>
+          {MONTH_NAMES_FULL[viewMonth]}
+        </span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{viewYear}</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
+          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
+            <IconChevronLeft size={13} />
+          </button>
+          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}>
+            <IconChevronRight size={13} />
+          </button>
         </div>
-      ))}
+      </div>
+
+      {/* Day headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 16px 4px' }}>
+        {DAY_NAMES_SHORT.map((d, i) => (
+          <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: (i === 0 || i === 6) ? '#EF4444' : TEXT3, letterSpacing: '0.04em', paddingBottom: '4px' }}>
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', padding: '0 16px' }}>
+        {cells.map((cell, i) => {
+          if (!cell.day || !cell.dateKey) return <div key={i} style={{ height: 38 }} />
+          const jobsOnDay = jobsByDate[cell.dateKey] || []
+          const count = jobsOnDay.length
+          const isToday = cell.dateKey === todayKey
+          const hasJobs = count > 0
+          const isWeekend = (cell.colIndex === 0 || cell.colIndex === 6)
+
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { if (hasJobs || isToday) onDateClick(new Date(viewYear, viewMonth, cell.day!), jobsOnDay) }}
+              title={hasJobs ? `${count} job${count !== 1 ? 's' : ''}` : undefined}
+              style={{
+                height: 38,
+                borderRadius: '9px',
+                border: 'none',
+                background: isToday ? TEAL : 'transparent',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '3px',
+                cursor: hasJobs ? 'pointer' : 'default',
+                padding: 0,
+                outline: 'none',
+                fontFamily: FONT,
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => { if (!isToday && hasJobs) e.currentTarget.style.background = TEAL_LIGHT }}
+              onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent' }}
+            >
+              <span style={{
+                fontSize: '12px',
+                fontWeight: isToday ? 800 : hasJobs ? 700 : 400,
+                color: isToday ? WHITE : isWeekend ? '#EF4444' : hasJobs ? TEXT : TEXT3,
+                lineHeight: 1,
+              }}>
+                {cell.day}
+              </span>
+              {/* Job dot indicators */}
+              {hasJobs && (
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {Array.from({ length: Math.min(count, 3) }).map((_, di) => (
+                    <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.8)' : TEAL }} />
+                  ))}
+                </div>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Today summary + job list */}
+      <div style={{ padding: '12px 20px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '10px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '10px' }}>
+          Today: <span style={{ color: TEAL, fontWeight: 800 }}>{todayJobs.length} booking{todayJobs.length !== 1 ? 's' : ''}</span>
+        </div>
+
+        {monthJobEntries.length === 0 ? (
+          <div style={{ fontSize: '11px', color: TEXT3, paddingBottom: '12px' }}>No jobs scheduled this month.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {monthJobEntries.slice(0, 3).flatMap(([dateKey, dayJobs]) => {
+              const d = parseDateLocal(dateKey)
+              const dateLabel = d ? d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }) : dateKey
+              return dayJobs.slice(0, 1).map((job) => {
+                const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
+                const jobType = job.job_type || 'Service'
+                return (
+                  <div
+                    key={`${dateKey}-${job.id}`}
+                    onClick={() => onDateClick(d!, dayJobs)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.65'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
+                    <div style={{ width: 3, height: 34, borderRadius: '2px', background: TEAL, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {name} — {jobType}
+                      </div>
+                      <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px' }}>{dateLabel}</div>
+                    </div>
+                    <div style={{ color: TEXT3 }}><IconChevronRight size={11} /></div>
+                  </div>
+                )
+              })
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
+// ── Status pill ────────────────────────────────────────────────────────────
 function statusPill(d: string | null, getDays: (s: string) => number) {
   if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
   const days = getDays(d)
@@ -703,11 +540,11 @@ function pctChange(current: number, previous: number) {
 
 function formatDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
 
+// ── Page ───────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [visitMonths, setVisitMonths] = useState('1')
 
   const [popupDate, setPopupDate] = useState<Date | null>(null)
   const [popupJobs, setPopupJobs] = useState<any[]>([])
@@ -754,35 +591,15 @@ export default function DashboardPage() {
 
       const jobs = jobsRes.data || []
       const invoices = invoicesRes.data || []
-      const overdue = jobs.filter(j => {
-        if (!j.next_service_date) return false
-        const d = parseDateLocal(j.next_service_date)
-        return d && startOfDay(d) < today
-      })
-      const jobsThisMonth = jobs.filter(j => {
-        if (!j.created_at) return false
-        const d = parseDateLocal(j.created_at)
-        return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear
-      }).length
-      const jobsToday = jobs.filter(j => {
-        if (!j.next_service_date) return false
-        const d = parseDateLocal(j.next_service_date)
-        return d && startOfDay(d).getTime() === today.getTime()
-      }).length
+      const overdue = jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d) < today })
+      const jobsThisMonth = jobs.filter(j => { if (!j.created_at) return false; const d = parseDateLocal(j.created_at); return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear }).length
+      const jobsToday = jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() === today.getTime() }).length
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
       setAllJobs(jobs)
       setAllInvoices(invoices)
-      setUpcoming(jobs.filter(j => {
-        if (!j.next_service_date) return false
-        const d = parseDateLocal(j.next_service_date)
-        return d && startOfDay(d) >= today
-      }).slice(0, 5))
-      setRecent([...jobs].sort((a, b) => {
-        const da = parseDateLocal(a.created_at || '')?.getTime() || 0
-        const db = parseDateLocal(b.created_at || '')?.getTime() || 0
-        return db - da
-      }).slice(0, 5))
+      setUpcoming(jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d) >= today }).slice(0, 5))
+      setRecent([...jobs].sort((a, b) => { const da = parseDateLocal(a.created_at || '')?.getTime() || 0; const db = parseDateLocal(b.created_at || '')?.getTime() || 0; return db - da }).slice(0, 5))
       setInvoiceStats({
         collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total || 0), 0),
         outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
@@ -802,25 +619,8 @@ export default function DashboardPage() {
   const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
   const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
 
-  const jobsSpark = useMemo(() => {
-    const base = Array(12).fill(0)
-    allJobs.forEach(job => {
-      if (!job.created_at) return
-      const d = parseDateLocal(job.created_at)
-      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1
-    })
-    return base
-  }, [allJobs])
-
-  const revenueSpark = useMemo(() => {
-    const base = Array(12).fill(0)
-    allInvoices.forEach(inv => {
-      if (!inv.created_at || inv.status !== 'paid') return
-      const d = parseDateLocal(inv.created_at)
-      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0)
-    })
-    return base
-  }, [allInvoices])
+  const jobsSpark = useMemo(() => { const base = Array(12).fill(0); allJobs.forEach(job => { if (!job.created_at) return; const d = parseDateLocal(job.created_at); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1 }); return base }, [allJobs])
+  const revenueSpark = useMemo(() => { const base = Array(12).fill(0); allInvoices.forEach(inv => { if (!inv.created_at || inv.status !== 'paid') return; const d = parseDateLocal(inv.created_at); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0) }); return base }, [allInvoices])
 
   const jobsCurrentMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startCurrentMonth, startNextMonth)).length, [allJobs])
   const jobsPrevMonth = useMemo(() => allJobs.filter(job => isBetween(job.created_at, startPrevMonth, startCurrentMonth)).length, [allJobs])
@@ -832,7 +632,6 @@ export default function DashboardPage() {
   const totalInvoices = allInvoices.length
   const paidInvoices = allInvoices.filter(inv => inv.status === 'paid').length
   const convRate = totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0
-
   const currentInvoicesWindow = allInvoices.filter(inv => isBetween(inv.created_at, startCurrent30, now))
   const prevInvoicesWindow = allInvoices.filter(inv => isBetween(inv.created_at, startPrev30, startCurrent30))
   const currentPaidWindow = currentInvoicesWindow.filter(inv => inv.status === 'paid').length
@@ -840,27 +639,12 @@ export default function DashboardPage() {
   const currentConv = currentInvoicesWindow.length > 0 ? Math.round((currentPaidWindow / currentInvoicesWindow.length) * 100) : 0
   const prevConv = prevInvoicesWindow.length > 0 ? Math.round((prevPaidWindow / prevInvoicesWindow.length) * 100) : 0
 
-  const scheduledCount = useMemo(() => allJobs.filter(j => {
-    if (!j.next_service_date) return false
-    const d = parseDateLocal(j.next_service_date)
-    return d && getDays(j.next_service_date) >= 0
-  }).length, [allJobs])
+  const scheduledCount = useMemo(() => allJobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && getDays(j.next_service_date) >= 0 }).length, [allJobs])
 
   const activeSalesDelta = pctChange(activeSalesCurrent, activeSalesPrev)
   const revenueDelta = pctChange(revenueCurrent30, revenuePrev30)
   const jobsDelta = pctChange(jobsCurrentMonth, jobsPrevMonth)
   const convDelta = currentConv - prevConv
-
-  const visitMax = useMemo(() => {
-    const counts: Record<string, number> = {}
-    allJobs.forEach(job => {
-      if (!job.next_service_date) return
-      const key = String(job.next_service_date).slice(0, 10)
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return
-      counts[key] = (counts[key] || 0) + 1
-    })
-    return Math.max(0, ...Object.values(counts))
-  }, [allJobs])
 
   const revenueBreakdown = useMemo(() => {
     const b: Record<string, number> = { Service: 0, Installation: 0, Repair: 0, Maintenance: 0 }
@@ -876,80 +660,21 @@ export default function DashboardPage() {
     })
     return Object.entries(b).filter(([, value]) => value > 0).map(([label, value]) => ({ label, value, color: colors[label] }))
   }, [allInvoices, allJobs])
-
   const revenueBreakdownSafe = revenueBreakdown.length ? revenueBreakdown : [{ label: 'Service', value: 0, color: TEAL }]
 
   const statCards = [
     { label: 'Outstanding Invoices', value: `$${activeSalesCurrent.toLocaleString('en-AU')}`, delta: formatDelta(activeSalesDelta), up: activeSalesDelta >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
     { label: 'Revenue', value: `$${revenueCurrent30.toLocaleString('en-AU')}`, delta: formatDelta(revenueDelta), up: revenueDelta >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
-    { label: 'Jobs This Month', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, donutValue: stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0, onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Jobs This Month', value: `${jobsCurrentMonth}`, delta: formatDelta(jobsDelta), up: jobsDelta >= 0, color: '#9C27B0', sparkType: 'donut' as const, onClick: () => router.push('/dashboard/jobs') },
     { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${convDelta >= 0 ? '+' : ''}${convDelta}%`, up: convDelta >= 0, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
-
-  const btnOutline: React.CSSProperties = {
-    height: '34px',
-    padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap' as const,
-    transition: 'border-color 0.12s, color 0.12s',
-  }
-  const btnDark: React.CSSProperties = {
-    height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEXT}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: WHITE,
-    background: TEXT,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap' as const,
-    transition: 'opacity 0.12s',
-  }
-
-  // Mobile button styles — compact, equal width
-  const btnMobileSm: React.CSSProperties = {
-    height: '36px',
-    padding: '0 10px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-    flex: 1,
-  }
-  const btnMobileDark: React.CSSProperties = {
-    ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
-    color: WHITE,
-  }
+  const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'border-color 0.12s, color 0.12s' }
+  const btnDark: React.CSSProperties = { height: '34px', padding: '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' as const, transition: 'opacity 0.12s' }
+  const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: 1 }
+  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEXT, border: `1px solid ${TEXT}`, color: WHITE }
 
   if (loading) {
     return (
@@ -969,11 +694,7 @@ export default function DashboardPage() {
           date={popupDate}
           jobs={popupJobs}
           onClose={() => { setPopupDate(null); setPopupJobs([]) }}
-          onJobClick={(job) => {
-            setPopupDate(null)
-            setPopupJobs([])
-            router.push(`/dashboard/customers/${job.customer_id}`)
-          }}
+          onJobClick={(job) => { setPopupDate(null); setPopupJobs([]); router.push(`/dashboard/customers/${job.customer_id}`) }}
         />
       )}
 
@@ -982,20 +703,14 @@ export default function DashboardPage() {
 
           {/* ── HEADER ── */}
           {isMobile ? (
-            // ── Mobile header ──
             <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              {/* Top section */}
               <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                {/* Left: date + title */}
                 <div style={{ flexShrink: 0 }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                   </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Dashboard
-                  </h1>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Dashboard</h1>
                 </div>
-                {/* Right: KPI numbers */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
@@ -1013,35 +728,23 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Bottom section — action buttons only */}
               <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconPlus size={12} /> Add Job
-                  </button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconCalendar size={12} /> Schedule
-                  </button>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
-                    <IconDownload size={12} /> Revenue
-                  </button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /> Add Job</button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconCalendar size={12} /> Schedule</button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
             </div>
           ) : (
-            // ── Desktop header ──
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              {/* Top row */}
               <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
                 <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
                 <div style={{ flexShrink: 0 }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                   </div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Dashboard
-                  </h1>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Dashboard</h1>
                 </div>
                 <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
@@ -1062,37 +765,15 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconPlus size={12} /> Add Job
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                  >
-                    <IconCalendar size={12} /> Schedule
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/revenue')}
-                    style={btnDark}
-                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-                  >
-                    <IconDownload size={12} /> Revenue
-                  </button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconPlus size={12} /> Add Job</button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline} onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}><IconCalendar size={12} /> Schedule</button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnDark} onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }} onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
-              {/* No footer strip */}
             </div>
           )}
-          {/* ── END HEADER ── */}
 
+          {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map((sc) => (
               <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
@@ -1124,66 +805,43 @@ export default function DashboardPage() {
 
           <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
 
-          {/* ── VISIT BY TIME + SIDE PANELS ── */}
+          {/* ── LOWER SECTION ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
-            {/* Visit by Time card */}
+            {/* Left: Calendar card */}
             <div style={card}>
-              <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+
+              {/* Card header */}
+              <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                    Click a booked date to view jobs · Today has teal border
-                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Click a booked date to view jobs</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Booked</div>
-                    </div>
-                    <div style={{ width: 1, height: 28, background: BORDER }} />
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{visitMax}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Booked</div>
                   </div>
-                  <select
-                    value={visitMonths}
-                    onChange={e => setVisitMonths(e.target.value)}
-                    style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
-                  >
-                    <option value="1">Current month</option>
-                    <option value="3">3 months</option>
-                    <option value="6">6 months</option>
-                  </select>
+                  <div style={{ width: 1, height: 28, background: BORDER }} />
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{stats.jobsToday}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Today</div>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ padding: '14px 16px 10px' }}>
-                <VisitCalendarMonths
-                  jobs={allJobs}
-                  monthCount={Number(visitMonths)}
-                  isMobile={isMobile}
-                  onDateClick={(date, jobsOnDay) => {
-                    setPopupDate(date)
-                    setPopupJobs(jobsOnDay)
-                  }}
-                />
-              </div>
-
-              <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                <CalendarLegend />
-                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
-                  Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code>
-                </span>
-              </div>
+              {/* Calendar body */}
+              <VisitCalendarWidget
+                jobs={allJobs}
+                isMobile={isMobile}
+                onDateClick={(date, jobsOnDay) => { setPopupDate(date); setPopupJobs(jobsOnDay) }}
+              />
 
               {/* Recent Customers */}
-              <div style={{ borderTop: `1px solid ${BORDER}` }}>
+              <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '8px' }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
                   <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
