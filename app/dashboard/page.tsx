@@ -961,34 +961,46 @@ export default function DashboardPage() {
             onRevenue={() => router.push('/dashboard/revenue')}
           />
 
-          {/* ── STAT CARDS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
-            {statCards.map((sc) => (
-              <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
-                  <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FFF0EE', color: sc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
-                        {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{sc.delta}
-                      </span>
-                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
-                    </div>
-                  </div>
-                  {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
-                  {sc.sparkType === 'line' && <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />}
-                  {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
-                </div>
-                <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
-                  <IconArrow size={11} />
-                </div>
+          {/* ── STAT PANEL ── */}
+          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+            <div style={{ padding: '18px 24px 14px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>Performance Overview</div>
+              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>
+                {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
-            ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', borderTop: `1px solid ${BORDER}` }}>
+              {statCards.map((sc, i) => (
+                <div
+                  key={sc.label}
+                  onClick={sc.onClick}
+                  style={{
+                    padding: isMobile ? '16px' : '20px 24px',
+                    borderRight: !isMobile && i < statCards.length - 1 ? `1px solid ${BORDER}` : 'none',
+                    borderBottom: isMobile && i < 2 ? `1px solid ${BORDER}` : 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                  onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                >
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginBottom: '10px' }}>{sc.label}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ fontSize: isMobile ? '20px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{sc.value}</div>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '3px',
+                      padding: '3px 8px', borderRadius: '8px',
+                      background: sc.up ? '#DCFCE7' : '#FEE2E2',
+                      color: sc.up ? '#15803D' : '#B91C1C',
+                      fontSize: '11px', fontWeight: 800,
+                    }}>
+                      {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {sc.delta}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
