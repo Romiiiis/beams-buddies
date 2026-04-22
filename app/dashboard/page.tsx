@@ -560,7 +560,7 @@ export default function DashboardPage() {
       const currentYear = today.getFullYear()
 
       const [customersRes, jobsRes, invoicesRes] = await Promise.all([
-        supabase.from('customers').select('id').eq('business_id', bid),
+        supabase.from('customers').select('id, first_name, last_name, suburb, phone, created_at').eq('business_id', bid).order('created_at', { ascending: false }),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
         supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
       ])
@@ -575,7 +575,7 @@ export default function DashboardPage() {
       setAllJobs(jobs)
       setAllInvoices(invoices)
       setUpcoming(jobs.filter(j => { if (!j.next_service_date) return false; const d = parseDateLocal(j.next_service_date); return d && startOfDay(d) >= today }).slice(0, 5))
-      setRecent([...jobs].sort((a, b) => { const da = parseDateLocal(a.created_at || '')?.getTime() || 0; const db = parseDateLocal(b.created_at || '')?.getTime() || 0; return db - da }).slice(0, 5))
+      setRecent((customersRes.data || []).slice(0, 8))
       setInvoiceStats({
         collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.total || 0), 0),
         outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
@@ -804,7 +804,7 @@ export default function DashboardPage() {
                 <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Recent Customers</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Last {recent.length} job{recent.length !== 1 ? 's' : ''} added</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Last {recent.length} added</div>
                   </div>
                   <button
                     onClick={() => router.push('/dashboard/customers')}
@@ -815,7 +815,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Column headers */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', gap: '0', padding: '8px 20px 6px', borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', padding: '8px 20px 6px', borderBottom: `1px solid ${BORDER}` }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Customer</div>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'center' }}>Next Job</div>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'right' }}>Status</div>
@@ -827,35 +827,41 @@ export default function DashboardPage() {
                     <div style={{ fontSize: '24px', marginBottom: '8px' }}>👤</div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>No customers yet</div>
                   </div>
-                ) : recent.map((job, i) => {
-                  const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                  const sp = statusPill(job.next_service_date, getDays)
-                  const jobDate = job.next_service_date
-                    ? parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+                ) : recent.map((customer: any, i: number) => {
+                  const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer'
+                  // Find the next upcoming job for this customer
+                  const customerJobs = allJobs.filter(j => j.customer_id === customer.id && j.next_service_date)
+                  const nextJob = customerJobs.find(j => {
+                    const d = parseDateLocal(j.next_service_date)
+                    return d && d >= new Date(new Date().setHours(0,0,0,0))
+                  }) || customerJobs[customerJobs.length - 1]
+                  const sp = statusPill(nextJob?.next_service_date || null, getDays)
+                  const jobDate = nextJob?.next_service_date
+                    ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                     : '—'
-                  const accentColors = [TEAL, '#9C27B0', '#FF7043', '#43A047', '#2196F3']
+                  const accentColors = [TEAL, '#9C27B0', '#FF7043', '#43A047', '#2196F3', '#FF6B35', '#E040FB']
                   const accent = accentColors[i % accentColors.length]
                   return (
                     <div
-                      key={job.id}
-                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      key={customer.id}
+                      onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
                       style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px', alignItems: 'center', padding: '0 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s', minHeight: '52px' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      {/* Name + meta */}
+                      {/* Name + suburb */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '8px' }}>
                         <div style={{ width: 3, height: 32, borderRadius: '2px', background: accent, flexShrink: 0 }} />
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
-                            {job.customers?.suburb && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.customers.suburb}</span>}
-                            {job.job_type && job.customers?.suburb && <span style={{ opacity: 0.35, flexShrink: 0 }}>·</span>}
-                            {job.job_type && <span style={{ flexShrink: 0, color: accent, fontWeight: 600 }}>{job.job_type}</span>}
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {customer.suburb && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{customer.suburb}</span>}
+                            {nextJob?.job_type && customer.suburb && <span style={{ opacity: 0.35 }}>·</span>}
+                            {nextJob?.job_type && <span style={{ color: accent, fontWeight: 600, flexShrink: 0 }}>{nextJob.job_type}</span>}
                           </div>
                         </div>
                       </div>
-                      {/* Date */}
+                      {/* Next job date */}
                       <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>{jobDate}</div>
                       {/* Status */}
                       <div style={{ textAlign: 'right' }}>
