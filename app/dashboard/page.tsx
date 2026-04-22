@@ -660,15 +660,10 @@ function DashboardHeader({
       <div style={{
         background: TEAL,
         padding: '22px 28px 20px',
-        position: 'relative',
-        overflow: 'hidden',
       }}>
-        {/* Decorative background rings */}
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: -10, right: -10, width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -30, left: '38%', width: 120, height: 120, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
 
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 0 }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {/* Title block */}
           <div style={{ flexShrink: 0 }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: '5px' }}>
