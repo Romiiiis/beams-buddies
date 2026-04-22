@@ -84,14 +84,8 @@ function IconPlus({ size = 13 }: { size?: number }) {
 function IconUsers({ size = 12 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
-function IconBriefcase({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M12 12v.01" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
-}
-function IconAlertCircle({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-}
-function IconDollarSign({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+function IconTrendUpNav({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
 
 // ── Sparkline (bar style) ──────────────────────────────────────────────────
@@ -236,20 +230,34 @@ function AnalyticsCard({
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+
+      {/* Header */}
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Revenue Analytics</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
+          <select
+            value={metric}
+            onChange={e => setMetric(e.target.value as AnalyticsMetric)}
+            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
+          >
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
             <option value="outstanding">Outstanding</option>
           </select>
-          <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
+          <select
+            value={range}
+            onChange={e => setRange(e.target.value as AnalyticsRange)}
+            style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}
+          >
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
           </select>
         </div>
       </div>
+
+      {/* Body */}
       <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+
+        {/* Left stats */}
         <div style={{ borderRight: `1px solid ${BORDER}`, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Period total</div>
@@ -276,6 +284,8 @@ function AnalyticsCard({
             <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, paddingLeft: '15px' }}>scaled to peak month</div>
           </div>
         </div>
+
+        {/* Right dot chart */}
         <div style={{ padding: '20px 20px 0', overflow: 'hidden' }}>
           <div style={{ position: 'relative', height: CHART_H }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: LABEL_H, display: 'flex', alignItems: 'flex-end', gap: '5px' }}>
@@ -285,8 +295,14 @@ function AnalyticsCard({
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
                 const isBest = peak.total > 0 && item.label === peak.label && item.total === peak.total
                 const isFuture = range === 'This Year' && i > thisMonth
+
                 return (
-                  <div key={item.label + i} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
+                  <div
+                    key={item.label + i}
+                    style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: `${DOT_GAP}px`, position: 'relative', cursor: 'default' }}
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
                     {isHov && item.total > 0 && (
                       <div style={{ position: 'absolute', bottom: NUM_ROWS * (DOT_SIZE + DOT_GAP) + 8, left: '50%', transform: 'translateX(-50%)', background: TEXT, color: WHITE, padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', zIndex: 10 }}>
                         <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '9px', marginBottom: '1px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{item.label}</div>
@@ -296,17 +312,42 @@ function AnalyticsCard({
                     {Array.from({ length: NUM_ROWS }).map((_, di) => {
                       const dotIndex = NUM_ROWS - di
                       const filled = !isFuture && dotIndex <= filledDots
+
                       let bg: string
                       let op: number
-                      if (isFuture) { bg = '#E8EDF2'; op = 0.18 }
-                      else if (filled) { bg = TEAL; op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5 }
-                      else { bg = '#E8EDF2'; op = 0.25 }
-                      return <div key={di} style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: bg, opacity: op, flexShrink: 0, transition: 'opacity 0.12s' }} />
+
+                      if (isFuture) {
+                        bg = '#E8EDF2'
+                        op = 0.18
+                      } else if (filled) {
+                        bg = TEAL
+                        op = isHov || isBest || isCurrentMonth ? 1 : 0.5 + (di / NUM_ROWS) * 0.5
+                      } else {
+                        bg = '#E8EDF2'
+                        op = 0.25
+                      }
+
+                      return (
+                        <div
+                          key={di}
+                          style={{
+                            width: DOT_SIZE,
+                            height: DOT_SIZE,
+                            borderRadius: '50%',
+                            background: bg,
+                            opacity: op,
+                            flexShrink: 0,
+                            transition: 'opacity 0.12s',
+                          }}
+                        />
+                      )
                     })}
                   </div>
                 )
               })}
             </div>
+
+            {/* X labels */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: LABEL_H, display: 'flex', gap: '5px', alignItems: 'center' }}>
               {data.map((item, i) => {
                 const isCurrentMonth = range === 'This Year' && i === thisMonth
@@ -341,6 +382,7 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
     return { ...seg, s, sw }
   })
   const hov = segments.find(s => s.label === hovered)
+
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', transform: 'rotate(-90deg)' }}>
@@ -357,21 +399,57 @@ function DonutChart({ segments, size = 130, thickness = 22 }: { segments: { labe
   )
 }
 
-function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void }) {
+// ── Job Day Popup ──────────────────────────────────────────────────────────
+function JobDayPopup({
+  date,
+  jobs,
+  onClose,
+  onJobClick,
+}: {
+  date: Date
+  jobs: any[]
+  onClose: () => void
+  onJobClick: (job: any) => void
+}) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px',
+          margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+          overflow: 'hidden', fontFamily: FONT,
+        }}
+      >
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled Jobs</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
+              Scheduled Jobs
+            </div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>
+              {jobs.length} job{jobs.length !== 1 ? 's' : ''}
+            </span>
+            <button
+              onClick={onClose}
+              style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+            >
+              ×
+            </button>
           </div>
         </div>
+
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
@@ -379,35 +457,76 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
             const avBg = ['#E8F4F1', '#EEF2F6', '#E6F7F6', '#F1F5F9', '#E8F4F1'][i % 5]
             const avColor = ['#0A4F4C', '#334155', '#177A72', '#475569', '#1F9E94'][i % 5]
             return (
-              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
+              <div
+                key={job.id}
+                onClick={() => onJobClick(job)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '12px 20px', borderBottom: `1px solid ${BORDER}`,
+                  cursor: 'pointer', transition: 'background 0.12s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
+                onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: '10px', background: avBg, color: avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>
+                  {initials || '?'}
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>{job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
-                  {job.customers?.phone && <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}><IconPhone size={10} /> {job.customers.phone}</div>}
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px' }}>
+                    {job.job_type || 'Service'}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}
+                  </div>
+                  {job.customers?.phone && (
+                    <div style={{ fontSize: '10px', color: TEXT3, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                      <IconPhone size={10} /> {job.customers.phone}
+                    </div>
+                  )}
                 </div>
-                <div style={{ flexShrink: 0 }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    View <IconChevronRight size={11} />
+                  </span>
                 </div>
               </div>
             )
           })}
         </div>
+
         <div style={{ padding: '12px 20px' }}>
-          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Close</button>
+          <button
+            onClick={onClose}
+            style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
   )
 }
 
-function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs: any[]; monthCount: number; isMobile: boolean; onDateClick: (date: Date, jobsOnDay: any[]) => void }) {
+// ── Slim Heat-Map Calendar ─────────────────────────────────────────────────
+function VisitCalendarMonths({
+  jobs,
+  monthCount,
+  isMobile,
+  onDateClick,
+}: {
+  jobs: any[]
+  monthCount: number
+  isMobile: boolean
+  onDateClick: (date: Date, jobsOnDay: any[]) => void
+}) {
   const months = useMemo(() => {
     const now = new Date()
     const result: Date[] = []
-    if (monthCount === 1) { result.push(new Date(now.getFullYear(), now.getMonth(), 1)) }
-    else if (monthCount === 3) { for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1)) }
-    else { for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1)) }
+    if (monthCount === 1) {
+      result.push(new Date(now.getFullYear(), now.getMonth(), 1))
+    } else if (monthCount === 3) {
+      for (let i = 1; i >= -1; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    } else {
+      for (let i = monthCount - 1; i >= 0; i--) result.push(new Date(now.getFullYear(), now.getMonth() - i, 1))
+    }
     return result
   }, [monthCount])
 
@@ -423,7 +542,18 @@ function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs
     return map
   }, [jobs])
 
-  const maxCount = useMemo(() => { const counts = Object.values(jobsByDate).map(arr => arr.length); return Math.max(1, ...counts) }, [jobsByDate])
+  const maxCount = useMemo(() => {
+    const counts = Object.values(jobsByDate).map(arr => arr.length)
+    return Math.max(1, ...counts)
+  }, [jobsByDate])
+
+  React.useEffect(() => {
+    console.log('[Calendar] jobsByDate keys:', Object.keys(jobsByDate).sort())
+    console.log('[Calendar] total jobs received:', jobs.length)
+    if (jobs.length > 0) {
+      console.log('[Calendar] sample next_service_date values:', jobs.slice(0, 5).map(j => j.next_service_date))
+    }
+  }, [jobsByDate, jobs])
 
   function toRawKey(year: number, month: number, day: number): string {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -463,16 +593,34 @@ function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs
       {months.map((monthDate, idx) => {
         const cells = buildMonth(monthDate)
         const totalBooked = cells.reduce((s, c) => s + c.jobs.length, 0)
+
         return (
-          <div key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`} style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}>
+          <div
+            key={`${monthDate.getFullYear()}-${monthDate.getMonth()}-${idx}`}
+            style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', background: WHITE }}
+          >
             <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FCFCFD' }}>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}</span>
-              {totalBooked > 0 ? <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>{totalBooked} booked</span> : <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>}
+              <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>
+                {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
+              </span>
+              {totalBooked > 0 ? (
+                <span style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, background: TEAL_LIGHT, padding: '2px 8px', borderRadius: '20px' }}>
+                  {totalBooked} booked
+                </span>
+              ) : (
+                <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>0 booked</span>
+              )}
             </div>
+
             <div style={{ padding: '8px 10px 10px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '4px' }}>
-                {dayNames.map(day => <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>{day}</div>)}
+                {dayNames.map(day => (
+                  <div key={day} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', padding: '0 0 2px' }}>
+                    {day}
+                  </div>
+                ))}
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                 {cells.map((cell, i) => {
                   if (!cell.date) return <div key={i} style={{ height: 34 }} />
@@ -485,12 +633,25 @@ function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs
                   const borderStyle = isToday ? `2px solid ${TEAL}` : `1px solid ${heat ? 'transparent' : BORDER}`
                   const dotCount = Math.min(count, 3)
                   const hasOverflow = count > 3
+
                   return (
-                    <button key={i} type="button" onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }} title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')} style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }} onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }} onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}>
-                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>{cell.date.getDate()}</span>
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => { if (hasJobs) onDateClick(cell.date!, cell.jobs) }}
+                      title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} · ${cell.date.toLocaleDateString('en-AU')}` : cell.date.toLocaleDateString('en-AU')}
+                      style={{ height: 34, borderRadius: '7px', border: borderStyle, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'transform 0.1s ease, box-shadow 0.1s ease' }}
+                      onMouseEnter={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.22)' }}
+                      onMouseLeave={e => { if (!hasJobs) return; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                    >
+                      <span style={{ fontSize: '11px', fontWeight: hasJobs ? 800 : 500, color: numColor, lineHeight: 1 }}>
+                        {cell.date.getDate()}
+                      </span>
                       {hasJobs && (
                         <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                          {Array.from({ length: dotCount }).map((_, di) => <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />)}
+                          {Array.from({ length: dotCount }).map((_, di) => (
+                            <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 1 - di * 0.15 }} />
+                          ))}
                           {hasOverflow && <div style={{ width: 3, height: 3, borderRadius: '50%', background: heat?.dotColor ?? TEAL, opacity: 0.4 }} />}
                         </div>
                       )}
@@ -506,6 +667,7 @@ function VisitCalendarMonths({ jobs, monthCount, isMobile, onDateClick }: { jobs
   )
 }
 
+// ── Legend strip ───────────────────────────────────────────────────────────
 function CalendarLegend() {
   const items = [
     { label: '1–2 jobs', bg: TEAL_LIGHT, border: `1px solid ${TEAL}` },
@@ -540,199 +702,6 @@ function pctChange(current: number, previous: number) {
 }
 
 function formatDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
-
-// ── REDESIGNED HEADER ──────────────────────────────────────────────────────
-function DashboardHeader({
-  isMobile,
-  stats,
-  scheduledCount,
-  invoiceStats,
-  revenueDelta,
-  onAddJob,
-  onSchedule,
-  onRevenue,
-}: {
-  isMobile: boolean
-  stats: { customers: number; units: number; overdue: number; jobsThisMonth: number; jobsToday: number }
-  scheduledCount: number
-  invoiceStats: { collected: number; outstanding: number; paidCount: number; overdueCount: number; allInvoices: any[] }
-  revenueDelta: number
-  onAddJob: () => void
-  onSchedule: () => void
-  onRevenue: () => void
-}) {
-  const dayName = new Date().toLocaleDateString('en-AU', { weekday: 'long' })
-  const dateStr = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
-
-  const btnBase: React.CSSProperties = {
-    height: '36px',
-    padding: '0 16px',
-    borderRadius: '10px',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '7px',
-    border: 'none',
-    transition: 'all 0.15s',
-    whiteSpace: 'nowrap' as const,
-    letterSpacing: '-0.01em',
-  }
-
-  if (isMobile) {
-    return (
-      <div style={{ margin: '-12px -12px 0', background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-        {/* Teal band */}
-        <div style={{ background: TEAL, padding: '20px 16px 18px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>
-            {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-              Dashboard
-            </h1>
-            <div style={{ display: 'flex', gap: '0', flexShrink: 0 }}>
-              <div style={{ padding: '0 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Clients</div>
-              </div>
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
-              <div style={{ padding: '0 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Booked</div>
-              </div>
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
-              <div style={{ padding: '0 0 0 14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '3px' }}>Today</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Status chips */}
-        <div style={{ padding: '10px 16px 0', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-            <IconDollarSign size={10} />
-            ${invoiceStats.collected.toLocaleString('en-AU')} collected
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
-            <IconDollarSign size={10} />
-            ${invoiceStats.outstanding.toLocaleString('en-AU')} out
-          </span>
-          {stats.overdue > 0 && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#FEE2E2', color: '#991B1B', fontSize: '10px', fontWeight: 800 }}>
-              <IconAlertCircle size={10} />
-              {stats.overdue} overdue
-            </span>
-          )}
-        </div>
-
-        {/* Action buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '10px 16px 14px' }}>
-          <button onClick={onAddJob} style={{ ...btnBase, background: '#F1F5F9', color: TEXT2, fontSize: '11px', height: '38px', padding: '0 6px' }}>
-            <IconPlus size={12} /> Add Job
-          </button>
-          <button onClick={onSchedule} style={{ ...btnBase, background: '#F1F5F9', color: TEXT2, fontSize: '11px', height: '38px', padding: '0 6px' }}>
-            <IconCalendar size={12} /> Schedule
-          </button>
-          <button onClick={onRevenue} style={{ ...btnBase, background: TEXT, color: WHITE, fontSize: '11px', height: '38px', padding: '0 6px' }}>
-            <IconDownload size={12} /> Revenue
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // ── Desktop header ──
-  return (
-    <div style={{
-      borderRadius: '18px',
-      overflow: 'hidden',
-      border: `1px solid ${BORDER}`,
-      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-      background: WHITE,
-    }}>
-      {/* Top: teal gradient band */}
-      <div style={{
-        background: TEAL,
-        padding: '22px 28px 20px',
-      }}>
-
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-          {/* Title block */}
-          <div style={{ flexShrink: 0 }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: '5px' }}>
-              {dayName} · {dateStr}
-            </div>
-            <h1 style={{ fontSize: '30px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-              Dashboard
-            </h1>
-          </div>
-
-          {/* Divider */}
-          <div style={{ width: 1, background: 'rgba(255,255,255,0.18)', alignSelf: 'stretch', margin: '0 24px', flexShrink: 0 }} />
-
-          {/* KPI row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-            {[
-              { value: stats.customers, label: 'Customers', icon: <IconUsers size={12} /> },
-              { value: scheduledCount, label: 'Scheduled', icon: <IconCalendar size={12} /> },
-              { value: stats.jobsToday, label: 'Today', icon: <IconBriefcase size={12} /> },
-            ].map((kpi, i) => (
-              <React.Fragment key={kpi.label}>
-                {i > 0 && <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.18)', flexShrink: 0 }} />}
-                <div style={{ textAlign: 'center', padding: '0 20px' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{kpi.value}</div>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                    <span style={{ opacity: 0.7 }}>{kpi.icon}</span>
-                    {kpi.label}
-                  </div>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-
-          <div style={{ flex: 1 }} />
-
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-            <button
-              onClick={onAddJob}
-              style={{ ...btnBase, background: 'rgba(255,255,255,0.14)', color: WHITE, border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.22)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)' }}
-            >
-              <IconPlus size={12} /> Add Job
-            </button>
-            <button
-              onClick={onSchedule}
-              style={{ ...btnBase, background: 'rgba(255,255,255,0.14)', color: WHITE, border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.22)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)' }}
-            >
-              <IconCalendar size={12} /> Schedule
-            </button>
-            <button
-              onClick={onRevenue}
-              style={{ ...btnBase, background: WHITE, color: TEAL_DARK }}
-              onMouseEnter={e => { e.currentTarget.style.background = TEAL_LIGHT }}
-              onMouseLeave={e => { e.currentTarget.style.background = WHITE }}
-            >
-              <IconDownload size={12} /> Revenue
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  )
-}
-// ── END REDESIGNED HEADER ──────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -920,6 +889,68 @@ export default function DashboardPage() {
   const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const cardP: React.CSSProperties = { ...card, padding: '20px' }
 
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap' as const,
+    transition: 'opacity 0.12s',
+  }
+
+  // Mobile button styles — compact, equal width
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
+  }
+
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
@@ -950,63 +981,153 @@ export default function DashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px', background: BG }}>
 
           {/* ── HEADER ── */}
-          <DashboardHeader
-            isMobile={isMobile}
-            stats={stats}
-            scheduledCount={scheduledCount}
-            invoiceStats={invoiceStats}
-            revenueDelta={revenueDelta}
-            onAddJob={() => router.push('/dashboard/jobs')}
-            onSchedule={() => router.push('/dashboard/jobs')}
-            onRevenue={() => router.push('/dashboard/revenue')}
-          />
-
-          {/* ── STAT PANEL ── */}
-          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-            <div style={{ padding: '18px 24px 14px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>Performance Overview</div>
-              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>
-                {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', borderTop: `1px solid ${BORDER}` }}>
-              {statCards.map((sc, i) => (
-                <div
-                  key={sc.label}
-                  onClick={sc.onClick}
-                  style={{
-                    padding: isMobile ? '16px' : '20px 24px',
-                    borderRight: !isMobile && i < statCards.length - 1 ? `1px solid ${BORDER}` : 'none',
-                    borderBottom: isMobile && i < 2 ? `1px solid ${BORDER}` : 'none',
-                    cursor: 'pointer',
-                    transition: 'background 0.12s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                  onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-                >
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginBottom: '10px' }}>{sc.label}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <div style={{ fontSize: isMobile ? '20px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{sc.value}</div>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '3px',
-                      padding: '3px 8px', borderRadius: '8px',
-                      background: sc.up ? '#DCFCE7' : '#FEE2E2',
-                      color: sc.up ? '#15803D' : '#B91C1C',
-                      fontSize: '11px', fontWeight: 800,
-                    }}>
-                      {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                      {sc.delta}
-                    </span>
+          {isMobile ? (
+            // ── Mobile header ──
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              {/* Top section */}
+              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                {/* Left: date + title */}
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Dashboard
+                  </h1>
+                </div>
+                {/* Right: KPI numbers */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Customers</div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Jobs Today</div>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Bottom section — action buttons only */}
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconPlus size={12} /> Add Job
+                  </button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconCalendar size={12} /> Schedule
+                  </button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}>
+                    <IconDownload size={12} /> Revenue
+                  </button>
+                </div>
+              </div>
             </div>
+          ) : (
+            // ── Desktop header ──
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              {/* Top row */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Dashboard
+                  </h1>
+                </div>
+                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Customers</div>
+                  </div>
+                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Scheduled</div>
+                  </div>
+                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
+                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>Jobs Today</div>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }} />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconPlus size={12} /> Add Job
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                  >
+                    <IconCalendar size={12} /> Schedule
+                  </button>
+                  <button
+                    onClick={() => router.push('/dashboard/revenue')}
+                    style={btnDark}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                  >
+                    <IconDownload size={12} /> Revenue
+                  </button>
+                </div>
+              </div>
+              {/* No footer strip */}
+            </div>
+          )}
+          {/* ── END HEADER ── */}
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+            {statCards.map((sc) => (
+              <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
+                  <span style={{ color: TEXT3, opacity: 0.45 }}><IconInfo size={13} /></span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>{sc.value}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: sc.up ? '#E6F7F6' : '#FFF0EE', color: sc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
+                        {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{sc.delta}
+                      </span>
+                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
+                    </div>
+                  </div>
+                  {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
+                  {sc.sparkType === 'line' && <MiniSparkline data={revenueSpark} color={sc.color} width={70} height={40} />}
+                  {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrentMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
+                </div>
+                <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700 }}>See Details</span>
+                  <IconArrow size={11} />
+                </div>
+              </div>
+            ))}
           </div>
 
           <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
 
           {/* ── VISIT BY TIME + SIDE PANELS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
+
+            {/* Visit by Time card */}
             <div style={card}>
               <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
@@ -1014,7 +1135,9 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Visit by Time</span>
                     <span style={{ color: TEXT3, opacity: 0.5 }}><IconInfo size={13} /></span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Click a booked date to view jobs · Today has teal border</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
+                    Click a booked date to view jobs · Today has teal border
+                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1028,24 +1151,44 @@ export default function DashboardPage() {
                       <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Peak day</div>
                     </div>
                   </div>
-                  <select value={visitMonths} onChange={e => setVisitMonths(e.target.value)} style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}>
+                  <select
+                    value={visitMonths}
+                    onChange={e => setVisitMonths(e.target.value)}
+                    style={{ height: '30px', padding: '0 8px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+                  >
                     <option value="1">Current month</option>
                     <option value="3">3 months</option>
                     <option value="6">6 months</option>
                   </select>
                 </div>
               </div>
+
               <div style={{ padding: '14px 16px 10px' }}>
-                <VisitCalendarMonths jobs={allJobs} monthCount={Number(visitMonths)} isMobile={isMobile} onDateClick={(date, jobsOnDay) => { setPopupDate(date); setPopupJobs(jobsOnDay) }} />
+                <VisitCalendarMonths
+                  jobs={allJobs}
+                  monthCount={Number(visitMonths)}
+                  isMobile={isMobile}
+                  onDateClick={(date, jobsOnDay) => {
+                    setPopupDate(date)
+                    setPopupJobs(jobsOnDay)
+                  }}
+                />
               </div>
+
               <div style={{ padding: '8px 16px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <CalendarLegend />
-                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code></span>
+                <span style={{ fontSize: '10px', fontWeight: 500, color: TEXT3 }}>
+                  Dates reflect <code style={{ fontSize: '10px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '4px' }}>next_service_date</code>
+                </span>
               </div>
+
+              {/* Recent Customers */}
               <div style={{ borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Recent Customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>View all <IconArrow size={11} /></button>
+                  <button onClick={() => router.push('/dashboard/customers')} style={{ height: '28px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    View all <IconArrow size={11} />
+                  </button>
                 </div>
                 {recent.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: TEXT3, fontSize: '12px' }}>No customers yet.</div>
@@ -1073,6 +1216,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={cardP}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
