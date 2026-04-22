@@ -371,14 +371,6 @@ export default function CustomersPage() {
   const customersDelta = pctChange(newCustomersCurrent, newCustomersPrev)
   const unitsDelta = pctChange(unitsCurrent, unitsPrev)
 
-  const avColors = [
-    { bg: '#E8F4F1', color: '#0A4F4C' },
-    { bg: '#EEF2F6', color: '#334155' },
-    { bg: '#E6F7F6', color: '#177A72' },
-    { bg: '#F1F5F9', color: '#475569' },
-    { bg: '#E8F4F1', color: '#1F9E94' },
-  ]
-
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
@@ -890,8 +882,7 @@ export default function CustomersPage() {
                 No matching customers.
               </div>
             ) : (
-              filtered.map((c, i) => {
-                const av = avColors[i % avColors.length]
+              filtered.map((c) => {
                 const s = statusPill(c.jobs)
                 const clicks = reviewClicks[c.id] || 0
                 const nextJob = [...(c.jobs || [])]
@@ -924,24 +915,6 @@ export default function CustomersPage() {
                     {isMobile ? (
                       <div style={{ display: 'grid', gap: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                          <div
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: '11px',
-                              background: av.bg,
-                              color: av.color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '11px',
-                              fontWeight: 800,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
-                          </div>
-
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div
                               style={{
@@ -1066,50 +1039,30 @@ export default function CustomersPage() {
                       </div>
                     ) : (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                        <div style={{ minWidth: 0 }}>
                           <div
                             style={{
-                              width: 38,
-                              height: 38,
-                              borderRadius: '10px',
-                              background: av.bg,
-                              color: av.color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '11px',
-                              fontWeight: 800,
-                              flexShrink: 0,
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              color: TEXT,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                             }}
                           >
-                            {(c.first_name?.[0] || '') + (c.last_name?.[0] || '')}
+                            {c.first_name} {c.last_name}
                           </div>
-
-                          <div style={{ minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: '13px',
-                                fontWeight: 700,
-                                color: TEXT,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {c.first_name} {c.last_name}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '11px',
-                                color: TEXT3,
-                                marginTop: '2px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {c.suburb || c.address || 'No suburb'}
-                            </div>
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: TEXT3,
+                              marginTop: '2px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {c.suburb || c.address || 'No suburb'}
                           </div>
                         </div>
 
