@@ -58,14 +58,6 @@ const TYPE = {
   },
 }
 
-const avColors = [
-  { bg: '#E8F4F1', color: '#0A4F4C' },
-  { bg: '#EEF2F6', color: '#334155' },
-  { bg: '#E6F7F6', color: '#177A72' },
-  { bg: '#F1F5F9', color: '#475569' },
-  { bg: '#E8F4F1', color: '#1F9E94' },
-]
-
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -822,36 +814,137 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 300px',
-              gap: '16px',
-              alignItems: 'start',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '16px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer profile</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={card}>
+              <div
+                style={{
+                  padding: '16px 20px',
+                  borderBottom: `1px solid ${BORDER}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer profile</div>
+                  <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
+                </div>
+
+                {!editingCustomer && (
+                  <button
+                    onClick={() => setEditingCustomer(true)}
+                    style={{
+                      height: '34px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                    }}
+                  >
+                    <IconEdit size={14} />
+                    Edit
+                  </button>
+                )}
+              </div>
+
+              {!editingCustomer ? (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+                  {[
+                    { label: 'Email', value: customer.email || '—', icon: <IconMail size={15} /> },
+                    { label: 'Phone', value: customer.phone || '—', icon: <IconPhone size={15} /> },
+                    { label: 'Address', value: customer.address || '—', icon: <IconMapPin size={15} /> },
+                    { label: 'Suburb', value: customer.suburb || '—', icon: <IconMapPin size={15} /> },
+                    { label: 'Postcode', value: customer.postcode || '—', icon: <IconMapPin size={15} /> },
+                    {
+                      label: 'Customer since',
+                      value: customer.created_at
+                        ? new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
+                        : '—',
+                      icon: <IconClock size={15} />,
+                    },
+                  ].map((row, index) => (
+                    <div
+                      key={row.label}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        padding: '14px 18px',
+                        borderBottom: index >= 4 && isMobile ? 'none' : `1px solid ${BORDER}`,
+                        borderRight: !isMobile && index % 2 === 0 ? `1px solid ${BORDER}` : 'none',
+                      }}
+                    >
+                      <div style={{ color: TEXT3, marginTop: '1px', flexShrink: 0 }}>{row.icon}</div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ ...TYPE.label, marginBottom: '4px' }}>{row.label}</div>
+                        <div style={{ ...TYPE.body, wordBreak: 'break-word' }}>{row.value}</div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div style={{ padding: '14px 18px', gridColumn: '1 / -1' }}>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
+                    <div style={TYPE.body}>{customer.notes || '—'}</div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '18px', display: 'grid', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <label style={labelStyle}>First name</label>
+                      <input style={inputStyle} value={customerForm.first_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, first_name: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Last name</label>
+                      <input style={inputStyle} value={customerForm.last_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, last_name: e.target.value }))} />
+                    </div>
                   </div>
 
-                  {!editingCustomer && (
+                  <div>
+                    <label style={labelStyle}>Email</label>
+                    <input style={inputStyle} value={customerForm.email || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, email: e.target.value }))} />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Phone</label>
+                    <input style={inputStyle} value={customerForm.phone || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, phone: e.target.value }))} />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Address</label>
+                    <input style={inputStyle} value={customerForm.address || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, address: e.target.value }))} />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <label style={labelStyle}>Suburb</label>
+                      <input style={inputStyle} value={customerForm.suburb || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, suburb: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Postcode</label>
+                      <input style={inputStyle} value={customerForm.postcode || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, postcode: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Notes</label>
+                    <textarea style={textareaStyle} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      onClick={() => setEditingCustomer(true)}
+                      onClick={() => setEditingCustomer(false)}
                       style={{
-                        height: '34px',
-                        padding: '0 12px',
+                        flex: 1,
+                        height: '38px',
                         borderRadius: '10px',
                         border: `1px solid ${BORDER}`,
                         background: WHITE,
@@ -860,581 +953,449 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         fontWeight: 700,
                         cursor: 'pointer',
                         fontFamily: FONT,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '7px',
                       }}
                     >
-                      <IconEdit size={14} />
-                      Edit
+                      Cancel
                     </button>
-                  )}
-                </div>
 
-                {!editingCustomer ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
-                    {[
-                      { label: 'Email', value: customer.email || '—', icon: <IconMail size={15} /> },
-                      { label: 'Phone', value: customer.phone || '—', icon: <IconPhone size={15} /> },
-                      { label: 'Address', value: customer.address || '—', icon: <IconMapPin size={15} /> },
-                      { label: 'Suburb', value: customer.suburb || '—', icon: <IconMapPin size={15} /> },
-                      { label: 'Postcode', value: customer.postcode || '—', icon: <IconMapPin size={15} /> },
-                      {
-                        label: 'Customer since',
-                        value: customer.created_at
-                          ? new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
-                          : '—',
-                        icon: <IconClock size={15} />,
-                      },
-                    ].map((row, index) => (
-                      <div
-                        key={row.label}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '10px',
-                          padding: '14px 18px',
-                          borderBottom: index >= 4 && isMobile ? 'none' : `1px solid ${BORDER}`,
-                          borderRight: !isMobile && index % 2 === 0 ? `1px solid ${BORDER}` : 'none',
-                        }}
-                      >
-                        <div style={{ color: TEXT3, marginTop: '1px', flexShrink: 0 }}>{row.icon}</div>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ ...TYPE.label, marginBottom: '4px' }}>{row.label}</div>
-                          <div style={{ ...TYPE.body, wordBreak: 'break-word' }}>{row.value}</div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <div style={{ padding: '14px 18px', gridColumn: '1 / -1' }}>
-                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
-                      <div style={TYPE.body}>{customer.notes || '—'}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ padding: '18px', display: 'grid', gap: '10px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
-                      <div>
-                        <label style={labelStyle}>First name</label>
-                        <input style={inputStyle} value={customerForm.first_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, first_name: e.target.value }))} />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Last name</label>
-                        <input style={inputStyle} value={customerForm.last_name || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, last_name: e.target.value }))} />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={labelStyle}>Email</label>
-                      <input style={inputStyle} value={customerForm.email || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, email: e.target.value }))} />
-                    </div>
-
-                    <div>
-                      <label style={labelStyle}>Phone</label>
-                      <input style={inputStyle} value={customerForm.phone || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, phone: e.target.value }))} />
-                    </div>
-
-                    <div>
-                      <label style={labelStyle}>Address</label>
-                      <input style={inputStyle} value={customerForm.address || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, address: e.target.value }))} />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
-                      <div>
-                        <label style={labelStyle}>Suburb</label>
-                        <input style={inputStyle} value={customerForm.suburb || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, suburb: e.target.value }))} />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Postcode</label>
-                        <input style={inputStyle} value={customerForm.postcode || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, postcode: e.target.value }))} />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={labelStyle}>Notes</label>
-                      <textarea style={textareaStyle} value={customerForm.notes || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, notes: e.target.value }))} />
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => setEditingCustomer(false)}
-                        style={{
-                          flex: 1,
-                          height: '38px',
-                          borderRadius: '10px',
-                          border: `1px solid ${BORDER}`,
-                          background: WHITE,
-                          color: TEXT2,
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          fontFamily: FONT,
-                        }}
-                      >
-                        Cancel
-                      </button>
-
-                      <button
-                        onClick={saveCustomer}
-                        disabled={saving}
-                        style={{
-                          flex: 1,
-                          height: '38px',
-                          borderRadius: '10px',
-                          border: 'none',
-                          background: TEAL,
-                          color: WHITE,
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          fontFamily: FONT,
-                        }}
-                      >
-                        {saving ? 'Saving...' : 'Save'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div style={card}>
-                <div
-                  style={{
-                    padding: '14px 16px 12px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: isMobile ? 'stretch' : 'center',
-                    justifyContent: 'space-between',
-                    flexDirection: isMobile ? 'column' : 'row',
-                    gap: '10px',
-                  }}
-                >
-                  <div>
-                    <div style={sectionHeaderTitle}>Installed units</div>
-                    <div style={{ ...TYPE.bodySm }}>View equipment details, service timing, and history for this customer.</div>
-                  </div>
-
-                  <div
-                    style={{
-                      height: '34px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      padding: '0 12px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    {jobs.length} unit{jobs.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-
-                {jobs.length === 0 ? (
-                  <div
-                    style={{
-                      padding: '32px 18px',
-                      textAlign: 'center',
-                      color: TEXT3,
-                      fontSize: '13px',
-                    }}
-                  >
-                    No jobs yet for this customer.
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid' }}>
-                    {jobs.map((job, idx) => {
-                      const s = statusPill(job.next_service_date)
-                      const f = jobForms[job.id] || job
-                      const isEditing = editingJobId === job.id
-
-                      return (
-                        <div key={job.id} style={{ borderBottom: idx === jobs.length - 1 ? 'none' : `1px solid ${BORDER}` }}>
-                          <div
-                            style={{
-                              padding: '14px 18px',
-                              display: 'flex',
-                              alignItems: isMobile ? 'flex-start' : 'center',
-                              justifyContent: 'space-between',
-                              gap: '10px',
-                              flexDirection: isMobile ? 'column' : 'row',
-                              borderBottom: !isEditing ? `1px solid ${BORDER}` : 'none',
-                              background: WHITE,
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                              <div
-                                style={{
-                                  width: 38,
-                                  height: 38,
-                                  borderRadius: '10px',
-                                  background: avColors[idx % avColors.length].bg,
-                                  color: avColors[idx % avColors.length].color,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {String(job.brand || 'U').slice(0, 1).toUpperCase()}
-                              </div>
-
-                              <div style={{ minWidth: 0 }}>
-                                <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>
-                                  {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
-                                </div>
-                                {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
-                              </div>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <span
-                                style={{
-                                  background: s.bg,
-                                  color: s.color,
-                                  border: `1px solid ${s.border}`,
-                                  padding: '6px 9px',
-                                  borderRadius: '999px',
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {s.label}
-                              </span>
-
-                              {!isEditing && (
-                                <button
-                                  onClick={() => setEditingJobId(job.id)}
-                                  style={{
-                                    height: '34px',
-                                    borderRadius: '10px',
-                                    border: `1px solid ${BORDER}`,
-                                    background: WHITE,
-                                    color: TEXT2,
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    padding: '0 12px',
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '7px',
-                                  }}
-                                >
-                                  <IconEdit size={14} />
-                                  Edit
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          {!isEditing ? (
-                            <>
-                              <div
-                                style={{
-                                  padding: '14px 18px',
-                                  display: 'grid',
-                                  gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0,1fr))',
-                                  gap: '10px',
-                                }}
-                              >
-                                {[
-                                  {
-                                    label: 'Serial number',
-                                    value: job.serial_number || '—',
-                                    mono: true,
-                                    icon: <IconArrowLeft size={12} />,
-                                  },
-                                  {
-                                    label: 'Installed',
-                                    value: job.install_date
-                                      ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                      : '—',
-                                    icon: <IconClock size={14} />,
-                                  },
-                                  {
-                                    label: 'Next service',
-                                    value: job.next_service_date
-                                      ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                      : '—',
-                                    danger: job.next_service_date && getDays(job.next_service_date) < 0,
-                                    icon: <IconClock size={14} />,
-                                  },
-                                  {
-                                    label: 'Warranty expiry',
-                                    value: job.warranty_expiry
-                                      ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                      : '—',
-                                    icon: <IconClock size={14} />,
-                                  },
-                                  {
-                                    label: 'Location',
-                                    value: job.install_location || '—',
-                                    icon: <IconMapPin size={14} />,
-                                  },
-                                  {
-                                    label: 'Service interval',
-                                    value: `Every ${job.service_interval_months} months`,
-                                    icon: <IconClock size={14} />,
-                                  },
-                                ].map(row => (
-                                  <div
-                                    key={row.label}
-                                    style={{
-                                      borderRadius: '12px',
-                                      border: `1px solid ${BORDER}`,
-                                      background: '#FCFCFD',
-                                      padding: '12px',
-                                    }}
-                                  >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px', color: TEXT3 }}>
-                                      {row.icon}
-                                      <div style={TYPE.label}>{row.label}</div>
-                                    </div>
-                                    <div
-                                      style={{
-                                        ...TYPE.body,
-                                        fontWeight: 700,
-                                        color: row.danger ? RED : TEXT,
-                                        fontFamily: row.mono ? 'ui-monospace, SFMono-Regular, Menlo, monospace' : FONT,
-                                        wordBreak: 'break-word',
-                                      }}
-                                    >
-                                      {row.value}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-
-                              {job.notes && (
-                                <div style={{ padding: '0 18px 14px' }}>
-                                  <div
-                                    style={{
-                                      borderRadius: '12px',
-                                      border: `1px solid ${BORDER}`,
-                                      background: '#FCFCFD',
-                                      padding: '12px',
-                                    }}
-                                  >
-                                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
-                                    <div style={TYPE.body}>{job.notes}</div>
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <div style={{ padding: '18px', display: 'grid', gap: '10px', borderTop: `1px solid ${BORDER}` }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
-                                <div>
-                                  <label style={labelStyle}>Brand</label>
-                                  <input style={inputStyle} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Model</label>
-                                  <input style={inputStyle} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Capacity (kW)</label>
-                                  <input style={inputStyle} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Equipment type</label>
-                                  <select style={inputStyle} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
-                                    <option value="split_system">Split system</option>
-                                    <option value="ducted">Ducted system</option>
-                                    <option value="multi_head">Multi-head split</option>
-                                    <option value="cassette">Cassette unit</option>
-                                    <option value="other">Other</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Serial number</label>
-                                  <input style={inputStyle} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Location</label>
-                                  <input style={inputStyle} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Install date</label>
-                                  <input type="date" style={inputStyle} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Warranty expiry</label>
-                                  <input type="date" style={inputStyle} value={f.warranty_expiry?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'warranty_expiry', e.target.value)} />
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Service interval</label>
-                                  <select style={inputStyle} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
-                                    <option value="6">Every 6 months</option>
-                                    <option value="12">Every 12 months</option>
-                                    <option value="18">Every 18 months</option>
-                                    <option value="24">Every 24 months</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label style={labelStyle}>Reminder</label>
-                                  <select style={inputStyle} value={f.reminder_lead_days || 14} onChange={e => setJobField(job.id, 'reminder_lead_days', e.target.value)}>
-                                    <option value="14">2 weeks before</option>
-                                    <option value="28">4 weeks before</option>
-                                    <option value="42">6 weeks before</option>
-                                    <option value="56">8 weeks before</option>
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div>
-                                <label style={labelStyle}>Notes</label>
-                                <textarea style={textareaStyle} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)} />
-                              </div>
-
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                  onClick={() => setEditingJobId(null)}
-                                  style={{
-                                    flex: 1,
-                                    height: '38px',
-                                    borderRadius: '10px',
-                                    border: `1px solid ${BORDER}`,
-                                    background: WHITE,
-                                    color: TEXT2,
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-
-                                <button
-                                  onClick={() => saveJob(job.id)}
-                                  disabled={saving}
-                                  style={{
-                                    flex: 1,
-                                    height: '38px',
-                                    borderRadius: '10px',
-                                    border: 'none',
-                                    background: TEAL,
-                                    color: WHITE,
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                  }}
-                                >
-                                  {saving ? 'Saving...' : 'Save changes'}
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {job.service_records?.length > 0 && (
-                            <div style={{ borderTop: `1px solid ${BORDER}`, background: '#FAFBFC' }}>
-                              <div style={{ padding: '14px 18px 10px', ...TYPE.label }}>Service history</div>
-
-                              <div style={{ display: 'grid' }}>
-                                {job.service_records.map((sr: any, srIndex: number) => (
-                                  <div
-                                    key={sr.id}
-                                    style={{
-                                      display: 'flex',
-                                      justifyContent: 'space-between',
-                                      alignItems: 'flex-start',
-                                      gap: '12px',
-                                      padding: '12px 18px',
-                                      borderTop: srIndex === 0 ? 'none' : `1px solid ${BORDER}`,
-                                      background: WHITE,
-                                    }}
-                                  >
-                                    <div style={{ minWidth: 0 }}>
-                                      <div style={TYPE.titleSm}>{sr.service_type?.replace('_', ' ')}</div>
-                                      {sr.notes && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{sr.notes}</div>}
-                                    </div>
-
-                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                      <div style={TYPE.body}>
-                                        {new Date(sr.service_date).toLocaleDateString('en-AU', {
-                                          day: 'numeric',
-                                          month: 'short',
-                                          year: 'numeric',
-                                        })}
-                                      </div>
-                                      {sr.cost && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>${sr.cost}</div>}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {reviewClicks.length > 0 && (
-                <div style={card}>
-                  <div
-                    style={{
-                      padding: '14px 18px',
-                      borderBottom: `1px solid ${BORDER}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Review activity</div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                      {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid' }}>
-                    {uniquePlatforms.map((platform, index) => {
-                      const clicks = reviewClicks.filter(r => r.platform === platform)
-                      const latest = new Date(clicks[0].clicked_at).toLocaleDateString('en-AU', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-
-                      return (
-                        <div
-                          key={platform as string}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: '10px',
-                            padding: '12px 18px',
-                            borderBottom: index === uniquePlatforms.length - 1 ? 'none' : `1px solid ${BORDER}`,
-                          }}
-                        >
-                          <div>
-                            <div style={TYPE.titleSm}>{platform as string}</div>
-                            <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
-                              {clicks.length} click{clicks.length !== 1 ? 's' : ''}
-                            </div>
-                          </div>
-                          <div style={{ ...TYPE.bodySm, fontWeight: 700 }}>{latest}</div>
-                        </div>
-                      )
-                    })}
+                    <button
+                      onClick={saveCustomer}
+                      disabled={saving}
+                      style={{
+                        flex: 1,
+                        height: '38px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: TEAL,
+                        color: WHITE,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: FONT,
+                      }}
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
+
+            <div style={card}>
+              <div
+                style={{
+                  padding: '14px 16px 12px',
+                  borderBottom: `1px solid ${BORDER}`,
+                  display: 'flex',
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '10px',
+                }}
+              >
+                <div>
+                  <div style={sectionHeaderTitle}>Installed units</div>
+                  <div style={{ ...TYPE.bodySm }}>View equipment details, service timing, and history for this customer.</div>
+                </div>
+
+                <div
+                  style={{
+                    height: '34px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    padding: '0 12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontFamily: FONT,
+                  }}
+                >
+                  {jobs.length} unit{jobs.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+
+              {jobs.length === 0 ? (
+                <div
+                  style={{
+                    padding: '32px 18px',
+                    textAlign: 'center',
+                    color: TEXT3,
+                    fontSize: '13px',
+                  }}
+                >
+                  No jobs yet for this customer.
+                </div>
+              ) : (
+                <div style={{ display: 'grid' }}>
+                  {jobs.map((job, idx) => {
+                    const s = statusPill(job.next_service_date)
+                    const f = jobForms[job.id] || job
+                    const isEditing = editingJobId === job.id
+
+                    return (
+                      <div key={job.id} style={{ borderBottom: idx === jobs.length - 1 ? 'none' : `1px solid ${BORDER}` }}>
+                        <div
+                          style={{
+                            padding: '14px 18px',
+                            display: 'flex',
+                            alignItems: isMobile ? 'flex-start' : 'center',
+                            justifyContent: 'space-between',
+                            gap: '10px',
+                            flexDirection: isMobile ? 'column' : 'row',
+                            borderBottom: !isEditing ? `1px solid ${BORDER}` : 'none',
+                            background: WHITE,
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>
+                              {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                            </div>
+                            {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span
+                              style={{
+                                background: s.bg,
+                                color: s.color,
+                                border: `1px solid ${s.border}`,
+                                padding: '6px 9px',
+                                borderRadius: '999px',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {s.label}
+                            </span>
+
+                            {!isEditing && (
+                              <button
+                                onClick={() => setEditingJobId(job.id)}
+                                style={{
+                                  height: '34px',
+                                  borderRadius: '10px',
+                                  border: `1px solid ${BORDER}`,
+                                  background: WHITE,
+                                  color: TEXT2,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  padding: '0 12px',
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '7px',
+                                }}
+                              >
+                                <IconEdit size={14} />
+                                Edit
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {!isEditing ? (
+                          <>
+                            <div
+                              style={{
+                                padding: '14px 18px',
+                                display: 'grid',
+                                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0,1fr))',
+                                gap: '10px',
+                              }}
+                            >
+                              {[
+                                {
+                                  label: 'Serial number',
+                                  value: job.serial_number || '—',
+                                  mono: true,
+                                  icon: <IconArrowLeft size={12} />,
+                                },
+                                {
+                                  label: 'Installed',
+                                  value: job.install_date
+                                    ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                                    : '—',
+                                  icon: <IconClock size={14} />,
+                                },
+                                {
+                                  label: 'Next service',
+                                  value: job.next_service_date
+                                    ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                                    : '—',
+                                  danger: job.next_service_date && getDays(job.next_service_date) < 0,
+                                  icon: <IconClock size={14} />,
+                                },
+                                {
+                                  label: 'Warranty expiry',
+                                  value: job.warranty_expiry
+                                    ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                                    : '—',
+                                  icon: <IconClock size={14} />,
+                                },
+                                {
+                                  label: 'Location',
+                                  value: job.install_location || '—',
+                                  icon: <IconMapPin size={14} />,
+                                },
+                                {
+                                  label: 'Service interval',
+                                  value: `Every ${job.service_interval_months} months`,
+                                  icon: <IconClock size={14} />,
+                                },
+                              ].map(row => (
+                                <div
+                                  key={row.label}
+                                  style={{
+                                    borderRadius: '12px',
+                                    border: `1px solid ${BORDER}`,
+                                    background: '#FCFCFD',
+                                    padding: '12px',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px', color: TEXT3 }}>
+                                    {row.icon}
+                                    <div style={TYPE.label}>{row.label}</div>
+                                  </div>
+                                  <div
+                                    style={{
+                                      ...TYPE.body,
+                                      fontWeight: 700,
+                                      color: row.danger ? RED : TEXT,
+                                      fontFamily: row.mono ? 'ui-monospace, SFMono-Regular, Menlo, monospace' : FONT,
+                                      wordBreak: 'break-word',
+                                    }}
+                                  >
+                                    {row.value}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {job.notes && (
+                              <div style={{ padding: '0 18px 14px' }}>
+                                <div
+                                  style={{
+                                    borderRadius: '12px',
+                                    border: `1px solid ${BORDER}`,
+                                    background: '#FCFCFD',
+                                    padding: '12px',
+                                  }}
+                                >
+                                  <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
+                                  <div style={TYPE.body}>{job.notes}</div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div style={{ padding: '18px', display: 'grid', gap: '10px', borderTop: `1px solid ${BORDER}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
+                              <div>
+                                <label style={labelStyle}>Brand</label>
+                                <input style={inputStyle} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Model</label>
+                                <input style={inputStyle} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Capacity (kW)</label>
+                                <input style={inputStyle} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Equipment type</label>
+                                <select style={inputStyle} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
+                                  <option value="split_system">Split system</option>
+                                  <option value="ducted">Ducted system</option>
+                                  <option value="multi_head">Multi-head split</option>
+                                  <option value="cassette">Cassette unit</option>
+                                  <option value="other">Other</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Serial number</label>
+                                <input style={inputStyle} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Location</label>
+                                <input style={inputStyle} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Install date</label>
+                                <input type="date" style={inputStyle} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Warranty expiry</label>
+                                <input type="date" style={inputStyle} value={f.warranty_expiry?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'warranty_expiry', e.target.value)} />
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Service interval</label>
+                                <select style={inputStyle} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
+                                  <option value="6">Every 6 months</option>
+                                  <option value="12">Every 12 months</option>
+                                  <option value="18">Every 18 months</option>
+                                  <option value="24">Every 24 months</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label style={labelStyle}>Reminder</label>
+                                <select style={inputStyle} value={f.reminder_lead_days || 14} onChange={e => setJobField(job.id, 'reminder_lead_days', e.target.value)}>
+                                  <option value="14">2 weeks before</option>
+                                  <option value="28">4 weeks before</option>
+                                  <option value="42">6 weeks before</option>
+                                  <option value="56">8 weeks before</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label style={labelStyle}>Notes</label>
+                              <textarea style={textareaStyle} value={f.notes || ''} onChange={e => setJobField(job.id, 'notes', e.target.value)} />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={() => setEditingJobId(null)}
+                                style={{
+                                  flex: 1,
+                                  height: '38px',
+                                  borderRadius: '10px',
+                                  border: `1px solid ${BORDER}`,
+                                  background: WHITE,
+                                  color: TEXT2,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                }}
+                              >
+                                Cancel
+                              </button>
+
+                              <button
+                                onClick={() => saveJob(job.id)}
+                                disabled={saving}
+                                style={{
+                                  flex: 1,
+                                  height: '38px',
+                                  borderRadius: '10px',
+                                  border: 'none',
+                                  background: TEAL,
+                                  color: WHITE,
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  fontFamily: FONT,
+                                }}
+                              >
+                                {saving ? 'Saving...' : 'Save changes'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {job.service_records?.length > 0 && (
+                          <div style={{ borderTop: `1px solid ${BORDER}`, background: '#FAFBFC' }}>
+                            <div style={{ padding: '14px 18px 10px', ...TYPE.label }}>Service history</div>
+
+                            <div style={{ display: 'grid' }}>
+                              {job.service_records.map((sr: any, srIndex: number) => (
+                                <div
+                                  key={sr.id}
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'flex-start',
+                                    gap: '12px',
+                                    padding: '12px 18px',
+                                    borderTop: srIndex === 0 ? 'none' : `1px solid ${BORDER}`,
+                                    background: WHITE,
+                                  }}
+                                >
+                                  <div style={{ minWidth: 0 }}>
+                                    <div style={TYPE.titleSm}>{sr.service_type?.replace('_', ' ')}</div>
+                                    {sr.notes && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{sr.notes}</div>}
+                                  </div>
+
+                                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                    <div style={TYPE.body}>
+                                      {new Date(sr.service_date).toLocaleDateString('en-AU', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                      })}
+                                    </div>
+                                    {sr.cost && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>${sr.cost}</div>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {reviewClicks.length > 0 && (
+              <div style={card}>
+                <div
+                  style={{
+                    padding: '14px 18px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Review activity</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
+                    {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid' }}>
+                  {uniquePlatforms.map((platform, index) => {
+                    const clicks = reviewClicks.filter(r => r.platform === platform)
+                    const latest = new Date(clicks[0].clicked_at).toLocaleDateString('en-AU', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+
+                    return (
+                      <div
+                        key={platform as string}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '10px',
+                          padding: '12px 18px',
+                          borderBottom: index === uniquePlatforms.length - 1 ? 'none' : `1px solid ${BORDER}`,
+                        }}
+                      >
+                        <div>
+                          <div style={TYPE.titleSm}>{platform as string}</div>
+                          <div style={{ ...TYPE.bodySm, marginTop: '3px' }}>
+                            {clicks.length} click{clicks.length !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                        <div style={{ ...TYPE.bodySm, fontWeight: 700 }}>{latest}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
