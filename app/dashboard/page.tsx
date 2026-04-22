@@ -585,38 +585,43 @@ function DashboardHeader({
   if (isMobile) {
     return (
       <div style={{ margin: '-12px -12px 0', background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-        {/* Mobile: teal band at top */}
-        <div style={{ background: `linear-gradient(135deg, ${TEAL_DARK} 0%, ${TEAL} 100%)`, padding: '18px 16px 16px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>
-            {dayName}
+        {/* Teal band */}
+        <div style={{ background: TEAL, padding: '20px 16px 18px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>
+            {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <h1 style={{ fontSize: '26px', fontWeight: 900, color: WHITE, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
               Dashboard
             </h1>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
+            <div style={{ display: 'flex', gap: '0', background: 'rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.customers}</div>
                 <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Clients</div>
               </div>
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.2)', alignSelf: 'stretch' }} />
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Scheduled</div>
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.15)' }} />
+              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{scheduledCount}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Booked</div>
+              </div>
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.15)' }} />
+              <div style={{ padding: '8px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '17px', fontWeight: 900, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1 }}>{stats.jobsToday}</div>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>Today</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile: chips + actions */}
-        <div style={{ padding: '10px 16px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
-            {stats.jobsToday} today
-          </span>
+        {/* Status chips */}
+        <div style={{ padding: '10px 16px 0', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '10px', fontWeight: 800 }}>
             <IconDollarSign size={10} />
             ${invoiceStats.collected.toLocaleString('en-AU')} collected
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#F1F5F9', color: TEXT3, fontSize: '10px', fontWeight: 800 }}>
+            <IconDollarSign size={10} />
+            ${invoiceStats.outstanding.toLocaleString('en-AU')} out
           </span>
           {stats.overdue > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#FEE2E2', color: '#991B1B', fontSize: '10px', fontWeight: 800 }}>
@@ -625,14 +630,16 @@ function DashboardHeader({
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '8px', padding: '0 16px 14px' }}>
-          <button onClick={onAddJob} style={{ ...btnBase, flex: 1, background: '#F1F5F9', color: TEXT2 }}>
+
+        {/* Action buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '10px 16px 14px' }}>
+          <button onClick={onAddJob} style={{ ...btnBase, background: '#F1F5F9', color: TEXT2, fontSize: '11px', height: '38px', padding: '0 6px' }}>
             <IconPlus size={12} /> Add Job
           </button>
-          <button onClick={onSchedule} style={{ ...btnBase, flex: 1, background: '#F1F5F9', color: TEXT2 }}>
+          <button onClick={onSchedule} style={{ ...btnBase, background: '#F1F5F9', color: TEXT2, fontSize: '11px', height: '38px', padding: '0 6px' }}>
             <IconCalendar size={12} /> Schedule
           </button>
-          <button onClick={onRevenue} style={{ ...btnBase, flex: 1, background: TEXT, color: WHITE }}>
+          <button onClick={onRevenue} style={{ ...btnBase, background: TEXT, color: WHITE, fontSize: '11px', height: '38px', padding: '0 6px' }}>
             <IconDownload size={12} /> Revenue
           </button>
         </div>
@@ -651,7 +658,7 @@ function DashboardHeader({
     }}>
       {/* Top: teal gradient band */}
       <div style={{
-        background: `linear-gradient(135deg, ${TEAL_DARK} 0%, ${TEAL} 60%, ${TEAL_MID} 100%)`,
+        background: TEAL,
         padding: '22px 28px 20px',
         position: 'relative',
         overflow: 'hidden',
