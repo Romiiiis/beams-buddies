@@ -7,15 +7,15 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -64,6 +64,24 @@ function IconPlus({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconSpark({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -126,14 +144,6 @@ function IconEdit({ size = 15 }: { size?: number }) {
     </svg>
   )
 }
-function IconNote({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M8 7h8M8 12h8M8 17h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M6 3h9l3 3v15H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
-}
 function IconSave({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -141,6 +151,44 @@ function IconSave({ size = 15 }: { size?: number }) {
       <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
     </svg>
   )
+}
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M22 7l-8 8-4-4-6 6"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M22 17l-8-8-4 4-6-6"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function pctChange(current: number, previous: number) {
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
 }
 
 function StatImageIcon({ src, alt }: { src: string; alt: string }) {
@@ -222,8 +270,9 @@ function JobDrawer({
   const fieldBox: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '12px',
+    borderRadius: '14px',
     padding: '12px 14px',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const days = (() => {
@@ -305,28 +354,21 @@ function JobDrawer({
       >
         <div
           style={{
-            padding: '20px 22px 18px',
+            padding: '18px 20px 16px',
             borderBottom: `1px solid ${BORDER}`,
-            background: HEADER_BG,
+            background: WHITE,
             flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
             <div>
-              <div
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.5)',
-                  marginBottom: '6px',
-                }}
-              >
+              <div style={{ ...TYPE.label, marginBottom: '6px' }}>
                 {EQUIPMENT_LABELS[form.equipment_type] || form.equipment_type}
               </div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: WHITE, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
-              {customer?.phone && <div style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{customer.phone}</div>}
+              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
+                {name}
+              </div>
+              {customer?.phone && <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3 }}>{customer.phone}</div>}
             </div>
 
             <button
@@ -335,9 +377,9 @@ function JobDrawer({
                 width: '34px',
                 height: '34px',
                 borderRadius: '10px',
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.8)',
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
+                color: TEXT3,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -371,8 +413,8 @@ function JobDrawer({
             {saved && (
               <span
                 style={{
-                  background: 'rgba(255,255,255,0.12)',
-                  color: WHITE,
+                  background: TEAL_LIGHT,
+                  color: TEAL_DARK,
                   padding: '6px 12px',
                   borderRadius: '999px',
                   fontSize: '11px',
@@ -385,10 +427,10 @@ function JobDrawer({
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'grid', gap: '14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
           <div style={fieldBox}>
             <div style={{ ...TYPE.label, marginBottom: '10px' }}>Customer</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
               {[
                 { label: 'Name', value: name },
                 { label: 'Phone', value: customer?.phone || '—' },
@@ -407,7 +449,7 @@ function JobDrawer({
             <>
               <div style={fieldBox}>
                 <div style={{ ...TYPE.label, marginBottom: '10px' }}>Unit details</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   {[
                     { label: 'Brand', value: form.brand || '—' },
                     { label: 'Model', value: form.model || '—' },
@@ -426,7 +468,7 @@ function JobDrawer({
 
               <div style={fieldBox}>
                 <div style={{ ...TYPE.label, marginBottom: '10px' }}>Service schedule</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   {[
                     {
                       label: 'Installed',
@@ -463,7 +505,7 @@ function JobDrawer({
             <>
               <div style={fieldBox}>
                 <div style={{ ...TYPE.label, marginBottom: '10px' }}>Edit job</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Brand</div>
                     <input style={inputStyle} value={form.brand} onChange={e => setForm(p => ({ ...p, brand: e.target.value }))} />
@@ -525,7 +567,12 @@ function JobDrawer({
 
               <div style={fieldBox}>
                 <div style={{ ...TYPE.label, marginBottom: '10px' }}>Job notes</div>
-                <textarea style={textareaStyle} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Add notes, service context, access instructions, parts needed..." />
+                <textarea
+                  style={textareaStyle}
+                  value={form.notes}
+                  onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                  placeholder="Add notes, service context, access instructions, parts needed..."
+                />
               </div>
             </>
           )}
@@ -533,7 +580,7 @@ function JobDrawer({
 
         <div
           style={{
-            padding: '14px 18px 18px',
+            padding: '14px 16px 16px',
             borderTop: `1px solid ${BORDER}`,
             background: WHITE,
             flexShrink: 0,
@@ -696,7 +743,9 @@ export default function JobsPage() {
     return jobs.filter(j => {
       const name = `${j.customers?.first_name || ''} ${j.customers?.last_name || ''}`.trim()
       const matchSearch = search
-        ? `${name} ${j.brand} ${j.model} ${j.customers?.suburb} ${j.customers?.phone}`.toLowerCase().includes(search.toLowerCase())
+        ? `${name} ${j.brand || ''} ${j.model || ''} ${j.customers?.suburb || ''} ${j.customers?.phone || ''}`
+            .toLowerCase()
+            .includes(search.toLowerCase())
         : true
       const matchType = filterType === 'all' ? true : j.equipment_type === filterType
       return matchSearch && matchType
@@ -736,26 +785,66 @@ export default function JobsPage() {
     year: 'numeric',
   })
 
+  const now = new Date()
+  const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+  const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
+
+  function inRange(dateStr?: string | null, start?: Date, end?: Date) {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return false
+    return d >= start! && d < end!
+  }
+
+  const overdueCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d < 0
+  }).length
+
+  const dueSoonCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d >= 0 && d <= 30
+  }).length
+
+  const upToDateCount = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d > 30
+  }).length
+
+  const currentJobs = jobs.filter(j => inRange(j.install_date, startCurrent30, now)).length
+  const prevJobs = jobs.filter(j => inRange(j.install_date, startPrev30, startCurrent30)).length
+
+  const currentDue = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d >= 0 && d <= 30 && inRange(j.install_date, startCurrent30, now)
+  }).length
+  const prevDue = jobs.filter(j => {
+    const d = daysUntil(j.install_date, j.service_interval_months)
+    return d !== null && d >= 0 && d <= 30 && inRange(j.install_date, startPrev30, startCurrent30)
+  }).length
+
+  const currentCustomers = new Set(
+    jobs.filter(j => inRange(j.install_date, startCurrent30, now)).map(j => j.customer_id)
+  ).size
+  const prevCustomers = new Set(
+    jobs.filter(j => inRange(j.install_date, startPrev30, startCurrent30)).map(j => j.customer_id)
+  ).size
+
+  const jobsDelta = pctChange(currentJobs, prevJobs)
+  const dueDelta = pctChange(currentDue, prevDue)
+  const customersDelta = pctChange(currentCustomers, prevCustomers)
+
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
-  }
-
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '12px 10px 11px' : '14px 16px 13px',
-    minHeight: isMobile ? 104 : 118,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
-    borderRadius: '16px',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -776,50 +865,95 @@ export default function JobsPage() {
     alignItems: 'center',
   }
 
-  const overviewCards = [
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
+  }
+
+  const statCards = [
     {
       label: 'Total jobs',
       value: jobs.length,
+      delta: formatDelta(jobsDelta),
+      up: jobsDelta >= 0,
       sub: 'All jobs in workspace',
       iconSrc: 'https://static.wixstatic.com/media/48c433_997ef62d91654472ba257f2f31099e0c~mv2.png',
-      accent: TEXT,
-      tag: 'All time',
     },
     {
       label: 'Due this month',
-      value: jobs.filter(j => {
-        const d = daysUntil(j.install_date, j.service_interval_months)
-        return d !== null && d >= 0 && d <= 30
-      }).length,
+      value: dueSoonCount,
+      delta: formatDelta(dueDelta),
+      up: dueDelta >= 0,
       sub: 'Service due within 30 days',
       iconSrc: 'https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png',
-      accent: AMBER,
-      tag: 'Upcoming',
     },
     {
       label: 'Customers',
       value: new Set(jobs.map(j => j.customer_id)).size,
+      delta: formatDelta(customersDelta),
+      up: customersDelta >= 0,
       sub: 'Unique customers with jobs',
       iconSrc: 'https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png',
-      accent: TEAL_DARK,
-      tag: 'Unique',
     },
   ]
-
-  const overdueCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
-    return d !== null && d < 0
-  }).length
-
-  const dueSoonCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
-    return d !== null && d >= 0 && d <= 30
-  }).length
-
-  const upToDateCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
-    return d !== null && d > 30
-  }).length
 
   function updateJobInList(updatedJob: any) {
     setJobs(prev => prev.map(j => (j.id === updatedJob.id ? { ...j, ...updatedJob } : j)))
@@ -837,81 +971,198 @@ export default function JobsPage() {
     >
       <Sidebar active="/dashboard/jobs" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            background: BG,
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '20px 16px 18px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? '0' : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Jobs
-            </div>
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              All installations, service history, and upcoming maintenance in one place.
-            </div>
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/jobs/add')}
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
+                  background: WHITE,
+                  padding: '16px 16px 14px',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                <IconPlus size={16} /> Add new job
-              </button>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '26px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Jobs
+                  </h1>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {jobs.length}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Jobs
+                    </div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {dueSoonCount}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Due soon
+                    </div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {overdueCount}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Overdue
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs/add')} style={btnMobileSm}>
+                    <IconSpark size={12} /> Add job
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterType('all')
+                    }}
+                    style={btnMobileDark}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {todayStr}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Jobs
+                  </h1>
+                </div>
+
+                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  {[
+                    ['Jobs', jobs.length],
+                    ['Due soon', dueSoonCount],
+                    ['Overdue', overdueCount],
+                  ].map(([label, value], i) => (
+                    <React.Fragment key={label}>
+                      {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
+                      <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                          {value}
+                        </div>
+                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
+                          {label}
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs/add')}
+                    style={btnOutline}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
+                    <IconSpark size={12} /> Add job
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterType('all')
+                    }}
+                    style={btnDark}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
+                    Reset filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{
@@ -920,31 +1171,62 @@ export default function JobsPage() {
               gap: '12px',
             }}
           >
-            {overviewCards.map(item => (
-              <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ ...TYPE.label, marginBottom: '6px', fontSize: isMobile ? '9px' : '10px' }}>{item.tag}</div>
+            {statCards.map(item => (
+              <div
+                key={item.label}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: isMobile ? '10px 12px' : '10px 14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '62px' : '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        ...TYPE.title,
-                        fontSize: isMobile ? '11px' : '13px',
-                        fontWeight: 800,
-                        marginBottom: '6px',
-                        lineHeight: 1.2,
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: TEXT3,
+                        marginBottom: '4px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {item.label}
                     </div>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {item.value}
+                    </div>
                   </div>
-                  <StatImageIcon src={item.iconSrc} alt={item.label} />
-                </div>
 
-                <div>
-                  <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.accent }}>
-                    {item.value}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    {!isMobile && <StatImageIcon src={item.iconSrc} alt={item.label} />}
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        padding: '3px 7px',
+                        borderRadius: '999px',
+                        background: item.up ? '#E6F7F6' : '#FFF0EE',
+                        color: item.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {item.delta}
+                    </span>
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px', fontSize: isMobile ? '10px' : '11px' }}>{item.sub}</div>
                 </div>
               </div>
             ))}
@@ -972,7 +1254,6 @@ export default function JobsPage() {
               >
                 <div>
                   <div style={sectionHeaderTitle}>All jobs</div>
-                  <div style={{ ...TYPE.bodySm }}>Click a job to update details, add notes, and manage the service schedule.</div>
                 </div>
 
                 <div
@@ -1010,7 +1291,7 @@ export default function JobsPage() {
                       style={{
                         height: '40px',
                         width: '100%',
-                        borderRadius: '11px',
+                        borderRadius: '10px',
                         border: `1px solid ${BORDER}`,
                         padding: '0 12px 0 36px',
                         fontSize: '12px',
@@ -1037,6 +1318,8 @@ export default function JobsPage() {
                       alignItems: 'center',
                       whiteSpace: 'nowrap',
                       gap: '6px',
+                      width: isMobile ? '100%' : 'auto',
+                      justifyContent: isMobile ? 'center' : 'flex-start',
                     }}
                   >
                     <IconFilter size={14} /> {filtered.length} shown
@@ -1161,7 +1444,7 @@ export default function JobsPage() {
                             <div
                               style={{
                                 padding: '10px 11px',
-                                borderRadius: '10px',
+                                borderRadius: '12px',
                                 background: '#FCFCFD',
                                 border: `1px solid ${BORDER}`,
                               }}
@@ -1177,7 +1460,7 @@ export default function JobsPage() {
                             <div
                               style={{
                                 padding: '10px 11px',
-                                borderRadius: '10px',
+                                borderRadius: '12px',
                                 background: '#FCFCFD',
                                 border: `1px solid ${BORDER}`,
                               }}
@@ -1215,7 +1498,7 @@ export default function JobsPage() {
                               {meta.serviceLabel}
                             </span>
 
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
                               Open job
                             </span>
                           </div>
