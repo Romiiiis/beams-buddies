@@ -17,7 +17,6 @@ const TEXT3 = '#475569'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -208,6 +207,34 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
       <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
+}
+
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function pctChange(current: number, previous: number) {
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -423,26 +450,84 @@ export default function QuotesPage() {
     [quotes]
   )
 
+  const now = new Date()
+  const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+  const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
+
+  function inRange(dateStr?: string | null, start?: Date, end?: Date) {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return false
+    return d >= start! && d < end!
+  }
+
+  const currentDrafts = quotes.filter(q => q.status === 'draft' && inRange(q.created_at, startCurrent30, now)).length
+  const prevDrafts = quotes.filter(q => q.status === 'draft' && inRange(q.created_at, startPrev30, startCurrent30)).length
+
+  const currentSent = quotes.filter(q => q.status === 'sent' && inRange(q.created_at, startCurrent30, now)).length
+  const prevSent = quotes.filter(q => q.status === 'sent' && inRange(q.created_at, startPrev30, startCurrent30)).length
+
+  const currentAccepted = quotes.filter(q => q.status === 'accepted' && inRange(q.created_at, startCurrent30, now)).length
+  const prevAccepted = quotes.filter(q => q.status === 'accepted' && inRange(q.created_at, startPrev30, startCurrent30)).length
+
+  const currentDeclined = quotes.filter(q => q.status === 'declined' && inRange(q.created_at, startCurrent30, now)).length
+  const prevDeclined = quotes.filter(q => q.status === 'declined' && inRange(q.created_at, startPrev30, startCurrent30)).length
+
+  const topCards = [
+    {
+      label: 'Draft',
+      value: statusCounts.draft.toLocaleString('en-AU'),
+      delta: formatDelta(pctChange(currentDrafts, prevDrafts)),
+      up: pctChange(currentDrafts, prevDrafts) >= 0,
+      icon: <IconDraft size={28} />,
+    },
+    {
+      label: 'Sent',
+      value: statusCounts.sent.toLocaleString('en-AU'),
+      delta: formatDelta(pctChange(currentSent, prevSent)),
+      up: pctChange(currentSent, prevSent) >= 0,
+      icon: <IconSent size={28} />,
+    },
+    {
+      label: 'Accepted',
+      value: statusCounts.accepted.toLocaleString('en-AU'),
+      delta: formatDelta(pctChange(currentAccepted, prevAccepted)),
+      up: pctChange(currentAccepted, prevAccepted) >= 0,
+      icon: <IconAccepted size={28} />,
+    },
+    {
+      label: 'Declined',
+      value: statusCounts.declined.toLocaleString('en-AU'),
+      delta: formatDelta(pctChange(currentDeclined, prevDeclined)),
+      up: pctChange(currentDeclined, prevDeclined) >= 0,
+      icon: <IconDeclined size={28} />,
+    },
+  ]
+
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    borderRadius: '14px',
+    padding: isMobile ? '10px 10px' : '10px 14px',
+    overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    minHeight: isMobile ? '70px' : '68px',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   }
 
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
-    borderRadius: '16px',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -483,40 +568,41 @@ export default function QuotesPage() {
     display: 'block',
   }
 
-  const topCards = [
-    {
-      label: 'Draft',
-      value: statusCounts.draft.toLocaleString('en-AU'),
-      sub: 'Not sent yet',
-      icon: <IconDraft size={28} />,
-      accent: TEXT,
-      tag: 'Pipeline',
-    },
-    {
-      label: 'Sent',
-      value: statusCounts.sent.toLocaleString('en-AU'),
-      sub: 'Awaiting response',
-      icon: <IconSent size={28} />,
-      accent: TEXT,
-      tag: 'In progress',
-    },
-    {
-      label: 'Accepted',
-      value: statusCounts.accepted.toLocaleString('en-AU'),
-      sub: 'Approved quotes',
-      icon: <IconAccepted size={28} />,
-      accent: GREEN,
-      tag: 'Won',
-    },
-    {
-      label: 'Declined',
-      value: statusCounts.declined.toLocaleString('en-AU'),
-      sub: 'Not proceeding',
-      icon: <IconDeclined size={28} />,
-      accent: RED,
-      tag: 'Lost',
-    },
-  ]
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
 
   if (loading) {
     return (
@@ -553,82 +639,123 @@ export default function QuotesPage() {
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
+            gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? 0 : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Quotes
-            </div>
-
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Create, track, and update quotes from one clean pipeline built for fast approvals and follow-up.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => setShowForm(true)}
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
+                  background: WHITE,
+                  padding: '16px 16px 14px',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                <IconSpark size={14} />
-                New quote
-              </button>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '26px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Quotes
+                  </h1>
+                </div>
+              </div>
+
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => setShowForm(true)} style={{ ...btnDark, flex: 1, height: '36px' }}>
+                    <IconSpark size={12} /> New quote
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {todayStr}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Quotes
+                  </h1>
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => setShowForm(true)}
+                    style={{
+                      height: '34px',
+                      padding: '0 14px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      background: TEAL,
+                      color: WHITE,
+                      border: 'none',
+                      borderRadius: '9px',
+                    }}
+                  >
+                    <IconSpark size={14} />
+                    New quote
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{
@@ -639,30 +766,106 @@ export default function QuotesPage() {
           >
             {topCards.map(item => (
               <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
-                  </div>
+                {isMobile ? (
+                  <div style={{ display: 'grid', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    </div>
 
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
 
-                <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
-                </div>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '3px 7px',
+                          borderRadius: '999px',
+                          background: item.up ? '#E6F7F6' : '#FFF0EE',
+                          color: item.up ? TEAL_DARK : '#C0392B',
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                          alignSelf: 'flex-end',
+                          marginTop: '2px',
+                        }}
+                      >
+                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                        {item.delta}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          marginBottom: '4px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                      <div
+                        style={{
+                          width: 28,
+                          height: 28,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '3px 7px',
+                          borderRadius: '999px',
+                          background: item.up ? '#E6F7F6' : '#FFF0EE',
+                          color: item.up ? TEAL_DARK : '#C0392B',
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                        {item.delta}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -689,7 +892,6 @@ export default function QuotesPage() {
               >
                 <div>
                   <div style={sectionHeaderTitle}>Quote list</div>
-                  <div style={{ ...TYPE.bodySm }}>Filter quotes by status and update each one directly from the list.</div>
                 </div>
 
                 <div
@@ -839,19 +1041,28 @@ export default function QuotesPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.2fr) 100px 120px 150px 82px',
-                    gap: '12px',
-                    alignItems: 'center',
-                    padding: '10px 16px',
+                    gridTemplateColumns: 'minmax(0,1fr)',
+                    gap: '0',
+                    padding: '0 16px',
                     borderBottom: `1px solid ${BORDER}`,
                     background: '#FCFCFD',
                   }}
                 >
-                  <div style={{ ...TYPE.label }}>Customer / Quote</div>
-                  <div style={{ ...TYPE.label }}>Total</div>
-                  <div style={{ ...TYPE.label }}>Valid until</div>
-                  <div style={{ ...TYPE.label }}>Status</div>
-                  <div style={{ ...TYPE.label, textAlign: 'right' }}>Delete</div>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0,1.2fr) 100px 120px 150px 82px',
+                      gap: '12px',
+                      alignItems: 'center',
+                      padding: '10px 0',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label }}>Customer / Quote</div>
+                    <div style={{ ...TYPE.label }}>Total</div>
+                    <div style={{ ...TYPE.label }}>Valid until</div>
+                    <div style={{ ...TYPE.label }}>Status</div>
+                    <div style={{ ...TYPE.label, textAlign: 'right' }}>Delete</div>
+                  </div>
                 </div>
               )}
 
@@ -867,7 +1078,7 @@ export default function QuotesPage() {
                   No quotes found.
                 </div>
               ) : (
-                <div style={{ display: 'grid' }}>
+                <div style={{ padding: isMobile ? '12px' : '12px 16px', display: 'grid', gap: '12px' }}>
                   {filtered.map(q => {
                     const st = STATUS_STYLES[q.status] || STATUS_STYLES.draft
 
@@ -875,12 +1086,14 @@ export default function QuotesPage() {
                       <div
                         key={q.id}
                         style={{
-                          borderBottom: `1px solid ${BORDER}`,
-                          padding: isMobile ? '14px 14px 13px' : '14px 16px',
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: '14px',
+                          background: WHITE,
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                         }}
                       >
                         {isMobile ? (
-                          <div style={{ display: 'grid', gap: '10px' }}>
+                          <div style={{ display: 'grid', gap: '10px', padding: '14px 14px 13px' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                               <div style={{ minWidth: 0 }}>
                                 <div
@@ -1059,6 +1272,7 @@ export default function QuotesPage() {
                               gridTemplateColumns: 'minmax(0,1.2fr) 100px 120px 150px 82px',
                               gap: '12px',
                               alignItems: 'center',
+                              padding: '14px 16px',
                             }}
                           >
                             <div style={{ minWidth: 0 }}>
@@ -1263,53 +1477,6 @@ export default function QuotesPage() {
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>Declined</span>
                     <span style={{ fontSize: '13px', fontWeight: 900, color: '#7F1D1D' }}>{statusCounts.declined}</span>
                   </div>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Quick actions</div>
-                  <button onClick={() => setShowForm(true)} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-                  <button
-                    onClick={() => setShowForm(true)}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    New quote
-                  </button>
-
-                  <button
-                    onClick={() => setFilterStatus('all')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    Reset filter
-                  </button>
                 </div>
               </div>
 
@@ -1651,14 +1818,14 @@ export default function QuotesPage() {
                   style={{
                     flex: 1,
                     height: '42px',
-                    borderRadius: '10px',
+                    borderRadius: '9px',
                     border: `1px solid ${BORDER}`,
                     background: WHITE,
                     color: TEXT2,
                     fontSize: '14px',
+                    fontWeight: 600,
                     cursor: 'pointer',
                     fontFamily: FONT,
-                    fontWeight: 700,
                   }}
                 >
                   Cancel
@@ -1670,12 +1837,12 @@ export default function QuotesPage() {
                   style={{
                     flex: 2,
                     height: '42px',
-                    borderRadius: '10px',
+                    borderRadius: '9px',
                     border: 'none',
                     background: TEAL,
                     color: WHITE,
                     fontSize: '14px',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     cursor: 'pointer',
                     fontFamily: FONT,
                     opacity: !form.customer_id ? 0.5 : 1,
