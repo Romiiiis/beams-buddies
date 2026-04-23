@@ -237,29 +237,6 @@ export default function AddJobPage() {
     marginBottom: '12px',
   }
 
-  const miniStatCard: React.CSSProperties = {
-    borderRadius: '12px',
-    background: '#F8FAFC',
-    border: `1px solid ${BORDER}`,
-    padding: '12px',
-  }
-
-  const quickActionStyle: React.CSSProperties = {
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    borderRadius: '10px',
-    height: '38px',
-    padding: '0 14px',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-  }
-
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
@@ -377,11 +354,6 @@ export default function AddJobPage() {
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
-
-  const summaryCustomerName =
-    form.first_name || form.last_name ? `${form.first_name} ${form.last_name}`.trim() : 'Not added'
-
-  const summaryUnit = form.brand || form.capacity_kw ? `${form.brand || 'Brand'}${form.capacity_kw ? ` ${form.capacity_kw}kW` : ''}` : 'Not added'
 
   return (
     <div
@@ -521,14 +493,7 @@ export default function AddJobPage() {
             </div>
           )}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
             <div style={cardP}>
               <div
                 style={{
@@ -711,150 +676,6 @@ export default function AddJobPage() {
                   </div>
                 </div>
               </form>
-            </div>
-
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={cardP}>
-                <div style={sectionLabel}>Workflow summary</div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Customer</div>
-                    <div style={{ ...TYPE.valueSm }}>{summaryCustomerName}</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>{form.phone || form.email || 'Phone or email will appear here'}</div>
-                  </div>
-
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Unit</div>
-                    <div style={{ ...TYPE.valueSm }}>{summaryUnit}</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>{form.equipment_type.replace('_', ' ')}</div>
-                  </div>
-
-                  <div style={miniStatCard}>
-                    <div style={{ ...TYPE.label, marginBottom: '5px' }}>Schedule</div>
-                    <div style={{ ...TYPE.valueSm }}>Every {form.service_interval_months} months</div>
-                    <div style={{ ...TYPE.bodySm, marginTop: '6px' }}>Reminder {form.reminder_lead_days} days before</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={cardP}>
-                <div style={sectionLabel}>Before saving</div>
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  {[
-                    'Customer name is required',
-                    'Brand and installation date are required',
-                    'Saving creates both the customer and the job',
-                  ].map(item => (
-                    <div
-                      key={item}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          marginTop: '5px',
-                          borderRadius: '999px',
-                          background: TEAL,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={cardP}>
-                <div style={sectionLabel}>Quick actions</div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={{
-                      width: '100%',
-                      height: '36px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    Back to jobs
-                  </button>
-
-                  <button
-                    form="job-form"
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '36px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      opacity: loading ? 0.8 : 1,
-                    }}
-                  >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                      <IconSpark size={16} />
-                      {loading ? 'Saving...' : 'Save job'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div style={cardP}>
-                <div style={sectionLabel}>What happens next</div>
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  {[
-                    'A customer profile is created first',
-                    'The job is then linked to that customer',
-                    'The unit can be tracked for future service reminders',
-                  ].map(item => (
-                    <div
-                      key={item}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          marginTop: '5px',
-                          borderRadius: '999px',
-                          background: TEAL_DARK,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
