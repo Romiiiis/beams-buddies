@@ -728,12 +728,6 @@ export default function LeadsPage() {
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const sideCard: React.CSSProperties = {
-    ...card,
-    padding: '16px',
-    borderRadius: '16px',
-  }
-
   const statCard: React.CSSProperties = {
     ...card,
     padding: isMobile ? '10px 12px' : '10px 14px',
@@ -749,16 +743,6 @@ export default function LeadsPage() {
     color: TEXT,
     marginBottom: '4px',
     letterSpacing: '-0.02em',
-  }
-
-  const cardArrowBtn: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: TEXT3,
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -824,8 +808,6 @@ export default function LeadsPage() {
     color: WHITE,
   }
 
-  const statuses = ['all', 'booked', 'pending', 'incomplete', 'converted', 'wrong_number']
-
   const overviewCards = [
     {
       label: 'Booked',
@@ -848,7 +830,6 @@ export default function LeadsPage() {
   ]
 
   const bookedCount = leads.filter(l => l.status === 'booked').length
-  const pendingCount = leads.filter(l => l.status === 'pending').length
   const convertedCount = leads.filter(l => l.status === 'converted').length
 
   return (
@@ -1101,7 +1082,7 @@ export default function LeadsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -1171,6 +1152,32 @@ export default function LeadsPage() {
                     />
                   </div>
 
+                  <select
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
+                    style={{
+                      height: '40px',
+                      minWidth: isMobile ? '100%' : '190px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      fontFamily: FONT,
+                      outline: 'none',
+                      appearance: 'none',
+                    }}
+                  >
+                    <option value="all">All</option>
+                    <option value="booked">Booked</option>
+                    <option value="pending">Pending</option>
+                    <option value="incomplete">Incomplete</option>
+                    <option value="converted">Converted</option>
+                    <option value="wrong_number">Wrong number</option>
+                  </select>
+
                   <div
                     style={{
                       height: '40px',
@@ -1190,38 +1197,6 @@ export default function LeadsPage() {
                     <IconFilter size={14} /> {filtered.length} shown
                   </div>
                 </div>
-              </div>
-
-              <div
-                style={{
-                  padding: '12px 16px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {statuses.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setFilterStatus(s)}
-                    style={{
-                      height: '34px',
-                      padding: '0 13px',
-                      borderRadius: '999px',
-                      border: `1px solid ${filterStatus === s ? TEAL_DARK : BORDER}`,
-                      background: filterStatus === s ? TEAL : WHITE,
-                      color: filterStatus === s ? WHITE : TEXT2,
-                      fontSize: '11px',
-                      fontWeight: filterStatus === s ? 700 : 600,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      textTransform: 'capitalize',
-                    }}
-                  >
-                    {s === 'all' ? 'All' : s.replace('_', ' ')}
-                  </button>
-                ))}
               </div>
 
               {loading ? (
@@ -1340,7 +1315,7 @@ export default function LeadsPage() {
                                 fontSize: '12px',
                                 fontWeight: 700,
                                 color: TEXT2,
-                                whiteSpace: 'nowrap',
+                                whiteSpace: isMobile ? 'normal' : 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                               }}
@@ -1364,7 +1339,7 @@ export default function LeadsPage() {
                                 fontSize: '12px',
                                 fontWeight: 700,
                                 color: TEXT2,
-                                whiteSpace: 'nowrap',
+                                whiteSpace: isMobile ? 'normal' : 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                               }}
@@ -1390,7 +1365,7 @@ export default function LeadsPage() {
                                 fontSize: '12px',
                                 fontWeight: 600,
                                 color: TEXT3,
-                                whiteSpace: 'nowrap',
+                                whiteSpace: isMobile ? 'normal' : 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                               }}
@@ -1420,169 +1395,6 @@ export default function LeadsPage() {
                   )
                 })
               )}
-            </div>
-
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Pipeline summary</div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  {bookedCount > 0 ? (
-                    <>
-                      <span style={{ color: GREEN }}>{bookedCount}</span> Ready to convert
-                    </>
-                  ) : (
-                    <span style={{ color: TEAL }}>No booked leads</span>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#ECFDF3',
-                      border: '1px solid #BBF7D0',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: GREEN }}>Booked</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: GREEN }}>{bookedCount}</span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#FFFBEB',
-                      border: '1px solid #FDE68A',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: AMBER }}>Pending</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: AMBER }}>{pendingCount}</span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#EFF6FF',
-                      border: '1px solid #BFDBFE',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: BLUE }}>Converted</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: BLUE }}>{convertedCount}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Workspace totals</div>
-                  <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterStatus('all')
-                    }}
-                    style={cardArrowBtn}
-                  >
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginBottom: '4px' }}>
-                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
-                    {leads.length}
-                  </span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>total leads</span>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Showing now</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{filtered.length}</div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#E6F7F6',
-                      border: '1px solid #C4E8E5',
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '4px' }}>Current filter</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT }}>{filterStatus === 'all' ? 'All' : filterStatus.replace('_', ' ')}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ ...TYPE.label, marginBottom: '8px' }}>Quick actions</div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    Open jobs
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterStatus('all')
-                    }}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    Reset filters
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
