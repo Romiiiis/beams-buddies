@@ -15,7 +15,6 @@ const TEXT3 = '#475569'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -80,70 +79,6 @@ function useIsMobile() {
   return isMobile
 }
 
-function DashboardImageIcon({
-  src,
-  alt,
-  size = 28,
-}: {
-  src: string
-  alt: string
-  size?: number
-}) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
-function IconCollected({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
-      alt="Total collected"
-      size={size}
-    />
-  )
-}
-
-function IconOutstanding({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
-      alt="Outstanding"
-      size={size}
-    />
-  )
-}
-
-function IconOverdue({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
-      alt="Overdue"
-      size={size}
-    />
-  )
-}
-
-function IconInvoiced({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
-      alt="Total invoiced"
-      size={size}
-    />
-  )
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -167,6 +102,34 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
       <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
+}
+
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function pctChange(current: number, previous: number) {
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
 }
 
 type InvoiceRow = {
@@ -324,26 +287,56 @@ export default function RevenuePage() {
     year: 'numeric',
   })
 
+  const now = new Date()
+  const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+  const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
+
+  function inRange(dateStr?: string | null, start?: Date, end?: Date) {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return false
+    return d >= start! && d < end!
+  }
+
+  const currentCollected = invoices
+    .filter(i => i.status === 'paid' && inRange(i.created_at, startCurrent30, now))
+    .reduce((s, i) => s + Number(i.total || 0), 0)
+  const prevCollected = invoices
+    .filter(i => i.status === 'paid' && inRange(i.created_at, startPrev30, startCurrent30))
+    .reduce((s, i) => s + Number(i.total || 0), 0)
+
+  const currentOutstanding = invoices
+    .filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, startCurrent30, now))
+    .reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+  const prevOutstanding = invoices
+    .filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, startPrev30, startCurrent30))
+    .reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
+  const currentOverdue = invoices
+    .filter(i => i.status === 'overdue' && inRange(i.created_at, startCurrent30, now))
+    .reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+  const prevOverdue = invoices
+    .filter(i => i.status === 'overdue' && inRange(i.created_at, startPrev30, startCurrent30))
+    .reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
+  const currentInvoiced = invoices
+    .filter(i => inRange(i.created_at, startCurrent30, now))
+    .reduce((s, i) => s + Number(i.total || 0), 0)
+  const prevInvoiced = invoices
+    .filter(i => inRange(i.created_at, startPrev30, startCurrent30))
+    .reduce((s, i) => s + Number(i.total || 0), 0)
+
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
-  }
-
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
-    borderRadius: '16px',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -364,38 +357,91 @@ export default function RevenuePage() {
     alignItems: 'center',
   }
 
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
+  }
+
   const topCards = [
     {
       label: 'Collected',
-      value: `$${totalRevenue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      sub: `${paid.length} paid invoice${paid.length === 1 ? '' : 's'}`,
-      icon: <IconCollected size={28} />,
-      accent: '#166534',
-      tag: 'Cash received',
+      value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentCollected, prevCollected)),
+      up: pctChange(currentCollected, prevCollected) >= 0,
     },
     {
       label: 'Outstanding',
-      value: `$${totalOutstanding.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      sub: 'Awaiting payment',
-      icon: <IconOutstanding size={28} />,
-      accent: '#1E3A8A',
-      tag: 'Open balance',
+      value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentOutstanding, prevOutstanding)),
+      up: pctChange(currentOutstanding, prevOutstanding) >= 0,
     },
     {
       label: 'Overdue',
-      value: `$${totalOverdue.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      sub: totalOverdue > 0 ? 'Needs follow-up' : 'All up to date',
-      icon: <IconOverdue size={28} />,
-      accent: totalOverdue > 0 ? RED : TEXT,
-      tag: 'Past due',
+      value: `$${Math.round(totalOverdue).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentOverdue, prevOverdue)),
+      up: pctChange(currentOverdue, prevOverdue) >= 0,
     },
     {
       label: 'Total invoiced',
-      value: `$${totalInvoiced.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
-      sub: `${invoices.length} total invoice${invoices.length === 1 ? '' : 's'}`,
-      icon: <IconInvoiced size={28} />,
-      accent: TEAL_DARK,
-      tag: 'Gross billed',
+      value: `$${Math.round(totalInvoiced).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentInvoiced, prevInvoiced)),
+      up: pctChange(currentInvoiced, prevInvoiced) >= 0,
     },
   ]
 
@@ -434,84 +480,113 @@ export default function RevenuePage() {
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
+            gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? 0 : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
-              {todayStr}
-            </div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Revenue
-            </div>
-
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Track collected cash, outstanding balances, overdue invoices, and top-paying customers from one control centre.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/invoices')}
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
+                  background: WHITE,
+                  padding: '16px 16px 14px',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                <IconSpark size={14} />
-                View invoices
-              </button>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '26px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Revenue
+                  </h1>
+                </div>
+              </div>
+
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileDark}>
+                    <IconSpark size={12} /> View invoices
+                  </button>
+                  <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>
+                    Customers
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {todayStr}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Revenue
+                  </h1>
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button onClick={() => router.push('/dashboard/customers')} style={btnOutline}>
+                    View customers
+                  </button>
+
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnDark}>
+                    <IconSpark size={14} />
+                    View invoices
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{
@@ -521,30 +596,106 @@ export default function RevenuePage() {
             }}
           >
             {topCards.map(item => (
-              <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
-                  </div>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                </div>
+              <div
+                key={item.label}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: isMobile ? '10px 10px' : '10px 14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '70px' : '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                {isMobile ? (
+                  <div style={{ display: 'grid', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    </div>
 
-                <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
+
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '3px 7px',
+                          borderRadius: '999px',
+                          background: item.up ? '#E6F7F6' : '#FFF0EE',
+                          color: item.up ? TEAL_DARK : '#C0392B',
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                          alignSelf: 'flex-end',
+                          marginTop: '2px',
+                        }}
+                      >
+                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                        {item.delta}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          marginBottom: '4px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
+                    </div>
+
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        padding: '3px 7px',
+                        borderRadius: '999px',
+                        background: item.up ? '#E6F7F6' : '#FFF0EE',
+                        color: item.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {item.delta}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -578,30 +729,22 @@ export default function RevenuePage() {
 
                 <div
                   style={{
-                    display: 'flex',
+                    height: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
+                    whiteSpace: 'nowrap',
                     width: isMobile ? '100%' : 'auto',
+                    justifyContent: isMobile ? 'center' : 'flex-start',
                   }}
                 >
-                  <div
-                    style={{
-                      height: '40px',
-                      padding: '0 12px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Collection rate {collectionRate}%
-                  </div>
+                  Collection rate {collectionRate}%
                 </div>
               </div>
 
