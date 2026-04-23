@@ -111,70 +111,6 @@ function useIsMobile() {
   return isMobile
 }
 
-function DashboardImageIcon({
-  src,
-  alt,
-  size = 28,
-}: {
-  src: string
-  alt: string
-  size?: number
-}) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
-function IconDraft({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_27c4de2991b14ff19e7b2c6e4713e8e0~mv2.png"
-      alt="Draft"
-      size={size}
-    />
-  )
-}
-
-function IconSent({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_4d059321b22e4619b468f9a3f76285f4~mv2.png"
-      alt="Sent"
-      size={size}
-    />
-  )
-}
-
-function IconAccepted({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_e8f3ef41771e44beae80121758693d4a~mv2.png"
-      alt="Accepted"
-      size={size}
-    />
-  )
-}
-
-function IconDeclined({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_a9564822636344f699c5d3dc69d4c4d6~mv2.png"
-      alt="Declined"
-      size={size}
-    />
-  )
-}
-
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -479,28 +415,24 @@ export default function QuotesPage() {
       value: statusCounts.draft.toLocaleString('en-AU'),
       delta: formatDelta(pctChange(currentDrafts, prevDrafts)),
       up: pctChange(currentDrafts, prevDrafts) >= 0,
-      icon: <IconDraft size={28} />,
     },
     {
       label: 'Sent',
       value: statusCounts.sent.toLocaleString('en-AU'),
       delta: formatDelta(pctChange(currentSent, prevSent)),
       up: pctChange(currentSent, prevSent) >= 0,
-      icon: <IconSent size={28} />,
     },
     {
       label: 'Accepted',
       value: statusCounts.accepted.toLocaleString('en-AU'),
       delta: formatDelta(pctChange(currentAccepted, prevAccepted)),
       up: pctChange(currentAccepted, prevAccepted) >= 0,
-      icon: <IconAccepted size={28} />,
     },
     {
       label: 'Declined',
       value: statusCounts.declined.toLocaleString('en-AU'),
       delta: formatDelta(pctChange(currentDeclined, prevDeclined)),
       up: pctChange(currentDeclined, prevDeclined) >= 0,
-      icon: <IconDeclined size={28} />,
     },
   ]
 
@@ -566,24 +498,6 @@ export default function QuotesPage() {
     ...TYPE.label,
     marginBottom: '6px',
     display: 'block',
-  }
-
-  const btnOutline: React.CSSProperties = {
-    height: '34px',
-    padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap',
   }
 
   const btnDark: React.CSSProperties = {
@@ -832,38 +746,23 @@ export default function QuotesPage() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {item.icon}
-                      </div>
-
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          padding: '3px 7px',
-                          borderRadius: '999px',
-                          background: item.up ? '#E6F7F6' : '#FFF0EE',
-                          color: item.up ? TEAL_DARK : '#C0392B',
-                          fontSize: '9px',
-                          fontWeight: 800,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                        {item.delta}
-                      </span>
-                    </div>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        padding: '3px 7px',
+                        borderRadius: '999px',
+                        background: item.up ? '#E6F7F6' : '#FFF0EE',
+                        color: item.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {item.delta}
+                    </span>
                   </div>
                 )}
               </div>
@@ -971,71 +870,35 @@ export default function QuotesPage() {
                       {filtered.length} shown
                     </div>
 
-                    {isMobile && (
-                      <select
-                        value={filterStatus}
-                        onChange={e => setFilterStatus(e.target.value)}
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          height: '40px',
-                          padding: '0 12px',
-                          borderRadius: '10px',
-                          border: `1px solid ${BORDER}`,
-                          background: WHITE,
-                          color: TEXT2,
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          fontFamily: FONT,
-                          outline: 'none',
-                        }}
-                      >
-                        <option value="all">All ({quotes.length})</option>
-                        <option value="draft">Draft ({statusCounts.draft})</option>
-                        <option value="sent">Sent ({statusCounts.sent})</option>
-                        <option value="accepted">Accepted ({statusCounts.accepted})</option>
-                        <option value="declined">Declined ({statusCounts.declined})</option>
-                        <option value="expired">Expired ({statusCounts.expired})</option>
-                      </select>
-                    )}
+                    <select
+                      value={filterStatus}
+                      onChange={e => setFilterStatus(e.target.value)}
+                      style={{
+                        flex: isMobile ? 1 : 'unset',
+                        minWidth: isMobile ? 0 : '180px',
+                        width: isMobile ? '100%' : '180px',
+                        height: '40px',
+                        padding: '0 12px',
+                        borderRadius: '10px',
+                        border: `1px solid ${BORDER}`,
+                        background: WHITE,
+                        color: TEXT2,
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        fontFamily: FONT,
+                        outline: 'none',
+                      }}
+                    >
+                      <option value="all">All ({quotes.length})</option>
+                      <option value="draft">Draft ({statusCounts.draft})</option>
+                      <option value="sent">Sent ({statusCounts.sent})</option>
+                      <option value="accepted">Accepted ({statusCounts.accepted})</option>
+                      <option value="declined">Declined ({statusCounts.declined})</option>
+                      <option value="expired">Expired ({statusCounts.expired})</option>
+                    </select>
                   </div>
                 </div>
               </div>
-
-              {!isMobile && (
-                <div
-                  style={{
-                    padding: '12px 16px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    gap: '6px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  {['all', 'draft', 'sent', 'accepted', 'declined', 'expired'].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setFilterStatus(s)}
-                      style={{
-                        height: '34px',
-                        padding: '0 13px',
-                        borderRadius: '999px',
-                        border: `1px solid ${filterStatus === s ? TEAL : BORDER}`,
-                        background: filterStatus === s ? '#E6F7F6' : WHITE,
-                        color: filterStatus === s ? TEAL_DARK : TEXT2,
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {s === 'all' ? `All (${quotes.length})` : `${STATUS_STYLES[s]?.label} (${statusCounts[s as keyof typeof statusCounts] ?? 0})`}
-                    </button>
-                  ))}
-                </div>
-              )}
 
               {!isMobile && filtered.length > 0 && (
                 <div
