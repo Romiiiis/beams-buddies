@@ -839,16 +839,6 @@ export default function JobsPage() {
     letterSpacing: '-0.02em',
   }
 
-  const cardArrowBtn: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: TEXT3,
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
-  }
-
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
@@ -1379,19 +1369,28 @@ export default function JobsPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1.2fr) 150px 150px 24px',
-                    gap: '12px',
-                    alignItems: 'center',
-                    padding: '10px 16px',
+                    gridTemplateColumns: 'minmax(0,1fr)',
+                    gap: '0',
+                    padding: '0 16px',
                     borderBottom: `1px solid ${BORDER}`,
                     background: '#FCFCFD',
                   }}
                 >
-                  <div style={{ ...TYPE.label }}>Customer</div>
-                  <div style={{ ...TYPE.label }}>Equipment</div>
-                  <div style={{ ...TYPE.label }}>Next service</div>
-                  <div style={{ ...TYPE.label }}>Status</div>
-                  <div />
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) 150px 150px 24px',
+                      gap: '12px',
+                      alignItems: 'center',
+                      padding: '10px 0',
+                    }}
+                  >
+                    <div style={{ ...TYPE.label }}>Customer</div>
+                    <div style={{ ...TYPE.label }}>Equipment</div>
+                    <div style={{ ...TYPE.label }}>Next service</div>
+                    <div style={{ ...TYPE.label }}>Status</div>
+                    <div />
+                  </div>
                 </div>
               )}
 
@@ -1409,83 +1408,65 @@ export default function JobsPage() {
                   No jobs yet. Add your first job or convert a lead to get started.
                 </div>
               ) : (
-                filtered.map(job => {
-                  const customer = job.customers
-                  const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
-                  const meta = serviceMeta(job)
+                <div style={{ padding: isMobile ? '12px' : '12px 16px', display: 'grid', gap: '12px' }}>
+                  {filtered.map(job => {
+                    const customer = job.customers
+                    const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
+                    const meta = serviceMeta(job)
 
-                  return (
-                    <div
-                      key={job.id}
-                      onClick={() => setSelectedJob(job)}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.65fr) minmax(0,1.2fr) 150px 150px 24px',
-                        gap: '12px',
-                        alignItems: 'center',
-                        padding: isMobile ? '14px 16px' : '14px 16px',
-                        borderBottom: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                        transition: 'background 0.12s',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-                    >
-                      {isMobile ? (
-                        <div style={{ display: 'grid', gap: '10px' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              justifyContent: 'space-between',
-                              gap: '12px',
-                            }}
-                          >
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div style={{ ...TYPE.label, marginBottom: '5px', color: meta.serviceColor }}>
-                                {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
-                              </div>
-                              <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
-                                {name}
-                              </div>
-                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, lineHeight: 1.4 }}>
-                                {customer?.phone || '—'}
-                                {customer?.suburb ? ` · ${customer.suburb}` : ''}
-                              </div>
-                            </div>
-
-                            <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
-                              <IconArrow size={12} />
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '1fr',
-                              gap: '8px',
-                            }}
-                          >
+                    return (
+                      <div
+                        key={job.id}
+                        onClick={() => setSelectedJob(job)}
+                        style={{
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: '14px',
+                          background: WHITE,
+                          cursor: 'pointer',
+                          transition: 'background 0.12s, box-shadow 0.12s',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = '#F8FAFC'
+                          e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.06)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = WHITE
+                          e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'
+                        }}
+                      >
+                        {isMobile ? (
+                          <div style={{ display: 'grid', gap: '10px', padding: '14px 14px 13px' }}>
                             <div
                               style={{
-                                padding: '10px 11px',
-                                borderRadius: '12px',
-                                background: '#FCFCFD',
-                                border: `1px solid ${BORDER}`,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                gap: '12px',
                               }}
                             >
-                              <div style={{ ...TYPE.label, marginBottom: '4px' }}>Equipment</div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, lineHeight: 1.4 }}>
-                                {job.brand}
-                                {job.model ? ` ${job.model}` : ''}
-                                {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <div style={{ ...TYPE.label, marginBottom: '5px', color: meta.serviceColor }}>
+                                  {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
+                                </div>
+                                <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
+                                  {name}
+                                </div>
+                                <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, lineHeight: 1.4 }}>
+                                  {customer?.phone || '—'}
+                                  {customer?.suburb ? ` · ${customer.suburb}` : ''}
+                                </div>
+                              </div>
+
+                              <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+                                <IconArrow size={12} />
                               </div>
                             </div>
 
                             <div
                               style={{
                                 display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
+                                gridTemplateColumns: '1fr',
                                 gap: '8px',
                               }}
                             >
@@ -1497,164 +1478,124 @@ export default function JobsPage() {
                                   border: `1px solid ${BORDER}`,
                                 }}
                               >
-                                <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
-                                <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{meta.next || '—'}</div>
+                                <div style={{ ...TYPE.label, marginBottom: '4px' }}>Equipment</div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, lineHeight: 1.4 }}>
+                                  {job.brand}
+                                  {job.model ? ` ${job.model}` : ''}
+                                  {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
+                                </div>
                               </div>
 
                               <div
                                 style={{
-                                  padding: '10px 11px',
-                                  borderRadius: '12px',
-                                  background: '#FCFCFD',
-                                  border: `1px solid ${BORDER}`,
+                                  display: 'grid',
+                                  gridTemplateColumns: '1fr 1fr',
+                                  gap: '8px',
                                 }}
                               >
-                                <div style={{ ...TYPE.label, marginBottom: '4px' }}>Status</div>
-                                <div style={{ fontSize: '12px', fontWeight: 700, color: meta.serviceColor }}>{meta.serviceLabel}</div>
+                                <div
+                                  style={{
+                                    padding: '10px 11px',
+                                    borderRadius: '12px',
+                                    background: '#FCFCFD',
+                                    border: `1px solid ${BORDER}`,
+                                  }}
+                                >
+                                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
+                                  <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{meta.next || '—'}</div>
+                                </div>
+
+                                <div
+                                  style={{
+                                    padding: '10px 11px',
+                                    borderRadius: '12px',
+                                    background: '#FCFCFD',
+                                    border: `1px solid ${BORDER}`,
+                                  }}
+                                >
+                                  <div style={{ ...TYPE.label, marginBottom: '4px' }}>Status</div>
+                                  <div style={{ fontSize: '12px', fontWeight: 700, color: meta.serviceColor }}>{meta.serviceLabel}</div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.label, marginBottom: '5px', color: meta.serviceColor }}>
-                              {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
-                            </div>
-                            <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
-                            <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
-                              {customer?.phone || '—'}
-                              {customer?.suburb ? ` · ${customer.suburb}` : ''}
-                            </div>
-                          </div>
-
+                        ) : (
                           <div
                             style={{
-                              minWidth: 0,
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              color: TEXT2,
-                              lineHeight: 1.4,
+                              display: 'grid',
+                              gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) 150px 150px 24px',
+                              gap: '12px',
+                              alignItems: 'center',
+                              padding: '14px 16px',
                             }}
                           >
-                            {job.brand}
-                            {job.model ? ` ${job.model}` : ''}
-                            {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
-                          </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.label, marginBottom: '5px', color: meta.serviceColor }}>
+                                {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
+                              </div>
+                              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
+                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
+                                {customer?.phone || '—'}
+                                {customer?.suburb ? ` · ${customer.suburb}` : ''}
+                              </div>
+                            </div>
 
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                            {meta.next || '—'}
-                          </div>
-
-                          <div>
-                            <span
+                            <div
                               style={{
-                                background: meta.serviceBg,
-                                color: meta.serviceColor,
-                                border: `1px solid ${meta.serviceBorder}`,
-                                padding: '6px 12px',
-                                borderRadius: '999px',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
+                                minWidth: 0,
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: TEXT2,
+                                lineHeight: 1.4,
                               }}
                             >
-                              <IconCalendar size={12} />
-                              {meta.serviceLabel}
-                            </span>
-                          </div>
+                              {job.brand}
+                              {job.model ? ` ${job.model}` : ''}
+                              {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
+                            </div>
 
-                          <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <IconArrow size={12} />
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                              {meta.next || '—'}
+                            </div>
+
+                            <div>
+                              <span
+                                style={{
+                                  background: meta.serviceBg,
+                                  color: meta.serviceColor,
+                                  border: `1px solid ${meta.serviceBorder}`,
+                                  padding: '6px 12px',
+                                  borderRadius: '999px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <IconCalendar size={12} />
+                                {meta.serviceLabel}
+                              </span>
+                            </div>
+
+                            <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                              <IconArrow size={12} />
+                            </div>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </div>
 
             <div style={{ display: 'grid', gap: '14px' }}>
               <div style={sideCard}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Quick actions</div>
-                  <button onClick={() => router.push('/dashboard/jobs/add')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  <span style={{ color: TEAL_DARK }}>{jobs.length}</span> Total jobs
-                </div>
-
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs/add')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    Add new job
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/dashboard/leads')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    View leads
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterType('all')
-                    }}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    Reset filters
-                  </button>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ ...TYPE.label }}>Service status</div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, display: 'flex', alignItems: 'center' }}>
                     <IconExternalLink size={14} />
                   </button>
                 </div>
