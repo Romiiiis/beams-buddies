@@ -725,6 +725,7 @@ export default function LeadsPage() {
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
@@ -760,6 +761,69 @@ export default function LeadsPage() {
     alignItems: 'center',
   }
 
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
+  }
+
   const statuses = ['all', 'booked', 'pending', 'incomplete', 'converted', 'wrong_number']
 
   const overviewCards = [
@@ -767,16 +831,19 @@ export default function LeadsPage() {
       label: 'Booked',
       value: leads.filter(l => l.status === 'booked').length,
       accent: GREEN,
+      pillBg: '#ECFDF3',
     },
     {
       label: 'Pending',
       value: leads.filter(l => l.status === 'pending').length,
       accent: AMBER,
+      pillBg: '#FFF7E8',
     },
     {
       label: 'Converted',
       value: leads.filter(l => l.status === 'converted').length,
       accent: BLUE,
+      pillBg: '#EEF4FF',
     },
   ]
 
@@ -805,71 +872,182 @@ export default function LeadsPage() {
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '20px 16px 18px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? '0' : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Leads
-            </div>
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Track inbound calls from Chloe and move qualified bookings into live jobs.
-            </div>
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/jobs')}
+          {isMobile ? (
+            <div style={{ margin: '-14px -14px 0', background: WHITE }}>
+              <div
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
+                  padding: '16px 16px 14px',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                <IconSpark size={14} /> Open jobs
-              </button>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '26px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Leads
+                  </h1>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {leads.length}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Leads
+                    </div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {bookedCount}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Booked
+                    </div>
+                  </div>
+                  <div style={{ width: 1, height: 30, background: BORDER }} />
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {convertedCount}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Converted
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconSpark size={12} />
+                    Open Jobs
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterStatus('all')
+                    }}
+                    style={btnMobileDark}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', flexShrink: 0, marginRight: 20 }} />
+
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {todayStr}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Leads
+                  </h1>
+                </div>
+
+                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
+
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {([
+                    ['Leads', leads.length],
+                    ['Booked', bookedCount],
+                    ['Converted', convertedCount],
+                  ] as [string, number][]).map(([label, val], i) => (
+                    <React.Fragment key={label}>
+                      {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
+                      <div style={{ textAlign: 'center', padding: '0 18px' }}>
+                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
+                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>{label}</div>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
+                    <IconSpark size={12} />
+                    Open Jobs
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearch('')
+                      setFilterStatus('all')
+                    }}
+                    style={btnDark}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{
@@ -906,12 +1084,7 @@ export default function LeadsPage() {
                       alignItems: 'center',
                       padding: '3px 8px',
                       borderRadius: '999px',
-                      background:
-                        item.label === 'Booked'
-                          ? '#E6F7F6'
-                          : item.label === 'Pending'
-                          ? '#FFF4E8'
-                          : '#EEF4FF',
+                      background: item.pillBg,
                       color: item.accent,
                       fontSize: '9px',
                       fontWeight: 800,
