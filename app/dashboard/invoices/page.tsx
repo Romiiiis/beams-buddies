@@ -178,14 +178,6 @@ function IconTrash({ size = 15 }: { size?: number }) {
   )
 }
 
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconTrendUp({ size = 11 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -383,8 +375,6 @@ export default function InvoicesPage() {
   const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0)
   const totalOutstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (i.total - i.amount_paid), 0)
   const totalOverdue = invoices.filter(i => i.status === 'overdue').length
-  const paidCount = invoices.filter(i => i.status === 'paid').length
-  const avgInvoice = invoices.length ? invoices.reduce((s, i) => s + i.total, 0) / invoices.length : 0
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -456,11 +446,6 @@ export default function InvoicesPage() {
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const sideCard: React.CSSProperties = {
-    ...card,
-    padding: '16px',
-  }
-
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
@@ -470,24 +455,6 @@ export default function InvoicesPage() {
     fontWeight: 700,
     color: TEXT2,
     background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap',
-  }
-
-  const btnDark: React.CSSProperties = {
-    height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEXT}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: WHITE,
-    background: TEXT,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -548,27 +515,6 @@ export default function InvoicesPage() {
     ...TYPE.label,
     marginBottom: '6px',
     display: 'block',
-  }
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
-        <Sidebar active="/dashboard/invoices" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: TEXT3,
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Loading invoices...
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -823,14 +769,7 @@ export default function InvoicesPage() {
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
             <div style={card}>
               <div
                 style={{
@@ -1333,134 +1272,6 @@ export default function InvoicesPage() {
                   })}
                 </div>
               )}
-            </div>
-
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Billing snapshot</div>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, display: 'flex', alignItems: 'center' }}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  {totalOutstanding > 0 ? (
-                    <>
-                      <span style={{ color: BLUE }}>${totalOutstanding.toFixed(0)}</span> Outstanding
-                    </>
-                  ) : (
-                    <span style={{ color: '#166534' }}>All clear</span>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#FCFCFD',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Paid invoices</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#166534' }}>{paidCount}</span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#EAF3FF',
-                      border: '1px solid #BFDBFE',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: BLUE }}>Outstanding</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: BLUE }}>${totalOutstanding.toFixed(0)}</span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#FEECEC',
-                      border: '1px solid #FECACA',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#7F1D1D' }}>Overdue</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#7F1D1D' }}>{totalOverdue}</span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      background: '#FCFCFD',
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Average invoice</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>${avgInvoice.toFixed(0)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ ...TYPE.label, marginBottom: '8px' }}>Quick actions</div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  <button
-                    onClick={() => setShowForm(true)}
-                    style={{
-                      width: '100%',
-                      height: '36px',
-                      background: TEAL,
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    New invoice
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/dashboard/revenue')}
-                    style={{
-                      width: '100%',
-                      height: '36px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    View revenue
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
