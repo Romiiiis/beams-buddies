@@ -7,18 +7,17 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F6F5'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const BLUE = '#1E3A8A'
 const GREEN = '#166534'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -53,23 +52,11 @@ const TYPE = {
     color: TEXT2,
     lineHeight: 1.35,
   },
-  valueLg: {
-    fontSize: '28px',
-    fontWeight: 900,
-    letterSpacing: '-0.05em' as const,
-    lineHeight: 1,
-  },
-  valueSm: {
-    fontSize: '16px',
-    fontWeight: 900,
-    color: TEXT,
-    letterSpacing: '-0.04em' as const,
-    lineHeight: 1,
-  },
 }
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
     function check() {
       setIsMobile(window.innerWidth < 768)
@@ -78,13 +65,19 @@ function useIsMobile() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
   return isMobile
 }
 
 function IconPhone({ size = 17 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+      <path
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -92,8 +85,18 @@ function IconPhone({ size = 17 }: { size?: number }) {
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path
+        d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -101,7 +104,13 @@ function IconSpark({ size = 16 }: { size?: number }) {
 function IconArrow({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M5 12h14M13 5l7 7-7 7"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -125,8 +134,20 @@ function IconClose({ size = 18 }: { size?: number }) {
 function IconEdit({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -135,14 +156,6 @@ function IconCheck({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -301,19 +314,19 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
       >
         <div
           style={{
-            padding: '20px 22px 18px',
+            padding: '18px 20px 16px',
             borderBottom: `1px solid ${BORDER}`,
-            background: HEADER_BG,
+            background: WHITE,
             flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
             <div>
-              <div style={{ ...TYPE.label, color: 'rgba(255,255,255,0.5)', marginBottom: '6px' }}>Inbound call</div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: WHITE, lineHeight: 1.2, marginBottom: '4px' }}>
+              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Inbound call</div>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
                 {lead.customer_name}
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{lead.phone_number}</div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3 }}>{lead.phone_number}</div>
             </div>
 
             <button
@@ -322,9 +335,9 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 width: '34px',
                 height: '34px',
                 borderRadius: '10px',
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.8)',
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
+                color: TEXT3,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -342,13 +355,14 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'grid', gap: '14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
           <div
             style={{
               background: WHITE,
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
@@ -365,12 +379,13 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
               <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Call details</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
               {[
                 { label: 'Suburb', value: lead.suburb || '—' },
                 { label: 'Address', value: lead.address || '—' },
@@ -391,8 +406,8 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                   key={item.label}
                   style={{
                     padding: '12px 16px',
-                    borderTop: index > 1 ? `1px solid ${BORDER}` : 'none',
-                    borderLeft: index % 2 === 1 ? `1px solid ${BORDER}` : 'none',
+                    borderTop: index > (isMobile ? 0 : 1) ? `1px solid ${BORDER}` : 'none',
+                    borderLeft: !isMobile && index % 2 === 1 ? `1px solid ${BORDER}` : 'none',
                   }}
                 >
                   <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
@@ -408,6 +423,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div
@@ -455,7 +471,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={labelStyle}>Booking date</label>
                   <input type="date" value={preferredDate} onChange={e => setPreferredDate(e.target.value)} style={inputStyle} />
@@ -490,6 +506,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 border: `1px solid ${BORDER}`,
                 borderRadius: '14px',
                 overflow: 'hidden',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               }}
             >
               <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
@@ -504,7 +521,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
 
         <div
           style={{
-            padding: '14px 18px 18px',
+            padding: '14px 16px 16px',
             borderTop: `1px solid ${BORDER}`,
             background: WHITE,
             flexShrink: 0,
@@ -632,6 +649,7 @@ export default function LeadsPage() {
       const {
         data: { session },
       } = await supabase.auth.getSession()
+
       if (!session) {
         router.push('/login')
         return
@@ -643,6 +661,7 @@ export default function LeadsPage() {
         setLoading(false)
         return
       }
+
       setBusinessId(userData.business_id)
 
       const { data } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
@@ -650,6 +669,7 @@ export default function LeadsPage() {
       setLeads(data || [])
       setLoading(false)
     }
+
     load()
   }, [router])
 
@@ -671,6 +691,7 @@ export default function LeadsPage() {
   async function convertToJob(lead: any) {
     if (!businessId) return
     setConverting(lead.id)
+
     try {
       const { data: customer, error: custErr } = await supabase
         .from('customers')
@@ -703,6 +724,7 @@ export default function LeadsPage() {
       if (jobErr) throw jobErr
 
       await supabase.from('leads').update({ status: 'converted' }).eq('id', lead.id)
+
       const updated = { ...lead, status: 'converted' }
       setLeads(prev => prev.map(l => (l.id === lead.id ? updated : l)))
       setSelectedLead(updated)
@@ -710,6 +732,7 @@ export default function LeadsPage() {
       console.error('Convert error:', err)
       alert('Failed to convert lead. Check console.')
     }
+
     setConverting(null)
   }
 
@@ -723,26 +746,9 @@ export default function LeadsPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-  }
-
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '10px 12px' : '10px 14px',
-    minHeight: isMobile ? 62 : 68,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-  }
-
-  const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '15px',
-    fontWeight: 800,
-    color: TEXT,
-    marginBottom: '4px',
-    letterSpacing: '-0.02em',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -808,29 +814,44 @@ export default function LeadsPage() {
     color: WHITE,
   }
 
-  const overviewCards = [
+  const statCards = [
+    {
+      label: 'Leads',
+      value: leads.length,
+    },
     {
       label: 'Booked',
       value: leads.filter(l => l.status === 'booked').length,
-      accent: GREEN,
-      pillBg: '#ECFDF3',
-    },
-    {
-      label: 'Pending',
-      value: leads.filter(l => l.status === 'pending').length,
-      accent: AMBER,
-      pillBg: '#FFF7E8',
     },
     {
       label: 'Converted',
       value: leads.filter(l => l.status === 'converted').length,
-      accent: BLUE,
-      pillBg: '#EEF4FF',
     },
   ]
 
   const bookedCount = leads.filter(l => l.status === 'booked').length
   const convertedCount = leads.filter(l => l.status === 'converted').length
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
+        <Sidebar active="/dashboard/leads" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: TEXT3,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          Loading leads...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -843,20 +864,24 @@ export default function LeadsPage() {
     >
       <Sidebar active="/dashboard/leads" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            background: BG,
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-14px -14px 0', background: WHITE }}>
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
               <div
                 style={{
+                  background: WHITE,
                   padding: '16px 16px 14px',
                   display: 'flex',
                   alignItems: 'center',
@@ -922,11 +947,10 @@ export default function LeadsPage() {
                 </div>
               </div>
 
-              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconSpark size={12} />
-                    Open Jobs
+                    <IconSpark size={12} /> Open Jobs
                   </button>
                   <button
                     onClick={() => {
@@ -943,7 +967,7 @@ export default function LeadsPage() {
           ) : (
             <div style={card}>
               <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', flexShrink: 0, marginRight: 20 }} />
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
 
                 <div style={{ flexShrink: 0, minWidth: 0 }}>
                   <div
@@ -975,17 +999,17 @@ export default function LeadsPage() {
 
                 <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
 
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {([
-                    ['Leads', leads.length],
-                    ['Booked', bookedCount],
-                    ['Converted', convertedCount],
-                  ] as [string, number][]).map(([label, val], i) => (
-                    <React.Fragment key={label}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                  {statCards.map((item, i) => (
+                    <React.Fragment key={item.label}>
                       {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
                       <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>{label}</div>
+                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                          {item.value}
+                        </div>
+                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
+                          {item.label}
+                        </div>
                       </div>
                     </React.Fragment>
                   ))}
@@ -1006,8 +1030,7 @@ export default function LeadsPage() {
                       e.currentTarget.style.color = TEXT2
                     }}
                   >
-                    <IconSpark size={12} />
-                    Open Jobs
+                    <IconSpark size={12} /> Open Jobs
                   </button>
 
                   <button
@@ -1037,8 +1060,22 @@ export default function LeadsPage() {
               gap: '12px',
             }}
           >
-            {overviewCards.map(item => (
-              <div key={item.label} style={statCard}>
+            {statCards.map(item => (
+              <div
+                key={item.label}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: isMobile ? '10px 12px' : '10px 14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '62px' : '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div
@@ -1054,348 +1091,333 @@ export default function LeadsPage() {
                     >
                       {item.label}
                     </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
                       {item.value}
                     </div>
                   </div>
-
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '3px 8px',
-                      borderRadius: '999px',
-                      background: item.pillBg,
-                      color: item.accent,
-                      fontSize: '9px',
-                      fontWeight: 800,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Live
-                  </span>
                 </div>
               </div>
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
-            <div style={card}>
-              <div
-                style={{
-                  padding: '14px 16px 12px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '10px',
-                }}
-              >
-                <div>
-                  <div style={sectionHeaderTitle}>Inbound calls</div>
-                  <div style={{ ...TYPE.bodySm }}>Click any lead to follow up, update status, or book.</div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                    width: isMobile ? '100%' : 'auto',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: isMobile ? '100%' : '300px',
-                      maxWidth: '100%',
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: TEXT3,
-                        display: 'inline-flex',
-                      }}
-                    >
-                      <IconSearch size={15} />
-                    </span>
-
-                    <input
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                      placeholder="Search by name, phone, suburb..."
-                      style={{
-                        height: '40px',
-                        width: '100%',
-                        borderRadius: '11px',
-                        border: `1px solid ${BORDER}`,
-                        padding: '0 12px 0 38px',
-                        fontSize: '12px',
-                        background: WHITE,
-                        color: TEXT,
-                        fontFamily: FONT,
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-
-                  <select
-                    value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
-                    style={{
-                      height: '40px',
-                      minWidth: isMobile ? '100%' : '190px',
-                      padding: '0 12px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      fontFamily: FONT,
-                      outline: 'none',
-                      appearance: 'none',
-                    }}
-                  >
-                    <option value="all">All</option>
-                    <option value="booked">Booked</option>
-                    <option value="pending">Pending</option>
-                    <option value="incomplete">Incomplete</option>
-                    <option value="converted">Converted</option>
-                    <option value="wrong_number">Wrong number</option>
-                  </select>
-
-                  <div
-                    style={{
-                      height: '40px',
-                      padding: '0 12px',
-                      borderRadius: '10px',
-                      border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      whiteSpace: 'nowrap',
-                      gap: '6px',
-                    }}
-                  >
-                    <IconFilter size={14} /> {filtered.length} shown
-                  </div>
-                </div>
+          <div style={card}>
+            <div
+              style={{
+                padding: '14px 20px',
+                borderBottom: `1px solid ${BORDER}`,
+                display: 'flex',
+                alignItems: isMobile ? 'stretch' : 'center',
+                justifyContent: 'space-between',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: '12px',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Inbound calls</div>
               </div>
 
-              {loading ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  flexWrap: 'wrap',
+                  width: isMobile ? '100%' : 'auto',
+                }}
+              >
                 <div
                   style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
+                    width: isMobile ? '100%' : '300px',
+                    maxWidth: '100%',
+                    position: 'relative',
                   }}
                 >
-                  Loading...
-                </div>
-              ) : filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
-                  No leads yet. Calls from Chloe will appear here.
-                </div>
-              ) : (
-                filtered.map(lead => {
-                  const statusAccent =
-                    lead.status === 'booked'
-                      ? GREEN
-                      : lead.status === 'pending'
-                      ? AMBER
-                      : lead.status === 'converted'
-                      ? BLUE
-                      : lead.status === 'wrong_number'
-                      ? RED
-                      : TEXT3
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: TEXT3,
+                      display: 'inline-flex',
+                    }}
+                  >
+                    <IconSearch size={15} />
+                  </span>
 
-                  return (
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search by name, phone, suburb..."
+                    style={{
+                      height: '40px',
+                      width: '100%',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      padding: '0 12px 0 38px',
+                      fontSize: '12px',
+                      background: WHITE,
+                      color: TEXT,
+                      fontFamily: FONT,
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                  style={{
+                    height: '40px',
+                    minWidth: isMobile ? '100%' : '190px',
+                    width: isMobile ? '100%' : 'auto',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    fontFamily: FONT,
+                    outline: 'none',
+                    appearance: 'none',
+                  }}
+                >
+                  <option value="all">All</option>
+                  <option value="booked">Booked</option>
+                  <option value="pending">Pending</option>
+                  <option value="incomplete">Incomplete</option>
+                  <option value="converted">Converted</option>
+                  <option value="wrong_number">Wrong number</option>
+                </select>
+
+                <div
+                  style={{
+                    height: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${BORDER}`,
+                    background: WHITE,
+                    color: TEXT2,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    gap: '6px',
+                    width: isMobile ? '100%' : 'auto',
+                    justifyContent: isMobile ? 'center' : 'flex-start',
+                  }}
+                >
+                  <IconFilter size={14} /> {filtered.length} shown
+                </div>
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div
+                style={{
+                  padding: '32px 18px',
+                  textAlign: 'center',
+                  color: TEXT3,
+                  fontSize: '13px',
+                }}
+              >
+                No leads yet. Calls from Chloe will appear here.
+              </div>
+            ) : (
+              filtered.map(lead => {
+                return (
+                  <div
+                    key={lead.id}
+                    onClick={() => setSelectedLead(lead)}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr',
+                      gap: '12px',
+                      alignItems: 'center',
+                      padding: isMobile ? '14px 16px' : '14px 20px',
+                      borderBottom: `1px solid ${BORDER}`,
+                      cursor: 'pointer',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                    onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                  >
                     <div
-                      key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : '6px minmax(0,1fr)',
-                        gap: 0,
-                        borderBottom: `1px solid ${BORDER}`,
-                        cursor: 'pointer',
-                        transition: 'background 0.12s',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        flexDirection: isMobile ? 'column' : 'row',
                       }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
-                      {!isMobile && <div style={{ background: statusAccent }} />}
-
-                      <div style={{ padding: isMobile ? '14px 14px 13px' : '15px 16px 14px' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>Inbound call</div>
                         <div
                           style={{
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            justifyContent: 'space-between',
-                            gap: '12px',
-                            flexDirection: isMobile ? 'column' : 'row',
+                            fontSize: '15px',
+                            fontWeight: 800,
+                            color: TEXT,
+                            lineHeight: 1.2,
+                            marginBottom: '4px',
                           }}
                         >
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.label, marginBottom: '5px', color: statusAccent }}>Inbound call</div>
-                            <div
-                              style={{
-                                fontSize: '15px',
-                                fontWeight: 800,
-                                color: TEXT,
-                                lineHeight: 1.2,
-                                marginBottom: '4px',
-                              }}
-                            >
-                              {lead.customer_name}
-                            </div>
-                            <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>{lead.phone_number}</div>
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              flexWrap: 'wrap',
-                              flexShrink: 0,
-                            }}
-                          >
-                            <JobTypeBadge type={lead.job_type} />
-                            <StatusBadge status={lead.status} />
-                          </div>
+                          {lead.customer_name}
                         </div>
+                        <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>{lead.phone_number}</div>
+                      </div>
 
-                        <div
-                          style={{
-                            marginTop: '12px',
-                            display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
-                            gap: '10px',
-                            alignItems: 'stretch',
-                          }}
-                        >
-                          <div
-                            style={{
-                              padding: '10px 11px',
-                              borderRadius: '10px',
-                              background: '#F8FAFC',
-                              border: `1px solid ${BORDER}`,
-                              minWidth: 0,
-                            }}
-                          >
-                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Suburb</div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                color: TEXT2,
-                                whiteSpace: isMobile ? 'normal' : 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.suburb || 'Not provided'}
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              padding: '10px 11px',
-                              borderRadius: '10px',
-                              background: '#F8FAFC',
-                              border: `1px solid ${BORDER}`,
-                              minWidth: 0,
-                            }}
-                          >
-                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Preferred booking</div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                color: TEXT2,
-                                whiteSpace: isMobile ? 'normal' : 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.preferred_date
-                                ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
-                                : 'Not set'}
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              padding: '10px 11px',
-                              borderRadius: '10px',
-                              background: '#F8FAFC',
-                              border: `1px solid ${BORDER}`,
-                              minWidth: 0,
-                            }}
-                          >
-                            <div style={{ ...TYPE.label, marginBottom: '4px' }}>Call summary</div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                color: TEXT3,
-                                whiteSpace: isMobile ? 'normal' : 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.issue_summary || 'No summary recorded'}
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              alignSelf: isMobile ? 'start' : 'center',
-                              justifySelf: isMobile ? 'start' : 'end',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              color: TEAL,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            View & manage <IconArrow size={12} />
-                          </div>
-                        </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          flexWrap: 'wrap',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <JobTypeBadge type={lead.job_type} />
+                        <StatusBadge status={lead.status} />
                       </div>
                     </div>
-                  )
-                })
-              )}
-            </div>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
+                        gap: '10px',
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '10px 11px',
+                          borderRadius: '12px',
+                          border: `1px solid ${BORDER}`,
+                          background: '#FCFCFD',
+                          minWidth: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            color: TEXT3,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          Suburb
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: TEXT2,
+                            whiteSpace: isMobile ? 'normal' : 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {lead.suburb || 'Not provided'}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: '10px 11px',
+                          borderRadius: '12px',
+                          border: `1px solid ${BORDER}`,
+                          background: '#FCFCFD',
+                          minWidth: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            color: TEXT3,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          Preferred booking
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: TEXT2,
+                            whiteSpace: isMobile ? 'normal' : 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {lead.preferred_date
+                            ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
+                            : 'Not set'}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: '10px 11px',
+                          borderRadius: '12px',
+                          border: `1px solid ${BORDER}`,
+                          background: '#FCFCFD',
+                          minWidth: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            color: TEXT3,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          Call summary
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: TEXT3,
+                            whiteSpace: isMobile ? 'normal' : 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {lead.issue_summary || 'No summary recorded'}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          alignSelf: isMobile ? 'start' : 'center',
+                          justifySelf: isMobile ? 'start' : 'end',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        View & manage <IconArrow size={12} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </div>
