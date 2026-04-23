@@ -16,7 +16,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = '-apple-system, BlinkMacMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -1159,50 +1159,97 @@ export default function JobsPage() {
                   padding: isMobile ? '10px 10px' : '10px 14px',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '62px' : '68px',
+                  minHeight: isMobile ? '70px' : '68px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        fontSize: isMobile ? '10px' : '11px',
-                        fontWeight: 700,
-                        color: TEXT3,
-                        marginBottom: '4px',
-                        whiteSpace: 'normal',
-                        wordBreak: 'break-word',
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {item.label}
+                {isMobile ? (
+                  <div style={{ display: 'grid', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        {item.label}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {item.value}
+
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
+
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '3px 7px',
+                          borderRadius: '999px',
+                          background: item.up ? '#E6F7F6' : '#FFF0EE',
+                          color: item.up ? TEAL_DARK : '#C0392B',
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                          alignSelf: 'flex-end',
+                          marginTop: '2px',
+                        }}
+                      >
+                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                        {item.delta}
+                      </span>
                     </div>
                   </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: TEXT3,
+                          marginBottom: '4px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {item.value}
+                      </div>
+                    </div>
 
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      padding: '3px 7px',
-                      borderRadius: '999px',
-                      background: item.up ? '#E6F7F6' : '#FFF0EE',
-                      color: item.up ? TEAL_DARK : '#C0392B',
-                      fontSize: '9px',
-                      fontWeight: 800,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                    {item.delta}
-                  </span>
-                </div>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        padding: '3px 7px',
+                        borderRadius: '999px',
+                        background: item.up ? '#E6F7F6' : '#FFF0EE',
+                        color: item.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {item.delta}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
