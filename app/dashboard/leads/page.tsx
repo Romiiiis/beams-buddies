@@ -156,22 +156,6 @@ function IconSearch({ size = 16 }: { size?: number }) {
   )
 }
 
-function StatImageIcon({ src, alt }: { src: string; alt: string }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: '30px',
-        height: '30px',
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
 const STATUS_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
   booked: { bg: '#DCFCE7', color: '#166534', label: 'Booked' },
   pending: { bg: '#FEF3C7', color: '#78350F', label: 'Pending' },
@@ -743,24 +727,19 @@ export default function LeadsPage() {
     overflow: 'hidden',
   }
 
-  const cardP: React.CSSProperties = {
-    ...card,
-    padding: '18px',
-  }
-
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '12px 10px 11px' : '14px 16px 13px',
-    minHeight: isMobile ? 104 : 118,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  }
-
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
     borderRadius: '16px',
+  }
+
+  const statCard: React.CSSProperties = {
+    ...card,
+    padding: isMobile ? '10px 12px' : '10px 14px',
+    minHeight: isMobile ? 62 : 68,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -787,26 +766,17 @@ export default function LeadsPage() {
     {
       label: 'Booked',
       value: leads.filter(l => l.status === 'booked').length,
-      sub: 'Ready to convert',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png',
       accent: GREEN,
-      tag: 'Live pipeline',
     },
     {
       label: 'Pending',
       value: leads.filter(l => l.status === 'pending').length,
-      sub: 'Need follow-up',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_bc1fa329d29143c0903d4d61a44a8c5e~mv2.png',
       accent: AMBER,
-      tag: 'Needs action',
     },
     {
       label: 'Converted',
       value: leads.filter(l => l.status === 'converted').length,
-      sub: 'Moved into jobs',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_89fcc1a5259c48a6b610658abb3f89ff~mv2.png',
       accent: BLUE,
-      tag: 'Completed flow',
     },
   ]
 
@@ -910,27 +880,46 @@ export default function LeadsPage() {
           >
             {overviewCards.map(item => (
               <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ ...TYPE.label, marginBottom: '6px', fontSize: isMobile ? '9px' : '10px' }}>{item.tag}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        ...TYPE.title,
-                        fontSize: isMobile ? '11px' : '13px',
-                        fontWeight: 800,
-                        marginBottom: '6px',
-                        lineHeight: 1.2,
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: TEXT3,
+                        marginBottom: '4px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {item.label}
                     </div>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {item.value}
+                    </div>
                   </div>
-                  <StatImageIcon src={item.iconSrc} alt={item.label} />
-                </div>
 
-                <div>
-                  <div style={{ ...TYPE.valueLg, fontSize: isMobile ? '22px' : '26px', color: item.accent }}>{item.value}</div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px', fontSize: isMobile ? '10px' : '11px' }}>{item.sub}</div>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      background:
+                        item.label === 'Booked'
+                          ? '#E6F7F6'
+                          : item.label === 'Pending'
+                          ? '#FFF4E8'
+                          : '#EEF4FF',
+                      color: item.accent,
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Live
+                  </span>
                 </div>
               </div>
             ))}
