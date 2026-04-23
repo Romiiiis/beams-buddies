@@ -745,37 +745,39 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   background: WHITE,
                   border: `1px solid ${BORDER}`,
                   borderRadius: '14px',
-                  padding: isMobile ? '14px 14px 12px' : '16px 16px 14px',
+                  padding: isMobile ? '10px 12px' : '10px 14px',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '122px' : '132px',
+                  minHeight: isMobile ? '62px' : '68px',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
                 }}
               >
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT3, marginBottom: '10px' }}>{item.label}</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                    {item.value}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {item.value}
+                    </div>
                   </div>
-                </div>
 
-                <div style={{ marginTop: '10px' }}>
                   <span
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      padding: '3px 8px',
+                      padding: '3px 7px',
                       borderRadius: '999px',
                       background: item.up ? '#E6F7F6' : '#FFF0EE',
                       color: item.up ? TEAL_DARK : '#C0392B',
-                      fontSize: '10px',
+                      fontSize: '9px',
                       fontWeight: 800,
+                      flexShrink: 0,
                     }}
                   >
                     {item.delta}
                   </span>
-                  <div style={{ fontSize: '10px', color: TEXT3, fontWeight: 500, marginTop: '7px', lineHeight: 1.35 }}>{item.sub}</div>
                 </div>
               </div>
             ))}
