@@ -169,6 +169,46 @@ function IconSearch({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M22 7l-8 8-4-4-6 6"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M22 17l-8-8-4 4-6-6"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function pctChange(current: number, previous: number) {
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
+}
+
 const STATUS_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
   booked: { bg: '#DCFCE7', color: '#166534', label: 'Booked' },
   pending: { bg: '#FEF3C7', color: '#78350F', label: 'Pending' },
@@ -655,7 +695,11 @@ export default function LeadsPage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await supabase
+        .from('users')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single()
 
       if (!userData) {
         setLoading(false)
@@ -664,7 +708,10 @@ export default function LeadsPage() {
 
       setBusinessId(userData.business_id)
 
-      const { data } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false })
 
       setLeads(data || [])
       setLoading(false)
@@ -676,7 +723,9 @@ export default function LeadsPage() {
   const filtered = useMemo(() => {
     return leads.filter(l => {
       const matchSearch = search
-        ? `${l.customer_name} ${l.phone_number} ${l.suburb} ${l.job_type}`.toLowerCase().includes(search.toLowerCase())
+        ? `${l.customer_name || ''} ${l.phone_number || ''} ${l.suburb || ''} ${l.job_type || ''}`
+            .toLowerCase()
+            .includes(search.toLowerCase())
         : true
       const matchStatus = filterStatus === 'all' ? true : l.status === filterStatus
       return matchSearch && matchStatus
@@ -742,6 +791,42 @@ export default function LeadsPage() {
     month: 'long',
     year: 'numeric',
   })
+
+  const now = new Date()
+  const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+  const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
+
+  function inRange(dateStr?: string | null, start?: Date, end?: Date) {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return false
+    return d >= start! && d < end!
+  }
+
+  const totalLeads = leads.length
+  const bookedCount = leads.filter(l => l.status === 'booked').length
+  const convertedCount = leads.filter(l => l.status === 'converted').length
+
+  const currentLeads = leads.filter(l => inRange(l.created_at, startCurrent30, now)).length
+  const prevLeads = leads.filter(l => inRange(l.created_at, startPrev30, startCurrent30)).length
+
+  const currentBooked = leads.filter(
+    l => l.status === 'booked' && inRange(l.created_at, startCurrent30, now)
+  ).length
+  const prevBooked = leads.filter(
+    l => l.status === 'booked' && inRange(l.created_at, startPrev30, startCurrent30)
+  ).length
+
+  const currentConverted = leads.filter(
+    l => l.status === 'converted' && inRange(l.created_at, startCurrent30, now)
+  ).length
+  const prevConverted = leads.filter(
+    l => l.status === 'converted' && inRange(l.created_at, startPrev30, startCurrent30)
+  ).length
+
+  const leadsDelta = pctChange(currentLeads, prevLeads)
+  const bookedDelta = pctChange(currentBooked, prevBooked)
+  const convertedDelta = pctChange(currentConverted, prevConverted)
 
   const card: React.CSSProperties = {
     background: WHITE,
@@ -817,20 +902,23 @@ export default function LeadsPage() {
   const statCards = [
     {
       label: 'Leads',
-      value: leads.length,
+      value: totalLeads,
+      delta: formatDelta(leadsDelta),
+      up: leadsDelta >= 0,
     },
     {
       label: 'Booked',
-      value: leads.filter(l => l.status === 'booked').length,
+      value: bookedCount,
+      delta: formatDelta(bookedDelta),
+      up: bookedDelta >= 0,
     },
     {
       label: 'Converted',
-      value: leads.filter(l => l.status === 'converted').length,
+      value: convertedCount,
+      delta: formatDelta(convertedDelta),
+      up: convertedDelta >= 0,
     },
   ]
-
-  const bookedCount = leads.filter(l => l.status === 'booked').length
-  const convertedCount = leads.filter(l => l.status === 'converted').length
 
   if (loading) {
     return (
@@ -900,7 +988,11 @@ export default function LeadsPage() {
                       marginBottom: '5px',
                     }}
                   >
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    {new Date().toLocaleDateString('en-AU', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                    })}
                   </div>
 
                   <h1
@@ -920,7 +1012,7 @@ export default function LeadsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {leads.length}
+                      {totalLeads}
                     </div>
                     <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
                       Leads
@@ -1000,15 +1092,19 @@ export default function LeadsPage() {
                 <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-                  {statCards.map((item, i) => (
-                    <React.Fragment key={item.label}>
+                  {[
+                    ['Leads', totalLeads],
+                    ['Booked', bookedCount],
+                    ['Converted', convertedCount],
+                  ].map(([label, value], i) => (
+                    <React.Fragment key={label}>
                       {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
                       <div style={{ textAlign: 'center', padding: '0 18px' }}>
                         <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                          {item.value}
+                          {value}
                         </div>
                         <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
-                          {item.label}
+                          {label}
                         </div>
                       </div>
                     </React.Fragment>
@@ -1021,11 +1117,11 @@ export default function LeadsPage() {
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={btnOutline}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={e => {
                       e.currentTarget.style.borderColor = TEXT
                       e.currentTarget.style.color = TEXT
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={e => {
                       e.currentTarget.style.borderColor = BORDER
                       e.currentTarget.style.color = TEXT2
                     }}
@@ -1039,10 +1135,10 @@ export default function LeadsPage() {
                       setFilterStatus('all')
                     }}
                     style={btnDark}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={e => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={e => {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
@@ -1095,6 +1191,24 @@ export default function LeadsPage() {
                       {item.value}
                     </div>
                   </div>
+
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      padding: '3px 7px',
+                      borderRadius: '999px',
+                      background: item.up ? '#E6F7F6' : '#FFF0EE',
+                      color: item.up ? TEAL_DARK : '#C0392B',
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                    {item.delta}
+                  </span>
                 </div>
               </div>
             ))}
