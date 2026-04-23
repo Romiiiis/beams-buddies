@@ -710,70 +710,56 @@ export default function CustomersPage() {
                   background: WHITE,
                   border: `1px solid ${BORDER}`,
                   borderRadius: '14px',
-                  padding: '18px 20px 0',
+                  padding: isMobile ? '10px 12px' : '10px 14px',
                   cursor: 'pointer',
                   transition: 'box-shadow 0.15s',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '62px' : '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')}
                 onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{sc.label}</span>
-                  <span style={{ color: TEXT3, opacity: 0.45 }}>
-                    <IconInfo size={13} />
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05 }}>
-                      {sc.value}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: TEXT3,
+                        marginBottom: '4px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {sc.label}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '5px', flexWrap: 'wrap' }}>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          padding: '2px 7px',
-                          borderRadius: '12px',
-                          background: sc.up ? '#E6F7F6' : '#FFF0EE',
-                          color: sc.up ? TEAL_DARK : '#C0392B',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                        }}
-                      >
-                        {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                        {sc.delta}
-                      </span>
-                      <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {sc.value}
                     </div>
                   </div>
 
-                  <SparkBars
-                    data={sparkData.slice(Math.max(0, idx * 2), Math.max(0, idx * 2) + 8).filter((n) => typeof n === 'number').length
-                      ? sparkData.slice(Math.max(0, idx * 2), Math.max(0, idx * 2) + 8)
-                      : sparkData.slice(-8)}
-                    color={sc.color}
-                    width={58}
-                    height={40}
-                  />
-                </div>
-
-                <div
-                  style={{
-                    borderTop: `1px solid ${BORDER}`,
-                    marginTop: '14px',
-                    padding: '10px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    color: TEXT3,
-                  }}
-                >
-                  <span style={{ fontSize: '11px', fontWeight: 700 }}>{sc.sub}</span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      padding: '3px 7px',
+                      borderRadius: '999px',
+                      background: sc.up ? '#E6F7F6' : '#FFF0EE',
+                      color: sc.up ? TEAL_DARK : '#C0392B',
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {sc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                    {sc.delta}
+                  </span>
                 </div>
               </div>
             ))}
