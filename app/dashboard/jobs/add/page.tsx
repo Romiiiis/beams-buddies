@@ -11,11 +11,10 @@ const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -221,8 +220,9 @@ export default function AddJobPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const cardP: React.CSSProperties = {
@@ -258,6 +258,67 @@ export default function AddJobPage() {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
+  }
+
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
   }
 
   const labelStyle: React.CSSProperties = {
@@ -314,6 +375,7 @@ export default function AddJobPage() {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const summaryCustomerName =
@@ -335,108 +397,113 @@ export default function AddJobPage() {
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '20px 16px 18px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? '0' : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <button
-              onClick={() => router.push('/dashboard/jobs')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                color: 'rgba(255,255,255,0.68)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '7px',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: FONT,
-                marginBottom: '8px',
-              }}
-            >
-              <IconArrowLeft size={14} /> Back to jobs
-            </button>
-
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>{todayStr}</div>
-
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Add new job
-            </div>
-
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Capture customer details, installation information, and service reminders in one clean workflow.
-            </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/jobs')}
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div
                 style={{
-                  ...quickActionStyle,
-                  background: 'rgba(255,255,255,0.06)',
-                  color: WHITE,
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: WHITE,
+                  padding: '16px 16px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                Cancel
-              </button>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
 
-              <button
-                form="job-form"
-                type="submit"
-                disabled={loading}
-                style={{
-                  ...quickActionStyle,
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  opacity: loading ? 0.8 : 1,
-                }}
-              >
-                <IconSpark size={16} />
-                {loading ? 'Saving...' : 'Save & generate QR'}
-              </button>
+                  <h1
+                    style={{
+                      fontSize: '26px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Add new job
+                  </h1>
+                </div>
+              </div>
+
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                    <IconArrowLeft size={13} /> Back
+                  </button>
+                  <button form="job-form" type="submit" disabled={loading} style={btnMobileDark}>
+                    {loading ? 'Saving...' : 'Save job'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.07em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    {todayStr}
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 900,
+                      color: TEXT,
+                      letterSpacing: '-0.05em',
+                      margin: 0,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Add new job
+                  </h1>
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}>
+                    <IconArrowLeft size={13} /> Back to jobs
+                  </button>
+
+                  <button form="job-form" type="submit" disabled={loading} style={btnDark}>
+                    <IconSpark size={14} />
+                    {loading ? 'Saving...' : 'Save job'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && (
             <div
