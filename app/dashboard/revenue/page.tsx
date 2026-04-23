@@ -88,14 +88,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconArrow({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -152,11 +144,14 @@ type TopCustomer = {
   count: number
 }
 
+type MetricMode = 'invoiced' | 'collected' | 'outstanding' | 'overdue'
+
 export default function RevenuePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [metricMode, setMetricMode] = useState<MetricMode>('invoiced')
 
   useEffect(() => {
     async function load() {
@@ -238,22 +233,66 @@ export default function RevenuePage() {
     []
   )
 
-  const monthlyRevenue = useMemo(
+  const monthlyStats = useMemo(
     () =>
       last6.map(m => {
-        const total = invoices
-          .filter(i => {
-            const d = new Date(i.created_at)
-            return d.getMonth() === m.month && d.getFullYear() === m.year
-          })
-          .reduce((sum, i) => sum + Number(i.total || 0), 0)
+        const monthInvoices = invoices.filter(i => {
+          const d = new Date(i.created_at)
+          return d.getMonth() === m.month && d.getFullYear() === m.year
+        })
 
-        return { ...m, total }
+        const invoiced = monthInvoices.reduce((sum, i) => sum + Number(i.total || 0), 0)
+        const collected = monthInvoices
+          .filter(i => i.status === 'paid')
+          .reduce((sum, i) => sum + Number(i.total || 0), 0)
+        const open = monthInvoices.filter(i => i.status === 'sent' || i.status === 'overdue')
+        const outstandingValue = open.reduce(
+          (sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)),
+          0
+        )
+        const overdueValue = monthInvoices
+          .filter(i => i.status === 'overdue')
+          .reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
+        return {
+          ...m,
+          invoiced,
+          collected,
+          outstanding: outstandingValue,
+          overdue: overdueValue,
+          invoiceCount: monthInvoices.length,
+          paidCount: monthInvoices.filter(i => i.status === 'paid').length,
+          openCount: open.length,
+          overdueCount: monthInvoices.filter(i => i.status === 'overdue').length,
+        }
       }),
     [last6, invoices]
   )
 
-  const maxMonthly = Math.max(...monthlyRevenue.map(m => m.total), 1)
+  const chartSeries = useMemo(() => {
+    return monthlyStats.map(m => ({
+      label: m.label,
+      shortLabel: m.shortLabel,
+      value:
+        metricMode === 'invoiced'
+          ? m.invoiced
+          : metricMode === 'collected'
+          ? m.collected
+          : metricMode === 'outstanding'
+          ? m.outstanding
+          : m.overdue,
+      count:
+        metricMode === 'invoiced'
+          ? m.invoiceCount
+          : metricMode === 'collected'
+          ? m.paidCount
+          : metricMode === 'outstanding'
+          ? m.openCount
+          : m.overdueCount,
+    }))
+  }, [monthlyStats, metricMode])
+
+  const maxMonthly = Math.max(...chartSeries.map(m => m.value), 1)
 
   const topCustomers = useMemo(() => {
     const customerRevenue: Record<string, TopCustomer> = {}
@@ -444,6 +483,33 @@ export default function RevenuePage() {
       up: pctChange(currentInvoiced, prevInvoiced) >= 0,
     },
   ]
+
+  const selectedMetricLabel =
+    metricMode === 'invoiced'
+      ? 'Invoiced value'
+      : metricMode === 'collected'
+      ? 'Collected value'
+      : metricMode === 'outstanding'
+      ? 'Outstanding value'
+      : 'Overdue value'
+
+  const selectedMetricTotal =
+    metricMode === 'invoiced'
+      ? totalInvoiced
+      : metricMode === 'collected'
+      ? totalRevenue
+      : metricMode === 'outstanding'
+      ? totalOutstanding
+      : totalOverdue
+
+  const selectedMetricCount =
+    metricMode === 'invoiced'
+      ? invoices.length
+      : metricMode === 'collected'
+      ? paid.length
+      : metricMode === 'outstanding'
+      ? outstanding.length
+      : overdue.length
 
   if (loading) {
     return (
@@ -721,13 +787,15 @@ export default function RevenuePage() {
                 }}
               >
                 <div>
-                  <div style={sectionHeaderTitle}>Monthly revenue</div>
+                  <div style={sectionHeaderTitle}>Monthly performance</div>
                   <div style={{ ...TYPE.bodySm }}>
-                    Invoiced revenue over the last 6 months with current collections snapshot.
+                    Switch the view below to compare invoiced, collected, outstanding, or overdue movement.
                   </div>
                 </div>
 
-                <div
+                <select
+                  value={metricMode}
+                  onChange={e => setMetricMode(e.target.value as MetricMode)}
                   style={{
                     height: '40px',
                     padding: '0 12px',
@@ -737,33 +805,36 @@ export default function RevenuePage() {
                     color: TEXT2,
                     fontSize: '12px',
                     fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                    width: isMobile ? '100%' : 'auto',
-                    justifyContent: isMobile ? 'center' : 'flex-start',
+                    fontFamily: FONT,
+                    outline: 'none',
+                    width: isMobile ? '100%' : '180px',
                   }}
                 >
-                  Collection rate {collectionRate}%
-                </div>
+                  <option value="invoiced">Invoiced</option>
+                  <option value="collected">Collected</option>
+                  <option value="outstanding">Outstanding</option>
+                  <option value="overdue">Overdue</option>
+                </select>
               </div>
 
               <div style={{ padding: '14px 16px' }}>
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0, 1fr))',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))',
                     gap: '10px',
                     marginBottom: '14px',
                   }}
                 >
                   {[
+                    { label: 'Current view', value: selectedMetricLabel },
+                    { label: 'Total value', value: `$${Math.round(selectedMetricTotal).toLocaleString('en-AU')}` },
+                    { label: 'Related invoices', value: selectedMetricCount },
+                    { label: 'Collection rate', value: `${collectionRate}%` },
                     { label: 'Paid invoices', value: paid.length },
                     { label: 'Open invoices', value: outstanding.length },
                     { label: 'Overdue count', value: overdue.length },
                     { label: 'Top customers', value: topCustomers.length },
-                    { label: 'Collected', value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}` },
-                    { label: 'Outstanding', value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}` },
                   ].map(item => (
                     <div
                       key={item.label}
@@ -794,7 +865,8 @@ export default function RevenuePage() {
 
                       <div
                         style={{
-                          fontSize: typeof item.value === 'string' && item.value.length > 8 ? '17px' : '20px',
+                          fontSize:
+                            typeof item.value === 'string' && String(item.value).length > 12 ? '15px' : '20px',
                           fontWeight: 900,
                           color: TEXT,
                           letterSpacing: '-0.04em',
@@ -867,8 +939,8 @@ export default function RevenuePage() {
                       />
                     ))}
 
-                    {monthlyRevenue.map(m => {
-                      const height = Math.max(16, Math.round((m.total / maxMonthly) * (isMobile ? 136 : 166)))
+                    {chartSeries.map(m => {
+                      const height = Math.max(16, Math.round((m.value / maxMonthly) * (isMobile ? 136 : 166)))
 
                       return (
                         <div
@@ -893,7 +965,7 @@ export default function RevenuePage() {
                               textAlign: 'center',
                             }}
                           >
-                            {m.total > 0 ? `$${Math.round(m.total).toLocaleString('en-AU')}` : '$0'}
+                            {m.value > 0 ? `$${Math.round(m.value).toLocaleString('en-AU')}` : '$0'}
                           </div>
 
                           <div
@@ -911,9 +983,13 @@ export default function RevenuePage() {
                                 width: '30px',
                                 height: `${height}px`,
                                 borderRadius: '999px',
-                                background: m.total > 0 ? TEAL : '#E2E8F0',
+                                background: m.value > 0 ? TEAL : '#E2E8F0',
                               }}
                             />
+                          </div>
+
+                          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>
+                            {m.count}
                           </div>
 
                           <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textAlign: 'center' }}>
@@ -1082,196 +1158,6 @@ export default function RevenuePage() {
                     ))
                   )}
                 </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ ...TYPE.label, marginBottom: '8px' }}>Quick actions</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/invoices')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: TEAL,
-                      color: WHITE,
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    View invoices
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={{
-                      width: '100%',
-                      height: '34px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: TEXT2,
-                    }}
-                  >
-                    View customers
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 340px',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
-            <div style={card}>
-              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Invoice breakdown</div>
-                <button
-                  onClick={() => router.push('/dashboard/invoices')}
-                  style={{
-                    height: '28px',
-                    padding: '0 9px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: '7px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    color: TEXT2,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  View all <IconArrow size={11} />
-                </button>
-              </div>
-
-              <div style={{ padding: '14px 18px', display: 'grid', gap: '10px' }}>
-                {[
-                  {
-                    label: 'Paid invoices',
-                    value: paid.length,
-                    amount: totalRevenue,
-                    color: '#166534',
-                    bg: '#DCFCE7',
-                  },
-                  {
-                    label: 'Sent / awaiting payment',
-                    value: outstanding.filter(i => i.status === 'sent').length,
-                    amount: outstanding
-                      .filter(i => i.status === 'sent')
-                      .reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
-                    color: '#1E3A8A',
-                    bg: '#DBEAFE',
-                  },
-                  {
-                    label: 'Overdue',
-                    value: overdue.length,
-                    amount: totalOverdue,
-                    color: '#7F1D1D',
-                    bg: '#FEE2E2',
-                  },
-                  {
-                    label: 'Draft',
-                    value: drafts.length,
-                    amount: drafts.reduce((sum, i) => sum + Number(i.total || 0), 0),
-                    color: TEXT3,
-                    bg: '#F1F5F9',
-                  },
-                ].map(row => (
-                  <div
-                    key={row.label}
-                    style={{
-                      borderRadius: '12px',
-                      padding: '12px 14px',
-                      background: '#F8FAFC',
-                      border: `1px solid ${BORDER}`,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '12px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                      <span
-                        style={{
-                          background: row.bg,
-                          color: row.color,
-                          padding: '4px 10px',
-                          borderRadius: '999px',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {row.value}
-                      </span>
-                      <span style={TYPE.titleSm}>{row.label}</span>
-                    </div>
-
-                    <span style={{ ...TYPE.titleSm, color: row.color, flexShrink: 0 }}>
-                      ${row.amount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={card}>
-              <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Revenue health</div>
-              </div>
-
-              <div style={{ padding: '14px 18px', display: 'grid', gap: '10px' }}>
-                {[
-                  {
-                    label: 'Collections',
-                    heading: collectionRate >= 80 ? 'Strong' : 'Needs attention',
-                    sub: `${collectionRate}% of invoiced value collected`,
-                    accent: collectionRate >= 80 ? '#10B981' : RED,
-                  },
-                  {
-                    label: 'Outstanding load',
-                    heading: totalOutstanding > 0 ? 'Follow-up recommended' : 'Clear',
-                    sub: `${outstanding.length} invoice${outstanding.length === 1 ? '' : 's'} still open`,
-                    accent: totalOutstanding > 0 ? AMBER : '#10B981',
-                  },
-                  {
-                    label: 'Overdue risk',
-                    heading: totalOverdue > 0 ? 'Immediate action suggested' : 'Stable',
-                    sub: `$${Math.round(totalOverdue).toLocaleString('en-AU')} overdue now`,
-                    accent: totalOverdue > 0 ? RED : '#10B981',
-                  },
-                ].map(item => (
-                  <div
-                    key={item.label}
-                    style={{
-                      background: '#F9FAFB',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '12px',
-                      padding: '14px',
-                      borderLeft: `3px solid ${item.accent}`,
-                    }}
-                  >
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.label}</div>
-                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>{item.heading}</div>
-                    <div style={TYPE.bodySm}>{item.sub}</div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
