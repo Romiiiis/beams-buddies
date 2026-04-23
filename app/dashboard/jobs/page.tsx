@@ -191,22 +191,6 @@ function formatDelta(n: number) {
   return `${n >= 0 ? '+' : ''}${n}%`
 }
 
-function StatImageIcon({ src, alt }: { src: string; alt: string }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: '30px',
-        height: '30px',
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
 const EQUIPMENT_LABELS: Record<string, string> = {
   split_system: 'Split system',
   ducted: 'Ducted',
@@ -934,24 +918,18 @@ export default function JobsPage() {
       value: jobs.length,
       delta: formatDelta(jobsDelta),
       up: jobsDelta >= 0,
-      sub: 'All jobs in workspace',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_997ef62d91654472ba257f2f31099e0c~mv2.png',
     },
     {
       label: 'Due this month',
       value: dueSoonCount,
       delta: formatDelta(dueDelta),
       up: dueDelta >= 0,
-      sub: 'Service due within 30 days',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_2c9a02e644c84ae6b66da7b917ac9390~mv2.png',
     },
     {
       label: 'Customers',
       value: new Set(jobs.map(j => j.customer_id)).size,
       delta: formatDelta(customersDelta),
       up: customersDelta >= 0,
-      sub: 'Unique customers with jobs',
-      iconSrc: 'https://static.wixstatic.com/media/48c433_eb5f601865a645939154bbe679d8e2a0~mv2.png',
     },
   ]
 
@@ -1178,7 +1156,7 @@ export default function JobsPage() {
                   background: WHITE,
                   border: `1px solid ${BORDER}`,
                   borderRadius: '14px',
-                  padding: isMobile ? '10px 12px' : '10px 14px',
+                  padding: isMobile ? '10px 10px' : '10px 14px',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                   minHeight: isMobile ? '62px' : '68px',
@@ -1187,17 +1165,17 @@ export default function JobsPage() {
                   justifyContent: 'center',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div
                       style={{
-                        fontSize: '11px',
+                        fontSize: isMobile ? '10px' : '11px',
                         fontWeight: 700,
                         color: TEXT3,
                         marginBottom: '4px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        whiteSpace: 'normal',
+                        wordBreak: 'break-word',
+                        lineHeight: 1.2,
                       }}
                     >
                       {item.label}
@@ -1207,26 +1185,23 @@ export default function JobsPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    {!isMobile && <StatImageIcon src={item.iconSrc} alt={item.label} />}
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        padding: '3px 7px',
-                        borderRadius: '999px',
-                        background: item.up ? '#E6F7F6' : '#FFF0EE',
-                        color: item.up ? TEAL_DARK : '#C0392B',
-                        fontSize: '9px',
-                        fontWeight: 800,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                      {item.delta}
-                    </span>
-                  </div>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      padding: '3px 7px',
+                      borderRadius: '999px',
+                      background: item.up ? '#E6F7F6' : '#FFF0EE',
+                      color: item.up ? TEAL_DARK : '#C0392B',
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                    {item.delta}
+                  </span>
                 </div>
               </div>
             ))}
@@ -1304,6 +1279,32 @@ export default function JobsPage() {
                     />
                   </div>
 
+                  <select
+                    value={filterType}
+                    onChange={e => setFilterType(e.target.value)}
+                    style={{
+                      height: '40px',
+                      minWidth: isMobile ? '100%' : '180px',
+                      width: isMobile ? '100%' : '180px',
+                      padding: '0 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${BORDER}`,
+                      background: WHITE,
+                      color: TEXT2,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      fontFamily: FONT,
+                      outline: 'none',
+                      appearance: 'none',
+                    }}
+                  >
+                    {equipmentTypes.map(t => (
+                      <option key={t} value={t}>
+                        {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
+                      </option>
+                    ))}
+                  </select>
+
                   <div
                     style={{
                       height: '40px',
@@ -1327,44 +1328,12 @@ export default function JobsPage() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: '12px 16px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {equipmentTypes.map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setFilterType(t)}
-                    style={{
-                      height: '34px',
-                      padding: '0 13px',
-                      borderRadius: '999px',
-                      border: `1px solid ${filterType === t ? TEAL_DARK : BORDER}`,
-                      background: filterType === t ? TEAL : WHITE,
-                      color: filterType === t ? WHITE : TEXT2,
-                      fontSize: '11px',
-                      fontWeight: filterType === t ? 700 : 600,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-
               {!isMobile && filtered.length > 0 && (
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1.2fr) 150px 140px 24px',
-                    gap: '10px',
+                    gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1.2fr) 150px 150px 24px',
+                    gap: '12px',
                     alignItems: 'center',
                     padding: '10px 16px',
                     borderBottom: `1px solid ${BORDER}`,
@@ -1404,10 +1373,10 @@ export default function JobsPage() {
                       onClick={() => setSelectedJob(job)}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.5fr) minmax(0,1.2fr) 150px 140px 24px',
-                        gap: '10px',
+                        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.65fr) minmax(0,1.2fr) 150px 150px 24px',
+                        gap: '12px',
                         alignItems: 'center',
-                        padding: '14px 16px',
+                        padding: isMobile ? '14px 16px' : '14px 16px',
                         borderBottom: `1px solid ${BORDER}`,
                         cursor: 'pointer',
                         transition: 'background 0.12s',
@@ -1417,13 +1386,22 @@ export default function JobsPage() {
                     >
                       {isMobile ? (
                         <div style={{ display: 'grid', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-                            <div style={{ minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              justifyContent: 'space-between',
+                              gap: '12px',
+                            }}
+                          >
+                            <div style={{ minWidth: 0, flex: 1 }}>
                               <div style={{ ...TYPE.label, marginBottom: '5px', color: meta.serviceColor }}>
                                 {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type}
                               </div>
-                              <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>{name}</div>
-                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3 }}>
+                              <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
+                                {name}
+                              </div>
+                              <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, lineHeight: 1.4 }}>
                                 {customer?.phone || '—'}
                                 {customer?.suburb ? ` · ${customer.suburb}` : ''}
                               </div>
@@ -1437,7 +1415,7 @@ export default function JobsPage() {
                           <div
                             style={{
                               display: 'grid',
-                              gridTemplateColumns: '1fr 1fr',
+                              gridTemplateColumns: '1fr',
                               gap: '8px',
                             }}
                           >
@@ -1450,7 +1428,7 @@ export default function JobsPage() {
                               }}
                             >
                               <div style={{ ...TYPE.label, marginBottom: '4px' }}>Equipment</div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, lineHeight: 1.4 }}>
                                 {job.brand}
                                 {job.model ? ` ${job.model}` : ''}
                                 {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
@@ -1459,48 +1437,35 @@ export default function JobsPage() {
 
                             <div
                               style={{
-                                padding: '10px 11px',
-                                borderRadius: '12px',
-                                background: '#FCFCFD',
-                                border: `1px solid ${BORDER}`,
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px',
                               }}
                             >
-                              <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{meta.next || '—'}</div>
+                              <div
+                                style={{
+                                  padding: '10px 11px',
+                                  borderRadius: '12px',
+                                  background: '#FCFCFD',
+                                  border: `1px solid ${BORDER}`,
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '4px' }}>Next service</div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{meta.next || '—'}</div>
+                              </div>
+
+                              <div
+                                style={{
+                                  padding: '10px 11px',
+                                  borderRadius: '12px',
+                                  background: '#FCFCFD',
+                                  border: `1px solid ${BORDER}`,
+                                }}
+                              >
+                                <div style={{ ...TYPE.label, marginBottom: '4px' }}>Status</div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: meta.serviceColor }}>{meta.serviceLabel}</div>
+                              </div>
                             </div>
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '10px',
-                              flexWrap: 'wrap',
-                            }}
-                          >
-                            <span
-                              style={{
-                                background: meta.serviceBg,
-                                color: meta.serviceColor,
-                                border: `1px solid ${meta.serviceBorder}`,
-                                padding: '6px 12px',
-                                borderRadius: '999px',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                              }}
-                            >
-                              <IconCalendar size={12} />
-                              {meta.serviceLabel}
-                            </span>
-
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                              Open job
-                            </span>
                           </div>
                         </div>
                       ) : (
@@ -1518,12 +1483,11 @@ export default function JobsPage() {
 
                           <div
                             style={{
+                              minWidth: 0,
                               fontSize: '12px',
                               fontWeight: 700,
                               color: TEXT2,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              lineHeight: 1.4,
                             }}
                           >
                             {job.brand}
