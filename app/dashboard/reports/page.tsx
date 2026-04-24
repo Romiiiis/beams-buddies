@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
@@ -17,7 +17,6 @@ const TEXT3 = '#475569'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const HEADER_BG = '#111111'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
@@ -115,6 +114,11 @@ type Customer = {
 
 type ReportView = 'revenue' | 'jobs' | 'quotes' | 'services'
 
+type TrendPoint = {
+  label: string
+  total: number
+}
+
 function isSameMonth(dateStr: string | null | undefined, base: Date) {
   if (!dateStr) return false
   const d = new Date(dateStr)
@@ -128,70 +132,6 @@ function formatMoney(value: number) {
 function monthLabelFromOffset(base: Date, offset: number) {
   const d = new Date(base.getFullYear(), base.getMonth() + offset, 1)
   return d.toLocaleDateString('en-AU', { month: 'short' })
-}
-
-function DashboardImageIcon({
-  src,
-  alt,
-  size = 28,
-}: {
-  src: string
-  alt: string
-  size?: number
-}) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        display: 'block',
-        flexShrink: 0,
-      }}
-    />
-  )
-}
-
-function IconCollected({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_6128eed6331e4d0188d1bd62ed3e4c89~mv2.png"
-      alt="Revenue collected"
-      size={size}
-    />
-  )
-}
-
-function IconOutstanding({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_147eeb738a784ca184267c67f66c1c30~mv2.png"
-      alt="Outstanding"
-      size={size}
-    />
-  )
-}
-
-function IconAcceptedValue({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_9cbf007dda55411888ac59c3123f8657~mv2.png"
-      alt="Accepted quote value"
-      size={size}
-    />
-  )
-}
-
-function IconOverdueServices({ size = 28 }: { size?: number }) {
-  return (
-    <DashboardImageIcon
-      src="https://static.wixstatic.com/media/48c433_85b27ad4a4ff4fe585436aaf59c63b94~mv2.png"
-      alt="Overdue services"
-      size={size}
-    />
-  )
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
@@ -217,6 +157,232 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function IconTrendUp({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconTrendDown({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function pctChange(current: number, previous: number) {
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
+}
+
+function AreaChart({
+  series,
+  maxVal,
+  height = 240,
+  isMobile = false,
+  formatValue,
+}: {
+  series: TrendPoint[]
+  maxVal: number
+  height?: number
+  isMobile?: boolean
+  formatValue: (v: number) => string
+}) {
+  const [hovered, setHovered] = useState<number | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [svgWidth, setSvgWidth] = useState(600)
+
+  useEffect(() => {
+    function measure() {
+      if (svgRef.current) setSvgWidth(svgRef.current.getBoundingClientRect().width)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
+  const PAD_L = isMobile ? 8 : 12
+  const PAD_R = isMobile ? 8 : 12
+  const PAD_T = 28
+  const PAD_B = 34
+  const chartW = svgWidth - PAD_L - PAD_R
+  const chartH = height - PAD_T - PAD_B
+  const n = series.length
+
+  function xOf(i: number) {
+    return PAD_L + (i / Math.max(n - 1, 1)) * chartW
+  }
+
+  function yOf(v: number) {
+    const pct = maxVal > 0 ? v / maxVal : 0
+    return PAD_T + chartH - pct * chartH
+  }
+
+  const points = series.map((s, i) => ({ x: xOf(i), y: yOf(s.total), ...s }))
+
+  function smoothPath(pts: { x: number; y: number }[]) {
+    if (pts.length < 2) return ''
+    let d = `M ${pts[0].x} ${pts[0].y}`
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1]
+      const curr = pts[i]
+      const cpx = (prev.x + curr.x) / 2
+      d += ` C ${cpx} ${prev.y}, ${cpx} ${curr.y}, ${curr.x} ${curr.y}`
+    }
+    return d
+  }
+
+  const linePath = smoothPath(points)
+  const areaPath = linePath
+    ? `${linePath} L ${points[n - 1].x} ${PAD_T + chartH} L ${points[0].x} ${PAD_T + chartH} Z`
+    : ''
+
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => ({
+    y: PAD_T + chartH - f * chartH,
+    val: Math.round(maxVal * f),
+  }))
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <svg
+        ref={svgRef}
+        width="100%"
+        height={height}
+        style={{ display: 'block', overflow: 'visible' }}
+        onMouseLeave={() => setHovered(null)}
+      >
+        <defs>
+          <linearGradient id="reportsAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={TEAL} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={TEAL} stopOpacity="0.01" />
+          </linearGradient>
+        </defs>
+
+        {yTicks.map((t, i) => (
+          <g key={i}>
+            <line
+              x1={PAD_L}
+              x2={PAD_L + chartW}
+              y1={t.y}
+              y2={t.y}
+              stroke={i === 0 ? BORDER : '#EEF2F7'}
+              strokeWidth={i === 0 ? 1 : 0.8}
+              strokeDasharray={i === 0 ? '0' : '4 3'}
+            />
+            <text
+              x={PAD_L - 6}
+              y={t.y + 3.5}
+              textAnchor="end"
+              fontSize="9"
+              fontWeight="700"
+              fill={TEXT3}
+              fontFamily={FONT}
+            >
+              {formatValue(t.val)}
+            </text>
+          </g>
+        ))}
+
+        {points.map((p, i) => (
+          <line
+            key={`vl-${i}`}
+            x1={p.x}
+            x2={p.x}
+            y1={PAD_T}
+            y2={PAD_T + chartH}
+            stroke={hovered === i ? '#CBD5E1' : 'transparent'}
+            strokeWidth="1"
+            strokeDasharray="3 2"
+          />
+        ))}
+
+        {areaPath && <path d={areaPath} fill="url(#reportsAreaGrad)" />}
+
+        {linePath && (
+          <path
+            d={linePath}
+            fill="none"
+            stroke={TEAL}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        )}
+
+        {points.map((p, i) => (
+          <g key={`dot-${i}`}>
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={hovered === i ? 5 : 3.5}
+              fill={hovered === i ? TEAL : WHITE}
+              stroke={TEAL}
+              strokeWidth={hovered === i ? 2.5 : 1.8}
+              style={{ transition: 'r 0.15s, fill 0.15s' }}
+            />
+            <rect
+              x={p.x - chartW / n / 2}
+              y={PAD_T}
+              width={chartW / n}
+              height={chartH}
+              fill="transparent"
+              style={{ cursor: 'crosshair' }}
+              onMouseEnter={() => setHovered(i)}
+            />
+          </g>
+        ))}
+
+        {points.map((p, i) => (
+          <text
+            key={`xl-${i}`}
+            x={p.x}
+            y={PAD_T + chartH + 20}
+            textAnchor="middle"
+            fontSize="10"
+            fontWeight="700"
+            fill={hovered === i ? TEXT : TEXT3}
+            fontFamily={FONT}
+          >
+            {p.label}
+          </text>
+        ))}
+
+        {hovered !== null && (() => {
+          const p = points[hovered]
+          const tw = 90
+          const th = 38
+          let tx = p.x - tw / 2
+          if (tx < PAD_L) tx = PAD_L
+          if (tx + tw > PAD_L + chartW) tx = PAD_L + chartW - tw
+          const ty = Math.max(PAD_T - 2, p.y - th - 10)
+
+          return (
+            <g style={{ pointerEvents: 'none' }}>
+              <rect x={tx} y={ty} width={tw} height={th} rx="8" fill={TEXT} />
+              <text x={tx + tw / 2} y={ty + 13} textAnchor="middle" fontSize="9" fontWeight="700" fill="#94A3B8" fontFamily={FONT}>
+                {p.label}
+              </text>
+              <text x={tx + tw / 2} y={ty + 27} textAnchor="middle" fontSize="12" fontWeight="900" fill={WHITE} fontFamily={FONT}>
+                {formatValue(p.total)}
+              </text>
+            </g>
+          )
+        })()}
+      </svg>
+    </div>
   )
 }
 
@@ -384,8 +550,9 @@ export default function ReportsPage() {
 
       return {
         title: 'Jobs trend',
-        subtitle: 'Jobs created over the last 6 months.',
         pill: `${report.jobsThisMonth} this month`,
+        selectedLabel: 'Jobs created',
+        selectedTotal: report.jobsThisMonth,
         widgets: [
           { label: 'Jobs this month', value: report.jobsThisMonth },
           { label: 'Last month', value: report.jobsLastMonth },
@@ -411,8 +578,9 @@ export default function ReportsPage() {
 
       return {
         title: 'Quote trend',
-        subtitle: 'Quote value over the last 6 months.',
         pill: `Acceptance ${report.acceptanceRate}%`,
+        selectedLabel: 'Quote value',
+        selectedTotal: report.quotesAcceptedValue,
         widgets: [
           { label: 'Accepted', value: report.acceptedQuotes },
           { label: 'Sent', value: report.sentQuotes },
@@ -436,8 +604,9 @@ export default function ReportsPage() {
 
       return {
         title: 'Service trend',
-        subtitle: 'Scheduled services over the last 6 months.',
         pill: `${report.overdueServices + report.dueSoonServices} active`,
+        selectedLabel: 'Services scheduled',
+        selectedTotal: report.overdueServices + report.dueSoonServices,
         widgets: [
           { label: 'Overdue', value: report.overdueServices },
           { label: 'Due soon', value: report.dueSoonServices },
@@ -456,8 +625,9 @@ export default function ReportsPage() {
 
     return {
       title: 'Revenue trend',
-      subtitle: 'Invoiced revenue over the last 6 months with current collections snapshot.',
       pill: `Acceptance rate ${report.acceptanceRate}%`,
+      selectedLabel: 'Invoiced revenue',
+      selectedTotal: report.revenueCollected,
       widgets: [
         { label: 'Jobs this month', value: report.jobsThisMonth },
         { label: 'Last month', value: report.jobsLastMonth },
@@ -472,26 +642,29 @@ export default function ReportsPage() {
     }
   }, [reportView, report, jobs, quotes, today])
 
+  const currentJobs = report.jobsThisMonth
+  const previousJobs = report.jobsLastMonth
+  const jobDelta = pctChange(currentJobs, previousJobs)
+
+  const currentQuotes = report.quotesThisMonth
+  const previousQuotes = quotes.filter(q => isSameMonth(q.created_at, new Date(today.getFullYear(), today.getMonth() - 1, 1))).length
+  const quoteDelta = pctChange(currentQuotes, previousQuotes)
+
+  const currentInvoices = report.invoicesThisMonth
+  const previousInvoices = invoices.filter(i => isSameMonth(i.created_at, new Date(today.getFullYear(), today.getMonth() - 1, 1))).length
+  const invoiceDelta = pctChange(currentInvoices, previousInvoices)
+
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '16px',
+    borderRadius: '14px',
     overflow: 'hidden',
-  }
-
-  const statCard: React.CSSProperties = {
-    ...card,
-    padding: isMobile ? '14px 14px 13px' : '14px 16px 13px',
-    minHeight: isMobile ? 112 : 118,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
     ...card,
     padding: '16px',
-    borderRadius: '16px',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -512,38 +685,91 @@ export default function ReportsPage() {
     alignItems: 'center',
   }
 
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnDark: React.CSSProperties = {
+    height: '34px',
+    padding: '0 16px',
+    border: `1px solid ${TEXT}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEXT,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 10px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileDark: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEXT,
+    border: `1px solid ${TEXT}`,
+    color: WHITE,
+  }
+
   const topCards = [
     {
       label: 'Revenue collected',
       value: formatMoney(report.revenueCollected),
-      sub: 'Paid invoices',
-      icon: <IconCollected size={28} />,
-      accent: GREEN,
-      tag: 'Financials',
+      delta: formatDelta(0),
+      up: true,
     },
     {
       label: 'Outstanding',
       value: formatMoney(report.outstanding),
-      sub: 'Awaiting payment',
-      icon: <IconOutstanding size={28} />,
-      accent: BLUE,
-      tag: 'Receivables',
+      delta: report.outstanding > 0 ? 'Open' : 'Clear',
+      up: report.outstanding === 0,
     },
     {
-      label: 'Accepted quote value',
-      value: formatMoney(report.quotesAcceptedValue),
-      sub: 'Approved quotes',
-      icon: <IconAcceptedValue size={28} />,
-      accent: TEAL_DARK,
-      tag: 'Quote value',
+      label: 'Jobs this month',
+      value: report.jobsThisMonth,
+      delta: formatDelta(jobDelta),
+      up: jobDelta >= 0,
     },
     {
-      label: 'Overdue services',
-      value: String(report.overdueServices),
-      sub: report.overdueServices > 0 ? 'Needs action now' : 'All clear',
-      icon: <IconOverdueServices size={28} />,
-      accent: report.overdueServices > 0 ? RED : TEXT,
-      tag: 'Service load',
+      label: 'Quotes this month',
+      value: report.quotesThisMonth,
+      delta: formatDelta(quoteDelta),
+      up: quoteDelta >= 0,
     },
   ]
 
@@ -582,106 +808,67 @@ export default function ReportsPage() {
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            padding: isMobile ? '14px' : '16px 20px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
+            gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
           }}
         >
-          <div
-            style={{
-              ...card,
-              padding: isMobile ? '18px 16px 16px' : '22px 24px 20px',
-              background: HEADER_BG,
-              border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: isMobile ? 0 : '16px',
-              marginLeft: isMobile ? '-14px' : 0,
-              marginRight: isMobile ? '-14px' : 0,
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.68)', marginBottom: '6px' }}>
-              {todayStr}
-            </div>
+          {isMobile ? (
+            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </div>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Reports
+                  </h1>
+                </div>
+              </div>
 
-            <div
-              style={{
-                fontSize: isMobile ? '26px' : '34px',
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                fontWeight: 900,
-                color: WHITE,
-                marginBottom: '8px',
-              }}
-            >
-              Reports
+              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
+                  <button onClick={() => window.print()} style={btnMobileSm}>
+                    <IconPrint size={13} />
+                    Print
+                  </button>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileDark}>
+                    <IconSpark size={12} />
+                    View invoices
+                  </button>
+                </div>
+              </div>
             </div>
+          ) : (
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
+                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
+                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {todayStr}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Reports
+                  </h1>
+                </div>
 
-            <div
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,0.72)',
-                maxWidth: '760px',
-              }}
-            >
-              Review revenue, activity, service workload, and customer trends from one premium reporting centre.
+                <div style={{ flex: 1 }} />
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button onClick={() => window.print()} style={btnOutline}>
+                    <IconPrint size={14} />
+                    Print report
+                  </button>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnDark}>
+                    <IconSpark size={14} />
+                    View invoices
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <div
-              style={{
-                marginTop: '14px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                onClick={() => window.print()}
-                style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: WHITE,
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: '10px',
-                }}
-              >
-                <IconPrint size={14} />
-                Print report
-              </button>
-
-              <button
-                onClick={() => router.push('/dashboard/invoices')}
-                style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: TEAL,
-                  color: WHITE,
-                  border: 'none',
-                  borderRadius: '10px',
-                }}
-              >
-                <IconSpark size={14} />
-                View invoices
-              </button>
-            </div>
-          </div>
+          )}
 
           <div
             style={{
@@ -691,38 +878,56 @@ export default function ReportsPage() {
             }}
           >
             {topCards.map(item => (
-              <div key={item.label} style={statCard}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{item.tag}</div>
-                    <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>{item.label}</div>
-                  </div>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                </div>
+              <div
+                key={item.label}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: isMobile ? '10px 10px' : '10px 14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: isMobile ? '70px' : '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                {isMobile ? (
+                  <div style={{ display: 'grid', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flex: 1 }}>
+                        {item.label}
+                      </div>
+                    </div>
 
-                <div>
-                  <div
-                    style={{
-                      ...TYPE.valueLg,
-                      fontSize: item.label === 'Accepted quote value' && isMobile ? '22px' : '26px',
-                      color: item.accent,
-                    }}
-                  >
-                    {item.value}
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.value}
+                      </div>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0, alignSelf: 'flex-end', marginTop: '2px' }}>
+                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                        {item.delta}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{item.sub}</div>
-                </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.value}
+                      </div>
+                    </div>
+
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0 }}>
+                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
+                      {item.delta}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -735,47 +940,35 @@ export default function ReportsPage() {
               alignItems: 'start',
             }}
           >
-            <div style={card}>
-              <div
-                style={{
-                  padding: '14px 16px 12px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '10px',
-                }}
-              >
-                <div>
-                  <div style={sectionHeaderTitle}>{trendConfig.title}</div>
-                  <div style={{ ...TYPE.bodySm }}>{trendConfig.subtitle}</div>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                      Last 6 months
+                    </div>
+                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {trendConfig.title}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: '#F0FDF9', border: '1px solid #BBF7ED', flexShrink: 0, marginTop: '2px' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>
+                      Live
+                    </span>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                    width: isMobile ? '100%' : 'auto',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      width: isMobile ? '100%' : 'auto',
-                    }}
-                  >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
                     <select
                       value={reportView}
                       onChange={e => setReportView(e.target.value as ReportView)}
                       style={{
-                        height: '40px',
+                        height: '34px',
                         padding: '0 38px 0 12px',
-                        borderRadius: '10px',
+                        borderRadius: '9px',
                         border: `1px solid ${BORDER}`,
                         background: WHITE,
                         color: TEXT2,
@@ -787,7 +980,7 @@ export default function ReportsPage() {
                         appearance: 'none',
                         WebkitAppearance: 'none',
                         MozAppearance: 'none',
-                        minWidth: '140px',
+                        minWidth: isMobile ? '100%' : '150px',
                         width: isMobile ? '100%' : 'auto',
                       }}
                     >
@@ -815,11 +1008,11 @@ export default function ReportsPage() {
 
                   <div
                     style={{
-                      height: '40px',
+                      height: '34px',
                       padding: '0 12px',
-                      borderRadius: '10px',
+                      borderRadius: '9px',
                       border: `1px solid ${BORDER}`,
-                      background: WHITE,
+                      background: '#F8FAFC',
                       color: TEXT2,
                       fontSize: '12px',
                       fontWeight: 700,
@@ -831,167 +1024,58 @@ export default function ReportsPage() {
                     {trendConfig.pill}
                   </div>
                 </div>
-              </div>
 
-              <div style={{ padding: '14px 16px' }}>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0, 1fr))',
-                    gap: '10px',
-                    marginBottom: '14px',
-                  }}
-                >
-                  {trendConfig.widgets.map(item => (
+                <div style={{ display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: isMobile ? '-16px' : '-24px', marginRight: isMobile ? '-16px' : '-24px' }}>
+                  {trendConfig.widgets.slice(0, 5).map((item, i) => (
                     <div
                       key={item.label}
                       style={{
-                        minWidth: 0,
-                        minHeight: isMobile ? '72px' : '78px',
-                        borderRadius: '12px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        padding: isMobile ? '10px' : '12px',
+                        flex: 1,
+                        padding: isMobile ? '12px 10px' : '14px 20px',
+                        borderRight: i < trendConfig.widgets.slice(0, 5).length - 1 ? `1px solid ${BORDER}` : 'none',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        gap: '8px',
+                        gap: '4px',
+                        minWidth: 0,
                       }}
                     >
-                      <div
-                        style={{
-                          ...TYPE.label,
-                          marginBottom: 0,
-                          lineHeight: 1.25,
-                          whiteSpace: 'normal',
-                          wordBreak: 'break-word',
-                        }}
-                      >
+                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.label}
                       </div>
-                      <div
-                        style={{
-                          ...TYPE.valueMd,
-                          fontSize:
-                            typeof item.value === 'string' && item.value.length > 9 ? '16px' : '20px',
-                          lineHeight: 1,
-                        }}
-                      >
+                      <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.value}
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
 
-                <div
-                  style={{
-                    height: isMobile ? 250 : 290,
-                    borderRadius: '14px',
-                    background: WHITE,
-                    border: `1px solid ${BORDER}`,
-                    padding: '16px 16px 14px',
-                    display: 'grid',
-                    gridTemplateColumns: '42px 1fr',
-                    gap: '12px',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      fontSize: '11px',
-                      color: TEXT3,
-                      paddingTop: '4px',
-                      paddingBottom: '24px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {[100, 75, 50, 25, 0].map(tick => (
-                      <span key={tick}>{trendConfig.formatValue(Math.round((trendConfig.max * tick) / 100))}</span>
-                    ))}
+              <div style={{ padding: isMobile ? '16px 12px 12px' : '20px 24px 16px' }}>
+                <AreaChart
+                  series={trendConfig.monthly}
+                  maxVal={trendConfig.max}
+                  height={isMobile ? 210 : 240}
+                  isMobile={isMobile}
+                  formatValue={trendConfig.formatValue}
+                />
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? '4px' : '52px', marginTop: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
+                        {trendConfig.selectedLabel}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1', border: '1.5px solid #94A3B8' }} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
+                        Monthly count
+                      </span>
+                    </div>
                   </div>
-
-                  <div
-                    style={{
-                      position: 'relative',
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
-                      gap: '10px',
-                      alignItems: 'end',
-                      paddingTop: '6px',
-                    }}
-                  >
-                    {[0, 25, 50, 75].map((top, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          position: 'absolute',
-                          left: 0,
-                          right: 0,
-                          top: `${top}%`,
-                          borderTop: '1px dashed #E8EDF3',
-                          zIndex: 0,
-                        }}
-                      />
-                    ))}
-
-                    {trendConfig.monthly.map(item => {
-                      const height = Math.max(16, Math.round((item.total / trendConfig.max) * (isMobile ? 136 : 166)))
-
-                      return (
-                        <div
-                          key={item.label}
-                          style={{
-                            position: 'relative',
-                            zIndex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            gap: '8px',
-                            height: '100%',
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              color: TEXT3,
-                              minHeight: '14px',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {item.total > 0 ? trendConfig.formatValue(item.total) : trendConfig.formatValue(0)}
-                          </div>
-
-                          <div
-                            style={{
-                              width: '100%',
-                              maxWidth: '42px',
-                              height: isMobile ? '146px' : '178px',
-                              display: 'flex',
-                              alignItems: 'flex-end',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: '30px',
-                                height: `${height}px`,
-                                borderRadius: '999px',
-                                background: item.total > 0 ? TEAL : '#E2E8F0',
-                              }}
-                            />
-                          </div>
-
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                            {item.label}
-                          </div>
-                        </div>
-                      )
-                    })}
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>
+                    {new Date().toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
                   </div>
                 </div>
               </div>
@@ -1100,7 +1184,7 @@ export default function ReportsPage() {
                     <div
                       key={s.label}
                       style={{
-                        background: '#F9FAFB',
+                        background: '#F8FAFC',
                         border: `1px solid ${BORDER}`,
                         borderRadius: '12px',
                         padding: '14px',
