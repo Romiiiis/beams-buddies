@@ -657,14 +657,6 @@ export default function ReportsPage() {
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '15px',
-    fontWeight: 800,
-    color: TEXT,
-    marginBottom: '4px',
-    letterSpacing: '-0.02em',
-  }
-
   const cardArrowBtn: React.CSSProperties = {
     background: 'none',
     border: 'none',
@@ -817,37 +809,92 @@ export default function ReportsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr',
-              gap: '8px',
+              gridTemplateColumns: isMobile ? '1fr' : '1.2fr 0.8fr',
+              gap: '10px',
               marginBottom: '12px',
             }}
           >
             <div
               style={{
-                borderRadius: '12px',
+                borderRadius: '14px',
                 border: `1px solid ${BORDER}`,
-                background: '#F8FAFC',
-                padding: '12px',
+                background: WHITE,
+                padding: '13px 14px',
                 minWidth: 0,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.035)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
               }}
             >
-              <div style={{ ...TYPE.label, marginBottom: '8px' }}>Top result</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {topName}
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '12px',
+                  background: '#E6F7F6',
+                  border: '1px solid #BBF7ED',
+                  color: TEAL_DARK,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '13px',
+                  fontWeight: 900,
+                  flexShrink: 0,
+                }}
+              >
+                #1
+              </div>
+
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                  Top result
+                </div>
+                <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {topName}
+                </div>
               </div>
             </div>
 
             <div
               style={{
-                borderRadius: '12px',
+                borderRadius: '14px',
                 border: `1px solid ${BORDER}`,
                 background: '#F8FAFC',
-                padding: '12px',
+                padding: '13px 14px',
                 minWidth: 0,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.025)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
               }}
             >
-              <div style={{ ...TYPE.label, marginBottom: '8px' }}>{totalLabel}</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {totalLabel}
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT3, lineHeight: 1.2 }}>
+                  Total records
+                </div>
+              </div>
+
+              <div
+                style={{
+                  minWidth: 46,
+                  height: 36,
+                  borderRadius: '12px',
+                  background: TEXT,
+                  color: WHITE,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  fontWeight: 900,
+                  letterSpacing: '-0.04em',
+                  flexShrink: 0,
+                }}
+              >
                 {totalCount}
               </div>
             </div>
