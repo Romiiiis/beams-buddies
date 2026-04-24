@@ -238,10 +238,10 @@ export default function SchedulePage() {
   const btnMobileTeal: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL}`, color: WHITE }
 
   const topCards = [
-    { label: 'Scheduled units', value: counts.all, sub: 'With service tracking',    icon: <IconScheduled size={26} />,      accent: TEXT,                                   tag: 'Total' },
-    { label: 'Overdue',         value: counts.overdue, sub: counts.overdue > 0 ? 'Needs attention' : 'All clear', icon: <IconOverdueServices size={26} />, accent: counts.overdue > 0 ? RED : TEXT, tag: 'Action needed' },
-    { label: 'Due soon',        value: counts.due_soon, sub: 'Within 30 days',      icon: <IconDueSoon size={26} />,        accent: AMBER,                                  tag: 'Next window' },
-    { label: 'On track',        value: counts.good, sub: 'More than 30 days',       icon: <IconUpcomingLater size={26} />,  accent: TEAL_DARK,                              tag: 'Upcoming' },
+    { label: 'Scheduled units', value: counts.all,        sub: 'With service tracking',                             accent: TEXT,                                   },
+    { label: 'Overdue',         value: counts.overdue,    sub: counts.overdue > 0 ? 'Needs attention' : 'All clear', accent: counts.overdue > 0 ? RED : TEXT,        },
+    { label: 'Due soon',        value: counts.due_soon,   sub: 'Within 30 days',                                    accent: AMBER,                                  },
+    { label: 'On track',        value: counts.good,       sub: 'More than 30 days',                                 accent: TEAL_DARK,                              },
   ]
 
   if (loading) {
@@ -299,40 +299,28 @@ export default function SchedulePage() {
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0,1fr))' : 'repeat(4, 1fr)', gap: '12px' }}>
             {topCards.map(item => (
               <div key={item.label} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '10px 10px' : '10px 14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', minHeight: isMobile ? '70px' : '68px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {isMobile ? (
-                  <div style={{ display: 'grid', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, minWidth: 0 }}>{item.label}</div>
-                      {item.icon}
-                    </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{item.sub}</div>
-                    </div>
-                    <div style={{ flexShrink: 0 }}>{item.icon}</div>
-                  </div>
-                )}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
+                  <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
+                  {!isMobile && <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{item.sub}</div>}
+                </div>
               </div>
             ))}
           </div>
 
-          {/* ── Overdue alert banner ── */}
+          {/* ── Overdue notice ── */}
           {overdueJobs.length > 0 && (
-            <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ padding: '14px 18px', borderBottom: '1px solid #FECDD3', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: RED, display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#7F1D1D' }}>
-                    {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''} — action required
-                  </span>
-                </div>
-                <button onClick={() => setFilter('overdue')} style={{ height: '28px', padding: '0 10px', background: WHITE, border: '1px solid #FECDD3', borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: '#991B1B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  View all <IconArrow size={11} />
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, gap: '10px' }}>
+                <div style={{ width: 3, height: 18, borderRadius: '2px', background: RED, flexShrink: 0 }} />
+                <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, flex: 1 }}>
+                  {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={() => setFilter('overdue')}
+                  style={{ height: '26px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT3, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  View all <IconArrow size={10} />
                 </button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0,1fr))' }}>
@@ -343,17 +331,16 @@ export default function SchedulePage() {
                     <div
                       key={job.id}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                      style={{ padding: '13px 18px', borderBottom: isLast ? 'none' : '1px solid #FECDD3', borderRight: !isMobile && i % 2 === 0 ? '1px solid #FECDD3' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#FEE2E2')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      style={{ padding: '11px 16px', borderBottom: isLast ? 'none' : `1px solid ${BORDER}`, borderRight: !isMobile && i % 2 === 0 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: WHITE, transition: 'background 0.1s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#7F1D1D', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
-                        <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {job.customers?.suburb || '—'}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.customers?.first_name} {job.customers?.last_name}</div>
+                        <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {job.customers?.suburb || '—'}</div>
                       </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 900, color: RED }}>{days}d</div>
-                        <div style={{ fontSize: '10px', color: '#B91C1C', fontWeight: 600 }}>overdue</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 8px', borderRadius: '999px', background: '#FFF1F2', border: '1px solid #FECDD3', flexShrink: 0 }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: RED }}>{days}d overdue</span>
                       </div>
                     </div>
                   )
@@ -593,51 +580,6 @@ export default function SchedulePage() {
                 </div>
               </div>
 
-              {/* Snapshot */}
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <div style={{ ...TYPE.label }}>Snapshot</div>
-                  <button onClick={() => setFilter('all')} style={cardArrowBtn}><IconExternalLink size={14} /></button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { label: 'Overdue now',     value: counts.overdue,   color: counts.overdue > 0 ? RED : TEXT,  bg: counts.overdue > 0 ? '#FFF1F2' : '#F8FAFC', border: counts.overdue > 0 ? '#FECDD3' : BORDER },
-                    { label: 'Due soon',        value: counts.due_soon,  color: AMBER,                            bg: '#FFFBEB',                                   border: '#FDE68A' },
-                    { label: 'On track',        value: counts.good,      color: TEAL_DARK,                        bg: '#F0FDF9',                                   border: '#6EE7D8' },
-                  ].map(item => (
-                    <div key={item.label} style={{ padding: '10px 12px', borderRadius: '10px', background: item.bg, border: `1px solid ${item.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{item.label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick actions */}
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <div style={{ ...TYPE.label }}>Quick actions</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}><IconExternalLink size={14} /></button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { label: 'View all customers', href: '/dashboard/customers' },
-                    { label: 'Create a new invoice', href: '/dashboard/invoices' },
-                    { label: 'View revenue', href: '/dashboard/revenue' },
-                  ].map(a => (
-                    <div
-                      key={a.label}
-                      onClick={() => router.push(a.href)}
-                      style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#F1F5F9')}
-                      onMouseLeave={e => (e.currentTarget.style.background = '#F8FAFC')}
-                    >
-                      <span style={{ ...TYPE.titleSm }}>{a.label}</span>
-                      <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center' }}><IconArrow size={13} /></span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
