@@ -685,15 +685,15 @@ export default function ReportsPage() {
     whiteSpace: 'nowrap',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnPrimary: React.CSSProperties = {
     height: '34px',
     padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -721,10 +721,10 @@ export default function ReportsPage() {
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobilePrimary: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: 'none',
     color: WHITE,
   }
 
@@ -957,7 +957,7 @@ export default function ReportsPage() {
                     <IconPrint size={13} />
                     Print
                   </button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileDark}>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobilePrimary}>
                     <IconSpark size={12} />
                     View invoices
                   </button>
@@ -984,7 +984,7 @@ export default function ReportsPage() {
                     <IconPrint size={14} />
                     Print report
                   </button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnDark}>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}>
                     <IconSpark size={14} />
                     View invoices
                   </button>
@@ -1010,7 +1010,7 @@ export default function ReportsPage() {
                   padding: isMobile ? '10px 10px' : '10px 14px',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '70px' : '68px',
+                  minHeight: isMobile ? '62px' : '60px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -1228,7 +1228,7 @@ export default function ReportsPage() {
               data: report.topBrands,
               empty: 'No brand data yet.',
               route: '/dashboard/jobs',
-              accent: TEXT,
+              accent: TEAL_DARK,
             })}
           </div>
         </div>
