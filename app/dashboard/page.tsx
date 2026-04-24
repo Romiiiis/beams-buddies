@@ -589,8 +589,8 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0, marginTop: '2px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /></button>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /></button>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /> Add Job</button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
               {/* Stat chips */}
