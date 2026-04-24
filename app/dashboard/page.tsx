@@ -594,12 +594,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                {statChips.map(chip => (
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', borderTop: `2px solid ${TEAL}`, overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderTop: `2px solid ${TEAL}` }}
+                    style={{ padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = WHITE }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                   >
                     <div style={{ fontSize: '20px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
                     <div style={{ fontSize: '9px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
@@ -626,17 +626,15 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                {statChips.map((chip) => (
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '10px', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.12s, box-shadow 0.12s' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = TEAL_LIGHT; el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.07)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = WHITE; el.style.boxShadow = 'none' }}
+                    style={{ padding: '14px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                   >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '3px' }}>{chip.label}</div>
-                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '4px' }}>{chip.label}</div>
                   </div>
                 ))}
               </div>
