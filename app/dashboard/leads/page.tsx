@@ -576,7 +576,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               height: '44px',
               borderRadius: '12px',
               border: 'none',
-              background: saved ? '#166534' : TEAL,
+              background: saved ? TEAL_DARK : TEAL,
               color: WHITE,
               fontSize: '13px',
               fontWeight: 800,
@@ -858,12 +858,12 @@ export default function LeadsPage() {
   const btnDark: React.CSSProperties = {
     height: '34px',
     padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    border: `1px solid ${TEAL}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -894,8 +894,8 @@ export default function LeadsPage() {
 
   const btnMobileDark: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -1008,35 +1008,6 @@ export default function LeadsPage() {
                     Leads
                   </h1>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {totalLeads}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Leads
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {bookedCount}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Booked
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {convertedCount}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Converted
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
@@ -1087,28 +1058,6 @@ export default function LeadsPage() {
                   >
                     Leads
                   </h1>
-                </div>
-
-                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-                  {[
-                    ['Leads', totalLeads],
-                    ['Booked', bookedCount],
-                    ['Converted', convertedCount],
-                  ].map(([label, value], i) => (
-                    <React.Fragment key={label}>
-                      {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
-                      <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                          {value}
-                        </div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
-                          {label}
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ))}
                 </div>
 
                 <div style={{ flex: 1 }} />
@@ -1166,7 +1115,7 @@ export default function LeadsPage() {
                   padding: isMobile ? '10px 12px' : '10px 14px',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '62px' : '68px',
+                  minHeight: isMobile ? '58px' : '60px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -1228,6 +1177,7 @@ export default function LeadsPage() {
             >
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Inbound calls</div>
+                <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Calls captured from Chloe, ready for follow-up</div>
               </div>
 
               <div
@@ -1350,8 +1300,9 @@ export default function LeadsPage() {
                       gridTemplateColumns: '1fr',
                       gap: '12px',
                       alignItems: 'center',
-                      padding: isMobile ? '14px 16px' : '14px 20px',
+                      padding: isMobile ? '12px 14px' : '12px 16px',
                       borderBottom: `1px solid ${BORDER}`,
+                      borderLeft: `3px solid ${TEAL}`,
                       cursor: 'pointer',
                       transition: 'background 0.12s',
                     }}
@@ -1518,14 +1469,14 @@ export default function LeadsPage() {
                           justifySelf: isMobile ? 'start' : 'end',
                           fontSize: '11px',
                           fontWeight: 700,
-                          color: TEXT3,
+                          color: TEAL,
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        View & manage <IconArrow size={12} />
+                        Open <IconArrow size={12} />
                       </div>
                     </div>
                   </div>
