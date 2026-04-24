@@ -113,18 +113,12 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setStep('success')
   }
 
-  // Open link immediately (required for mobile Safari), then fire API
   async function handleReviewClick(url: string) {
     window.open(url, '_blank', 'noreferrer')
-    try {
-      await fetch('/api/review-click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_id: job.id }),
-      })
-    } catch {
-      // silent — link already opened
-    }
+    await supabase
+      .from('jobs')
+      .update({ review_link_clicked: true })
+      .eq('id', job.id)
   }
 
   function set(field: string, value: string) {
@@ -255,6 +249,12 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {reviewPlatforms.length === 0 && (
+            <div style={{ ...shellCard, padding: '20px', textAlign: 'center' }}>
+              <div style={{ fontSize: '13px', color: TEXT3 }}>No review links configured.</div>
             </div>
           )}
         </div>
