@@ -594,22 +594,15 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                 {statChips.map(chip => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ position: 'relative', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '14px 14px 12px', cursor: 'pointer', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = chip.accent }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = BORDER }}
+                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderTop: `2px solid ${chip.accent}` }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = chip.accentLight }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = WHITE }}
                   >
-                    {/* Left accent bar */}
-                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '3px', background: chip.accent, borderRadius: '14px 0 0 14px' }} />
-                    {/* Icon bubble */}
-                    <div style={{ width: 36, height: 36, borderRadius: '10px', background: chip.accentLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0, marginLeft: '6px' }}>{chip.icon}</div>
-                    {/* Text */}
-                    <div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{chip.value}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: chip.danger ? '#DC2626' : TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: '3px' }}>{chip.label}</div>
-                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: chip.danger ? '#DC2626' : TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '4px', lineHeight: 1.2 }}>{chip.label}</div>
                   </div>
                 ))}
               </div>
@@ -633,24 +626,18 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                 {statChips.map((chip) => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ position: 'relative', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', padding: '20px 20px 16px', cursor: 'pointer', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', transition: 'box-shadow 0.15s, border-color 0.15s, transform 0.15s' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = '0 8px 28px rgba(0,0,0,0.1)'; el.style.borderColor = chip.accent; el.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; el.style.borderColor = BORDER; el.style.transform = 'translateY(0)' }}
+                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${chip.accent}`, borderRadius: '10px', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.12s, box-shadow 0.12s' }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = chip.accentLight; el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.07)' }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = WHITE; el.style.boxShadow = 'none' }}
                   >
-                    {/* Top accent bar */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: chip.accent }} />
-                    {/* Icon + label row */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '10px', background: chip.accentLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>{chip.icon}</div>
-                      <span style={{ fontSize: '10px', fontWeight: 800, color: chip.accent, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{chip.label}</span>
+                    <div style={{ width: 30, height: 30, borderRadius: '8px', background: chip.accentLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>{chip.icon}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '2px' }}>{chip.label}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
                     </div>
-                    {/* Value */}
-                    <div style={{ fontSize: '36px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.06em', lineHeight: 1 }}>{chip.value}</div>
-                    {/* Sub label */}
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '5px' }}>{chip.sub}</div>
                   </div>
                 ))}
               </div>
