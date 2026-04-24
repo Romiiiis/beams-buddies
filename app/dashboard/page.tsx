@@ -437,15 +437,19 @@ export default function DashboardPage() {
   const [invoiceStats, setInvoiceStats] = useState({ outstanding: 0, overdueCount: 0, allInvoices: [] as any[] })
   const [allJobs,     setAllJobs]       = useState<any[]>([])
   const [allInvoices, setAllInvoices]   = useState<any[]>([])
+  const [userName,    setUserName]       = useState<string>('')
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await supabase.from('users').select('business_id, full_name').eq('id', session.user.id).single()
       if (!userData) { setLoading(false); return }
 
       const bid      = userData.business_id
+      // User's display name: prefer users.full_name, fall back to email prefix
+      const rawName = (userData as any).full_name || session.user.email?.split('@')[0] || ''
+      setUserName(rawName.split(' ')[0]) // first name only
       const todayLocal = startOfDay(new Date())
       const todayKey   = toYMD(todayLocal)
       const todayMs    = todayLocal.getTime()
@@ -578,7 +582,7 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
-                    {getGreeting()} 👋
+                    {getGreeting()}{userName ? `, ${userName}` : ''}
                   </h1>
                   <p style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, margin: '4px 0 0', lineHeight: 1.4 }}>
                     Here's what's happening across your business.
@@ -616,7 +620,7 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
-                    {getGreeting()} 👋
+                    {getGreeting()}{userName ? `, ${userName}` : ''}
                   </h1>
                   <p style={{ fontSize: '13px', color: TEXT3, fontWeight: 500, margin: '5px 0 0' }}>
                     Here's what's happening across your business.
