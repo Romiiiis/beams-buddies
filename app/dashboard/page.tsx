@@ -541,9 +541,9 @@ export default function DashboardPage() {
 
   const card: React.CSSProperties       = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
-  const btnDark: React.CSSProperties    = { height: '34px', padding: '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
+  const btnDark: React.CSSProperties    = { height: '34px', padding: '0 16px', border: `1px solid ${TEAL_DARK}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
   const btnMobileSm: React.CSSProperties   = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px', flex: 1 }
-  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEXT, border: `1px solid ${TEXT}`, color: WHITE }
+  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL_DARK}`, color: WHITE }
 
   if (loading) return (
     <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
