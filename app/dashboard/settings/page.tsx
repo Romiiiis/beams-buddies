@@ -315,18 +315,6 @@ export function Sidebar({ active }: { active: string }) {
           transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
           fontFamily: FONT,
         }}
-        onMouseEnter={e => {
-          if (!isActive) {
-            e.currentTarget.style.background = '#F8FAFC'
-            e.currentTarget.style.borderColor = BORDER
-          }
-        }}
-        onMouseLeave={e => {
-          if (!isActive) {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.borderColor = 'transparent'
-          }
-        }}
       >
         <span
           className="sidebar-icon"
@@ -357,9 +345,6 @@ export function Sidebar({ active }: { active: string }) {
               lineHeight: '18px',
               color: isActive ? TEAL_DARK : TEXT2,
               whiteSpace: 'nowrap',
-              textRendering: 'optimizeLegibility',
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale',
             }}
           >
             {item.label}
@@ -400,244 +385,205 @@ export function Sidebar({ active }: { active: string }) {
           }
         `}</style>
 
-        <>
-          {isMobileMenuOpen && (
-            <div
-              onClick={() => setIsMobileMenuOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(15, 23, 42, 0.28)',
-                zIndex: 109,
-              }}
-            />
-          )}
-
+        {isMobileMenuOpen && (
           <div
+            onClick={() => setIsMobileMenuOpen(false)}
             style={{
               position: 'fixed',
-              top: 12,
-              right: isMobileMenuOpen ? 12 : -320,
-              bottom: 84,
-              width: 268,
-              zIndex: 110,
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 18px 44px rgba(15,23,42,0.12)',
-              padding: 12,
-              transition: 'right 0.22s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              overflowY: 'auto',
-              fontFamily: FONT,
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.28)',
+              zIndex: 109,
+            }}
+          />
+        )}
+
+        <div
+          style={{
+            position: 'fixed',
+            top: 12,
+            right: isMobileMenuOpen ? 12 : -320,
+            bottom: 84,
+            width: 268,
+            zIndex: 110,
+            background: WHITE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 20,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 18px 44px rgba(15,23,42,0.12)',
+            padding: 12,
+            transition: 'right 0.22s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            fontFamily: FONT,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: TEXT3,
+              padding: '4px 6px 10px',
             }}
           >
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: TEXT3,
-                padding: '4px 6px 10px',
-              }}
-            >
-              Menu
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              {mobileMenuItems.map(item => {
-                const isActive = item.href === active
-
-                return (
-                  <button
-                    key={item.href}
-                    onClick={() => navigateTo(item.href)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      minHeight: 48,
-                      padding: '10px 12px',
-                      borderRadius: 14,
-                      border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
-                      background: isActive ? TEAL_SOFT : '#F8FAFC',
-                      color: isActive ? TEAL_DARK : TEXT2,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.04)' : 'none',
-                      fontFamily: FONT,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 10,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        lineHeight: 0,
-                        color: isActive ? TEAL : TEXT3,
-                        background: isActive ? WHITE : 'transparent',
-                      }}
-                    >
-                      {icons[item.href]}
-                    </span>
-
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: isActive ? 800 : 700,
-                        letterSpacing: '-0.01em',
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                  </button>
-                )
-              })}
-
-              <button
-                onClick={signOut}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  width: '100%',
-                  minHeight: 48,
-                  padding: '10px 12px',
-                  borderRadius: 14,
-                  border: `1px solid ${BORDER}`,
-                  background: '#F8FAFC',
-                  color: TEXT2,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  marginTop: 4,
-                  fontFamily: FONT,
-                }}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 10,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    lineHeight: 0,
-                    color: TEXT3,
-                  }}
-                >
-                  <LogoutIcon />
-                </span>
-
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: '-0.01em',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Sign out
-                </span>
-              </button>
-            </div>
+            Menu
           </div>
 
-          <div
-            style={{
-              position: 'fixed',
-              bottom: 10,
-              left: 10,
-              right: 10,
-              zIndex: 100,
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 18,
-              display: 'flex',
-              alignItems: 'stretch',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 -8px 28px rgba(15,23,42,0.08)',
-              overflow: 'hidden',
-            }}
-          >
-            {mobilePrimaryTabs.map(tab => {
-              const isActive = tab.href === active
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {mobileMenuItems.map(item => {
+              const isActive = item.href === active
 
               return (
-                <div
-                  key={tab.href}
-                  onClick={() => navigateTo(tab.href)}
-                  className="mobile-tab"
+                <button
+                  key={item.href}
+                  onClick={() => navigateTo(item.href)}
                   style={{
-                    color: isActive ? TEAL_DARK : TEXT3,
-                    background: isActive ? TEAL_SOFT : WHITE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    width: '100%',
+                    minHeight: 48,
+                    padding: '10px 12px',
+                    borderRadius: 14,
+                    border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
+                    background: isActive ? TEAL_SOFT : '#F8FAFC',
+                    color: isActive ? TEAL_DARK : TEXT2,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: FONT,
                   }}
                 >
-                  <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
-                    {icons[tab.href]}
+                  <span
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 10,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      lineHeight: 0,
+                      color: isActive ? TEAL : TEXT3,
+                      background: isActive ? WHITE : 'transparent',
+                    }}
+                  >
+                    {icons[item.href]}
                   </span>
 
                   <span
                     style={{
-                      fontSize: 10,
-                      fontWeight: isActive ? 800 : 650,
-                      lineHeight: 1.1,
+                      fontSize: 12,
+                      fontWeight: isActive ? 800 : 700,
                       letterSpacing: '-0.01em',
-                      textAlign: 'center',
-                      textRendering: 'optimizeLegibility',
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale',
+                      lineHeight: 1.2,
                     }}
                   >
-                    {tab.label}
+                    {item.label}
                   </span>
-                </div>
+                </button>
               )
             })}
 
-            <div
-              onClick={() => setIsMobileMenuOpen(prev => !prev)}
-              className="mobile-tab"
+            <button
+              onClick={signOut}
               style={{
-                color: isMobileMenuOpen ? TEAL_DARK : TEXT3,
-                background: isMobileMenuOpen ? TEAL_SOFT : WHITE,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                width: '100%',
+                minHeight: 48,
+                padding: '10px 12px',
+                borderRadius: 14,
+                border: `1px solid ${BORDER}`,
+                background: '#F8FAFC',
+                color: TEXT2,
+                cursor: 'pointer',
+                textAlign: 'left',
+                marginTop: 4,
+                fontFamily: FONT,
               }}
             >
-              <span className="mobile-tab-icon" style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}>
-                <MenuIcon />
-              </span>
+              <LogoutIcon />
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Sign out</span>
+            </button>
+          </div>
+        </div>
 
-              <span
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 10,
+            left: 10,
+            right: 10,
+            zIndex: 100,
+            background: WHITE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 18,
+            display: 'flex',
+            alignItems: 'stretch',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 -8px 28px rgba(15,23,42,0.08)',
+            overflow: 'hidden',
+          }}
+        >
+          {mobilePrimaryTabs.map(tab => {
+            const isActive = tab.href === active
+
+            return (
+              <div
+                key={tab.href}
+                onClick={() => navigateTo(tab.href)}
+                className="mobile-tab"
                 style={{
-                  fontSize: 10,
-                  fontWeight: isMobileMenuOpen ? 800 : 650,
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.01em',
-                  textAlign: 'center',
-                  textRendering: 'optimizeLegibility',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
+                  color: isActive ? TEAL_DARK : TEXT3,
+                  background: isActive ? TEAL_SOFT : WHITE,
                 }}
               >
-                Menu
-              </span>
-            </div>
+                <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
+                  {icons[tab.href]}
+                </span>
+
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: isActive ? 800 : 650,
+                    lineHeight: 1.1,
+                    letterSpacing: '-0.01em',
+                    textAlign: 'center',
+                  }}
+                >
+                  {tab.label}
+                </span>
+              </div>
+            )
+          })}
+
+          <div
+            onClick={() => setIsMobileMenuOpen(prev => !prev)}
+            className="mobile-tab"
+            style={{
+              color: isMobileMenuOpen ? TEAL_DARK : TEXT3,
+              background: isMobileMenuOpen ? TEAL_SOFT : WHITE,
+            }}
+          >
+            <span className="mobile-tab-icon" style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}>
+              <MenuIcon />
+            </span>
+
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: isMobileMenuOpen ? 800 : 650,
+                lineHeight: 1.1,
+                letterSpacing: '-0.01em',
+                textAlign: 'center',
+              }}
+            >
+              Menu
+            </span>
           </div>
-        </>
+        </div>
       </>
     )
   }
@@ -734,9 +680,6 @@ export function Sidebar({ active }: { active: string }) {
                     color: TEXT,
                     letterSpacing: '-0.03em',
                     lineHeight: 1.1,
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
                   }}
                 >
                   Jobyra
@@ -755,9 +698,6 @@ export function Sidebar({ active }: { active: string }) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     maxWidth: 156,
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
                   }}
                 >
                   {loading ? 'Loading...' : business?.name || 'Trade CRM'}
@@ -790,9 +730,6 @@ export function Sidebar({ active }: { active: string }) {
                   color: TEXT3,
                   padding: '12px 10px 5px',
                   lineHeight: 1.2,
-                  textRendering: 'optimizeLegibility',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
                 }}
               >
                 Finance
@@ -811,9 +748,6 @@ export function Sidebar({ active }: { active: string }) {
                   color: TEXT3,
                   padding: '12px 10px 5px',
                   lineHeight: 1.2,
-                  textRendering: 'optimizeLegibility',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
                 }}
               >
                 Manage
@@ -915,9 +849,6 @@ export function Sidebar({ active }: { active: string }) {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         letterSpacing: '-0.01em',
-                        textRendering: 'optimizeLegibility',
-                        WebkitFontSmoothing: 'antialiased',
-                        MozOsxFontSmoothing: 'grayscale',
                       }}
                     >
                       {loading ? 'Loading...' : business?.full_name || 'Owner'}
@@ -931,9 +862,6 @@ export function Sidebar({ active }: { active: string }) {
                         fontWeight: 650,
                         lineHeight: 1.2,
                         letterSpacing: '-0.01em',
-                        textRendering: 'optimizeLegibility',
-                        WebkitFontSmoothing: 'antialiased',
-                        MozOsxFontSmoothing: 'grayscale',
                       }}
                     >
                       {loading ? '' : business?.role_title || 'Owner'}
@@ -974,6 +902,174 @@ export function Sidebar({ active }: { active: string }) {
   )
 }
 
+function SettingsCard({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <section
+      style={{
+        background: WHITE,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 18,
+        padding: 16,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+        minHeight: 132,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
+      <div>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: 15,
+            fontWeight: 900,
+            letterSpacing: '-0.02em',
+            color: TEXT,
+            lineHeight: 1.2,
+          }}
+        >
+          {title}
+        </h2>
+
+        <p
+          style={{
+            margin: '8px 0 0',
+            fontSize: 12,
+            fontWeight: 600,
+            color: TEXT3,
+            lineHeight: 1.45,
+          }}
+        >
+          {description}
+        </p>
+      </div>
+
+      <button
+        style={{
+          marginTop: 16,
+          height: 38,
+          width: 'fit-content',
+          padding: '0 14px',
+          borderRadius: 12,
+          border: `1px solid ${BORDER}`,
+          background: '#F8FAFC',
+          color: TEXT2,
+          fontSize: 12,
+          fontWeight: 800,
+          cursor: 'pointer',
+          fontFamily: FONT,
+        }}
+      >
+        Manage
+      </button>
+    </section>
+  )
+}
+
 export default function SettingsPage() {
-  return <Sidebar active="/dashboard/settings" />
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: BG,
+        display: 'flex',
+        fontFamily: FONT,
+      }}
+    >
+      <Sidebar active="/dashboard/settings" />
+
+      <main
+        style={{
+          flex: 1,
+          minWidth: 0,
+          padding: '16px',
+          paddingBottom: 104,
+        }}
+      >
+        <section
+          style={{
+            background: WHITE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 18,
+            padding: 18,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: TEAL,
+            }}
+          >
+            Workspace
+          </p>
+
+          <h1
+            style={{
+              margin: '8px 0 0',
+              fontSize: 28,
+              fontWeight: 900,
+              letterSpacing: '-0.04em',
+              color: TEXT,
+              lineHeight: 1.05,
+            }}
+          >
+            Settings
+          </h1>
+
+          <p
+            style={{
+              margin: '8px 0 0',
+              fontSize: 13,
+              fontWeight: 600,
+              color: TEXT3,
+              lineHeight: 1.5,
+              maxWidth: 640,
+            }}
+          >
+            Manage your workspace, business details and account preferences.
+          </p>
+        </section>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: 14,
+            marginTop: 14,
+          }}
+        >
+          <SettingsCard
+            title="Business profile"
+            description="Update your business name, logo, contact details and workspace branding."
+          />
+
+          <SettingsCard
+            title="Account details"
+            description="Manage your owner profile, role title and account information."
+          />
+
+          <SettingsCard
+            title="Workspace preferences"
+            description="Control default CRM settings, page preferences and display options."
+          />
+
+          <SettingsCard
+            title="Security"
+            description="Review sign in settings, account access and session controls."
+          />
+        </div>
+      </main>
+    </div>
+  )
 }
