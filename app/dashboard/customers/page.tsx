@@ -705,15 +705,19 @@ export default function CustomersPage() {
             ))}
           </div>
 
+
           <div
             style={{
               ...card,
-              borderRadius: '16px',
+              borderRadius: '18px',
+              border: `1px solid ${BORDER}`,
+              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+              overflow: 'hidden',
             }}
           >
             <div
               style={{
-                padding: isMobile ? '16px' : '16px 20px',
+                padding: isMobile ? '16px' : '18px 20px',
                 borderBottom: `1px solid ${BORDER}`,
                 display: 'flex',
                 alignItems: isMobile ? 'stretch' : 'center',
@@ -724,10 +728,10 @@ export default function CustomersPage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <div style={{ width: 4, height: 38, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>Customer Directory</span>
+                    <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Customer Directory</span>
                     <span
                       style={{
                         height: '22px',
@@ -745,15 +749,15 @@ export default function CustomersPage() {
                       {filtered.length} shown
                     </span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>
-                    Search, open profiles, and track service status from one clean view.
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
+                    Detailed customer records with contact details, address, units, service timing, and review activity.
                   </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  width: isMobile ? '100%' : '320px',
+                  width: isMobile ? '100%' : '340px',
                   maxWidth: '100%',
                   position: 'relative',
                 }}
@@ -773,11 +777,11 @@ export default function CustomersPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search customers..."
+                  placeholder="Search customers, contact, suburb..."
                   style={{
-                    height: '40px',
+                    height: '42px',
                     width: '100%',
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     border: `1px solid ${BORDER}`,
                     padding: '0 12px 0 38px',
                     fontSize: '12px',
@@ -795,26 +799,28 @@ export default function CustomersPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px 92px 24px',
-                  gap: '12px',
+                  gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px',
+                  gap: '14px',
                   alignItems: 'center',
-                  padding: '10px 20px',
+                  padding: '11px 20px',
                   borderBottom: `1px solid ${BORDER}`,
                   background: '#FCFCFD',
                 }}
               >
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Customer
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Units
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Next service
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Status
-                </div>
+                {['Customer', 'Contact', 'Units', 'Next service', 'Status'].map((label) => (
+                  <div
+                    key={label}
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: TEXT3,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {label}
+                  </div>
+                ))}
                 <div />
               </div>
             )}
@@ -840,6 +846,19 @@ export default function CustomersPage() {
                     const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
                     return ad - bd
                   })[0]
+                const unitCount = c.jobs?.length || 0
+                const latestUnit = c.jobs?.[0]
+                const reviewCount = reviewClicks[c.id] || 0
+                const contactLine = c.email || c.phone || 'No contact saved'
+                const secondaryContact = c.email && c.phone ? c.phone : ''
+                const addressLine = c.address || c.suburb || 'No address saved'
+                const unitLine = latestUnit?.brand || latestUnit?.model ? `${latestUnit?.brand || ''} ${latestUnit?.model || ''}`.trim() : 'No unit details'
+                const serviceDate = nextJob?.next_service_date
+                  ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
+                      day: 'numeric',
+                      month: 'short',
+                    })
+                  : 'Not set'
 
                 return (
                   <div
@@ -849,25 +868,39 @@ export default function CustomersPage() {
                       display: 'grid',
                       gridTemplateColumns: isMobile
                         ? '1fr'
-                        : 'minmax(0,1.8fr) 90px 130px 92px 24px',
-                      gap: '12px',
-                      alignItems: 'center',
-                      padding: '14px 20px',
-                      borderBottom: `1px solid ${BORDER}`,
+                        : 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px',
+                      gap: isMobile ? '12px' : '14px',
+                      alignItems: isMobile ? 'stretch' : 'center',
+                      margin: '10px 12px',
+                      padding: isMobile ? '14px' : '14px 16px',
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: '14px',
+                      background: WHITE,
                       cursor: 'pointer',
-                      transition: 'background 0.12s',
+                      transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = WHITE)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#FCFCFD'
+                      e.currentTarget.style.borderColor = '#D5E6E4'
+                      e.currentTarget.style.boxShadow = '0 8px 22px rgba(15,23,42,0.07)'
+                      e.currentTarget.style.transform = 'translateY(-1px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = WHITE
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.boxShadow = 'none'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
                   >
                     {isMobile ? (
-                      <div style={{ display: 'grid', gap: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                      <div style={{ display: 'grid', gap: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                          <div style={{ width: 4, alignSelf: 'stretch', minHeight: 54, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div
                               style={{
-                                fontSize: '13px',
-                                fontWeight: 700,
+                                fontSize: '14px',
+                                fontWeight: 850,
                                 color: TEXT,
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
@@ -876,91 +909,44 @@ export default function CustomersPage() {
                             >
                               {c.first_name} {c.last_name}
                             </div>
-                            <div
-                              style={{
-                                fontSize: '11px',
-                                color: TEXT3,
-                                marginTop: '2px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {c.suburb || c.address || 'No suburb'}
+                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {contactLine}
+                            </div>
+                            {secondaryContact && <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px' }}>{secondaryContact}</div>}
+                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {addressLine}
                             </div>
                           </div>
 
-                          <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+                          <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0, marginTop: 2 }}>
                             <IconArrow size={12} />
                           </span>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                          <div
-                            style={{
-                              padding: '10px 11px',
-                              borderRadius: '12px',
-                              border: `1px solid ${BORDER}`,
-                              background: '#FCFCFD',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: 700,
-                                color: TEXT3,
-                                letterSpacing: '0.04em',
-                                textTransform: 'uppercase',
-                                marginBottom: '4px',
-                              }}
-                            >
+                          <div style={{ padding: '10px 11px', borderRadius: '12px', border: `1px solid ${BORDER}`, background: '#F8FAFC' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>
                               Units
                             </div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                              {c.jobs?.length || 0} unit{c.jobs?.length !== 1 ? 's' : ''}
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
+                              {unitCount} unit{unitCount === 1 ? '' : 's'}
+                            </div>
+                            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {unitLine}
                             </div>
                           </div>
 
-                          <div
-                            style={{
-                              padding: '10px 11px',
-                              borderRadius: '12px',
-                              border: `1px solid ${BORDER}`,
-                              background: '#FCFCFD',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: 700,
-                                color: TEXT3,
-                                letterSpacing: '0.04em',
-                                textTransform: 'uppercase',
-                                marginBottom: '4px',
-                              }}
-                            >
+                          <div style={{ padding: '10px 11px', borderRadius: '12px', border: `1px solid ${BORDER}`, background: '#F8FAFC' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>
                               Next service
                             </div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                              {nextJob?.next_service_date
-                                ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                  })
-                                : 'Not set'}
-                            </div>
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>{serviceDate}</div>
+                            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '3px' }}>{reviewCount} review click{reviewCount === 1 ? '' : 's'}</div>
                           </div>
                         </div>
 
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: '10px',
-                            flexWrap: 'wrap',
-                          }}
-                        >                          <span
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                          <span
                             style={{
                               background: s.bg,
                               color: s.color,
@@ -974,49 +960,47 @@ export default function CustomersPage() {
                           >
                             {s.label}
                           </span>
+                          <span style={{ fontSize: '11px', fontWeight: 750, color: TEAL_DARK }}>Open customer profile</span>
                         </div>
                       </div>
                     ) : (
                       <>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                          <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 850, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {c.first_name} {c.last_name}
+                            </div>
+                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {addressLine}
+                            </div>
+                            <div style={{ fontSize: '10px', fontWeight: 750, color: TEAL_DARK, marginTop: '5px' }}>
+                              {reviewCount} review click{reviewCount === 1 ? '' : 's'}
+                            </div>
+                          </div>
+                        </div>
+
                         <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 700,
-                              color: TEXT,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {c.first_name} {c.last_name}
+                          <div style={{ fontSize: '12px', fontWeight: 750, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {contactLine}
                           </div>
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              marginTop: '2px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {c.suburb || c.address || 'No suburb'}
+                          {secondaryContact && (
+                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {secondaryContact}
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
+                            {unitCount} unit{unitCount === 1 ? '' : 's'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {unitLine}
                           </div>
                         </div>
 
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                          {c.jobs?.length || 0}
-                        </div>
-
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                          {nextJob?.next_service_date
-                            ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
-                                day: 'numeric',
-                                month: 'short',
-                              })
-                            : 'Not set'}
-                        </div>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>{serviceDate}</div>
 
                         <div>
                           <span
@@ -1037,14 +1021,7 @@ export default function CustomersPage() {
                           </span>
                         </div>
 
-                        <div
-                          style={{
-                            color: TEXT3,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                          }}
-                        >
+                        <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                           <IconArrow size={12} />
                         </div>
                       </>
