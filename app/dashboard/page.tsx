@@ -17,24 +17,28 @@ const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
-// next_service_date is "YYYY-MM-DD". We always parse to LOCAL midnight to avoid
-// UTC-offset shifting a date to the wrong calendar day.
-
 function parseDateLocal(raw: string | null | undefined): Date | null {
   if (!raw) return null
-  const s = String(raw).slice(0, 10)           // handles "2026-04-25" and ISO timestamps
+  const s = String(raw).slice(0, 10)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null
   const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, m - 1, d)                  // local midnight — no UTC shift
+  return new Date(y, m - 1, d)
 }
 
 function startOfDay(d: Date): Date {
   const c = new Date(d); c.setHours(0, 0, 0, 0); return c
 }
 
-// "YYYY-MM-DD" from a local Date — identical format to Supabase column
 function toYMD(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// ── Greeting helper ───────────────────────────────────────────────────────────
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -157,7 +161,6 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
       return { label, total }
     }
     if (metric === 'jobs') {
-      // Jobs analytics: count by created_at (when the job record was added)
       const total = allJobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d >= start && d < end }).length
       return { label, total }
     }
@@ -303,8 +306,6 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
   const [viewYear,  setViewYear]  = useState(todayDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth())
 
-  // Build map: "YYYY-MM-DD" → jobs[]  keyed by next_service_date
-  // parseDateLocal → toYMD guarantees the key format is identical to cell dateKeys below.
   const jobsByDate = useMemo(() => {
     const map: Record<string, any[]> = {}
     jobs.forEach(job => {
@@ -322,7 +323,6 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
 
   const todayJobs = jobsByDate[todayKey] || []
 
-  // Sunday-start grid — cell dateKey uses toYMD(new Date(y,m,d)) for exact match
   const firstDayOffset = new Date(viewYear, viewMonth, 1).getDay()
   const daysInMonth    = new Date(viewYear, viewMonth + 1, 0).getDate()
   const cells: { day: number | null; dateKey: string | null; colIndex: number }[] = []
@@ -464,16 +464,9 @@ export default function DashboardPage() {
       const jobs: any[]     = jobsRes.data     || []
       const invoices: any[] = invoicesRes.data || []
 
-      // ── Counts keyed on next_service_date ──────────────────────────────
       const overdue = jobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() < todayMs })
-
-      // jobsToday: simple string prefix match — fastest and unambiguous
       const jobsToday = jobs.filter(j => j.next_service_date && String(j.next_service_date).slice(0, 10) === todayKey).length
-
-      // jobsThisMonth: jobs whose record was CREATED this calendar month
       const jobsThisMonth = jobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear }).length
-
-      // upcoming: next_service_date >= today, already sorted asc by Supabase
       const upcomingJobs = jobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() >= todayMs })
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
@@ -503,7 +496,6 @@ export default function DashboardPage() {
     const d = parseDateLocal(raw); return d ? d >= from && d < to : false
   }
 
-  // Jobs stat: bucketed by created_at (record creation date)
   const jobsCurrMonth = useMemo(() => allJobs.filter(j => inRange(j.created_at, startCurrMonth, startNextMonth)).length, [allJobs])
   const jobsPrevMonth = useMemo(() => allJobs.filter(j => inRange(j.created_at, startPrevMonth, startCurrMonth)).length, [allJobs])
 
@@ -520,7 +512,6 @@ export default function DashboardPage() {
   const currConv = currWin.length > 0 ? Math.round((currWin.filter(i => i.status === 'paid').length / currWin.length) * 100) : 0
   const prevConv = prevWin.length > 0 ? Math.round((prevWin.filter(i => i.status === 'paid').length / prevWin.length) * 100) : 0
 
-  // Sparklines
   const jobsSpark = useMemo(() => {
     const base = Array(12).fill(0)
     allJobs.forEach(j => { const d = parseDateLocal(j.next_service_date); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1 })
@@ -557,6 +548,14 @@ export default function DashboardPage() {
     </div>
   )
 
+  // ── Stat chips config ─────────────────────────────────────────────────────
+  const statChips = [
+    { label: 'Customers',  value: stats.customers,   sub: 'total',        onClick: () => router.push('/dashboard/customers') },
+    { label: 'Scheduled',  value: scheduledCount,    sub: 'upcoming jobs', onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Today',      value: stats.jobsToday,   sub: 'jobs today',   onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Overdue',    value: stats.overdue,      sub: 'need attention', onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
+  ]
+
   return (
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
@@ -570,68 +569,88 @@ export default function DashboardPage() {
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '0' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px' }}>
 
           {/* ── Header ── */}
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', background: WHITE }}>
-              <div style={{ padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}`, paddingBottom: '16px' }}>
+              {/* Greeting row */}
+              <div style={{ padding: '20px 16px 14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Dashboard</h1>
+                  <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
+                    {getGreeting()} 👋
+                  </h1>
+                  <p style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Here's what's happening across your business.
+                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                  {([['Customers', stats.customers], ['Scheduled', scheduledCount], ['Today', stats.jobsToday]] as [string, number][]).map(([label, val], i) => (
-                    <React.Fragment key={label}>
-                      {i > 0 && <div style={{ width: 1, height: 30, background: BORDER }} />}
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>{label}</div>
-                      </div>
-                    </React.Fragment>
-                  ))}
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0, marginTop: '2px' }}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /></button>
+                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /></button>
                 </div>
               </div>
-              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconPlus size={12} /> Add Job</button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconCalendar size={12} /> Schedule</button>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /> Revenue</button>
-                </div>
+              {/* Stat chips */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', padding: '0 16px' }}>
+                {statChips.map(chip => (
+                  <div key={chip.label} onClick={chip.onClick} style={{ background: chip.danger ? '#FFF5F5' : '#F8FAFC', border: `1px solid ${chip.danger ? '#FECACA' : BORDER}`, borderRadius: '12px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: chip.danger ? '#B91C1C' : TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: '8px', padding: '12px 16px 0' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconCalendar size={12} /> Schedule</button>
+                <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}><IconArrow size={12} /> Customers</button>
               </div>
             </div>
           ) : (
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', flexShrink: 0, marginRight: 20 }} />
-                <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Dashboard</h1>
+              {/* Top row: greeting + actions */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px' }}>
+                <div>
+                  <h1 style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
+                    {getGreeting()} 👋
+                  </h1>
+                  <p style={{ fontSize: '13px', color: TEXT3, fontWeight: 500, margin: '4px 0 0' }}>
+                    Here's what's happening across your business.
+                  </p>
                 </div>
-                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {([['Customers', stats.customers], ['Scheduled', scheduledCount], ['Today', stats.jobsToday]] as [string, number][]).map(([label, val], i) => (
-                    <React.Fragment key={label}>
-                      {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
-                      <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>{label}</div>
-                      </div>
-                    </React.Fragment>
-                  ))}
-                </div>
-                <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconPlus size={12} /> Add Job</button>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconCalendar size={12} /> Schedule</button>
                   <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
+              {/* Stat chips row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: `1px solid ${BORDER}` }}>
+                {statChips.map((chip, i) => (
+                  <div key={chip.label} onClick={chip.onClick} style={{ padding: '14px 20px', borderRight: i < statChips.length - 1 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', transition: 'background 0.12s', display: 'flex', alignItems: 'center', gap: '14px' }} onMouseEnter={e => (e.currentTarget.style.background = chip.danger ? '#FFF5F5' : '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+                    <div>
+                      <div style={{ fontSize: '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{chip.value}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#B91C1C' : TEXT3, marginTop: '3px' }}>{chip.sub}</div>
+                    </div>
+                    {i === 0 && chip.value > 0 && (
+                      <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 700, color: TEAL, background: TEAL_LIGHT, padding: '3px 8px', borderRadius: '20px' }}>
+                        {chip.label}
+                      </span>
+                    )}
+                    {chip.danger && chip.value > 0 && (
+                      <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 700, color: '#991B1B', background: '#FEE2E2', padding: '3px 8px', borderRadius: '20px' }}>
+                        Action needed
+                      </span>
+                    )}
+                    {!chip.danger && i !== 0 && (
+                      <span style={{ marginLeft: 'auto', fontSize: '18px', opacity: 0.12 }}>→</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {/* ── Stat cards ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+          <div style={{ padding: isMobile ? '0 12px' : '0', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map(sc => (
               <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -660,10 +679,12 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
+          <div style={{ padding: isMobile ? '0 12px' : '0' }}>
+            <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
+          </div>
 
           {/* ── Lower section ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
+          <div style={{ padding: isMobile ? '0 12px' : '0', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
 
             {/* Left column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
