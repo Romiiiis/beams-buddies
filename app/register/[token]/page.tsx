@@ -70,7 +70,6 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
         phone: data.customers?.phone || '',
       })
 
-      // Use job.business_id directly instead of data.businesses.id
       if (data.business_id) {
         const { data: s } = await supabase
           .from('business_settings')
@@ -114,7 +113,9 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setStep('success')
   }
 
+  // Open link immediately (required for mobile Safari), then fire API
   async function handleReviewClick(url: string) {
+    window.open(url, '_blank', 'noreferrer')
     try {
       await fetch('/api/review-click', {
         method: 'POST',
@@ -122,9 +123,8 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
         body: JSON.stringify({ job_id: job.id }),
       })
     } catch {
-      // Non-blocking — open the review link regardless
+      // silent — link already opened
     }
-    window.open(url, '_blank', 'noreferrer')
   }
 
   function set(field: string, value: string) {
