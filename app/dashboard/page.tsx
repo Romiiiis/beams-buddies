@@ -554,10 +554,10 @@ export default function DashboardPage() {
 
   // ── Stat chips config ─────────────────────────────────────────────────────
   const statChips = [
-    { label: 'Customers', value: stats.customers, sub: 'total',          onClick: () => router.push('/dashboard/customers') },
-    { label: 'Scheduled', value: scheduledCount,  sub: 'upcoming jobs',  onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Today',     value: stats.jobsToday, sub: 'jobs today',     onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Overdue',   value: stats.overdue,   sub: 'need attention', onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
+    { label: 'Total Customers', value: stats.customers, sub: 'in your database',   onClick: () => router.push('/dashboard/customers') },
+    { label: 'Upcoming Jobs',   value: scheduledCount,  sub: 'scheduled ahead',    onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Jobs Today',      value: stats.jobsToday, sub: 'on the schedule',    onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Overdue Jobs',    value: stats.overdue,   sub: 'need rescheduling',  onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
   ]
 
   return (
@@ -602,7 +602,7 @@ export default function DashboardPage() {
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = WHITE }}
                   >
                     <div style={{ fontSize: '20px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: chip.danger ? '#DC2626' : TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '4px', lineHeight: 1.2 }}>{chip.label}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
                   </div>
                 ))}
               </div>
@@ -634,8 +634,8 @@ export default function DashboardPage() {
                     onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = WHITE; el.style.boxShadow = 'none' }}
                   >
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '2px' }}>{chip.label}</div>
                       <div style={{ fontSize: '22px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '3px' }}>{chip.label}</div>
                     </div>
                   </div>
                 ))}
