@@ -255,15 +255,15 @@ export default function AddJobPage() {
     whiteSpace: 'nowrap',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    border: `1px solid ${TEAL}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -291,10 +291,10 @@ export default function AddJobPage() {
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobileTeal: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -422,7 +422,7 @@ export default function AddJobPage() {
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                     <IconArrowLeft size={13} /> Back
                   </button>
-                  <button form="job-form" type="submit" disabled={loading} style={btnMobileDark}>
+                  <button form="job-form" type="submit" disabled={loading} style={btnMobileTeal}>
                     {loading ? 'Saving...' : 'Save job'}
                   </button>
                 </div>
@@ -468,7 +468,7 @@ export default function AddJobPage() {
                     <IconArrowLeft size={13} /> Back to jobs
                   </button>
 
-                  <button form="job-form" type="submit" disabled={loading} style={btnDark}>
+                  <button form="job-form" type="submit" disabled={loading} style={btnTeal}>
                     <IconSpark size={14} />
                     {loading ? 'Saving...' : 'Save job'}
                   </button>
@@ -516,9 +516,9 @@ export default function AddJobPage() {
                     alignItems: 'center',
                     padding: '7px 10px',
                     borderRadius: '999px',
-                    background: '#F8FAFC',
-                    border: `1px solid ${BORDER}`,
-                    color: TEXT3,
+                    background: '#E6F7F6',
+                    border: `1px solid #BFE7E3`,
+                    color: TEAL_DARK,
                     fontSize: '11px',
                     fontWeight: 800,
                   }}
@@ -576,7 +576,7 @@ export default function AddJobPage() {
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={iconWrapStep(TEXT)}>
+                      <div style={iconWrapStep(TEAL_DARK)}>
                         <IconJob size={18} />
                       </div>
                       <div>
