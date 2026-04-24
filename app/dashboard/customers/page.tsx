@@ -708,34 +708,51 @@ export default function CustomersPage() {
           <div
             style={{
               ...card,
-              borderRadius: '16px',
+              borderRadius: '18px',
+              border: `1px solid ${BORDER}`,
+              boxShadow: '0 10px 28px rgba(15,23,42,0.06)',
             }}
           >
             <div
               style={{
-                padding: isMobile ? '16px' : '16px 20px',
+                padding: isMobile ? '16px' : '18px 20px',
                 borderBottom: `1px solid ${BORDER}`,
                 display: 'flex',
                 alignItems: isMobile ? 'stretch' : 'center',
                 justifyContent: 'space-between',
                 flexDirection: isMobile ? 'column' : 'row',
                 gap: '14px',
-                background: WHITE,
+                background: `linear-gradient(135deg, ${WHITE} 0%, ${TEAL_LIGHT} 100%)`,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <div style={{ width: 4, height: 38, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '14px',
+                    background: TEAL,
+                    color: WHITE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 8px 18px rgba(31,158,148,0.22)',
+                  }}
+                >
+                  <IconSearch size={18} />
+                </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>Customer Directory</span>
+                    <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Customer Directory</span>
                     <span
                       style={{
                         height: '22px',
                         padding: '0 8px',
                         borderRadius: '999px',
-                        border: `1px solid ${BORDER}`,
-                        background: '#F8FAFC',
-                        color: TEXT3,
+                        border: `1px solid #BFE7E3`,
+                        background: WHITE,
+                        color: TEAL_DARK,
                         fontSize: '10px',
                         fontWeight: 800,
                         display: 'inline-flex',
@@ -745,8 +762,8 @@ export default function CustomersPage() {
                       {filtered.length} shown
                     </span>
                   </div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>
-                    Search, open profiles, and track service status from one clean view.
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
+                    A cleaner customer list with service status, linked units, and profile access.
                   </div>
                 </div>
               </div>
@@ -775,13 +792,13 @@ export default function CustomersPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search customers..."
                   style={{
-                    height: '40px',
+                    height: '42px',
                     width: '100%',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
+                    borderRadius: '12px',
+                    border: `1px solid #D8EAE8`,
                     padding: '0 12px 0 38px',
                     fontSize: '12px',
-                    background: '#F8FAFC',
+                    background: WHITE,
                     color: TEXT,
                     fontFamily: FONT,
                     outline: 'none',
@@ -795,12 +812,12 @@ export default function CustomersPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px 92px 24px',
-                  gap: '12px',
+                  gridTemplateColumns: 'minmax(0,1.8fr) 100px 140px 110px 28px',
+                  gap: '14px',
                   alignItems: 'center',
-                  padding: '10px 20px',
+                  padding: '11px 20px',
                   borderBottom: `1px solid ${BORDER}`,
-                  background: '#FCFCFD',
+                  background: '#FBFDFD',
                 }}
               >
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
@@ -840,6 +857,7 @@ export default function CustomersPage() {
                     const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
                     return ad - bd
                   })[0]
+                const initials = `${c.first_name?.[0] || ''}${c.last_name?.[0] || ''}`.toUpperCase() || 'C'
 
                 return (
                   <div
@@ -849,20 +867,51 @@ export default function CustomersPage() {
                       display: 'grid',
                       gridTemplateColumns: isMobile
                         ? '1fr'
-                        : 'minmax(0,1.8fr) 90px 130px 92px 24px',
-                      gap: '12px',
+                        : 'minmax(0,1.8fr) 100px 140px 110px 28px',
+                      gap: '14px',
                       alignItems: 'center',
-                      padding: '14px 20px',
-                      borderBottom: `1px solid ${BORDER}`,
+                      margin: '10px 12px',
+                      padding: isMobile ? '14px' : '14px 16px',
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: '14px',
+                      background: WHITE,
                       cursor: 'pointer',
-                      transition: 'background 0.12s',
+                      transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = WHITE)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#FBFDFD'
+                      e.currentTarget.style.borderColor = '#BFE7E3'
+                      e.currentTarget.style.boxShadow = '0 8px 22px rgba(15,23,42,0.07)'
+                      e.currentTarget.style.transform = 'translateY(-1px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = WHITE
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.boxShadow = 'none'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
                   >
                     {isMobile ? (
                       <div style={{ display: 'grid', gap: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 38,
+                              height: 38,
+                              borderRadius: '13px',
+                              background: TEAL_LIGHT,
+                              color: TEAL_DARK,
+                              border: '1px solid #BFE7E3',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 900,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {initials}
+                          </div>
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div
                               style={{
@@ -901,7 +950,7 @@ export default function CustomersPage() {
                               padding: '10px 11px',
                               borderRadius: '12px',
                               border: `1px solid ${BORDER}`,
-                              background: '#FCFCFD',
+                              background: '#F8FAFC',
                             }}
                           >
                             <div
@@ -926,7 +975,7 @@ export default function CustomersPage() {
                               padding: '10px 11px',
                               borderRadius: '12px',
                               border: `1px solid ${BORDER}`,
-                              background: '#FCFCFD',
+                              background: '#F8FAFC',
                             }}
                           >
                             <div
@@ -978,30 +1027,50 @@ export default function CustomersPage() {
                       </div>
                     ) : (
                       <>
-                        <div style={{ minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                           <div
                             style={{
-                              fontSize: '13px',
-                              fontWeight: 700,
-                              color: TEXT,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              width: 38,
+                              height: 38,
+                              borderRadius: '13px',
+                              background: TEAL_LIGHT,
+                              color: TEAL_DARK,
+                              border: '1px solid #BFE7E3',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 900,
+                              flexShrink: 0,
                             }}
                           >
-                            {c.first_name} {c.last_name}
+                            {initials}
                           </div>
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              marginTop: '2px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {c.suburb || c.address || 'No suburb'}
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                color: TEXT,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.first_name} {c.last_name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                color: TEXT3,
+                                marginTop: '2px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {c.suburb || c.address || 'No suburb'}
+                            </div>
                           </div>
                         </div>
 
