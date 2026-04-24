@@ -398,21 +398,21 @@ export default function CustomersPage() {
     transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnTeal: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    padding: '0 14px',
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
     transition: 'opacity 0.12s',
   }
@@ -435,10 +435,10 @@ export default function CustomersPage() {
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobileTeal: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -557,35 +557,6 @@ export default function CustomersPage() {
                     Customers
                   </h1>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.totalCustomers}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Customers
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.totalUnits}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Units
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 30, background: BORDER }} />
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.overdue}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                      Overdue
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
@@ -593,7 +564,7 @@ export default function CustomersPage() {
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                     <IconSpark size={12} /> Add Job
                   </button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileDark}>
+                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>
                     View Jobs
                   </button>
                 </div>
@@ -630,37 +601,6 @@ export default function CustomersPage() {
                   </h1>
                 </div>
 
-                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.totalCustomers}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
-                      Customers
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
-                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.totalUnits}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
-                      Units
-                    </div>
-                  </div>
-                  <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />
-                  <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {stats.overdue}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>
-                      Overdue
-                    </div>
-                  </div>
-                </div>
-
                 <div style={{ flex: 1 }} />
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
@@ -680,7 +620,7 @@ export default function CustomersPage() {
                   </button>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
-                    style={btnDark}
+                    style={btnTeal}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
@@ -765,30 +705,55 @@ export default function CustomersPage() {
             ))}
           </div>
 
-          <div style={card}>
+          <div
+            style={{
+              ...card,
+              borderRadius: '16px',
+            }}
+          >
             <div
               style={{
-                padding: '14px 20px',
+                padding: isMobile ? '16px' : '16px 20px',
                 borderBottom: `1px solid ${BORDER}`,
                 display: 'flex',
                 alignItems: isMobile ? 'stretch' : 'center',
                 justifyContent: 'space-between',
                 flexDirection: isMobile ? 'column' : 'row',
-                gap: '12px',
+                gap: '14px',
+                background: WHITE,
               }}
             >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer Directory</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}>
-                    <IconInfo size={13} />
-                  </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <div style={{ width: 4, height: 38, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>Customer Directory</span>
+                    <span
+                      style={{
+                        height: '22px',
+                        padding: '0 8px',
+                        borderRadius: '999px',
+                        border: `1px solid ${BORDER}`,
+                        background: '#F8FAFC',
+                        color: TEXT3,
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {filtered.length} shown
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>
+                    Search, open profiles, and track service status from one clean view.
+                  </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  width: isMobile ? '100%' : '300px',
+                  width: isMobile ? '100%' : '320px',
                   maxWidth: '100%',
                   position: 'relative',
                 }}
@@ -816,10 +781,11 @@ export default function CustomersPage() {
                     border: `1px solid ${BORDER}`,
                     padding: '0 12px 0 38px',
                     fontSize: '12px',
-                    background: WHITE,
+                    background: '#F8FAFC',
                     color: TEXT,
                     fontFamily: FONT,
                     outline: 'none',
+                    fontWeight: 600,
                   }}
                 />
               </div>
@@ -829,7 +795,7 @@ export default function CustomersPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
+                  gridTemplateColumns: 'minmax(0,1.8fr) 90px 130px 92px 24px',
                   gap: '12px',
                   alignItems: 'center',
                   padding: '10px 20px',
@@ -845,9 +811,6 @@ export default function CustomersPage() {
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   Next service
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Review activity
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   Status
@@ -870,7 +833,6 @@ export default function CustomersPage() {
             ) : (
               filtered.map((c) => {
                 const s = statusPill(c.jobs)
-                const clicks = reviewClicks[c.id] || 0
                 const nextJob = [...(c.jobs || [])]
                   .filter((j: any) => j?.next_service_date)
                   .sort((a: any, b: any) => {
@@ -887,7 +849,7 @@ export default function CustomersPage() {
                       display: 'grid',
                       gridTemplateColumns: isMobile
                         ? '1fr'
-                        : 'minmax(0,1.8fr) 90px 130px minmax(0,1.2fr) 92px 24px',
+                        : 'minmax(0,1.8fr) 90px 130px 92px 24px',
                       gap: '12px',
                       alignItems: 'center',
                       padding: '14px 20px',
@@ -998,16 +960,7 @@ export default function CustomersPage() {
                             gap: '10px',
                             flexWrap: 'wrap',
                           }}
-                        >
-                          <div style={{ fontSize: '11px', color: TEXT3 }}>
-                            {totalPlatforms > 0
-                              ? clicks > 0
-                                ? `${clicks}/${totalPlatforms} review clicks`
-                                : 'No review clicks'
-                              : 'No review platforms connected'}
-                          </div>
-
-                          <span
+                        >                          <span
                             style={{
                               background: s.bg,
                               color: s.color,
@@ -1063,23 +1016,6 @@ export default function CustomersPage() {
                                 month: 'short',
                               })
                             : 'Not set'}
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: TEXT3,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {totalPlatforms > 0
-                            ? clicks > 0
-                              ? `${clicks}/${totalPlatforms} platform clicks`
-                              : 'No review clicks'
-                            : 'No platforms connected'}
                         </div>
 
                         <div>
