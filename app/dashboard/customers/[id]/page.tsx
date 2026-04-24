@@ -15,7 +15,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe U I", sans-serif'
 
 const TYPE = {
   label: {
@@ -294,7 +294,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       if (jobsError) throw new Error(`Delete jobs: ${jobsError.message}`)
 
       const { error: customerError } = await supabase.from('customers').delete().eq('id', id)
-      if (customerError) throw new Error(`Delete customer: ${customerError.message}`)
+      if (customerError) throw new Error(`Delete: ${customerError.message}`)
 
       router.push('/dashboard/customers')
     } catch (err: any) {
@@ -404,15 +404,15 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    border: `1px solid ${TEAL}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -441,10 +441,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobileTeal: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -588,13 +588,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
                   <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
                     <IconSpark size={12} />
-                    Add Job
+                    Add job
                   </button>
                   <button onClick={() => setEditingCustomer(true)} style={btnMobileSm}>
                     <IconEdit size={12} />
                     Edit
                   </button>
-                  <button onClick={() => setShowDeleteConfirm(true)} style={btnMobileDark}>
+                  <button onClick={() => setShowDeleteConfirm(true)} style={btnMobileTeal}>
                     <IconTrash size={12} />
                     Delete
                   </button>
@@ -677,7 +677,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     }}
                   >
                     <IconSpark size={12} />
-                    Add Job
+                    Add job
                   </button>
 
                   <button
@@ -698,7 +698,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    style={btnDark}
+                    style={btnTeal}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
@@ -707,7 +707,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     }}
                   >
                     <IconTrash size={12} />
-                    Delete customer
+                    Delete
                   </button>
                 </div>
               </div>
