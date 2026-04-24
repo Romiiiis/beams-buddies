@@ -113,6 +113,20 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setStep('success')
   }
 
+  // Called when customer taps a review platform link
+  async function handleReviewClick(url: string) {
+    try {
+      await fetch('/api/review-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: job.id }),
+      })
+    } catch {
+      // Non-blocking — open the review link regardless
+    }
+    window.open(url, '_blank', 'noreferrer')
+  }
+
   function set(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
@@ -146,25 +160,8 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
 
   if (step === 'loading') {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: BG,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px',
-          fontFamily: FONT,
-        }}
-      >
-        <div
-          style={{
-            ...shellCard,
-            padding: '36px 40px',
-            textAlign: 'center',
-            minWidth: '280px',
-          }}
-        >
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FONT }}>
+        <div style={{ ...shellCard, padding: '36px 40px', textAlign: 'center', minWidth: '280px' }}>
           <div style={{ ...TYPE.titleSm, fontSize: '14px', marginBottom: '6px' }}>Loading registration</div>
           <div style={TYPE.bodySm}>Please wait a moment…</div>
         </div>
@@ -174,68 +171,16 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
 
   if (step === 'error') {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: BG,
-          fontFamily: FONT,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            background: HEADER_BG,
-            padding: '20px 24px 18px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
-            Service registration
-          </div>
-          <div
-            style={{
-              fontSize: '34px',
-              lineHeight: 1,
-              letterSpacing: '-0.04em',
-              fontWeight: 900,
-              color: '#FFFFFF',
-              marginBottom: '8px',
-            }}
-          >
-            QR code not found
-          </div>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: 'rgba(255,255,255,0.72)',
-              maxWidth: '760px',
-            }}
-          >
+      <div style={{ minHeight: '100vh', background: BG, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: HEADER_BG, padding: '20px 24px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>Service registration</div>
+          <div style={{ fontSize: '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: '#FFFFFF', marginBottom: '8px' }}>QR code not found</div>
+          <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
             This registration link looks invalid or may have expired.
           </div>
         </div>
-
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-          }}
-        >
-          <div
-            style={{
-              ...shellCard,
-              maxWidth: '420px',
-              width: '100%',
-              padding: '28px',
-              textAlign: 'center',
-            }}
-          >
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div style={{ ...shellCard, maxWidth: '420px', width: '100%', padding: '28px', textAlign: 'center' }}>
             <div style={{ ...TYPE.titleSm, fontSize: '18px', marginBottom: '10px' }}>Invalid registration link</div>
             <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
               Please contact the business directly and ask for a new QR code.
@@ -254,61 +199,20 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     ]
 
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: BG,
-          fontFamily: FONT,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            background: HEADER_BG,
-            padding: '20px 24px 18px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
+      <div style={{ minHeight: '100vh', background: BG, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: HEADER_BG, padding: '20px 24px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
             {job?.businesses?.name || 'TradeLink'}
           </div>
-          <div
-            style={{
-              fontSize: '34px',
-              lineHeight: 1,
-              letterSpacing: '-0.04em',
-              fontWeight: 900,
-              color: '#FFFFFF',
-              marginBottom: '8px',
-            }}
-          >
-            You’re registered
+          <div style={{ fontSize: '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: '#FFFFFF', marginBottom: '8px' }}>
+            You're registered
           </div>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: 'rgba(255,255,255,0.72)',
-              maxWidth: '760px',
-            }}
-          >
-            You’ll receive service reminders automatically for this installation.
+          <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
+            You'll receive service reminders automatically for this installation.
           </div>
         </div>
 
-        <div
-          style={{
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            maxWidth: '520px',
-            width: '100%',
-            margin: '0 auto',
-          }}
-        >
+        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '520px', width: '100%', margin: '0 auto' }}>
           <div style={{ ...shellCard, padding: '24px', textAlign: 'center' }}>
             <div style={{ ...TYPE.label, color: TEAL, marginBottom: '8px' }}>Registration complete</div>
             <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, marginBottom: '8px' }}>
@@ -321,37 +225,34 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
 
           {reviewPlatforms.length > 0 && (
             <div style={{ ...shellCard, padding: '24px' }}>
-              <div style={{ ...TYPE.label, color: TEAL, marginBottom: '8px' }}>Review links</div>
+              <div style={{ ...TYPE.label, color: TEAL, marginBottom: '8px' }}>Leave a review</div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT, marginBottom: '6px' }}>
-                Leave a review
+                How was your experience?
               </div>
               <div style={{ fontSize: '13px', color: TEXT3, lineHeight: 1.6, marginBottom: '14px' }}>
-                Your feedback helps the business and may count toward any configured review offer.
+                A quick review makes a huge difference — it only takes 30 seconds.
               </div>
 
               <div style={{ display: 'grid', gap: '8px' }}>
                 {reviewPlatforms.map(platform => (
-                  <a
+                  <button
                     key={platform.id}
-                    href={platform.url}
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => handleReviewClick(platform.url)}
                     style={{
-                      height: '42px',
+                      height: '44px',
                       borderRadius: '10px',
                       border: `1px solid ${BORDER}`,
-                      background: WHITE,
-                      color: TEXT2,
+                      background: platform.id === 'google' ? TEAL : WHITE,
+                      color: platform.id === 'google' ? WHITE : TEXT2,
                       fontSize: '13px',
                       fontWeight: 700,
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontFamily: FONT,
+                      width: '100%',
                     }}
                   >
-                    {platform.name}
-                  </a>
+                    Leave a review on {platform.name}
+                  </button>
                 ))}
               </div>
             </div>
@@ -362,63 +263,20 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: BG,
-        fontFamily: FONT,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          background: HEADER_BG,
-          padding: '20px 24px 18px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-        }}
-      >
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: FONT, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: HEADER_BG, padding: '20px 24px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <div style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.68)', marginBottom: '5px' }}>
           {job?.businesses?.name || 'TradeLink'}
         </div>
-
-        <div
-          style={{
-            fontSize: '34px',
-            lineHeight: 1,
-            letterSpacing: '-0.04em',
-            fontWeight: 900,
-            color: '#FFFFFF',
-            marginBottom: '8px',
-          }}
-        >
+        <div style={{ fontSize: '34px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: '#FFFFFF', marginBottom: '8px' }}>
           Service registration
         </div>
-
-        <div
-          style={{
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: 1.5,
-            color: 'rgba(255,255,255,0.72)',
-            maxWidth: '760px',
-          }}
-        >
+        <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.5, color: 'rgba(255,255,255,0.72)', maxWidth: '760px' }}>
           Confirm your details so the business can send you future service reminders and keep your installation on file.
         </div>
       </div>
 
-      <div
-        style={{
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          maxWidth: '520px',
-          width: '100%',
-          margin: '0 auto',
-        }}
-      >
+      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '520px', width: '100%', margin: '0 auto' }}>
         <div style={{ ...shellCard, padding: '20px' }}>
           <div style={{ ...TYPE.label, color: TEAL, marginBottom: '6px' }}>Registered unit</div>
           <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT, marginBottom: '4px' }}>
@@ -443,7 +301,6 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
                 <label style={label}>First name</label>
                 <input style={input} value={form.first_name} onChange={e => set('first_name', e.target.value)} />
               </div>
-
               <div>
                 <label style={label}>Last name</label>
                 <input style={input} value={form.last_name} onChange={e => set('last_name', e.target.value)} />

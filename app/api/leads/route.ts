@@ -8,31 +8,23 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const { job_id } = await request.json()
 
-    const { data, error } = await supabase
-      .from('leads')
-      .insert([
-        {
-          customer_name: body.customer_name,
-          phone_number: body.phone_number,
-          address: body.address,
-          suburb: body.suburb,
-          job_type: body.job_type,
-          issue_summary: body.issue_summary,
-          preferred_date: body.preferred_date,
-          preferred_start_time: body.preferred_start_time,
-          status: body.status,
-          created_at: body.created_at || new Date().toISOString(),
-        }
-      ])
+    if (!job_id) {
+      return NextResponse.json({ error: 'Missing job_id' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('jobs')
+      .update({ review_link_clicked: true })
+      .eq('id', job_id)
 
     if (error) {
       console.error('Supabase error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, data }, { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 })
 
   } catch (err) {
     console.error('API error:', err)
