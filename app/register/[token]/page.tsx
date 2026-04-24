@@ -70,11 +70,12 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
         phone: data.customers?.phone || '',
       })
 
-      if (data.businesses?.id) {
+      // Use job.business_id directly instead of data.businesses.id
+      if (data.business_id) {
         const { data: s } = await supabase
           .from('business_settings')
           .select('*')
-          .eq('business_id', data.businesses.id)
+          .eq('business_id', data.business_id)
           .single()
         setSettings(s)
       }
@@ -113,7 +114,6 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setStep('success')
   }
 
-  // Called when customer taps a review platform link
   async function handleReviewClick(url: string) {
     try {
       await fetch('/api/review-click', {
