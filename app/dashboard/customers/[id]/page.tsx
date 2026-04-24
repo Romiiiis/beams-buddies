@@ -15,7 +15,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe U I", sans-serif'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -566,22 +566,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     {customer.first_name} {customer.last_name}
                   </h1>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                  {([
-                    ['Units', stats.jobs],
-                    ['History', stats.serviceRecords],
-                    ['Due soon', stats.dueSoon],
-                  ] as [string, number][]).map(([label, val], i) => (
-                    <React.Fragment key={label}>
-                      {i > 0 && <div style={{ width: 1, height: 30, background: BORDER }} />}
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>{label}</div>
-                      </div>
-                    </React.Fragment>
-                  ))}
-                </div>
               </div>
 
               <div style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -641,24 +625,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   >
                     {customer.first_name} {customer.last_name}
                   </h1>
-                </div>
-
-                <div style={{ width: 1, background: BORDER, alignSelf: 'stretch', margin: '0 22px', flexShrink: 0 }} />
-
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {([
-                    ['Units', stats.jobs],
-                    ['History', stats.serviceRecords],
-                    ['Due soon', stats.dueSoon],
-                  ] as [string, number][]).map(([label, val], i) => (
-                    <React.Fragment key={label}>
-                      {i > 0 && <div style={{ width: 1, height: 28, background: BORDER, flexShrink: 0 }} />}
-                      <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{val}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '3px' }}>{label}</div>
-                      </div>
-                    </React.Fragment>
-                  ))}
                 </div>
 
                 <div style={{ flex: 1 }} />
