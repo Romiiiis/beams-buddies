@@ -10,7 +10,6 @@ const TEAL_DARK = '#177A72'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const GREEN = '#166534'
-const BLUE = '#1E3A8A'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
@@ -650,21 +649,12 @@ export default function ReportsPage() {
   const previousQuotes = quotes.filter(q => isSameMonth(q.created_at, new Date(today.getFullYear(), today.getMonth() - 1, 1))).length
   const quoteDelta = pctChange(currentQuotes, previousQuotes)
 
-  const currentInvoices = report.invoicesThisMonth
-  const previousInvoices = invoices.filter(i => isSameMonth(i.created_at, new Date(today.getFullYear(), today.getMonth() - 1, 1))).length
-  const invoiceDelta = pctChange(currentInvoices, previousInvoices)
-
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '14px',
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-  }
-
-  const sideCard: React.CSSProperties = {
-    ...card,
-    padding: '16px',
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
@@ -772,6 +762,189 @@ export default function ReportsPage() {
       up: quoteDelta >= 0,
     },
   ]
+
+  function renderRankingCard({
+    title,
+    subtitle,
+    data,
+    empty,
+    route,
+    accent,
+    totalLabel,
+  }: {
+    title: string
+    subtitle: string
+    data: [string, number][]
+    empty: string
+    route: string
+    accent: string
+    totalLabel: string
+  }) {
+    const maxCount = Math.max(...data.map(item => item[1]), 1)
+    const totalCount = data.reduce((sum, item) => sum + item[1], 0)
+    const topName = data[0]?.[0] || 'None yet'
+
+    return (
+      <div style={{ ...card, borderRadius: '16px' }}>
+        <div
+          style={{
+            padding: isMobile ? '16px' : '18px 20px 16px',
+            borderBottom: `1px solid ${BORDER}`,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+              Report breakdown
+            </div>
+            <div style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+              {title}
+            </div>
+            <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
+              {subtitle}
+            </div>
+          </div>
+
+          <button onClick={() => router.push(route)} style={cardArrowBtn}>
+            <IconExternalLink size={14} />
+          </button>
+        </div>
+
+        <div style={{ padding: isMobile ? '14px' : '16px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr',
+              gap: '8px',
+              marginBottom: '12px',
+            }}
+          >
+            <div
+              style={{
+                borderRadius: '12px',
+                border: `1px solid ${BORDER}`,
+                background: '#F8FAFC',
+                padding: '12px',
+                minWidth: 0,
+              }}
+            >
+              <div style={{ ...TYPE.label, marginBottom: '8px' }}>Top result</div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {topName}
+              </div>
+            </div>
+
+            <div
+              style={{
+                borderRadius: '12px',
+                border: `1px solid ${BORDER}`,
+                background: '#F8FAFC',
+                padding: '12px',
+                minWidth: 0,
+              }}
+            >
+              <div style={{ ...TYPE.label, marginBottom: '8px' }}>{totalLabel}</div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                {totalCount}
+              </div>
+            </div>
+          </div>
+
+          {data.length === 0 ? (
+            <div
+              style={{
+                padding: '22px 14px',
+                borderRadius: '12px',
+                background: '#F8FAFC',
+                border: `1px solid ${BORDER}`,
+                textAlign: 'center',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: TEXT3,
+              }}
+            >
+              {empty}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '9px' }}>
+              {data.map(([name, count], index) => {
+                const width = Math.max(8, Math.round((count / maxCount) * 100))
+                return (
+                  <div
+                    key={name}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: WHITE,
+                      border: `1px solid ${BORDER}`,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '9px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <div
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: '10px',
+                            background: index === 0 ? '#E6F7F6' : '#F8FAFC',
+                            border: `1px solid ${index === 0 ? '#BBF7ED' : BORDER}`,
+                            color: index === 0 ? TEAL_DARK : TEXT3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '12px',
+                            fontWeight: 900,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {index + 1}
+                        </div>
+
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {name}
+                          </div>
+                          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: '2px' }}>
+                            {Math.round((count / Math.max(totalCount, 1)) * 100)}% of listed records
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          minWidth: 34,
+                          height: 28,
+                          borderRadius: '999px',
+                          background: '#F8FAFC',
+                          border: `1px solid ${BORDER}`,
+                          color: TEXT,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px',
+                          fontWeight: 900,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {count}
+                      </div>
+                    </div>
+
+                    <div style={{ width: '100%', height: 8, borderRadius: '999px', background: '#EAEFF4', overflow: 'hidden' }}>
+                      <div style={{ width: `${width}%`, height: '100%', borderRadius: '999px', background: accent }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -935,7 +1108,7 @@ export default function ReportsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'start',
             }}
@@ -1080,125 +1253,6 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>This month</div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    ['New customers', report.newCustomersThisMonth],
-                    ['Jobs created', report.jobsThisMonth],
-                    ['Invoices created', report.invoicesThisMonth],
-                    ['Quotes created', report.quotesThisMonth],
-                    ['Due soon services', report.dueSoonServices],
-                  ].map(([label, value]) => (
-                    <div
-                      key={label as string}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Quote performance</div>
-                  <button onClick={() => router.push('/dashboard/quotes')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    ['Accepted quotes', report.acceptedQuotes],
-                    ['Sent quotes', report.sentQuotes],
-                    ['Acceptance rate', `${report.acceptanceRate}%`],
-                  ].map(([label, value]) => (
-                    <div
-                      key={label as string}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Snapshot</div>
-                  <button onClick={() => router.push('/dashboard/revenue')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'grid', gap: '8px' }}>
-                  {[
-                    {
-                      label: 'Jobs trend',
-                      heading: report.jobsThisMonth >= report.jobsLastMonth ? 'Up or steady' : 'Down from last month',
-                      sub: `${report.jobsThisMonth} this month vs ${report.jobsLastMonth} last month`,
-                      accent: report.jobsThisMonth >= report.jobsLastMonth ? GREEN : AMBER,
-                    },
-                    {
-                      label: 'Service workload',
-                      heading: `${report.overdueServices + report.dueSoonServices} upcoming actions`,
-                      sub: `${report.overdueServices} overdue · ${report.dueSoonServices} due soon`,
-                      accent: report.overdueServices > 0 ? RED : TEAL,
-                    },
-                    {
-                      label: 'Cash flow',
-                      heading: report.outstanding > 0 ? 'Follow-up recommended' : 'Healthy',
-                      sub: `${formatMoney(report.outstanding)} outstanding right now`,
-                      accent: report.outstanding > 0 ? AMBER : GREEN,
-                    },
-                  ].map(s => (
-                    <div
-                      key={s.label}
-                      style={{
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: '12px',
-                        padding: '14px',
-                        borderLeft: `3px solid ${s.accent}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>{s.label}</div>
-                      <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>{s.heading}</div>
-                      <div style={TYPE.bodySm}>{s.sub}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
 
           <div
@@ -1209,115 +1263,25 @@ export default function ReportsPage() {
               alignItems: 'start',
             }}
           >
-            {[
-              {
-                title: 'Top suburbs',
-                subtitle: 'Where most of your customers are located',
-                data: report.topSuburbs,
-                avatarBg: '#E8F4F1',
-                avatarColor: '#0A4F4C',
-                empty: 'No suburb data yet.',
-              },
-              {
-                title: 'Top installed brands',
-                subtitle: 'Most common equipment brands in your records',
-                data: report.topBrands,
-                avatarBg: '#DBEAFE',
-                avatarColor: '#1E3A8A',
-                empty: 'No brand data yet.',
-              },
-            ].map(section => (
-              <div key={section.title} style={card}>
-                <div
-                  style={{
-                    padding: '14px 16px 12px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '10px',
-                  }}
-                >
-                  <div>
-                    <div style={sectionHeaderTitle}>{section.title}</div>
-                    <div style={{ ...TYPE.bodySm }}>{section.subtitle}</div>
-                  </div>
+            {renderRankingCard({
+              title: 'Top suburbs',
+              subtitle: 'Customer concentration by suburb across your database.',
+              data: report.topSuburbs,
+              empty: 'No suburb data yet.',
+              route: '/dashboard/customers',
+              accent: TEAL,
+              totalLabel: 'Customers listed',
+            })}
 
-                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ padding: '14px 16px' }}>
-                  {section.data.length === 0 ? (
-                    <div
-                      style={{
-                        padding: '20px 14px',
-                        borderRadius: '10px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
-                        textAlign: 'center',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: TEXT3,
-                      }}
-                    >
-                      {section.empty}
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gap: '8px' }}>
-                      {section.data.map(([name, count], index) => (
-                        <div
-                          key={name as string}
-                          style={{
-                            padding: '10px 12px',
-                            borderRadius: '10px',
-                            background: '#F8FAFC',
-                            border: `1px solid ${BORDER}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: '12px',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                            <div
-                              style={{
-                                width: '30px',
-                                height: '30px',
-                                borderRadius: '10px',
-                                background: section.avatarBg,
-                                color: section.avatarColor,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 800,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {index + 1}
-                            </div>
-                            <span
-                              style={{
-                                ...TYPE.titleSm,
-                                fontSize: '13px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {name}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+            {renderRankingCard({
+              title: 'Top installed brands',
+              subtitle: 'Most common equipment brands recorded across jobs.',
+              data: report.topBrands,
+              empty: 'No brand data yet.',
+              route: '/dashboard/jobs',
+              accent: TEXT,
+              totalLabel: 'Units listed',
+            })}
           </div>
         </div>
       </div>
