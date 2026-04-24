@@ -16,7 +16,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacMacSystemFont, "Segoe UI", sans-serif'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -858,21 +858,21 @@ export default function JobsPage() {
     transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnPrimary: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEXT}`,
+    padding: '0 14px',
+    border: `1px solid ${TEAL}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: WHITE,
-    background: TEXT,
+    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
     transition: 'opacity 0.12s',
   }
@@ -895,10 +895,10 @@ export default function JobsPage() {
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobilePrimary: React.CSSProperties = {
     ...btnMobileSm,
-    background: TEXT,
-    border: `1px solid ${TEXT}`,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -995,7 +995,7 @@ export default function JobsPage() {
 
               <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs/add')} style={btnMobileSm}>
+                  <button onClick={() => router.push('/dashboard/jobs/add')} style={btnMobilePrimary}>
                     <IconSpark size={12} /> Add job
                   </button>
                   <button
@@ -1003,7 +1003,7 @@ export default function JobsPage() {
                       setSearch('')
                       setFilterType('all')
                     }}
-                    style={btnMobileDark}
+                    style={btnMobileSm}
                   >
                     Reset
                   </button>
@@ -1048,14 +1048,12 @@ export default function JobsPage() {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs/add')}
-                    style={btnOutline}
+                    style={btnPrimary}
                     onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
+                      e.currentTarget.style.opacity = '0.88'
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
+                      e.currentTarget.style.opacity = '1'
                     }}
                   >
                     <IconSpark size={12} /> Add job
@@ -1066,12 +1064,14 @@ export default function JobsPage() {
                       setSearch('')
                       setFilterType('all')
                     }}
-                    style={btnDark}
+                    style={btnOutline}
                     onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
                     }}
                   >
                     Reset filters
@@ -1098,7 +1098,7 @@ export default function JobsPage() {
                   padding: isMobile ? '10px 10px' : '10px 14px',
                   overflow: 'hidden',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '70px' : '68px',
+                  minHeight: isMobile ? '58px' : '60px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -1215,6 +1215,7 @@ export default function JobsPage() {
               >
                 <div>
                   <div style={sectionHeaderTitle}>All jobs</div>
+                  <div style={{ ...TYPE.bodySm }}>View installed units, service timing, and customer details.</div>
                 </div>
 
                 <div
