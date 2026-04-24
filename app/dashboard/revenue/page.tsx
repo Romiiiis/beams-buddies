@@ -349,125 +349,42 @@ function AreaChart({
 type StatItem = {
   label: string
   value: string | number
-  accent?: boolean
-  wide?: boolean
   sublabel?: string
 }
 
 function StatsGrid({ items, isMobile }: { items: StatItem[]; isMobile: boolean }) {
-  // Split into two visual groups: primary (first 4) and secondary (last 4)
-  const primary = items.slice(0, 4)
-  const secondary = items.slice(4)
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
-      {/* Primary row — 2 wide cells */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr',
-          gap: '8px',
-        }}
-      >
-        {primary.map((item, i) => (
-          <div
-            key={item.label}
-            style={{
-              borderRadius: '12px',
-              background: item.accent ? `linear-gradient(135deg, ${TEAL} 0%, ${TEAL_DARK} 100%)` : '#F8FAFC',
-              border: `1px solid ${item.accent ? 'transparent' : BORDER}`,
-              padding: isMobile ? '10px 10px' : '11px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '5px',
-              minHeight: '72px',
-              justifyContent: 'space-between',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {item.accent && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: -16,
-                  right: -16,
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.08)',
-                  pointerEvents: 'none',
-                }}
-              />
-            )}
-            <div
-              style={{
-                fontSize: '9.5px',
-                fontWeight: 800,
-                letterSpacing: '0.07em',
-                textTransform: 'uppercase' as const,
-                color: item.accent ? 'rgba(255,255,255,0.65)' : TEXT3,
-                lineHeight: 1.3,
-              }}
-            >
-              {item.label}
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: typeof item.value === 'string' && String(item.value).length > 10 ? '14px' : '20px',
-                  fontWeight: 900,
-                  letterSpacing: '-0.04em',
-                  lineHeight: 1,
-                  color: item.accent ? WHITE : TEXT,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.value}
-              </div>
-              {item.sublabel && (
-                <div style={{ fontSize: '9px', fontWeight: 600, color: item.accent ? 'rgba(255,255,255,0.5)' : TEXT3, marginTop: '3px' }}>
-                  {item.sublabel}
-                </div>
-              )}
-            </div>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : `repeat(${items.length}, 1fr)`,
+        gap: '8px',
+        marginBottom: '14px',
+      }}
+    >
+      {items.map((item) => (
+        <div
+          key={item.label}
+          style={{
+            borderRadius: '11px',
+            background: '#F8FAFC',
+            border: `1px solid ${BORDER}`,
+            padding: isMobile ? '9px 10px' : '10px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: '5px',
+            minHeight: '62px',
+          }}
+        >
+          <div style={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3, lineHeight: 1.3 }}>
+            {item.label}
           </div>
-        ))}
-      </div>
-
-      {/* Secondary row — compact horizontal pills */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-          gap: '6px',
-        }}
-      >
-        {secondary.map((item) => (
-          <div
-            key={item.label}
-            style={{
-              borderRadius: '10px',
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px',
-            }}
-          >
-            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {item.label}
-            </div>
-            <div style={{ fontSize: '13px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', flexShrink: 0 }}>
-              {item.value}
-            </div>
+          <div style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {item.value}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -619,14 +536,11 @@ export default function RevenuePage() {
 
   // Stats items fed into new StatsGrid
   const statsItems: StatItem[] = [
-    { label: 'Current view', value: selectedMetricLabel, accent: true },
-    { label: 'Total value', value: `$${Math.round(selectedMetricTotal).toLocaleString('en-AU')}`, accent: true },
     { label: 'Related invoices', value: selectedMetricCount },
     { label: 'Collection rate', value: `${collectionRate}%` },
     { label: 'Paid invoices', value: paid.length },
     { label: 'Open invoices', value: outstanding.length },
     { label: 'Overdue count', value: overdue.length },
-    { label: 'Top customers', value: topCustomers.length },
   ]
 
   if (loading) {
