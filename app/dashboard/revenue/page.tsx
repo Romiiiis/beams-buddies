@@ -519,9 +519,9 @@ export default function RevenuePage() {
   const sectionHeaderTitle: React.CSSProperties = { fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px', letterSpacing: '-0.02em' }
   const cardArrowBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, display: 'flex', alignItems: 'center' }
   const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }
-  const btnDark: React.CSSProperties = { height: '34px', padding: '0 16px', border: `1px solid ${TEXT}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEXT, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }
+  const btnPrimary: React.CSSProperties = { height: '34px', padding: '0 16px', border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }
   const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: 1 }
-  const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEXT, border: `1px solid ${TEXT}`, color: WHITE }
+  const btnMobilePrimary: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL}`, color: WHITE }
 
   const topCards = [
     { label: 'Collected', value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}`, delta: formatDelta(pctChange(currentCollected, prevCollected)), up: pctChange(currentCollected, prevCollected) >= 0 },
@@ -573,7 +573,7 @@ export default function RevenuePage() {
               </div>
               <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileDark}><IconSpark size={12} /> View invoices</button>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobilePrimary}><IconSpark size={12} /> View invoices</button>
                   <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>Customers</button>
                 </div>
               </div>
@@ -589,7 +589,7 @@ export default function RevenuePage() {
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                   <button onClick={() => router.push('/dashboard/customers')} style={btnOutline}>View customers</button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnDark}><IconSpark size={14} />View invoices</button>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}><IconSpark size={14} />View invoices</button>
                 </div>
               </div>
             </div>
@@ -598,7 +598,7 @@ export default function RevenuePage() {
           {/* Top stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)', gap: '12px' }}>
             {topCards.map(item => (
-              <div key={item.label} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '10px 10px' : '10px 14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', minHeight: isMobile ? '70px' : '68px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div key={item.label} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '10px 10px' : '10px 14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', minHeight: isMobile ? '62px' : '64px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {isMobile ? (
                   <div style={{ display: 'grid', gap: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
