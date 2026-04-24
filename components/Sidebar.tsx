@@ -136,9 +136,12 @@ function InvoicesIcon() {
 function RevenueIcon() {
   return (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M14.7 9.3c0-1.2-1.2-2-2.8-2-1.5 0-2.6.8-2.6 1.9 0 1 .6 1.6 2.4 2l1.5.3c1.8.4 2.7 1.1 2.7 2.4 0 1.5-1.4 2.7-3.5 2.7-2 0-3.4-1-3.6-2.6" />
-      <path d="M12 6.5v11" />
+      <path d="M4 19.5h16" />
+      <path d="M7 16V9.5" />
+      <path d="M12 16V5" />
+      <path d="M17 16v-8" />
+      <path d="M6.5 10.2 12 5l5.5 3" />
+      <path d="M15.5 8h2V6" />
     </svg>
   )
 }
@@ -407,15 +410,17 @@ export function Sidebar({ active }: { active: string }) {
 
           body {
             min-height: 100svh;
+            padding-bottom: calc(76px + env(safe-area-inset-bottom));
           }
 
           .mobile-tab {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px 4px 8px;
+            padding: 8px 3px 7px;
             cursor: pointer;
             gap: 4px;
             font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -423,8 +428,8 @@ export function Sidebar({ active }: { active: string }) {
           }
 
           .mobile-tab-icon {
-            width: 22px;
-            height: 22px;
+            width: 21px;
+            height: 21px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -434,8 +439,14 @@ export function Sidebar({ active }: { active: string }) {
 
           .mobile-tab-icon svg {
             display: block;
-            width: 22px;
-            height: 22px;
+            width: 21px;
+            height: 21px;
+          }
+
+          @media (display-mode: standalone) {
+            body {
+              padding-bottom: calc(88px + env(safe-area-inset-bottom));
+            }
           }
         `}</style>
 
@@ -455,11 +466,11 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               position: 'fixed',
-              top: 'max(28px, calc(env(safe-area-inset-top) + 22px))',
-              right: isMobileMenuOpen ? 12 : -320,
-              bottom: 'calc(132px + env(safe-area-inset-bottom))',
-              width: 268,
-              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 170px)',
+              top: 'max(22px, calc(env(safe-area-inset-top) + 16px))',
+              right: isMobileMenuOpen ? 10 : -320,
+              bottom: 'calc(92px + env(safe-area-inset-bottom))',
+              width: 'min(268px, calc(100vw - 24px))',
+              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 118px)',
               zIndex: 110,
               background: WHITE,
               border: `1px solid ${BORDER}`,
@@ -506,8 +517,8 @@ export function Sidebar({ active }: { active: string }) {
                       alignItems: 'center',
                       gap: 10,
                       width: '100%',
-                      minHeight: 48,
-                      padding: '10px 12px',
+                      minHeight: 46,
+                      padding: '9px 12px',
                       borderRadius: 14,
                       border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
                       background: isActive ? TEAL_SOFT : '#F8FAFC',
@@ -550,8 +561,8 @@ export function Sidebar({ active }: { active: string }) {
                   alignItems: 'center',
                   gap: 10,
                   width: '100%',
-                  minHeight: 48,
-                  padding: '10px 12px',
+                  minHeight: 46,
+                  padding: '9px 12px',
                   borderRadius: 14,
                   border: `1px solid ${BORDER}`,
                   background: '#F8FAFC',
@@ -600,6 +611,7 @@ export function Sidebar({ active }: { active: string }) {
               borderTop: `1px solid ${BORDER}`,
               display: 'flex',
               alignItems: 'stretch',
+              minHeight: 'calc(64px + env(safe-area-inset-bottom))',
               paddingBottom: 'env(safe-area-inset-bottom)',
               boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
               overscrollBehavior: 'none',
@@ -620,7 +632,7 @@ export function Sidebar({ active }: { active: string }) {
                   </span>
                   <span
                     style={{
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: isActive ? 700 : 600,
                       lineHeight: 1.1,
                       letterSpacing: '-0.01em',
@@ -628,6 +640,8 @@ export function Sidebar({ active }: { active: string }) {
                       textRendering: 'optimizeLegibility',
                       WebkitFontSmoothing: 'antialiased',
                       MozOsxFontSmoothing: 'grayscale',
+                      whiteSpace: 'normal',
+                      maxWidth: 70,
                     }}
                   >
                     {tab.label}
@@ -646,7 +660,7 @@ export function Sidebar({ active }: { active: string }) {
               </span>
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 9.5,
                   fontWeight: isMobileMenuOpen ? 700 : 600,
                   lineHeight: 1.1,
                   letterSpacing: '-0.01em',
@@ -654,6 +668,8 @@ export function Sidebar({ active }: { active: string }) {
                   textRendering: 'optimizeLegibility',
                   WebkitFontSmoothing: 'antialiased',
                   MozOsxFontSmoothing: 'grayscale',
+                  whiteSpace: 'normal',
+                  maxWidth: 70,
                 }}
               >
                 Menu

@@ -310,15 +310,15 @@ export default function SchedulePage() {
 
           {/* ── Overdue notice ── */}
           {overdueJobs.length > 0 && (
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, gap: '10px' }}>
+            <div style={{ background: WHITE, border: `1px solid #FECDD3`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid #FECDD3`, gap: '10px', background: '#FFF5F5' }}>
                 <div style={{ width: 3, height: 18, borderRadius: '2px', background: RED, flexShrink: 0 }} />
-                <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, flex: 1 }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#991B1B', flex: 1 }}>
                   {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''}
                 </span>
                 <button
                   onClick={() => setFilter('overdue')}
-                  style={{ height: '26px', padding: '0 10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT3, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  style={{ height: '26px', padding: '0 10px', background: WHITE, border: `1px solid #FECDD3`, borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: '#991B1B', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   View all <IconArrow size={10} />
                 </button>
@@ -360,7 +360,6 @@ export default function SchedulePage() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
                     <span style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>Scheduled services</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3, background: '#F1F5F9', border: `1px solid ${BORDER}`, padding: '2px 8px', borderRadius: '999px' }}>{filtered.length}</span>
                   </div>
                 </div>
 
