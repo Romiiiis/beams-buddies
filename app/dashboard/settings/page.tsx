@@ -7,13 +7,14 @@ import { useBusinessData } from '@/lib/business-context'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
-const TEAL_SOFT = '#E8F7F5'
+const TEAL_SOFT = '#E6F7F6'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#475569'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
+const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const SIDEBAR_WIDTH = 248
 const SIDEBAR_COLLAPSED_WIDTH = 88
@@ -302,7 +303,7 @@ export function Sidebar({ active }: { active: string }) {
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'flex-start',
           gap: isCollapsed ? 0 : 10,
-          border: 'none',
+          border: isActive ? `1px solid ${TEAL}` : '1px solid transparent',
           background: isActive ? TEAL_SOFT : 'transparent',
           color: isActive ? TEAL : TEXT2,
           borderRadius: 12,
@@ -310,14 +311,21 @@ export function Sidebar({ active }: { active: string }) {
           minHeight: isCollapsed ? 44 : 42,
           cursor: 'pointer',
           textAlign: 'left',
-          boxShadow: isActive ? `inset 0 0 0 1px ${TEAL}` : 'none',
-          transition: 'background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
+          boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.04)' : 'none',
+          transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
+          fontFamily: FONT,
         }}
         onMouseEnter={e => {
-          if (!isActive) e.currentTarget.style.background = '#F8FAFC'
+          if (!isActive) {
+            e.currentTarget.style.background = '#F8FAFC'
+            e.currentTarget.style.borderColor = BORDER
+          }
         }}
         onMouseLeave={e => {
-          if (!isActive) e.currentTarget.style.background = 'transparent'
+          if (!isActive) {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.borderColor = 'transparent'
+          }
         }}
       >
         <span
@@ -330,10 +338,10 @@ export function Sidebar({ active }: { active: string }) {
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'transparent',
+            background: isActive ? WHITE : 'transparent',
             color: isActive ? TEAL : TEXT3,
-            border: 'none',
-            boxShadow: 'none',
+            border: isActive ? `1px solid #BBF7ED` : '1px solid transparent',
+            boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.04)' : 'none',
             lineHeight: 0,
           }}
         >
@@ -344,10 +352,10 @@ export function Sidebar({ active }: { active: string }) {
           <span
             style={{
               fontSize: 13,
-              fontWeight: isActive ? 700 : 600,
+              fontWeight: isActive ? 800 : 650,
               letterSpacing: '-0.01em',
               lineHeight: '18px',
-              color: isActive ? TEAL : TEXT2,
+              color: isActive ? TEAL_DARK : TEXT2,
               whiteSpace: 'nowrap',
               textRendering: 'optimizeLegibility',
               WebkitFontSmoothing: 'antialiased',
@@ -374,7 +382,7 @@ export function Sidebar({ active }: { active: string }) {
             padding: 10px 4px 8px;
             cursor: pointer;
             gap: 4px;
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: ${FONT};
           }
           .mobile-tab-icon {
             width: 22px;
@@ -399,7 +407,7 @@ export function Sidebar({ active }: { active: string }) {
               style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(15, 23, 42, 0.32)',
+                background: 'rgba(15, 23, 42, 0.28)',
                 zIndex: 109,
               }}
             />
@@ -416,22 +424,23 @@ export function Sidebar({ active }: { active: string }) {
               background: WHITE,
               border: `1px solid ${BORDER}`,
               borderRadius: 20,
-              boxShadow: '0 20px 60px rgba(15,23,42,0.18), 0 6px 20px rgba(15,23,42,0.08)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 18px 44px rgba(15,23,42,0.12)',
               padding: 12,
               transition: 'right 0.22s ease',
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
+              fontFamily: FONT,
             }}
           >
             <div
               style={{
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 800,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 color: TEXT3,
-                padding: '2px 6px 10px',
+                padding: '4px 6px 10px',
               }}
             >
               Menu
@@ -446,6 +455,7 @@ export function Sidebar({ active }: { active: string }) {
             >
               {mobileMenuItems.map(item => {
                 const isActive = item.href === active
+
                 return (
                   <button
                     key={item.href}
@@ -460,28 +470,34 @@ export function Sidebar({ active }: { active: string }) {
                       borderRadius: 14,
                       border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
                       background: isActive ? TEAL_SOFT : '#F8FAFC',
-                      color: isActive ? TEAL : TEXT2,
+                      color: isActive ? TEAL_DARK : TEXT2,
                       cursor: 'pointer',
                       textAlign: 'left',
+                      boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.04)' : 'none',
+                      fontFamily: FONT,
                     }}
                   >
                     <span
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: 26,
+                        height: 26,
+                        borderRadius: 10,
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                         lineHeight: 0,
+                        color: isActive ? TEAL : TEXT3,
+                        background: isActive ? WHITE : 'transparent',
                       }}
                     >
                       {icons[item.href]}
                     </span>
+
                     <span
                       style={{
                         fontSize: 12,
-                        fontWeight: 700,
+                        fontWeight: isActive ? 800 : 700,
                         letterSpacing: '-0.01em',
                         lineHeight: 1.2,
                       }}
@@ -508,12 +524,14 @@ export function Sidebar({ active }: { active: string }) {
                   cursor: 'pointer',
                   textAlign: 'left',
                   marginTop: 4,
+                  fontFamily: FONT,
                 }}
               >
                 <span
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 26,
+                    height: 26,
+                    borderRadius: 10,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -524,6 +542,7 @@ export function Sidebar({ active }: { active: string }) {
                 >
                   <LogoutIcon />
                 </span>
+
                 <span
                   style={{
                     fontSize: 12,
@@ -541,16 +560,18 @@ export function Sidebar({ active }: { active: string }) {
           <div
             style={{
               position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: 10,
+              left: 10,
+              right: 10,
               zIndex: 100,
               background: WHITE,
-              borderTop: `1px solid ${BORDER}`,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 18,
               display: 'flex',
               alignItems: 'stretch',
               paddingBottom: 'env(safe-area-inset-bottom)',
-              boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 -8px 28px rgba(15,23,42,0.08)',
+              overflow: 'hidden',
             }}
           >
             {mobilePrimaryTabs.map(tab => {
@@ -561,15 +582,19 @@ export function Sidebar({ active }: { active: string }) {
                   key={tab.href}
                   onClick={() => navigateTo(tab.href)}
                   className="mobile-tab"
-                  style={{ color: isActive ? TEAL : TEXT3 }}
+                  style={{
+                    color: isActive ? TEAL_DARK : TEXT3,
+                    background: isActive ? TEAL_SOFT : WHITE,
+                  }}
                 >
                   <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
                     {icons[tab.href]}
                   </span>
+
                   <span
                     style={{
                       fontSize: 10,
-                      fontWeight: isActive ? 700 : 600,
+                      fontWeight: isActive ? 800 : 650,
                       lineHeight: 1.1,
                       letterSpacing: '-0.01em',
                       textAlign: 'center',
@@ -587,15 +612,19 @@ export function Sidebar({ active }: { active: string }) {
             <div
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
               className="mobile-tab"
-              style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}
+              style={{
+                color: isMobileMenuOpen ? TEAL_DARK : TEXT3,
+                background: isMobileMenuOpen ? TEAL_SOFT : WHITE,
+              }}
             >
               <span className="mobile-tab-icon" style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}>
                 <MenuIcon />
               </span>
+
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: isMobileMenuOpen ? 700 : 600,
+                  fontWeight: isMobileMenuOpen ? 800 : 650,
                   lineHeight: 1.1,
                   letterSpacing: '-0.01em',
                   textAlign: 'center',
@@ -661,13 +690,13 @@ export function Sidebar({ active }: { active: string }) {
             background: WHITE,
             border: `1px solid ${BORDER}`,
             borderRadius: 16,
-            boxShadow: '0 6px 18px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             padding: 12,
             zIndex: 60,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontFamily: FONT,
             transition: 'width 0.2s ease',
           }}
         >
@@ -701,9 +730,9 @@ export function Sidebar({ active }: { active: string }) {
                 <div
                   style={{
                     fontSize: 15,
-                    fontWeight: 800,
+                    fontWeight: 900,
                     color: TEXT,
-                    letterSpacing: '-0.02em',
+                    letterSpacing: '-0.03em',
                     lineHeight: 1.1,
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased',
@@ -712,15 +741,20 @@ export function Sidebar({ active }: { active: string }) {
                 >
                   Jobyra
                 </div>
+
                 <div
                   style={{
                     fontSize: 10,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     color: TEXT3,
-                    marginTop: 3,
+                    marginTop: 4,
                     lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: 156,
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased',
                     MozOsxFontSmoothing: 'grayscale',
@@ -741,7 +775,7 @@ export function Sidebar({ active }: { active: string }) {
               padding: '0 2px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 1,
+              gap: 2,
             }}
           >
             {navMain.map(renderNavItem)}
@@ -750,7 +784,7 @@ export function Sidebar({ active }: { active: string }) {
               <div
                 style={{
                   fontSize: 10,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   letterSpacing: '0.10em',
                   textTransform: 'uppercase',
                   color: TEXT3,
@@ -771,7 +805,7 @@ export function Sidebar({ active }: { active: string }) {
               <div
                 style={{
                   fontSize: 10,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   letterSpacing: '0.10em',
                   textTransform: 'uppercase',
                   color: TEXT3,
@@ -806,9 +840,10 @@ export function Sidebar({ active }: { active: string }) {
                 gap: isCollapsed ? 10 : 10,
                 justifyContent: isCollapsed ? 'center' : 'space-between',
                 padding: isCollapsed ? '12px 8px' : '10px 12px',
-                background: WHITE,
+                background: '#F8FAFC',
                 border: `1px solid ${BORDER}`,
-                borderRadius: 12,
+                borderRadius: 14,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.025)',
               }}
             >
               <div
@@ -828,7 +863,8 @@ export function Sidebar({ active }: { active: string }) {
                       width: 40,
                       height: 40,
                       borderRadius: '50%',
-                      background: BG,
+                      background: WHITE,
+                      border: `1px solid ${BORDER}`,
                       flexShrink: 0,
                     }}
                   />
@@ -852,13 +888,13 @@ export function Sidebar({ active }: { active: string }) {
                       width: 40,
                       height: 40,
                       borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+                      background: TEAL,
                       color: WHITE,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: 13,
-                      fontWeight: 700,
+                      fontWeight: 800,
                       flexShrink: 0,
                       letterSpacing: '-0.01em',
                     }}
@@ -872,7 +908,7 @@ export function Sidebar({ active }: { active: string }) {
                     <div
                       style={{
                         fontSize: 13,
-                        fontWeight: 700,
+                        fontWeight: 800,
                         color: TEXT,
                         lineHeight: 1.15,
                         whiteSpace: 'nowrap',
@@ -886,12 +922,13 @@ export function Sidebar({ active }: { active: string }) {
                     >
                       {loading ? 'Loading...' : business?.full_name || 'Owner'}
                     </div>
+
                     <div
                       style={{
                         fontSize: 11,
                         color: TEXT3,
                         marginTop: 3,
-                        fontWeight: 600,
+                        fontWeight: 650,
                         lineHeight: 1.2,
                         letterSpacing: '-0.01em',
                         textRendering: 'optimizeLegibility',
