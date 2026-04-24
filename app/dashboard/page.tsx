@@ -573,9 +573,9 @@ export default function DashboardPage() {
 
           {/* ── Header ── */}
           {isMobile ? (
-            <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}`, paddingBottom: '16px' }}>
+            <div style={{ padding: '20px 12px 4px' }}>
               {/* Greeting row */}
-              <div style={{ padding: '20px 16px 14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
                     {getGreeting()} 👋
@@ -590,29 +590,24 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', padding: '0 16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                 {statChips.map(chip => (
-                  <div key={chip.label} onClick={chip.onClick} style={{ background: chip.danger ? '#FFF5F5' : '#F8FAFC', border: `1px solid ${chip.danger ? '#FECACA' : BORDER}`, borderRadius: '12px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center' }}>
+                  <div key={chip.label} onClick={chip.onClick} style={{ background: chip.danger ? '#FFF5F5' : WHITE, border: `1px solid ${chip.danger ? '#FECACA' : BORDER}`, borderRadius: '12px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                     <div style={{ fontSize: '18px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
                     <div style={{ fontSize: '9px', fontWeight: 700, color: chip.danger ? '#B91C1C' : TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: '4px' }}>{chip.label}</div>
                   </div>
                 ))}
               </div>
-              {/* Action buttons */}
-              <div style={{ display: 'flex', gap: '8px', padding: '12px 16px 0' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconCalendar size={12} /> Schedule</button>
-                <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}><IconArrow size={12} /> Customers</button>
-              </div>
             </div>
           ) : (
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+            <div>
               {/* Top row: greeting + actions */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
-                  <h1 style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
                     {getGreeting()} 👋
                   </h1>
-                  <p style={{ fontSize: '13px', color: TEXT3, fontWeight: 500, margin: '4px 0 0' }}>
+                  <p style={{ fontSize: '13px', color: TEXT3, fontWeight: 500, margin: '5px 0 0' }}>
                     Here's what's happening across your business.
                   </p>
                 </div>
@@ -623,26 +618,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               {/* Stat chips row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: `1px solid ${BORDER}` }}>
-                {statChips.map((chip, i) => (
-                  <div key={chip.label} onClick={chip.onClick} style={{ padding: '14px 20px', borderRight: i < statChips.length - 1 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', transition: 'background 0.12s', display: 'flex', alignItems: 'center', gap: '14px' }} onMouseEnter={e => (e.currentTarget.style.background = chip.danger ? '#FFF5F5' : '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                    <div>
-                      <div style={{ fontSize: '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{chip.value}</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#B91C1C' : TEXT3, marginTop: '3px' }}>{chip.sub}</div>
-                    </div>
-                    {i === 0 && chip.value > 0 && (
-                      <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 700, color: TEAL, background: TEAL_LIGHT, padding: '3px 8px', borderRadius: '20px' }}>
-                        {chip.label}
-                      </span>
-                    )}
-                    {chip.danger && chip.value > 0 && (
-                      <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 700, color: '#991B1B', background: '#FEE2E2', padding: '3px 8px', borderRadius: '20px' }}>
-                        Action needed
-                      </span>
-                    )}
-                    {!chip.danger && i !== 0 && (
-                      <span style={{ marginLeft: 'auto', fontSize: '18px', opacity: 0.12 }}>→</span>
-                    )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                {statChips.map((chip) => (
+                  <div key={chip.label} onClick={chip.onClick} style={{ background: chip.danger ? '#FFF5F5' : WHITE, border: `1px solid ${chip.danger ? '#FECACA' : BORDER}`, borderRadius: '14px', padding: '16px 20px', cursor: 'pointer', transition: 'box-shadow 0.12s', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
+                    <div style={{ fontSize: '28px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: chip.danger ? '#B91C1C' : TEXT3, marginTop: '5px' }}>{chip.sub}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: chip.danger ? '#DC2626' : TEAL, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{chip.label}</div>
                   </div>
                 ))}
               </div>
