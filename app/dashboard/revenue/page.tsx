@@ -629,56 +629,110 @@ export default function RevenuePage() {
           {/* Main content grid */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px', gap: '14px', alignItems: 'start' }}>
 
-            {/* Monthly performance card */}
-            <div style={card}>
-              <div style={{ padding: '14px 16px 12px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '10px' }}>
-                <div>
-                  <div style={sectionHeaderTitle}>Monthly performance</div>
-                  <div style={{ ...TYPE.bodySm }}>Switch the view below to compare invoiced, collected, outstanding, or overdue movement.</div>
-                </div>
-                <select
-                  value={metricMode}
-                  onChange={e => setMetricMode(e.target.value as MetricMode)}
-                  style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, fontFamily: FONT, outline: 'none', width: isMobile ? '100%' : '180px' }}
-                >
-                  <option value="invoiced">Invoiced</option>
-                  <option value="collected">Collected</option>
-                  <option value="outstanding">Outstanding</option>
-                  <option value="overdue">Overdue</option>
-                </select>
-              </div>
+            {/* ── Monthly performance card — full redesign ── */}
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
 
-              <div style={{ padding: '14px 16px' }}>
-                {/* ── New StatsGrid ── */}
-                <StatsGrid items={statsItems} isMobile={isMobile} />
+              {/* Header */}
+              <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-                {/* ── New Area Chart ── */}
-                <div style={{ borderRadius: '14px', background: WHITE, border: `1px solid ${BORDER}`, padding: isMobile ? '12px 8px 8px' : '14px 14px 10px', overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', paddingLeft: isMobile ? '4px' : '44px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3 }}>
-                      {selectedMetricLabel} · Last 6 months
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: TEXT3, marginBottom: '5px' }}>
+                      Last 6 months
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: 20, height: 2, background: TEAL, borderRadius: 1 }} />
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
+                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      Monthly Performance
                     </div>
                   </div>
-                  <AreaChart
-                    series={chartSeries}
-                    maxVal={maxMonthly}
-                    height={isMobile ? 220 : 250}
-                    isMobile={isMobile}
-                  />
-                  {/* Legend */}
-                  <div style={{ paddingLeft: isMobile ? '4px' : '56px', paddingTop: '4px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+                  {/* Live badge */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: '#F0FDF9', border: '1px solid #BBF7ED', flexShrink: 0, marginTop: '2px' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>Live</span>
+                  </div>
+                </div>
+
+                {/* Metric pill tabs */}
+                <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', borderRadius: '11px', padding: '3px', width: 'fit-content', maxWidth: '100%' }}>
+                  {(['invoiced', 'collected', 'outstanding', 'overdue'] as MetricMode[]).map(mode => {
+                    const active = metricMode === mode
+                    const labels: Record<MetricMode, string> = { invoiced: 'Invoiced', collected: 'Collected', outstanding: 'Outstanding', overdue: 'Overdue' }
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setMetricMode(mode)}
+                        style={{
+                          height: '30px',
+                          padding: '0 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: active ? WHITE : 'transparent',
+                          color: active ? TEXT : TEXT3,
+                          fontSize: '11px',
+                          fontWeight: active ? 800 : 600,
+                          fontFamily: FONT,
+                          cursor: 'pointer',
+                          boxShadow: active ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
+                          transition: 'all 0.15s',
+                          whiteSpace: 'nowrap' as const,
+                        }}
+                      >
+                        {labels[mode]}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* KPI strip */}
+                <div style={{ display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: isMobile ? '-16px' : '-24px', marginRight: isMobile ? '-16px' : '-24px' }}>
+                  {statsItems.map((item, i) => (
+                    <div
+                      key={item.label}
+                      style={{
+                        flex: 1,
+                        padding: isMobile ? '12px 10px' : '14px 20px',
+                        borderRight: i < statsItems.length - 1 ? `1px solid ${BORDER}` : 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        minWidth: 0,
+                      }}
+                    >
+                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chart area */}
+              <div style={{ padding: isMobile ? '16px 12px 12px' : '20px 24px 16px' }}>
+                <AreaChart
+                  series={chartSeries}
+                  maxVal={maxMonthly}
+                  height={isMobile ? 210 : 240}
+                  isMobile={isMobile}
+                />
+
+                {/* Footer legend */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? '4px' : '52px', marginTop: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: TEAL }} />
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>{selectedMetricLabel}</span>
+                      <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{selectedMetricLabel}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1' }} />
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>Invoice count (below)</span>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1', border: '1.5px solid #94A3B8' }} />
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>Invoice count</span>
                     </div>
+                  </div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>
+                    {new Date().toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
                   </div>
                 </div>
               </div>
