@@ -254,17 +254,16 @@ export default function CustomersPage() {
           {isMobile ? (
             <div style={{ padding: '20px 12px 4px' }}>
               {/* Title row */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Customers</h1>
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </div>
-                <div style={{ display: 'flex', gap: '6px', flexShrink: 0, marginTop: '2px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconSpark size={12} /> Add Job</button>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>View Jobs</button>
-                </div>
+                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Customers</h1>
+              </div>
+              {/* CTA buttons row */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}><IconSpark size={12} /> Add Job</button>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>View Jobs</button>
               </div>
               {/* Stat chips — unified card */}
               <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
@@ -366,38 +365,43 @@ export default function CustomersPage() {
 
                 return (
                   <div key={c.id} onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                    style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px', gap: isMobile ? '12px' : '14px', alignItems: isMobile ? 'stretch' : 'center', margin: '10px 12px', padding: isMobile ? '14px' : '14px 16px', border: `1px solid ${BORDER}`, borderRadius: '14px', background: WHITE, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FCFCFD'; e.currentTarget.style.borderColor = '#D5E6E4'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(15,23,42,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}
+                    style={{ display: isMobile ? 'block' : 'grid', gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px', gap: isMobile ? undefined : '14px', alignItems: isMobile ? undefined : 'center', margin: isMobile ? '0' : '10px 12px', padding: isMobile ? '14px 16px' : '14px 16px', borderBottom: isMobile ? `1px solid ${BORDER}` : undefined, border: isMobile ? 'none' : `1px solid ${BORDER}`, borderRadius: isMobile ? '0' : '14px', background: WHITE, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = TEAL_LIGHT }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = WHITE }}
                   >
                     {isMobile ? (
-                      <div style={{ display: 'grid', gap: '11px' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                          <div style={{ width: 4, alignSelf: 'stretch', minHeight: 54, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.first_name} {c.last_name}</div>
-                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{contactLine}</div>
-                            {secondaryContact && <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px' }}>{secondaryContact}</div>}
-                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{addressLine}</div>
-                          </div>
-                          <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', flexShrink: 0, marginTop: 2 }}><IconArrow size={12} /></span>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        {/* Avatar */}
+                        <div style={{ width: 42, height: 42, borderRadius: '12px', background: TEAL_LIGHT, border: `1px solid #BFE7E3`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '-0.02em' }}>
+                            {(c.first_name?.[0] || '').toUpperCase()}{(c.last_name?.[0] || '').toUpperCase()}
+                          </span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                          <div style={{ padding: '10px 11px', borderRadius: '12px', border: `1px solid ${BORDER}`, background: '#F8FAFC' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>Units</div>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>{unitCount} unit{unitCount === 1 ? '' : 's'}</div>
-                            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{unitLine}</div>
+                        {/* Main info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {/* Name + status */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.first_name} {c.last_name}</div>
+                            <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '3px 8px', borderRadius: '999px', fontSize: '9px', fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 }}>{s.label}</span>
                           </div>
-                          <div style={{ padding: '10px 11px', borderRadius: '12px', border: `1px solid ${BORDER}`, background: '#F8FAFC' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>Next service</div>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>{serviceDate}</div>
-                            <div style={{ fontSize: '10px', color: TEXT3, marginTop: '3px' }}>{reviewCount} review click{reviewCount === 1 ? '' : 's'}</div>
+                          {/* Contact */}
+                          <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>{contactLine}</div>
+                          {/* Address */}
+                          <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>{addressLine}</div>
+                          {/* Meta row */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT2 }}>{unitCount} unit{unitCount === 1 ? '' : 's'}</span>
+                              {unitLine !== 'No unit details' && <span style={{ fontSize: '10px', color: TEXT3 }}>· {unitLine}</span>}
+                            </div>
+                            <div style={{ width: 1, height: 10, background: BORDER }} />
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: serviceDate === 'Not set' ? TEXT3 : TEAL_DARK }}>
+                              {serviceDate === 'Not set' ? 'No service date' : `Next: ${serviceDate}`}
+                            </span>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-                          <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '6px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{s.label}</span>
-                          <span style={{ fontSize: '11px', fontWeight: 750, color: TEAL_DARK }}>Open customer profile</span>
-                        </div>
+                        {/* Arrow */}
+                        <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}><IconArrow size={12} /></div>
                       </div>
                     ) : (
                       <>
