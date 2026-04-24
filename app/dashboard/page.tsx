@@ -554,10 +554,10 @@ export default function DashboardPage() {
 
   // ── Stat chips config ─────────────────────────────────────────────────────
   const statChips = [
-    { label: 'Customers', value: stats.customers, sub: 'total',         onClick: () => router.push('/dashboard/customers'), icon: '👥', accent: TEAL,      accentLight: TEAL_LIGHT },
-    { label: 'Scheduled', value: scheduledCount,  sub: 'upcoming jobs', onClick: () => router.push('/dashboard/jobs'),       icon: '📅', accent: '#6366F1', accentLight: '#EEF2FF' },
-    { label: 'Today',     value: stats.jobsToday, sub: 'jobs today',    onClick: () => router.push('/dashboard/jobs'),       icon: '⚡', accent: '#F59E0B', accentLight: '#FFFBEB' },
-    { label: 'Overdue',   value: stats.overdue,   sub: 'need attention', onClick: () => router.push('/dashboard/jobs'),      icon: '⚠️', accent: '#EF4444', accentLight: '#FFF5F5', danger: stats.overdue > 0 },
+    { label: 'Customers', value: stats.customers, sub: 'total',          onClick: () => router.push('/dashboard/customers') },
+    { label: 'Scheduled', value: scheduledCount,  sub: 'upcoming jobs',  onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Today',     value: stats.jobsToday, sub: 'jobs today',     onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Overdue',   value: stats.overdue,   sub: 'need attention', onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
   ]
 
   return (
@@ -597,8 +597,8 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                 {statChips.map(chip => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderTop: `2px solid ${chip.accent}` }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = chip.accentLight }}
+                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderTop: `2px solid ${TEAL}` }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = WHITE }}
                   >
                     <div style={{ fontSize: '20px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
@@ -629,11 +629,10 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                 {statChips.map((chip) => (
                   <div key={chip.label} onClick={chip.onClick}
-                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${chip.accent}`, borderRadius: '10px', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.12s, box-shadow 0.12s' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = chip.accentLight; el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.07)' }}
+                    style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '10px', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.12s, box-shadow 0.12s' }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = TEAL_LIGHT; el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.07)' }}
                     onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = WHITE; el.style.boxShadow = 'none' }}
                   >
-                    <div style={{ width: 30, height: 30, borderRadius: '8px', background: chip.accentLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>{chip.icon}</div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '2px' }}>{chip.label}</div>
                       <div style={{ fontSize: '22px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
