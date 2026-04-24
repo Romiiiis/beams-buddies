@@ -95,10 +95,19 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
     </svg>
   )
 }
-function IconTrendUp({ size = 11 }: { size?: number }) {
+function IconCheckCircle({ size = 11 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function IconClock({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -122,9 +131,10 @@ export default function QRCodesPage() {
 
       const { data } = await supabase
         .from('jobs')
-        .select('id, customer_id, qr_code_token, brand, model, capacity_kw, install_date, created_at, customers(first_name, last_name, suburb)')
+        .select('id, customer_id, qr_code_token, brand, model, capacity_kw, install_date, created_at, review_link_clicked, customers(first_name, last_name, suburb)')
         .eq('business_id', userData.business_id)
-        .order('created_at', { ascending: false })
+        // Sort by latest install_date first; nulls land at the bottom
+        .order('install_date', { ascending: false, nullsFirst: false })
 
       const jobRows = data || []
       setJobs(jobRows)
@@ -170,6 +180,7 @@ export default function QRCodesPage() {
   const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const qrCount = jobs.length
   const readyCount = jobs.filter(j => !!j.qr_code_token).length
+  const reviewClickedCount = jobs.filter(j => !!j.review_link_clicked).length
   const latestInstall = useMemo(() => {
     const withDates = jobs.filter(j => j.install_date)
     return withDates.length ? formatDate(withDates[0].install_date) : '—'
@@ -184,9 +195,9 @@ export default function QRCodesPage() {
   const btnMobileTeal: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL}`, color: WHITE }
 
   const topCards = [
-    { label: 'QR codes',      value: qrCount.toString(),        sub: 'Jobs in library'           },
-    { label: 'Ready to save', value: readyCount.toString(),     sub: 'Tokens generated'          },
-    { label: 'Latest install',value: latestInstall,             sub: 'Most recent install date'  },
+    { label: 'QR codes',       value: qrCount.toString(),           sub: 'Jobs in library'          },
+    { label: 'Ready to save',  value: readyCount.toString(),        sub: 'Tokens generated'         },
+    { label: 'Reviews clicked', value: reviewClickedCount.toString(), sub: 'Customers left a review' },
   ]
 
   if (loading) {
@@ -242,8 +253,24 @@ export default function QRCodesPage() {
 
           {/* ── Stat cards ── */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0,1fr))' : 'repeat(3, 1fr)', gap: '12px' }}>
-            {topCards.map(item => (
-              <div key={item.label} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '10px 10px' : '10px 14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', minHeight: '68px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {topCards.map((item, i) => (
+              <div
+                key={item.label}
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '14px',
+                  padding: isMobile ? '10px 10px' : '10px 14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  minHeight: '68px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  // On mobile hide the 3rd card (reviews) by spanning nothing — show all 3 on desktop
+                  ...(isMobile && i === 2 ? { gridColumn: '1 / -1' } : {}),
+                }}
+              >
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
                   <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
@@ -277,17 +304,17 @@ export default function QRCodesPage() {
                   </div>
                 </div>
 
-                {/* Underline — same as invoices/schedule */}
                 <div style={{ borderBottom: `1px solid ${BORDER}` }} />
               </div>
 
               {/* Table header — desktop */}
               {!isMobile && filteredJobs.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.8fr) minmax(0,1.1fr) 120px 100px', gap: '0', padding: '0 24px', background: '#F8FAFC', borderBottom: `1px solid ${BORDER}`, alignItems: 'center', height: '38px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.6fr) minmax(0,1fr) 110px 90px 90px', gap: '0', padding: '0 24px 0 0', background: '#F8FAFC', borderBottom: `1px solid ${BORDER}`, alignItems: 'center', height: '38px' }}>
                   <div />
-                  <div style={{ ...TYPE.label, paddingRight: '12px' }}>Customer</div>
+                  <div style={{ ...TYPE.label, paddingRight: '12px', paddingLeft: '10px' }}>Customer</div>
                   <div style={TYPE.label}>Unit</div>
                   <div style={TYPE.label}>Installed</div>
+                  <div style={TYPE.label}>Review</div>
                   <div style={{ ...TYPE.label, textAlign: 'right' as const }}>QR</div>
                 </div>
               )}
@@ -314,6 +341,7 @@ export default function QRCodesPage() {
                     const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
                     const isSelected = selectedJobId === job.id
                     const hasQR = !!job.qr_code_token
+                    const reviewClicked = !!job.review_link_clicked
 
                     /* Mobile card */
                     if (isMobile) {
@@ -331,9 +359,25 @@ export default function QRCodesPage() {
                                   <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
                                   <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>{job.customers?.suburb || '—'}</div>
                                 </div>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 9px', borderRadius: '999px', background: isSelected ? '#DDF7F5' : '#F1F5F9', border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`, fontSize: '10px', fontWeight: 800, color: isSelected ? TEAL_DARK : TEXT3, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                  {isSelected ? 'Selected' : 'Select'}
-                                </span>
+                                <div style={{ display: 'flex', gap: '5px', flexShrink: 0, alignItems: 'center' }}>
+                                  {/* Review badge */}
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                    padding: '3px 8px', borderRadius: '999px',
+                                    background: reviewClicked ? '#F0FDF9' : '#FFF7ED',
+                                    border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
+                                    fontSize: '10px', fontWeight: 800,
+                                    color: reviewClicked ? '#15803D' : '#B45309',
+                                    whiteSpace: 'nowrap',
+                                  }}>
+                                    {reviewClicked ? <IconCheckCircle size={9} /> : <IconClock size={9} />}
+                                    {reviewClicked ? 'Reviewed' : 'Pending'}
+                                  </span>
+                                  {/* Select badge */}
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 9px', borderRadius: '999px', background: isSelected ? '#DDF7F5' : '#F1F5F9', border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`, fontSize: '10px', fontWeight: 800, color: isSelected ? TEAL_DARK : TEXT3, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                    {isSelected ? 'Selected' : 'Select'}
+                                  </span>
+                                </div>
                               </div>
                               <div style={{ display: 'flex', gap: '8px' }}>
                                 <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '8px 10px' }}>
@@ -360,7 +404,7 @@ export default function QRCodesPage() {
                         onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#F8FAFC' }}
                         onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = WHITE }}
                       >
-                        <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.8fr) minmax(0,1.1fr) 120px 100px', gap: '0', alignItems: 'center', minHeight: '60px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.6fr) minmax(0,1fr) 110px 90px 90px', gap: '0', alignItems: 'center', minHeight: '60px', paddingRight: '0' }}>
                           {/* Accent bar */}
                           <div style={{ height: '100%', width: '3px', background: isSelected ? TEAL : 'transparent', marginLeft: '6px', borderRadius: '2px', alignSelf: 'stretch', minHeight: '60px', transition: 'background 0.1s' }} />
 
@@ -381,6 +425,22 @@ export default function QRCodesPage() {
                             <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>{formatDate(job.install_date)}</div>
                           </div>
 
+                          {/* Review */}
+                          <div style={{ padding: '0 12px 0 0' }}>
+                            <span style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '5px',
+                              padding: '4px 9px', borderRadius: '999px',
+                              background: reviewClicked ? '#F0FDF9' : '#FFF7ED',
+                              border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
+                              fontSize: '10px', fontWeight: 800,
+                              color: reviewClicked ? '#15803D' : '#B45309',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {reviewClicked ? <IconCheckCircle size={10} /> : <IconClock size={10} />}
+                              {reviewClicked ? 'Reviewed' : 'Pending'}
+                            </span>
+                          </div>
+
                           {/* QR status */}
                           <div style={{ paddingRight: '16px', display: 'flex', justifyContent: 'flex-end' }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 9px', borderRadius: '999px', background: isSelected ? '#DDF7F5' : hasQR ? '#F0FDF9' : '#F1F5F9', border: `1px solid ${isSelected ? '#B8ECE7' : hasQR ? '#BBF7D0' : BORDER}`, fontSize: '10px', fontWeight: 800, color: isSelected ? TEAL_DARK : hasQR ? '#15803D' : TEXT3, whiteSpace: 'nowrap' }}>
@@ -394,8 +454,8 @@ export default function QRCodesPage() {
 
                   {/* Footer */}
                   <div style={{ padding: '12px 24px', borderTop: `1px solid ${BORDER}`, background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Showing {filteredJobs.length} of {jobs.length} jobs</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>{readyCount} ready to print</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>Showing {filteredJobs.length} of {jobs.length} jobs · sorted by install date</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>{reviewClickedCount} reviewed</span>
                   </div>
                 </div>
               )}
@@ -435,12 +495,26 @@ export default function QRCodesPage() {
 
                     {/* Customer info */}
                     <div style={{ borderRadius: '12px', border: `1px solid ${BORDER}`, background: WHITE, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div>
-                        <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>Customer</div>
-                        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2 }}>
-                          {`${selectedJob.customers?.first_name || ''} ${selectedJob.customers?.last_name || ''}`.trim() || 'Customer'}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                          <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>Customer</div>
+                          <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2 }}>
+                            {`${selectedJob.customers?.first_name || ''} ${selectedJob.customers?.last_name || ''}`.trim() || 'Customer'}
+                          </div>
+                          <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{selectedJob.customers?.suburb || '—'}</div>
                         </div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{selectedJob.customers?.suburb || '—'}</div>
+                        {/* Review status in panel */}
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '5px',
+                          padding: '4px 10px', borderRadius: '999px', flexShrink: 0,
+                          background: selectedJob.review_link_clicked ? '#F0FDF9' : '#FFF7ED',
+                          border: `1px solid ${selectedJob.review_link_clicked ? '#BBF7D0' : '#FDE68A'}`,
+                          fontSize: '10px', fontWeight: 800,
+                          color: selectedJob.review_link_clicked ? '#15803D' : '#B45309',
+                        }}>
+                          {selectedJob.review_link_clicked ? <IconCheckCircle size={10} /> : <IconClock size={10} />}
+                          {selectedJob.review_link_clicked ? 'Reviewed' : 'Review pending'}
+                        </span>
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -474,23 +548,6 @@ export default function QRCodesPage() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Notes card */}
-              <div style={sideCard}>
-                <div style={{ ...TYPE.label, marginBottom: '12px' }}>Notes</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    'Select a job from the list to load its QR code.',
-                    'Save downloads the selected QR as a PNG.',
-                    'Print opens the browser print dialog.',
-                  ].map(note => (
-                    <div key={note} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <span style={{ width: 6, height: 6, marginTop: '5px', borderRadius: '50%', background: TEAL, flexShrink: 0, display: 'inline-block' }} />
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT2, lineHeight: 1.5 }}>{note}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
