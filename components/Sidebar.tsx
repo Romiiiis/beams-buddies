@@ -136,12 +136,9 @@ function InvoicesIcon() {
 function RevenueIcon() {
   return (
     <svg {...iconBase}>
-      <path d="M4 19.5h16" />
-      <path d="M7 16V9.5" />
-      <path d="M12 16V5" />
-      <path d="M17 16v-8" />
-      <path d="M6.5 10.2 12 5l5.5 3" />
-      <path d="M15.5 8h2V6" />
+      <path d="M12 5v14" />
+      <path d="M15.4 8.2c-.6-.9-1.7-1.5-3.1-1.5-1.9 0-3.3 1-3.3 2.5 0 1.3.9 2 2.9 2.4l.9.2c2.1.4 3.2 1.2 3.2 2.8 0 1.7-1.6 2.9-3.8 2.9-1.7 0-3.2-.7-4-2" />
+      <path d="M8.7 10.1c.5 1 1.6 1.5 3.2 1.8" />
     </svg>
   )
 }
