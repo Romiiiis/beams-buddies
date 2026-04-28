@@ -7,13 +7,14 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const GREEN = '#166534'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
@@ -72,6 +73,7 @@ function useIsMobile() {
     function check() {
       setIsMobile(window.innerWidth < 768)
     }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -180,6 +182,7 @@ function pctChange(current: number, previous: number) {
     if (current === 0) return 0
     return 100
   }
+
   return Math.round(((current - previous) / previous) * 100)
 }
 
@@ -208,6 +211,7 @@ function AreaChart({
     function measure() {
       if (svgRef.current) setSvgWidth(svgRef.current.getBoundingClientRect().width)
     }
+
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
@@ -235,12 +239,14 @@ function AreaChart({
   function smoothPath(pts: { x: number; y: number }[]) {
     if (pts.length < 2) return ''
     let d = `M ${pts[0].x} ${pts[0].y}`
+
     for (let i = 1; i < pts.length; i++) {
       const prev = pts[i - 1]
       const curr = pts[i]
       const cpx = (prev.x + curr.x) / 2
       d += ` C ${cpx} ${prev.y}, ${cpx} ${curr.y}, ${curr.x} ${curr.y}`
     }
+
     return d
   }
 
@@ -406,11 +412,7 @@ export default function ReportsPage() {
         return
       }
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('business_id')
-        .eq('id', session.user.id)
-        .single()
+      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
 
       if (!userData) {
         setLoading(false)
@@ -463,17 +465,13 @@ export default function ReportsPage() {
     const currentMonth = today
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
 
-    const revenueCollected = invoices
-      .filter(i => i.status === 'paid')
-      .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
+    const revenueCollected = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (Number(i.total) || 0), 0)
 
     const outstanding = invoices
       .filter(i => i.status === 'sent' || i.status === 'overdue')
       .reduce((sum, i) => sum + ((Number(i.total) || 0) - (Number(i.amount_paid) || 0)), 0)
 
-    const quotesAcceptedValue = quotes
-      .filter(q => q.status === 'accepted')
-      .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+    const quotesAcceptedValue = quotes.filter(q => q.status === 'accepted').reduce((sum, q) => sum + (Number(q.total) || 0), 0)
 
     const jobsThisMonth = jobs.filter(j => isSameMonth(j.created_at, currentMonth)).length
     const jobsLastMonth = jobs.filter(j => isSameMonth(j.created_at, previousMonth)).length
@@ -495,9 +493,7 @@ export default function ReportsPage() {
 
     const monthlyRevenue = [-5, -4, -3, -2, -1, 0].map(offset => {
       const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-      const total = invoices
-        .filter(i => isSameMonth(i.created_at, monthDate))
-        .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
+      const total = invoices.filter(i => isSameMonth(i.created_at, monthDate)).reduce((sum, i) => sum + (Number(i.total) || 0), 0)
 
       return {
         label: monthLabelFromOffset(today, offset),
@@ -569,9 +565,7 @@ export default function ReportsPage() {
     if (reportView === 'quotes') {
       const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
         const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-        const total = quotes
-          .filter(q => isSameMonth(q.created_at, monthDate))
-          .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+        const total = quotes.filter(q => isSameMonth(q.created_at, monthDate)).reduce((sum, q) => sum + (Number(q.total) || 0), 0)
         return { label: monthLabelFromOffset(today, offset), total }
       })
 
@@ -683,12 +677,13 @@ export default function ReportsPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnPrimary: React.CSSProperties = {
     height: '34px',
     padding: '0 16px',
-    border: 'none',
+    border: `1px solid ${TEAL}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -701,6 +696,7 @@ export default function ReportsPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
@@ -724,7 +720,7 @@ export default function ReportsPage() {
   const btnMobilePrimary: React.CSSProperties = {
     ...btnMobileSm,
     background: TEAL,
-    border: 'none',
+    border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
@@ -792,9 +788,7 @@ export default function ReportsPage() {
             <div style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
               {title}
             </div>
-            <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>
-              {subtitle}
-            </div>
+            <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{subtitle}</div>
           </div>
 
           <button onClick={() => router.push(route)} style={cardArrowBtn}>
@@ -822,6 +816,7 @@ export default function ReportsPage() {
             <div style={{ display: 'grid', gap: '9px' }}>
               {data.map(([name, count], index) => {
                 const width = Math.max(8, Math.round((count / maxCount) * 100))
+
                 return (
                   <div
                     key={name}
@@ -918,14 +913,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        fontFamily: FONT,
-        background: BG,
-        minHeight: '100vh',
-      }}
-    >
+    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/reports" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
@@ -945,9 +933,7 @@ export default function ReportsPage() {
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                   </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Reports
-                  </h1>
+                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
                 </div>
               </div>
 
@@ -972,19 +958,37 @@ export default function ReportsPage() {
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {todayStr}
                   </div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Reports
-                  </h1>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
                 </div>
 
                 <div style={{ flex: 1 }} />
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button onClick={() => window.print()} style={btnOutline}>
+                  <button
+                    onClick={() => window.print()}
+                    style={btnOutline}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
                     <IconPrint size={14} />
                     Print report
                   </button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}>
+                  <button
+                    onClick={() => router.push('/dashboard/invoices')}
+                    style={btnPrimary}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
                     <IconSpark size={14} />
                     View invoices
                   </button>
@@ -1028,7 +1032,22 @@ export default function ReportsPage() {
                       <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.value}
                       </div>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0, alignSelf: 'flex-end', marginTop: '2px' }}>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '3px 7px',
+                          borderRadius: '999px',
+                          background: item.up ? '#E6F7F6' : '#FFF0EE',
+                          color: item.up ? TEAL_DARK : '#C0392B',
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                          alignSelf: 'flex-end',
+                          marginTop: '2px',
+                        }}
+                      >
                         {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                         {item.delta}
                       </span>
@@ -1045,7 +1064,20 @@ export default function ReportsPage() {
                       </div>
                     </div>
 
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0 }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        padding: '3px 7px',
+                        borderRadius: '999px',
+                        background: item.up ? '#E6F7F6' : '#FFF0EE',
+                        color: item.up ? TEAL_DARK : '#C0392B',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
                       {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                       {item.delta}
                     </span>
@@ -1055,14 +1087,7 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
@@ -1077,9 +1102,7 @@ export default function ReportsPage() {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: '#F0FDF9', border: '1px solid #BBF7ED', flexShrink: 0, marginTop: '2px' }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>
-                      Live
-                    </span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>Live</span>
                   </div>
                 </div>
 
@@ -1186,15 +1209,11 @@ export default function ReportsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
-                        {trendConfig.selectedLabel}
-                      </span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{trendConfig.selectedLabel}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1', border: '1.5px solid #94A3B8' }} />
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>
-                        Monthly count
-                      </span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>Monthly count</span>
                     </div>
                   </div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>
@@ -1205,14 +1224,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px', alignItems: 'start' }}>
             {renderRankingCard({
               title: 'Top suburbs',
               subtitle: 'Customer concentration by suburb across your database.',
