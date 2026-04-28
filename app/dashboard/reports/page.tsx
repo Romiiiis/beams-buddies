@@ -8,9 +8,6 @@ import { Sidebar } from '@/components/Sidebar'
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
 const TEAL_LIGHT = '#E6F7F6'
-const RED = '#B91C1C'
-const AMBER = '#92400E'
-const GREEN = '#166534'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -159,35 +156,6 @@ function IconExternalLink({ size = 14 }: { size?: number }) {
       <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
-}
-
-function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function pctChange(current: number, previous: number) {
-  if (previous === 0) {
-    if (current === 0) return 0
-    return 100
-  }
-
-  return Math.round(((current - previous) / previous) * 100)
-}
-
-function formatDelta(n: number) {
-  return `${n >= 0 ? '+' : ''}${n}%`
 }
 
 function AreaChart({
@@ -635,14 +603,6 @@ export default function ReportsPage() {
     }
   }, [reportView, report, jobs, quotes, today])
 
-  const currentJobs = report.jobsThisMonth
-  const previousJobs = report.jobsLastMonth
-  const jobDelta = pctChange(currentJobs, previousJobs)
-
-  const currentQuotes = report.quotesThisMonth
-  const previousQuotes = quotes.filter(q => isSameMonth(q.created_at, new Date(today.getFullYear(), today.getMonth() - 1, 1))).length
-  const quoteDelta = pctChange(currentQuotes, previousQuotes)
-
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
@@ -680,10 +640,10 @@ export default function ReportsPage() {
     transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnPrimary: React.CSSProperties = {
+  const btnTeal: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEAL}`,
+    padding: '0 14px',
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -694,14 +654,14 @@ export default function ReportsPage() {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
     transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
-    padding: '0 10px',
+    padding: '0 12px',
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
@@ -717,37 +677,37 @@ export default function ReportsPage() {
     flex: 1,
   }
 
-  const btnMobilePrimary: React.CSSProperties = {
+  const btnMobileTeal: React.CSSProperties = {
     ...btnMobileSm,
     background: TEAL,
     border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
-  const topCards = [
+  const statChips = [
     {
-      label: 'Revenue collected',
+      label: 'Revenue Collected',
       value: formatMoney(report.revenueCollected),
-      delta: formatDelta(0),
-      up: true,
+      sub: 'paid invoices',
+      onClick: () => router.push('/dashboard/invoices'),
     },
     {
       label: 'Outstanding',
       value: formatMoney(report.outstanding),
-      delta: report.outstanding > 0 ? 'Open' : 'Clear',
-      up: report.outstanding === 0,
+      sub: report.outstanding > 0 ? 'open balance' : 'clear',
+      onClick: () => router.push('/dashboard/invoices'),
     },
     {
-      label: 'Jobs this month',
+      label: 'Jobs This Month',
       value: report.jobsThisMonth,
-      delta: formatDelta(jobDelta),
-      up: jobDelta >= 0,
+      sub: 'created this month',
+      onClick: () => router.push('/dashboard/jobs'),
     },
     {
-      label: 'Quotes this month',
+      label: 'Quotes This Month',
       value: report.quotesThisMonth,
-      delta: formatDelta(quoteDelta),
-      up: quoteDelta >= 0,
+      sub: 'created this month',
+      onClick: () => router.push('/dashboard/quotes'),
     },
   ]
 
@@ -770,25 +730,31 @@ export default function ReportsPage() {
     const totalCount = data.reduce((sum, item) => sum + item[1], 0)
 
     return (
-      <div style={{ ...card, borderRadius: '16px' }}>
+      <div style={{ ...card, borderRadius: '18px', border: `1px solid ${BORDER}`, boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
         <div
           style={{
-            padding: isMobile ? '16px' : '18px 20px 16px',
+            padding: isMobile ? '16px' : '18px 20px',
             borderBottom: `1px solid ${BORDER}`,
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
             gap: '12px',
+            background: WHITE,
           }}
         >
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
-              Report breakdown
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+            <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>
+                  {title}
+                </span>
+                <span style={{ height: '22px', padding: '0 8px', borderRadius: '999px', border: `1px solid ${BORDER}`, background: '#F8FAFC', color: TEXT3, fontSize: '10px', fontWeight: 800, display: 'inline-flex', alignItems: 'center' }}>
+                  {data.length} shown
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{subtitle}</div>
             </div>
-            <div style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-              {title}
-            </div>
-            <div style={{ ...TYPE.bodySm, marginTop: '7px' }}>{subtitle}</div>
           </div>
 
           <button onClick={() => router.push(route)} style={cardArrowBtn}>
@@ -834,8 +800,8 @@ export default function ReportsPage() {
                             width: 30,
                             height: 30,
                             borderRadius: '10px',
-                            background: index === 0 ? '#E6F7F6' : '#F8FAFC',
-                            border: `1px solid ${index === 0 ? '#BBF7ED' : BORDER}`,
+                            background: index === 0 ? TEAL_LIGHT : '#F8FAFC',
+                            border: `1px solid ${index === 0 ? '#BFE7E3' : BORDER}`,
                             color: index === 0 ? TEAL_DARK : TEXT3,
                             display: 'flex',
                             alignItems: 'center',
@@ -916,54 +882,69 @@ export default function ReportsPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/reports" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '12px' : '20px 24px',
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            background: BG,
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </div>
+                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
               </div>
 
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => window.print()} style={btnMobileSm}>
-                    <IconPrint size={13} />
-                    Print
-                  </button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobilePrimary}>
-                    <IconSpark size={12} />
-                    View invoices
-                  </button>
-                </div>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => window.print()} style={btnMobileSm}>
+                  <IconPrint size={13} />
+                  Print
+                </button>
+                <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileTeal}>
+                  View Invoices
+                </button>
+              </div>
+
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '10px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                      minWidth: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                  >
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {todayStr}
-                  </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{todayStr}</div>
                   <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
                 </div>
 
-                <div style={{ flex: 1 }} />
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => window.print()}
                     style={btnOutline}
@@ -977,11 +958,11 @@ export default function ReportsPage() {
                     }}
                   >
                     <IconPrint size={14} />
-                    Print report
+                    Print Report
                   </button>
                   <button
                     onClick={() => router.push('/dashboard/invoices')}
-                    style={btnPrimary}
+                    style={btnTeal}
                     onMouseEnter={e => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
@@ -989,118 +970,51 @@ export default function ReportsPage() {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
-                    <IconSpark size={14} />
-                    View invoices
+                    View Invoices
                   </button>
                 </div>
+              </div>
+
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '14px 20px',
+                      cursor: 'pointer',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                      minWidth: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)',
-              gap: '12px',
-            }}
-          >
-            {topCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: '14px',
-                  padding: isMobile ? '10px 10px' : '10px 14px',
-                  overflow: 'hidden',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '62px' : '60px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-              >
-                {isMobile ? (
-                  <div style={{ display: 'grid', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flex: 1 }}>
-                        {item.label}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.value}
-                      </div>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          padding: '3px 7px',
-                          borderRadius: '999px',
-                          background: item.up ? '#E6F7F6' : '#FFF0EE',
-                          color: item.up ? TEAL_DARK : '#C0392B',
-                          fontSize: '9px',
-                          fontWeight: 800,
-                          flexShrink: 0,
-                          alignSelf: 'flex-end',
-                          marginTop: '2px',
-                        }}
-                      >
-                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                        {item.delta}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.value}
-                      </div>
-                    </div>
-
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        padding: '3px 7px',
-                        borderRadius: '999px',
-                        background: item.up ? '#E6F7F6' : '#FFF0EE',
-                        color: item.up ? TEAL_DARK : '#C0392B',
-                        fontSize: '9px',
-                        fontWeight: 800,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                      {item.delta}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
               <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
-                      Last 6 months
-                    </div>
-                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {trendConfig.title}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
+                        Last 6 months
+                      </div>
+                      <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                        {trendConfig.title}
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: '#F0FDF9', border: '1px solid #BBF7ED', flexShrink: 0, marginTop: '2px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: TEAL_LIGHT, border: '1px solid #BFE7E3', flexShrink: 0, marginTop: '2px' }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
                     <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>Live</span>
                   </div>
