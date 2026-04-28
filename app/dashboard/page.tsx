@@ -374,28 +374,6 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
               {peak.label}
             </div>
           </div>
-
-          <div style={{
-            marginTop: 'auto',
-            border: `1px solid ${BORDER}`,
-            borderRadius: '12px',
-            padding: '10px 11px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '9px',
-            background: WHITE,
-          }}>
-            <span style={{
-              width: 12,
-              height: 12,
-              borderRadius: '4px',
-              background: TEAL,
-              display: 'inline-block',
-            }} />
-            <span style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
-              {metricLabel}
-            </span>
-          </div>
         </div>
 
         <div style={{ padding: '22px 22px 14px', minWidth: 0 }}>
