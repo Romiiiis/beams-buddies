@@ -169,34 +169,6 @@ function IconSearch({ size = 16 }: { size?: number }) {
   )
 }
 
-function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M22 7l-8 8-4-4-6 6"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M22 17l-8-8-4 4-6-6"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 function pctChange(current: number, previous: number) {
   if (previous === 0) {
     if (current === 0) return 0
@@ -205,31 +177,29 @@ function pctChange(current: number, previous: number) {
   return Math.round(((current - previous) / previous) * 100)
 }
 
-function formatDelta(n: number) {
-  return `${n >= 0 ? '+' : ''}${n}%`
-}
-
-const STATUS_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
-  booked: { bg: '#DCFCE7', color: '#166534', label: 'Booked' },
-  pending: { bg: '#FEF3C7', color: '#78350F', label: 'Pending' },
-  incomplete: { bg: '#F1F5F9', color: TEXT3, label: 'Incomplete' },
-  wrong_number: { bg: '#FEE2E2', color: '#7F1D1D', label: 'Wrong number' },
-  converted: { bg: '#DBEAFE', color: '#1E3A8A', label: 'Converted' },
+const STATUS_CONFIG: Record<string, { bg: string; color: string; border: string; label: string }> = {
+  booked: { bg: '#DCFCE7', color: '#166534', border: '#BBF7D0', label: 'Booked' },
+  pending: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A', label: 'Pending' },
+  incomplete: { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: 'Incomplete' },
+  wrong_number: { bg: '#FEE2E2', color: '#7F1D1D', border: '#FECACA', label: 'Wrong number' },
+  converted: { bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3', label: 'Converted' },
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const s = STATUS_CONFIG[status] || { bg: '#F1F5F9', color: TEXT3, label: status }
+  const s = STATUS_CONFIG[status] || { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: status }
   return (
     <span
       style={{
         background: s.bg,
         color: s.color,
+        border: `1px solid ${s.border}`,
         padding: '6px 10px',
         borderRadius: '999px',
         fontSize: '10px',
         fontWeight: 800,
         whiteSpace: 'nowrap',
-        display: 'inline-block',
+        display: 'inline-flex',
+        alignItems: 'center',
         letterSpacing: '0.02em',
       }}
     >
@@ -238,28 +208,30 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-const JOB_TYPE_CONFIG: Record<string, { bg: string; color: string }> = {
-  installation: { bg: '#EDE9FE', color: '#4C1D95' },
-  service: { bg: '#E8F4F1', color: '#0A4F4C' },
-  repair: { bg: '#FFE4E6', color: '#881337' },
-  quote: { bg: '#FEF3C7', color: '#78350F' },
-  site_visit: { bg: '#DBEAFE', color: '#1E3A8A' },
+const JOB_TYPE_CONFIG: Record<string, { bg: string; color: string; border: string }> = {
+  installation: { bg: '#EDE9FE', color: '#4C1D95', border: '#DDD6FE' },
+  service: { bg: '#E8F4F1', color: '#0A4F4C', border: '#CBE7E1' },
+  repair: { bg: '#FFE4E6', color: '#881337', border: '#FECDD3' },
+  quote: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A' },
+  site_visit: { bg: '#DBEAFE', color: '#1E3A8A', border: '#BFDBFE' },
 }
 
 function JobTypeBadge({ type }: { type: string }) {
-  const s = JOB_TYPE_CONFIG[type] || { bg: '#F1F5F9', color: TEXT3 }
+  const s = JOB_TYPE_CONFIG[type] || { bg: '#F1F5F9', color: TEXT3, border: BORDER }
   return (
     <span
       style={{
         background: s.bg,
         color: s.color,
+        border: `1px solid ${s.border}`,
         padding: '6px 10px',
         borderRadius: '999px',
         fontSize: '10px',
         fontWeight: 800,
         textTransform: 'capitalize',
         whiteSpace: 'nowrap',
-        display: 'inline-block',
+        display: 'inline-flex',
+        alignItems: 'center',
         letterSpacing: '0.02em',
       }}
     >
@@ -350,6 +322,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           flexDirection: 'column',
           borderLeft: `1px solid ${BORDER}`,
           overflow: 'hidden',
+          fontFamily: FONT,
         }}
       >
         <div
@@ -361,12 +334,12 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ ...TYPE.label, marginBottom: '6px' }}>Inbound call</div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px', letterSpacing: '-0.035em' }}>
                 {lead.customer_name}
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3 }}>{lead.phone_number}</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{lead.phone_number}</div>
             </div>
 
             <button
@@ -402,11 +375,12 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
             }}
           >
-            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Call summary</div>
+            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+              <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Call summary</div>
             </div>
             <div style={{ padding: '14px 16px', ...TYPE.body, fontSize: '13px', lineHeight: 1.7 }}>
               {lead.issue_summary || 'No summary recorded.'}
@@ -419,12 +393,14 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
             }}
           >
-            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Call details</div>
+            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+              <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Call details</div>
             </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
               {[
                 { label: 'Suburb', value: lead.suburb || '—' },
@@ -463,7 +439,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
             }}
           >
             <div
@@ -472,11 +448,11 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 borderBottom: `1px solid ${BORDER}`,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
               }}
             >
-              <IconEdit size={14} />
-              <span style={{ ...TYPE.titleSm }}>Update this lead</span>
+              <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+              <span style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Update this lead</span>
             </div>
 
             <div style={{ padding: '16px', display: 'grid', gap: '16px' }}>
@@ -491,8 +467,8 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                         height: '32px',
                         padding: '0 12px',
                         borderRadius: '999px',
-                        border: status === key ? 'none' : `1px solid ${BORDER}`,
-                        background: status === key ? cfg.color : WHITE,
+                        border: status === key ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
+                        background: status === key ? TEAL : WHITE,
                         color: status === key ? WHITE : TEXT2,
                         fontSize: '11px',
                         fontWeight: 700,
@@ -546,7 +522,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 border: `1px solid ${BORDER}`,
                 borderRadius: '14px',
                 overflow: 'hidden',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
               }}
             >
               <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
@@ -766,7 +742,7 @@ export default function LeadsPage() {
           equipment_type: 'other',
           brand: 'TBC',
           install_date: lead.preferred_date || new Date().toISOString().split('T')[0],
-          notes: `${lead.job_type} — ${lead.issue_summary}. Booked: ${lead.preferred_date} at ${lead.preferred_start_time}.`,
+          notes: `${lead.job_type} - ${lead.issue_summary}. Booked: ${lead.preferred_date} at ${lead.preferred_start_time}.`,
         },
       ])
 
@@ -806,6 +782,7 @@ export default function LeadsPage() {
   const totalLeads = leads.length
   const bookedCount = leads.filter(l => l.status === 'booked').length
   const convertedCount = leads.filter(l => l.status === 'converted').length
+  const pendingCount = leads.filter(l => l.status === 'pending').length
 
   const currentLeads = leads.filter(l => inRange(l.created_at, startCurrent30, now)).length
   const prevLeads = leads.filter(l => inRange(l.created_at, startPrev30, startCurrent30)).length
@@ -831,9 +808,9 @@ export default function LeadsPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
+    borderRadius: '18px',
     overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -855,10 +832,10 @@ export default function LeadsPage() {
     transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnDark: React.CSSProperties = {
+  const btnTeal: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEAL}`,
+    padding: '0 14px',
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -869,14 +846,14 @@ export default function LeadsPage() {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
     transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
-    padding: '0 10px',
+    padding: '0 12px',
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
@@ -892,31 +869,37 @@ export default function LeadsPage() {
     flex: 1,
   }
 
-  const btnMobileDark: React.CSSProperties = {
+  const btnMobileTeal: React.CSSProperties = {
     ...btnMobileSm,
     background: TEAL,
     border: `1px solid ${TEAL}`,
     color: WHITE,
   }
 
-  const statCards = [
+  const statChips = [
     {
       label: 'Leads',
       value: totalLeads,
-      delta: formatDelta(leadsDelta),
-      up: leadsDelta >= 0,
+      sub: `${leadsDelta >= 0 ? '+' : ''}${leadsDelta}% last 30 days`,
+      onClick: () => setFilterStatus('all'),
     },
     {
       label: 'Booked',
       value: bookedCount,
-      delta: formatDelta(bookedDelta),
-      up: bookedDelta >= 0,
+      sub: `${bookedDelta >= 0 ? '+' : ''}${bookedDelta}% last 30 days`,
+      onClick: () => setFilterStatus('booked'),
+    },
+    {
+      label: 'Pending',
+      value: pendingCount,
+      sub: 'Need follow-up',
+      onClick: () => setFilterStatus('pending'),
     },
     {
       label: 'Converted',
       value: convertedCount,
-      delta: formatDelta(convertedDelta),
-      up: convertedDelta >= 0,
+      sub: `${convertedDelta >= 0 ? '+' : ''}${convertedDelta}% last 30 days`,
+      onClick: () => setFilterStatus('converted'),
     },
   ]
 
@@ -957,7 +940,7 @@ export default function LeadsPage() {
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '12px' : '20px 24px',
+            padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -966,73 +949,93 @@ export default function LeadsPage() {
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: TEXT3,
+                    letterSpacing: '0.07em',
+                    textTransform: 'uppercase',
+                    marginBottom: '5px',
+                  }}
+                >
+                  {new Date().toLocaleDateString('en-AU', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                </div>
+
+                <h1
+                  style={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: '-0.05em',
+                    margin: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  Leads
+                </h1>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                  <IconSpark size={12} /> Open Jobs
+                </button>
+                <button
+                  onClick={() => {
+                    setSearch('')
+                    setFilterStatus('all')
+                  }}
+                  style={btnMobileTeal}
+                >
+                  Reset
+                </button>
+              </div>
+
               <div
                 style={{
                   background: WHITE,
-                  padding: '16px 16px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                 }}
               >
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                {statChips.map((chip, i) => (
                   <div
+                    key={chip.label}
+                    onClick={chip.onClick}
                     style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
+                      padding: '10px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent'
                     }}
                   >
-                    {new Date().toLocaleDateString('en-AU', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
                   </div>
-
-                  <h1
-                    style={{
-                      fontSize: '26px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    Leads
-                  </h1>
-                </div>
-              </div>
-
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconSpark size={12} /> Open Jobs
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterStatus('all')
-                    }}
-                    style={btnMobileDark}
-                  >
-                    Reset
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
                   <div
                     style={{
                       fontSize: '10px',
@@ -1060,9 +1063,7 @@ export default function LeadsPage() {
                   </h1>
                 </div>
 
-                <div style={{ flex: 1 }} />
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={btnOutline}
@@ -1083,7 +1084,7 @@ export default function LeadsPage() {
                       setSearch('')
                       setFilterStatus('all')
                     }}
-                    style={btnDark}
+                    style={btnTeal}
                     onMouseEnter={e => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
@@ -1095,394 +1096,375 @@ export default function LeadsPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(3, minmax(0, 1fr))' : 'repeat(3, 1fr)',
-              gap: '12px',
-            }}
-          >
-            {statCards.map(item => (
               <div
-                key={item.label}
                 style={{
                   background: WHITE,
                   border: `1px solid ${BORDER}`,
-                  borderRadius: '14px',
-                  padding: isMobile ? '10px 12px' : '10px 14px',
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
                   overflow: 'hidden',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '58px' : '60px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: TEXT3,
-                        marginBottom: '4px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {item.label}
-                    </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {item.value}
-                    </div>
-                  </div>
-
-                  <span
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      padding: '3px 7px',
-                      borderRadius: '999px',
-                      background: item.up ? '#E6F7F6' : '#FFF0EE',
-                      color: item.up ? TEAL_DARK : '#C0392B',
-                      fontSize: '9px',
-                      fontWeight: 800,
-                      flexShrink: 0,
+                      padding: '14px 20px',
+                      cursor: 'pointer',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent'
                     }}
                   >
-                    {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
-                    {item.delta}
-                  </span>
-                </div>
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
 
-          <div style={card}>
-            <div
-              style={{
-                padding: '14px 20px',
-                borderBottom: `1px solid ${BORDER}`,
-                display: 'flex',
-                alignItems: isMobile ? 'stretch' : 'center',
-                justifyContent: 'space-between',
-                flexDirection: isMobile ? 'column' : 'row',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Inbound calls</div>
-                <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Calls captured from Chloe, ready for follow-up</div>
-              </div>
-
+          <div style={{ padding: isMobile ? '0 12px' : 0 }}>
+            <div style={card}>
               <div
                 style={{
+                  padding: isMobile ? '16px' : '18px 20px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  flexWrap: 'wrap',
-                  width: isMobile ? '100%' : 'auto',
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '14px',
+                  background: WHITE,
                 }}
               >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Inbound calls</span>
+                      <span
+                        style={{
+                          height: '22px',
+                          padding: '0 8px',
+                          borderRadius: '999px',
+                          border: `1px solid ${BORDER}`,
+                          background: '#F8FAFC',
+                          color: TEXT3,
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {filtered.length} shown
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
+                      Calls captured from Chloe, ready for follow-up and job conversion.
+                    </div>
+                  </div>
+                </div>
+
                 <div
                   style={{
-                    width: isMobile ? '100%' : '300px',
-                    maxWidth: '100%',
-                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                    width: isMobile ? '100%' : 'auto',
                   }}
                 >
-                  <span
+                  <div
                     style={{
-                      position: 'absolute',
-                      left: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: TEXT3,
-                      display: 'inline-flex',
+                      width: isMobile ? '100%' : '320px',
+                      maxWidth: '100%',
+                      position: 'relative',
                     }}
                   >
-                    <IconSearch size={15} />
-                  </span>
+                    <span
+                      style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: TEXT3,
+                        display: 'inline-flex',
+                      }}
+                    >
+                      <IconSearch size={15} />
+                    </span>
 
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by name, phone, suburb..."
+                    <input
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      placeholder="Search by name, phone, suburb..."
+                      style={{
+                        height: '42px',
+                        width: '100%',
+                        borderRadius: '12px',
+                        border: `1px solid ${BORDER}`,
+                        padding: '0 12px 0 38px',
+                        fontSize: '12px',
+                        background: '#F8FAFC',
+                        color: TEXT,
+                        fontFamily: FONT,
+                        outline: 'none',
+                        fontWeight: 600,
+                      }}
+                    />
+                  </div>
+
+                  <select
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
                     style={{
-                      height: '40px',
-                      width: '100%',
-                      borderRadius: '10px',
+                      height: '42px',
+                      minWidth: isMobile ? '100%' : '190px',
+                      width: isMobile ? '100%' : 'auto',
+                      padding: '0 12px',
+                      borderRadius: '12px',
                       border: `1px solid ${BORDER}`,
-                      padding: '0 12px 0 38px',
+                      background: '#F8FAFC',
+                      color: TEXT2,
                       fontSize: '12px',
-                      background: WHITE,
-                      color: TEXT,
+                      fontWeight: 700,
                       fontFamily: FONT,
                       outline: 'none',
                     }}
-                  />
+                  >
+                    <option value="all">All</option>
+                    <option value="booked">Booked</option>
+                    <option value="pending">Pending</option>
+                    <option value="incomplete">Incomplete</option>
+                    <option value="converted">Converted</option>
+                    <option value="wrong_number">Wrong number</option>
+                  </select>
                 </div>
+              </div>
 
-                <select
-                  value={filterStatus}
-                  onChange={e => setFilterStatus(e.target.value)}
-                  style={{
-                    height: '40px',
-                    minWidth: isMobile ? '100%' : '190px',
-                    width: isMobile ? '100%' : 'auto',
-                    padding: '0 12px',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    fontFamily: FONT,
-                    outline: 'none',
-                    appearance: 'none',
-                  }}
-                >
-                  <option value="all">All</option>
-                  <option value="booked">Booked</option>
-                  <option value="pending">Pending</option>
-                  <option value="incomplete">Incomplete</option>
-                  <option value="converted">Converted</option>
-                  <option value="wrong_number">Wrong number</option>
-                </select>
-
+              {!isMobile && filtered.length > 0 && (
                 <div
                   style={{
-                    height: '40px',
-                    padding: '0 12px',
-                    borderRadius: '10px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    display: 'inline-flex',
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) 120px',
+                    gap: '14px',
                     alignItems: 'center',
-                    whiteSpace: 'nowrap',
-                    gap: '6px',
-                    width: isMobile ? '100%' : 'auto',
-                    justifyContent: isMobile ? 'center' : 'flex-start',
+                    padding: '11px 20px',
+                    borderBottom: `1px solid ${BORDER}`,
+                    background: '#FCFCFD',
                   }}
                 >
-                  <IconFilter size={14} /> {filtered.length} shown
+                  {['Lead', 'Suburb', 'Preferred booking', 'Call summary', 'Status'].map(label => (
+                    <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      {label}
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
+
+              {filtered.length === 0 ? (
+                <div
+                  style={{
+                    padding: '32px 18px',
+                    textAlign: 'center',
+                    color: TEXT3,
+                    fontSize: '13px',
+                  }}
+                >
+                  No leads yet. Calls from Chloe will appear here.
+                </div>
+              ) : (
+                filtered.map(lead => {
+                  const preferredBooking = lead.preferred_date
+                    ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
+                    : 'Not set'
+
+                  return (
+                    <div
+                      key={lead.id}
+                      onClick={() => setSelectedLead(lead)}
+                      style={{
+                        display: isMobile ? 'block' : 'grid',
+                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) 120px',
+                        gap: isMobile ? undefined : '14px',
+                        alignItems: isMobile ? undefined : 'center',
+                        margin: isMobile ? '0' : '10px 12px',
+                        padding: isMobile ? '14px 16px' : '14px 16px',
+                        borderBottom: isMobile ? `1px solid ${BORDER}` : undefined,
+                        border: isMobile ? 'none' : `1px solid ${BORDER}`,
+                        borderRadius: isMobile ? '0' : '14px',
+                        background: WHITE,
+                        cursor: 'pointer',
+                        transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = TEAL_LIGHT
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = WHITE
+                      }}
+                    >
+                      {isMobile ? (
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: '12px',
+                              background: TEAL_LIGHT,
+                              border: `1px solid #BFE7E3`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              color: TEAL_DARK,
+                            }}
+                          >
+                            <IconPhone size={16} />
+                          </div>
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+                              <div
+                                style={{
+                                  fontSize: '14px',
+                                  fontWeight: 800,
+                                  color: TEXT,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {lead.customer_name}
+                              </div>
+                              <StatusBadge status={lead.status} />
+                            </div>
+
+                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>
+                              {lead.phone_number || 'No phone saved'}
+                            </div>
+
+                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
+                              {lead.suburb || 'No suburb saved'}
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <JobTypeBadge type={lead.job_type} />
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: preferredBooking === 'Not set' ? TEXT3 : TEAL_DARK }}>
+                                {preferredBooking === 'Not set' ? 'No booking set' : preferredBooking}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}>
+                            <IconArrow size={12} />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 850,
+                                  color: TEXT,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {lead.customer_name}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '11px',
+                                  color: TEXT3,
+                                  marginTop: '3px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {lead.phone_number || 'No phone saved'}
+                              </div>
+                              <div style={{ marginTop: '6px' }}>
+                                <JobTypeBadge type={lead.job_type} />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 750,
+                                color: TEXT2,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {lead.suburb || 'Not provided'}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                color: TEXT3,
+                                marginTop: '3px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {lead.address || 'No address saved'}
+                            </div>
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: preferredBooking === 'Not set' ? TEXT3 : TEXT2 }}>{preferredBooking}</div>
+                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px' }}>Preferred time</div>
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: TEXT3,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {lead.issue_summary || 'No summary recorded'}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <StatusBadge status={lead.status} />
+                            <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center' }}>
+                              <IconArrow size={12} />
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
+                })
+              )}
             </div>
-
-            {filtered.length === 0 ? (
-              <div
-                style={{
-                  padding: '32px 18px',
-                  textAlign: 'center',
-                  color: TEXT3,
-                  fontSize: '13px',
-                }}
-              >
-                No leads yet. Calls from Chloe will appear here.
-              </div>
-            ) : (
-              filtered.map(lead => {
-                return (
-                  <div
-                    key={lead.id}
-                    onClick={() => setSelectedLead(lead)}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr',
-                      gap: '12px',
-                      alignItems: 'center',
-                      padding: isMobile ? '12px 14px' : '12px 16px',
-                      borderBottom: `1px solid ${BORDER}`,
-                      borderLeft: `3px solid ${TEAL}`,
-                      cursor: 'pointer',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                    onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        justifyContent: 'space-between',
-                        gap: '12px',
-                        flexDirection: isMobile ? 'column' : 'row',
-                      }}
-                    >
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ ...TYPE.label, marginBottom: '5px' }}>Inbound call</div>
-                        <div
-                          style={{
-                            fontSize: '15px',
-                            fontWeight: 800,
-                            color: TEXT,
-                            lineHeight: 1.2,
-                            marginBottom: '4px',
-                          }}
-                        >
-                          {lead.customer_name}
-                        </div>
-                        <div style={{ ...TYPE.bodySm, fontSize: '12px', color: TEXT2 }}>{lead.phone_number}</div>
-                      </div>
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          flexWrap: 'wrap',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <JobTypeBadge type={lead.job_type} />
-                        <StatusBadge status={lead.status} />
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr)) auto',
-                        gap: '10px',
-                        alignItems: 'stretch',
-                      }}
-                    >
-                      <div
-                        style={{
-                          padding: '10px 11px',
-                          borderRadius: '12px',
-                          border: `1px solid ${BORDER}`,
-                          background: '#FCFCFD',
-                          minWidth: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            color: TEXT3,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          Suburb
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: TEXT2,
-                            whiteSpace: isMobile ? 'normal' : 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {lead.suburb || 'Not provided'}
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          padding: '10px 11px',
-                          borderRadius: '12px',
-                          border: `1px solid ${BORDER}`,
-                          background: '#FCFCFD',
-                          minWidth: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            color: TEXT3,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          Preferred booking
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: TEXT2,
-                            whiteSpace: isMobile ? 'normal' : 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {lead.preferred_date
-                            ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
-                            : 'Not set'}
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          padding: '10px 11px',
-                          borderRadius: '12px',
-                          border: `1px solid ${BORDER}`,
-                          background: '#FCFCFD',
-                          minWidth: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            color: TEXT3,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          Call summary
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: TEXT3,
-                            whiteSpace: isMobile ? 'normal' : 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {lead.issue_summary || 'No summary recorded'}
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          alignSelf: isMobile ? 'start' : 'center',
-                          justifySelf: isMobile ? 'start' : 'end',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          color: TEAL,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        Open <IconArrow size={12} />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })
-            )}
           </div>
         </div>
       </div>
