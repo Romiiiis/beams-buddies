@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
@@ -9,11 +9,12 @@ import { useBusinessData } from '@/lib/business-context'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
@@ -73,6 +74,7 @@ function useIsMobile() {
     function check() {
       setIsMobile(window.innerWidth < 768)
     }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -141,6 +143,14 @@ function IconPercent({ size = 16 }: { size?: number }) {
       <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
       <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
       <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function IconArrow({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -408,16 +418,52 @@ export default function SettingsPage() {
     year: 'numeric',
   })
 
+  const enabledPlatforms = useMemo(() => {
+    return (
+      (form.google_review_url ? 1 : 0) +
+      (form.facebook_review_url ? 1 : 0) +
+      platforms.filter(p => p.url).length
+    )
+  }, [form.google_review_url, form.facebook_review_url, platforms])
+
+  const statChips = [
+    {
+      label: 'Profile',
+      value: userProfile.full_name ? 'Ready' : 'Setup',
+      sub: 'account details',
+      onClick: () => document.getElementById('profile-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    },
+    {
+      label: 'Business',
+      value: business.name ? 'Active' : 'Setup',
+      sub: 'brand details',
+      onClick: () => document.getElementById('business-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    },
+    {
+      label: 'Banking',
+      value: bankDetails.account_number ? 'Saved' : 'Setup',
+      sub: 'invoice details',
+      onClick: () => document.getElementById('bank-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    },
+    {
+      label: 'Platforms',
+      value: enabledPlatforms,
+      sub: 'review links',
+      onClick: () => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    },
+  ]
+
   const input: React.CSSProperties = {
     width: '100%',
     height: '42px',
     padding: '0 12px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
     background: WHITE,
     color: TEXT,
     fontFamily: FONT,
     fontSize: '13px',
+    fontWeight: 600,
     outline: 'none',
     boxSizing: 'border-box',
   }
@@ -427,6 +473,7 @@ export default function SettingsPage() {
     height: '88px',
     padding: '10px 12px',
     resize: 'none',
+    lineHeight: 1.45,
   }
 
   const selectStyle: React.CSSProperties = {
@@ -448,50 +495,75 @@ export default function SettingsPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
+    borderRadius: '18px',
     overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-  }
-
-  const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '15px',
-    fontWeight: 800,
-    color: TEXT,
-    marginBottom: '4px',
-    letterSpacing: '-0.02em',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
   }
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    border: 'none',
+    borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
+    color: WHITE,
+    background: TEAL,
     cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '7px',
-    background: TEAL,
-    color: WHITE,
-    border: 'none',
-    borderRadius: '9px',
+    whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
     opacity: saving || uploadingLogo ? 0.7 : 1,
   }
 
   const btnOutline: React.CSSProperties = {
-    height: '38px',
-    padding: '0 16px',
-    borderRadius: '8px',
+    height: '34px',
+    padding: '0 14px',
     border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
+    borderRadius: '9px',
     fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
     cursor: 'pointer',
     fontFamily: FONT,
-    fontWeight: 700,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 12px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileTeal: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
+    color: WHITE,
+    cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+    opacity: saving || uploadingLogo ? 0.7 : 1,
   }
 
   function SectionHeader({
@@ -506,19 +578,24 @@ export default function SettingsPage() {
     return (
       <div
         style={{
-          padding: '14px 16px 12px',
+          padding: isMobile ? '16px' : '18px 20px',
           borderBottom: `1px solid ${BORDER}`,
           display: 'flex',
           alignItems: isMobile ? 'stretch' : 'center',
           justifyContent: 'space-between',
           flexDirection: isMobile ? 'column' : 'row',
-          gap: '10px',
+          gap: '14px',
           background: WHITE,
         }}
       >
-        <div>
-          <div style={sectionHeaderTitle}>{title}</div>
-          <div style={{ ...TYPE.bodySm }}>{description}</div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+          <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>{title}</span>
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{description}</div>
+          </div>
         </div>
         {action}
       </div>
@@ -550,77 +627,95 @@ export default function SettingsPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/settings" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '12px' : '20px 24px',
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            background: BG,
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              <div style={{ padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </div>
+                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
               </div>
 
-              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  {saved && (
-                    <span
-                      style={{
-                        height: '36px',
-                        padding: '0 12px',
-                        borderRadius: '9px',
-                        background: '#F0FDF9',
-                        border: '1px solid #6EE7D8',
-                        color: TEAL_DARK,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                      }}
-                    >
-                      Saved
-                    </span>
-                  )}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                {saved && (
+                  <span
+                    style={{
+                      height: '36px',
+                      padding: '0 12px',
+                      borderRadius: '9px',
+                      background: TEAL_LIGHT,
+                      border: '1px solid #BFE7E3',
+                      color: TEAL_DARK,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    Saved
+                  </span>
+                )}
 
-                  <button form="settings-form" type="submit" disabled={saving || uploadingLogo} style={{ ...btnTeal, height: '36px', flex: 1, justifyContent: 'center' }}>
-                    <IconSpark size={14} />
-                    {saving ? 'Saving...' : 'Save changes'}
-                  </button>
-                </div>
+                <button form="settings-form" type="submit" disabled={saving || uploadingLogo} style={btnMobileTeal}>
+                  <IconSpark size={12} />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '10px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                      minWidth: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                  >
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {todayStr}
                   </div>
                   <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
                 </div>
 
-                <div style={{ flex: 1 }} />
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   {saved && (
                     <span
                       style={{
                         height: '34px',
                         padding: '0 12px',
                         borderRadius: '9px',
-                        background: '#F0FDF9',
-                        border: '1px solid #6EE7D8',
+                        background: TEAL_LIGHT,
+                        border: '1px solid #BFE7E3',
                         color: TEAL_DARK,
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -632,23 +727,55 @@ export default function SettingsPage() {
                     </span>
                   )}
 
-                  <button form="settings-form" type="submit" disabled={saving || uploadingLogo} style={btnTeal}>
-                    <IconSpark size={14} />
-                    {saving ? 'Saving...' : 'Save changes'}
+                  <button
+                    form="settings-form"
+                    type="submit"
+                    disabled={saving || uploadingLogo}
+                    style={btnTeal}
+                    onMouseEnter={e => {
+                      if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={e => {
+                      if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1'
+                    }}
+                  >
+                    <IconSpark size={12} />
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
+              </div>
+
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '14px 20px',
+                      cursor: 'pointer',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                      minWidth: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '16px' }}>
-            <div style={card}>
+            <div id="profile-section" style={card}>
               <SectionHeader
-                title="Your profile"
+                title="Your Profile"
                 description="Update the details shown on your account and sidebar."
               />
 
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: isMobile ? '16px' : '16px 20px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                   <div>
                     <label style={label}>Your name</label>
@@ -665,13 +792,13 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div style={card}>
+            <div id="business-section" style={card}>
               <SectionHeader
-                title="Business profile"
+                title="Business Profile"
                 description="Set your core business details and brand identity."
               />
 
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: isMobile ? '16px' : '16px 20px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                   <div>
                     <label style={label}>Business name</label>
@@ -693,7 +820,7 @@ export default function SettingsPage() {
                 <div
                   style={{
                     marginTop: '16px',
-                    borderRadius: '12px',
+                    borderRadius: '14px',
                     background: '#F8FAFC',
                     border: `1px solid ${BORDER}`,
                     padding: isMobile ? '14px' : '16px',
@@ -707,7 +834,7 @@ export default function SettingsPage() {
                     style={{
                       width: '72px',
                       height: '72px',
-                      borderRadius: '50%',
+                      borderRadius: '16px',
                       background: WHITE,
                       border: `1px solid ${BORDER}`,
                       display: 'flex',
@@ -720,13 +847,13 @@ export default function SettingsPage() {
                     {business.logo_url ? (
                       <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <span style={{ fontSize: '11px', color: TEXT3 }}>No logo</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>No logo</span>
                     )}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px' }}>Business logo</div>
-                    <div style={TYPE.bodySm}>Appears in the sidebar next to your name.</div>
+                    <div style={{ ...TYPE.title, fontSize: '14px', marginBottom: '4px', fontWeight: 900, color: TEXT }}>Business logo</div>
+                    <div style={TYPE.bodySm}>Appears in the sidebar next to your business profile.</div>
                   </div>
 
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -738,7 +865,7 @@ export default function SettingsPage() {
                         cursor: uploadingLogo ? 'not-allowed' : 'pointer',
                       }}
                     >
-                      {uploadingLogo ? 'Uploading...' : 'Upload image'}
+                      {uploadingLogo ? 'Uploading...' : 'Upload Image'}
                     </label>
 
                     <input
@@ -783,20 +910,21 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div style={card}>
+            <div id="bank-section" style={card}>
               <SectionHeader
-                title="Payment & bank details"
+                title="Payment & Bank Details"
                 description="These details are printed on invoices sent to customers."
               />
 
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: isMobile ? '16px' : '16px 20px' }}>
                 <div
                   style={{
                     padding: '14px 16px',
-                    background: '#F0F9F8',
-                    borderRadius: '10px',
-                    border: '1px solid #CCEFED',
+                    background: TEAL_LIGHT,
+                    borderRadius: '14px',
+                    border: '1px solid #BFE7E3',
                     fontSize: '13px',
+                    fontWeight: 600,
                     color: TEXT2,
                     lineHeight: 1.6,
                     marginBottom: '16px',
@@ -852,22 +980,36 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div style={card}>
+            <div id="reviews-section" style={card}>
               <SectionHeader
-                title="Review platforms"
+                title="Review Platforms"
                 description="Add the links shown to customers after each installation."
+                action={
+                  <button
+                    type="button"
+                    onClick={addPlatform}
+                    style={{
+                      ...btnOutline,
+                      width: isMobile ? '100%' : 'auto',
+                    }}
+                  >
+                    <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span>
+                    Add Platform
+                  </button>
+                }
               />
 
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: isMobile ? '16px' : '16px 20px' }}>
                 <div
                   style={{
                     fontSize: '13px',
+                    fontWeight: 600,
                     color: TEXT2,
                     lineHeight: 1.6,
                     padding: '14px 16px',
-                    background: '#F0F9F8',
-                    borderRadius: '10px',
-                    border: '1px solid #CCEFED',
+                    background: TEAL_LIGHT,
+                    borderRadius: '14px',
+                    border: '1px solid #BFE7E3',
                     marginBottom: '16px',
                   }}
                 >
@@ -889,7 +1031,7 @@ export default function SettingsPage() {
 
                   {platforms.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ ...TYPE.title, fontSize: '13px' }}>Additional platforms</div>
+                      <div style={{ ...TYPE.title, fontSize: '13px', fontWeight: 900, color: TEXT }}>Additional platforms</div>
                       {platforms.map(p => (
                         <div
                           key={p.id}
@@ -901,12 +1043,10 @@ export default function SettingsPage() {
                             padding: '12px',
                             background: '#F8FAFC',
                             border: `1px solid ${BORDER}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                           }}
                         >
-                          {!isMobile && (
-                            <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
-                          )}
+                          <input style={input} value={p.name} onChange={e => updatePlatform(p.id, 'name', e.target.value)} placeholder="Platform name" />
 
                           <input style={input} value={p.url} onChange={e => updatePlatform(p.id, 'url', e.target.value)} placeholder="https://..." />
 
@@ -915,13 +1055,14 @@ export default function SettingsPage() {
                             onClick={() => removePlatform(p.id)}
                             style={{
                               height: '42px',
-                              width: '42px',
-                              borderRadius: '8px',
+                              width: isMobile ? '100%' : '42px',
+                              borderRadius: '10px',
                               border: `1px solid ${BORDER}`,
                               background: WHITE,
                               color: RED,
                               cursor: 'pointer',
                               fontSize: '16px',
+                              fontWeight: 900,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -934,40 +1075,17 @@ export default function SettingsPage() {
                       ))}
                     </div>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={addPlatform}
-                    style={{
-                      height: '38px',
-                      padding: '0 16px',
-                      borderRadius: '8px',
-                      border: `1px dashed ${BORDER}`,
-                      background: 'transparent',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      width: 'fit-content',
-                      fontWeight: 700,
-                    }}
-                  >
-                    <span style={{ fontSize: '16px' }}>+</span> Add another platform
-                  </button>
                 </div>
               </div>
             </div>
 
-            <div style={card}>
+            <div id="discount-section" style={card}>
               <SectionHeader
-                title="Review discount"
+                title="Review Discount"
                 description="Control the offer shown after customers leave reviews."
               />
 
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: isMobile ? '16px' : '16px 20px' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -976,14 +1094,14 @@ export default function SettingsPage() {
                     gap: '14px',
                     padding: '16px',
                     background: '#F8FAFC',
-                    borderRadius: '10px',
+                    borderRadius: '14px',
                     border: `1px solid ${BORDER}`,
                     marginBottom: '14px',
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
-                    <div style={{ fontSize: '12px', color: TEXT3 }}>Show the discount offer on the customer registration page</div>
+                    <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, marginBottom: '3px' }}>Enable review discount</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>Show the discount offer on the customer registration page</div>
                   </div>
 
                   <div
@@ -1031,17 +1149,17 @@ export default function SettingsPage() {
 
                     <div
                       style={{
-                        borderRadius: '12px',
-                        background: '#F8FAFC',
-                        border: `1px solid ${BORDER}`,
+                        borderRadius: '14px',
+                        background: TEAL_LIGHT,
+                        border: '1px solid #BFE7E3',
                         padding: '14px 16px',
                       }}
                     >
-                      <div style={{ ...TYPE.title, color: TEAL_DARK, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ ...TYPE.title, color: TEAL_DARK, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900 }}>
                         <IconPercent size={16} />
                         Customer preview
                       </div>
-                      <div style={{ fontSize: '13px', color: TEXT2, lineHeight: 1.7 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT2, lineHeight: 1.7 }}>
                         For each review left below, receive <strong>${form.review_discount_amount || '10'} off</strong> your next service. Up to <strong>${form.review_discount_max || '30'} total</strong>.
                       </div>
                     </div>
@@ -1071,7 +1189,7 @@ export default function SettingsPage() {
               width: '100%',
               maxWidth: '520px',
               background: WHITE,
-              borderRadius: '16px',
+              borderRadius: '18px',
               overflow: 'hidden',
               boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
               border: `1px solid ${BORDER}`,
@@ -1079,12 +1197,12 @@ export default function SettingsPage() {
           >
             <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
               <div style={{ ...TYPE.label, color: TEAL, marginBottom: '4px' }}>Upload</div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: TEXT }}>Adjust logo</div>
-              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>{selectedFileName}</div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>Adjust logo</div>
+              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', fontWeight: 600 }}>{selectedFileName}</div>
             </div>
 
             <div style={{ padding: '18px' }}>
-              <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111', borderRadius: '14px', overflow: 'hidden' }}>
                 <Cropper
                   image={selectedImage}
                   crop={crop}
@@ -1123,17 +1241,7 @@ export default function SettingsPage() {
                     setZoom(1)
                     setCroppedAreaPixels(null)
                   }}
-                  style={{
-                    height: '38px',
-                    padding: '0 16px',
-                    borderRadius: '8px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    fontWeight: 700,
-                  }}
+                  style={btnOutline}
                 >
                   Cancel
                 </button>
@@ -1145,7 +1253,7 @@ export default function SettingsPage() {
                   style={{
                     height: '38px',
                     padding: '0 18px',
-                    borderRadius: '8px',
+                    borderRadius: '9px',
                     border: 'none',
                     background: TEAL,
                     color: WHITE,
@@ -1153,9 +1261,13 @@ export default function SettingsPage() {
                     opacity: uploadingLogo ? 0.7 : 1,
                     fontFamily: FONT,
                     fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
                   }}
                 >
                   {uploadingLogo ? 'Saving...' : 'Save image'}
+                  {!uploadingLogo && <IconArrow size={13} />}
                 </button>
               </div>
             </div>
