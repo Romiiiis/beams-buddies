@@ -340,7 +340,6 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
 }
 
 const MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
-const DAY_NAMES_SHORT  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
 function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
   jobs: any[]
@@ -427,7 +426,6 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
       borderRadius: '16px',
       background: WHITE,
       padding: isMobile ? '14px' : '18px 20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
       minWidth: 0,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
@@ -447,7 +445,7 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '5px' : '8px', marginBottom: '10px' }}>
-        {(isMobile ? ['S','M','T','W','T','F','S'] : ['S','M','T','W','T','F','S']).map((day, i) => (
+        {['S','M','T','W','T','F','S'].map((day, i) => (
           <div key={`${day}-${i}`} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 800, color: TEXT3, letterSpacing: '0.03em' }}>
             {day}
           </div>
@@ -488,19 +486,13 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
                 fontSize: '13px',
                 fontWeight: isToday ? 900 : 700,
                 opacity: isPast && !hasJobs ? 0.75 : 1,
-                transition: 'transform 0.12s, background 0.12s, box-shadow 0.12s',
+                transition: 'background 0.12s, border-color 0.12s',
               }}
               onMouseEnter={e => {
                 if (hasJobs && !isToday) e.currentTarget.style.background = '#F2FBFA'
-                if (hasJobs || isToday) {
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(15,23,42,0.08)'
-                }
               }}
               onMouseLeave={e => {
                 if (!isToday) e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
               }}
             >
               <span style={{ lineHeight: 1 }}>{cell.day}</span>
@@ -517,25 +509,6 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
           )
         })}
       </div>
-
-      <div style={{ height: 1, background: BORDER, margin: isMobile ? '14px 0 10px' : '18px 0 12px' }} />
-
-      <div style={{ display: 'flex', justifyContent: 'center', gap: isMobile ? '12px' : '24px', flexWrap: 'wrap' }}>
-        {[
-          ['1 job', 1],
-          ['2 jobs', 2],
-          ['3+ jobs', 3],
-        ].map(([label, dots]) => (
-          <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-            <span style={{ display: 'flex', gap: '3px' }}>
-              {Array.from({ length: dots as number }).map((_, i) => (
-                <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: TEAL }} />
-              ))}
-            </span>
-            {label}
-          </div>
-        ))}
-      </div>
     </div>
   )
 
@@ -545,21 +518,19 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
       borderRadius: '16px',
       overflow: 'hidden',
       background: WHITE,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
       minWidth: 0,
     }}>
       {agendaGroups.length === 0 ? (
         <div style={{ padding: '34px 18px', textAlign: 'center' }}>
-          <div style={{ width: 42, height: 42, borderRadius: '14px', background: '#F8FAFC', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
-            <IconCalendar size={18} />
-          </div>
           <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT2 }}>No upcoming bookings</div>
           <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>New scheduled jobs will appear here.</div>
         </div>
       ) : (
         agendaGroups.map(([dateKey, dayJobs], groupIndex) => {
           const d = parseDateLocal(dateKey)
-          const label = dateKey === todayKey ? 'Today' : dateKey === toYMD(new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() + 1)) ? 'Tomorrow' : d?.toLocaleDateString('en-AU', { weekday: 'long' }) || 'Upcoming'
+          const tomorrow = new Date(todayDate)
+          tomorrow.setDate(todayDate.getDate() + 1)
+          const label = dateKey === todayKey ? 'Today' : dateKey === toYMD(tomorrow) ? 'Tomorrow' : d?.toLocaleDateString('en-AU', { weekday: 'long' }) || 'Upcoming'
           const dateLabel = d?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) || dateKey
           return (
             <div key={dateKey}>
@@ -611,7 +582,7 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
                           top: '-18px',
                           bottom: '-18px',
                           width: 2,
-                          background: i === 0 ? `linear-gradient(to bottom, transparent, ${TEAL} 24px, ${TEAL} calc(100% - 24px), transparent)` : '#DDE7EA',
+                          background: i === 0 ? TEAL : '#DDE7EA',
                         }} />
                         <span style={{
                           position: 'absolute',
@@ -622,7 +593,6 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
                           height: 12,
                           borderRadius: '50%',
                           background: TEAL,
-                          boxShadow: '0 0 0 4px rgba(31,158,148,0.12)',
                         }} />
                         <div style={{ fontSize: '13px', fontWeight: 900, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                         <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{service}</div>
@@ -648,25 +618,9 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
     <div style={{ background: WHITE }}>
       <div style={{ padding: isMobile ? '16px' : '18px 20px', borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '14px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-            <div style={{
-              width: 46,
-              height: 46,
-              borderRadius: '14px',
-              background: TEAL,
-              color: WHITE,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 10px 20px rgba(31,158,148,0.2)',
-              flexShrink: 0,
-            }}>
-              <IconCalendar size={22} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: isMobile ? '21px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>Bookings</div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3, marginTop: '4px' }}>Upcoming schedule</div>
-            </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: isMobile ? '21px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>Bookings</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3, marginTop: '4px' }}>Upcoming schedule</div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 'auto' }}>
@@ -679,8 +633,8 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
               <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>This Week</div>
             </div>
             {!isMobile && (
-              <button onClick={goToday} style={{ height: 42, padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '12px', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                View Calendar <IconCalendar size={14} />
+              <button onClick={goToday} style={{ height: 42, padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '12px', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT }}>
+                View Calendar
               </button>
             )}
           </div>
