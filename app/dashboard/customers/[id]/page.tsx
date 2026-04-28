@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/Sidebar'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
@@ -158,6 +159,14 @@ function IconClock({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconArrow({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -278,11 +287,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         if (srError) throw new Error(`Delete service_records: ${srError.message}`)
 
         const { error: rcJobError } = await supabase.from('review_clicks').delete().in('job_id', jobIds)
-        if (rcJobError) throw new Error(`Delete review_clicks (by job): ${rcJobError.message}`)
+        if (rcJobError) throw new Error(`Delete review_clicks by job: ${rcJobError.message}`)
       }
 
       const { error: rcError } = await supabase.from('review_clicks').delete().eq('customer_id', id)
-      if (rcError) throw new Error(`Delete review_clicks (by customer): ${rcError.message}`)
+      if (rcError) throw new Error(`Delete review_clicks by customer: ${rcError.message}`)
 
       const { error: invError } = await supabase.from('invoices').delete().eq('customer_id', id)
       if (invError) throw new Error(`Delete invoices: ${invError.message}`)
@@ -319,7 +328,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     const days = getDays(nextServiceDate)
     if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' }
     if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: AMBER, border: '#FDE68A' }
-    return { label: 'Scheduled', bg: '#F1F5F9', color: TEXT3, border: BORDER }
+    return { label: 'Scheduled', bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3' }
   }
 
   const totalServiceRecords = useMemo(() => {
@@ -327,6 +336,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }, [jobs])
 
   const uniquePlatforms = [...new Set(reviewClicks.map(r => r.platform))]
+
   const stats = useMemo(() => {
     const overdue = jobs.filter(j => statusPill(j.next_service_date).label === 'Overdue').length
     const dueSoon = jobs.filter(j => statusPill(j.next_service_date).label === 'Due soon').length
@@ -343,12 +353,19 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const reviewRate = stats.jobs > 0 ? Math.round((stats.reviewClicks / stats.jobs) * 100) : 0
 
+  const todayStr = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
+    borderRadius: '18px',
     overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
   }
 
   const inputStyle: React.CSSProperties = {
@@ -378,11 +395,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '15px',
-    fontWeight: 800,
+    fontSize: '17px',
+    fontWeight: 900,
     color: TEXT,
     marginBottom: '4px',
-    letterSpacing: '-0.02em',
+    letterSpacing: '-0.035em',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -406,8 +423,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEAL}`,
+    padding: '0 14px',
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -418,14 +435,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
     transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
-    padding: '0 10px',
+    padding: '0 12px',
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
@@ -448,38 +465,30 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     color: WHITE,
   }
 
-  const statCards = [
+  const statChips = [
     {
       label: 'Units installed',
       value: stats.jobs.toLocaleString('en-AU'),
       sub: 'Tracked on this customer',
-      accent: TEXT,
-      up: stats.jobs > 0,
-      delta: `${stats.jobs} total`,
+      onClick: () => router.push('/dashboard/jobs'),
     },
     {
       label: 'Service records',
       value: stats.serviceRecords.toLocaleString('en-AU'),
       sub: 'Logged visit history',
-      accent: TEAL_DARK,
-      up: stats.serviceRecords > 0,
-      delta: `${stats.serviceRecords} logged`,
+      onClick: () => router.push('/dashboard/customers'),
     },
     {
       label: 'Due soon',
       value: stats.dueSoon.toLocaleString('en-AU'),
-      sub: 'Units needing attention soon',
-      accent: AMBER,
-      up: stats.dueSoon === 0,
-      delta: stats.dueSoon === 0 ? 'All clear' : `${stats.dueSoon} pending`,
+      sub: 'Need attention',
+      onClick: () => router.push('/dashboard/jobs'),
     },
     {
       label: 'Review clicks',
       value: stats.reviewClicks.toLocaleString('en-AU'),
-      sub: uniquePlatforms.length > 0 ? `Across ${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No review activity yet',
-      accent: stats.reviewClicks > 0 ? TEAL_DARK : TEXT,
-      up: stats.reviewClicks > 0,
-      delta: `${reviewRate}% of units`,
+      sub: uniquePlatforms.length > 0 ? `${uniquePlatforms.length} platform${uniquePlatforms.length === 1 ? '' : 's'}` : 'No activity',
+      onClick: () => router.push('/dashboard/customers'),
     },
   ]
 
@@ -497,14 +506,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   if (!customer) return null
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        fontFamily: FONT,
-        background: BG,
-        minHeight: '100vh',
-      }}
-    >
+    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/customers" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
@@ -512,85 +514,110 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '12px' : '20px 24px',
+            padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            background: BG,
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', background: WHITE }}>
-              <div
-                style={{
-                  padding: '16px 16px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                }}
-              >
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 0,
-                      margin: 0,
-                      color: TEXT3,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <IconArrowLeft size={13} />
-                    Customers
-                  </button>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <button
+                  onClick={() => router.push('/dashboard/customers')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                    color: TEXT3,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                    marginBottom: '6px',
+                  }}
+                >
+                  <IconArrowLeft size={13} />
+                  Customers
+                </button>
 
-                  <h1
-                    style={{
-                      fontSize: '26px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {customer.first_name} {customer.last_name}
-                  </h1>
-                </div>
+                <h1
+                  style={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: '-0.05em',
+                    margin: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  {customer.first_name} {customer.last_name}
+                </h1>
               </div>
 
-              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconSpark size={12} />
-                    Add job
-                  </button>
-                  <button onClick={() => setEditingCustomer(true)} style={btnMobileSm}>
-                    <IconEdit size={12} />
-                    Edit
-                  </button>
-                  <button onClick={() => setShowDeleteConfirm(true)} style={btnMobileTeal}>
-                    <IconTrash size={12} />
-                    Delete
-                  </button>
-                </div>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                  <IconSpark size={12} />
+                  Add job
+                </button>
+                <button onClick={() => setEditingCustomer(true)} style={btnMobileSm}>
+                  <IconEdit size={12} />
+                  Edit
+                </button>
+                <button onClick={() => setShowDeleteConfirm(true)} style={btnMobileTeal}>
+                  Delete
+                </button>
+              </div>
+
+              <div
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                }}
+              >
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '10px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      ;(e.currentTarget as HTMLElement).style.background = 'transparent'
+                    }}
+                  >
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', flexShrink: 0, marginRight: 20 }} />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {todayStr}
+                  </div>
 
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
                   <button
                     onClick={() => router.push('/dashboard/customers')}
                     style={{
@@ -627,17 +654,15 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   </h1>
                 </div>
 
-                <div style={{ flex: 1 }} />
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => router.push('/dashboard/jobs')}
                     style={btnOutline}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={e => {
                       e.currentTarget.style.borderColor = TEXT
                       e.currentTarget.style.color = TEXT
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={e => {
                       e.currentTarget.style.borderColor = BORDER
                       e.currentTarget.style.color = TEXT2
                     }}
@@ -649,11 +674,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <button
                     onClick={() => setEditingCustomer(true)}
                     style={btnOutline}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={e => {
                       e.currentTarget.style.borderColor = TEXT
                       e.currentTarget.style.color = TEXT
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={e => {
                       e.currentTarget.style.borderColor = BORDER
                       e.currentTarget.style.color = TEXT2
                     }}
@@ -665,10 +690,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
                     style={btnTeal}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={e => {
                       e.currentTarget.style.opacity = '0.82'
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={e => {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
@@ -676,6 +701,40 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     Delete
                   </button>
                 </div>
+              </div>
+
+              <div
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                }}
+              >
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '14px 20px',
+                      cursor: 'pointer',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      ;(e.currentTarget as HTMLElement).style.background = 'transparent'
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -691,78 +750,31 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 fontSize: '12px',
                 fontWeight: 700,
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                margin: isMobile ? '0 12px' : 0,
               }}
             >
               Changes saved successfully.
             </div>
           )}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
-              gap: '12px',
-            }}
-          >
-            {statCards.map(item => (
-              <div
-                key={item.label}
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: '14px',
-                  padding: isMobile ? '10px 12px' : '10px 14px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  minHeight: isMobile ? '62px' : '68px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: item.accent, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {item.value}
-                    </div>
-                  </div>
-
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '3px 7px',
-                      borderRadius: '999px',
-                      background: item.up ? '#E6F7F6' : '#FFF0EE',
-                      color: item.up ? TEAL_DARK : '#C0392B',
-                      fontSize: '9px',
-                      fontWeight: 800,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.delta}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: isMobile ? '0 12px' : 0 }}>
             <div style={card}>
               <div
                 style={{
-                  padding: '16px 20px',
+                  padding: isMobile ? '16px' : '18px 20px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  background: WHITE,
                 }}
               >
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Customer profile</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={sectionHeaderTitle}>Customer profile</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
+                  </div>
                 </div>
               </div>
 
@@ -776,9 +788,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     { label: 'Postcode', value: customer.postcode || '—', icon: <IconMapPin size={15} /> },
                     {
                       label: 'Customer since',
-                      value: customer.created_at
-                        ? new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
-                        : '—',
+                      value: customer.created_at ? new Date(customer.created_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' }) : '—',
                       icon: <IconClock size={15} />,
                     },
                   ].map((row, index) => (
@@ -895,18 +905,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             <div style={card}>
               <div
                 style={{
-                  padding: '14px 16px 12px',
+                  padding: isMobile ? '16px' : '18px 20px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
-                  gap: '10px',
+                  gap: '14px',
+                  background: WHITE,
                 }}
               >
-                <div>
-                  <div style={sectionHeaderTitle}>Installed units</div>
-                  <div style={{ ...TYPE.bodySm }}>View equipment details, service timing, and history for this customer.</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={sectionHeaderTitle}>Installed units</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>View equipment details, service timing, and history for this customer.</div>
+                  </div>
                 </div>
 
                 <div
@@ -914,15 +928,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     height: '34px',
                     borderRadius: '10px',
                     border: `1px solid ${BORDER}`,
-                    background: WHITE,
+                    background: '#F8FAFC',
                     color: TEXT2,
                     fontSize: '12px',
                     fontWeight: 700,
                     padding: '0 12px',
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
                     fontFamily: FONT,
+                    width: isMobile ? '100%' : undefined,
                   }}
                 >
                   {jobs.length} unit{jobs.length !== 1 ? 's' : ''}
@@ -951,24 +967,30 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                       <div key={job.id} style={{ borderBottom: idx === jobs.length - 1 ? 'none' : `1px solid ${BORDER}` }}>
                         <div
                           style={{
-                            padding: '14px 18px',
+                            margin: isMobile ? '0' : '10px 12px',
+                            padding: isMobile ? '14px 16px' : '14px 16px',
                             display: 'flex',
                             alignItems: isMobile ? 'flex-start' : 'center',
                             justifyContent: 'space-between',
                             gap: '10px',
                             flexDirection: isMobile ? 'column' : 'row',
-                            borderBottom: !isEditing ? `1px solid ${BORDER}` : 'none',
+                            borderBottom: isMobile && !isEditing ? `1px solid ${BORDER}` : 'none',
+                            border: isMobile ? 'none' : `1px solid ${BORDER}`,
+                            borderRadius: isMobile ? '0' : '14px',
                             background: WHITE,
                           }}
                         >
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>
-                              {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 850, color: TEXT }}>
+                                {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                              </div>
+                              {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
                             </div>
-                            {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : undefined }}>
                             <span
                               style={{
                                 background: s.bg,
@@ -1001,6 +1023,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '7px',
+                                  marginLeft: isMobile ? 'auto' : undefined,
                                 }}
                               >
                                 <IconEdit size={14} />
@@ -1014,7 +1037,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           <>
                             <div
                               style={{
-                                padding: '14px 18px',
+                                padding: isMobile ? '14px 16px' : '4px 18px 14px',
                                 display: 'grid',
                                 gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, minmax(0,1fr))',
                                 gap: '10px',
@@ -1025,28 +1048,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   label: 'Serial number',
                                   value: job.serial_number || '—',
                                   mono: true,
-                                  icon: <IconArrowLeft size={12} />,
+                                  icon: <IconArrow size={12} />,
                                 },
                                 {
                                   label: 'Installed',
-                                  value: job.install_date
-                                    ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                    : '—',
+                                  value: job.install_date ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
                                   icon: <IconClock size={14} />,
                                 },
                                 {
                                   label: 'Next service',
-                                  value: job.next_service_date
-                                    ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                    : '—',
+                                  value: job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
                                   danger: job.next_service_date && getDays(job.next_service_date) < 0,
                                   icon: <IconClock size={14} />,
                                 },
                                 {
                                   label: 'Warranty expiry',
-                                  value: job.warranty_expiry
-                                    ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                                    : '—',
+                                  value: job.warranty_expiry ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
                                   icon: <IconClock size={14} />,
                                 },
                                 {
@@ -1116,7 +1133,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 <input style={inputStyle} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)} />
                               </div>
                               <div>
-                                <label style={labelStyle}>Capacity (kW)</label>
+                                <label style={labelStyle}>Capacity kW</label>
                                 <input style={inputStyle} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} />
                               </div>
                               <div>
@@ -1260,16 +1277,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div style={card}>
                 <div
                   style={{
-                    padding: '14px 18px',
+                    padding: isMobile ? '16px' : '18px 20px',
                     borderBottom: `1px solid ${BORDER}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    background: WHITE,
                   }}
                 >
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Review activity</div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
-                    {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div>
+                      <div style={sectionHeaderTitle}>Review activity</div>
+                      <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>
+                        {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'} used by this customer.
+                      </div>
+                    </div>
                   </div>
                 </div>
 
