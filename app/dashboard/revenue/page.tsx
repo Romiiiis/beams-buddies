@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
@@ -12,8 +12,8 @@ const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
-const TEXT3 = '#475569'
-const BORDER = '#E2E8F0'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
@@ -67,12 +67,17 @@ const TYPE = {
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
-    function check() { setIsMobile(window.innerWidth < 768) }
+    function check() {
+      setIsMobile(window.innerWidth < 768)
+    }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
   return isMobile
 }
 
@@ -110,14 +115,24 @@ function IconTrendDown({ size = 11 }: { size?: number }) {
 }
 
 function pctChange(current: number, previous: number) {
-  if (previous === 0) { if (current === 0) return 0; return 100 }
+  if (previous === 0) {
+    if (current === 0) return 0
+    return 100
+  }
+
   return Math.round(((current - previous) / previous) * 100)
 }
 
-function formatDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
+function formatDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
+}
 
-// ─── SVG Line/Area Chart ───────────────────────────────────────────────────────
-type ChartPoint = { label: string; shortLabel: string; value: number; count: number }
+type ChartPoint = {
+  label: string
+  shortLabel: string
+  value: number
+  count: number
+}
 
 function AreaChart({
   series,
@@ -138,6 +153,7 @@ function AreaChart({
     function measure() {
       if (svgRef.current) setSvgWidth(svgRef.current.getBoundingClientRect().width)
     }
+
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
@@ -153,8 +169,9 @@ function AreaChart({
   const n = series.length
 
   function xOf(i: number) {
-    return PAD_L + (i / (n - 1)) * chartW
+    return PAD_L + (i / Math.max(n - 1, 1)) * chartW
   }
+
   function yOf(v: number) {
     const pct = maxVal > 0 ? v / maxVal : 0
     return PAD_T + chartH - pct * chartH
@@ -162,16 +179,17 @@ function AreaChart({
 
   const points = series.map((s, i) => ({ x: xOf(i), y: yOf(s.value), ...s }))
 
-  // Build smooth cubic bezier path
   function smoothPath(pts: { x: number; y: number }[]) {
     if (pts.length < 2) return ''
     let d = `M ${pts[0].x} ${pts[0].y}`
+
     for (let i = 1; i < pts.length; i++) {
       const prev = pts[i - 1]
       const curr = pts[i]
       const cpx = (prev.x + curr.x) / 2
       d += ` C ${cpx} ${prev.y}, ${cpx} ${curr.y}, ${curr.x} ${curr.y}`
     }
+
     return d
   }
 
@@ -185,7 +203,7 @@ function AreaChart({
     val: Math.round(maxVal * f),
   }))
 
-  const gradId = 'areaGrad'
+  const gradId = 'areaGradRevenue'
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -203,7 +221,6 @@ function AreaChart({
           </linearGradient>
         </defs>
 
-        {/* Horizontal grid lines */}
         {yTicks.map((t, i) => (
           <g key={i}>
             <line
@@ -229,7 +246,6 @@ function AreaChart({
           </g>
         ))}
 
-        {/* Vertical hover lines */}
         {points.map((p, i) => (
           <line
             key={`vl-${i}`}
@@ -243,12 +259,8 @@ function AreaChart({
           />
         ))}
 
-        {/* Area fill */}
-        {areaPath && (
-          <path d={areaPath} fill={`url(#${gradId})`} />
-        )}
+        {areaPath && <path d={areaPath} fill={`url(#${gradId})`} />}
 
-        {/* Line */}
         {linePath && (
           <path
             d={linePath}
@@ -260,7 +272,6 @@ function AreaChart({
           />
         )}
 
-        {/* Dots + hit areas */}
         {points.map((p, i) => (
           <g key={`dot-${i}`}>
             <circle
@@ -272,7 +283,6 @@ function AreaChart({
               strokeWidth={hovered === i ? 2.5 : 1.8}
               style={{ transition: 'r 0.15s, fill 0.15s' }}
             />
-            {/* Invisible wide hit target */}
             <rect
               x={p.x - (chartW / n) / 2}
               y={PAD_T}
@@ -285,7 +295,6 @@ function AreaChart({
           </g>
         ))}
 
-        {/* X-axis labels */}
         {points.map((p, i) => (
           <text
             key={`xl-${i}`}
@@ -302,7 +311,6 @@ function AreaChart({
           </text>
         ))}
 
-        {/* Count labels below month */}
         {points.map((p, i) => (
           <text
             key={`cnt-${i}`}
@@ -319,15 +327,17 @@ function AreaChart({
           </text>
         ))}
 
-        {/* Tooltip */}
         {hovered !== null && (() => {
           const p = points[hovered]
           const tw = 90
           const th = 38
           let tx = p.x - tw / 2
+
           if (tx < PAD_L) tx = PAD_L
           if (tx + tw > PAD_L + chartW) tx = PAD_L + chartW - tw
+
           const ty = Math.max(PAD_T - 2, p.y - th - 10)
+
           return (
             <g style={{ pointerEvents: 'none' }}>
               <rect x={tx} y={ty} width={tw} height={th} rx="8" fill={TEXT} />
@@ -345,51 +355,12 @@ function AreaChart({
   )
 }
 
-// ─── Stats Grid ────────────────────────────────────────────────────────────────
 type StatItem = {
   label: string
   value: string | number
   sublabel?: string
 }
 
-function StatsGrid({ items, isMobile }: { items: StatItem[]; isMobile: boolean }) {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : `repeat(${items.length}, 1fr)`,
-        gap: '8px',
-        marginBottom: '14px',
-      }}
-    >
-      {items.map((item) => (
-        <div
-          key={item.label}
-          style={{
-            borderRadius: '11px',
-            background: '#F8FAFC',
-            border: `1px solid ${BORDER}`,
-            padding: isMobile ? '9px 10px' : '10px 14px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            gap: '5px',
-            minHeight: '62px',
-          }}
-        >
-          <div style={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3, lineHeight: 1.3 }}>
-            {item.label}
-          </div>
-          <div style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {item.value}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
 type InvoiceRow = {
   id: string
   status: string
@@ -401,10 +372,14 @@ type InvoiceRow = {
   customers?: { first_name?: string | null; last_name?: string | null } | null
 }
 
-type TopCustomer = { name: string; total: number; count: number }
+type TopCustomer = {
+  name: string
+  total: number
+  count: number
+}
+
 type MetricMode = 'invoiced' | 'collected' | 'outstanding' | 'overdue'
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
 export default function RevenuePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -414,18 +389,32 @@ export default function RevenuePage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/login'); return }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
       const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
-      if (!userData) { setLoading(false); return }
+
+      if (!userData) {
+        setLoading(false)
+        return
+      }
+
       const { data } = await supabase
         .from('invoices')
         .select('*, customers(first_name, last_name)')
         .eq('business_id', userData.business_id)
         .order('created_at', { ascending: false })
+
       setInvoices((data || []) as InvoiceRow[])
       setLoading(false)
     }
+
     load()
   }, [router])
 
@@ -439,65 +428,95 @@ export default function RevenuePage() {
   const totalOverdue = useMemo(() => overdue.reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0), [overdue])
   const totalInvoiced = useMemo(() => invoices.reduce((sum, i) => sum + Number(i.total || 0), 0), [invoices])
 
-  const last6 = useMemo(() =>
-    Array.from({ length: 6 }, (_, i) => {
-      const d = new Date()
-      d.setDate(1)
-      d.setMonth(d.getMonth() - (5 - i))
-      return {
-        label: d.toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }),
-        shortLabel: d.toLocaleDateString('en-AU', { month: 'short' }),
-        month: d.getMonth(),
-        year: d.getFullYear(),
-      }
-    }), [])
+  const last6 = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => {
+        const d = new Date()
+        d.setDate(1)
+        d.setMonth(d.getMonth() - (5 - i))
 
-  const monthlyStats = useMemo(() =>
-    last6.map(m => {
-      const monthInvoices = invoices.filter(i => {
-        const d = new Date(i.created_at)
-        return d.getMonth() === m.month && d.getFullYear() === m.year
-      })
-      const invoiced = monthInvoices.reduce((sum, i) => sum + Number(i.total || 0), 0)
-      const collected = monthInvoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + Number(i.total || 0), 0)
-      const open = monthInvoices.filter(i => i.status === 'sent' || i.status === 'overdue')
-      const outstandingValue = open.reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
-      const overdueValue = monthInvoices.filter(i => i.status === 'overdue').reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
-      return {
-        ...m, invoiced, collected, outstanding: outstandingValue, overdue: overdueValue,
-        invoiceCount: monthInvoices.length, paidCount: monthInvoices.filter(i => i.status === 'paid').length,
-        openCount: open.length, overdueCount: monthInvoices.filter(i => i.status === 'overdue').length,
-      }
-    }), [last6, invoices])
+        return {
+          label: d.toLocaleDateString('en-AU', { month: 'short', year: 'numeric' }),
+          shortLabel: d.toLocaleDateString('en-AU', { month: 'short' }),
+          month: d.getMonth(),
+          year: d.getFullYear(),
+        }
+      }),
+    []
+  )
 
-  const chartSeries = useMemo(() =>
-    monthlyStats.map(m => ({
-      label: m.label, shortLabel: m.shortLabel,
-      value: metricMode === 'invoiced' ? m.invoiced : metricMode === 'collected' ? m.collected : metricMode === 'outstanding' ? m.outstanding : m.overdue,
-      count: metricMode === 'invoiced' ? m.invoiceCount : metricMode === 'collected' ? m.paidCount : metricMode === 'outstanding' ? m.openCount : m.overdueCount,
-    })), [monthlyStats, metricMode])
+  const monthlyStats = useMemo(
+    () =>
+      last6.map(m => {
+        const monthInvoices = invoices.filter(i => {
+          const d = new Date(i.created_at)
+          return d.getMonth() === m.month && d.getFullYear() === m.year
+        })
+
+        const invoiced = monthInvoices.reduce((sum, i) => sum + Number(i.total || 0), 0)
+        const collected = monthInvoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + Number(i.total || 0), 0)
+        const open = monthInvoices.filter(i => i.status === 'sent' || i.status === 'overdue')
+        const outstandingValue = open.reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+        const overdueValue = monthInvoices.filter(i => i.status === 'overdue').reduce((sum, i) => sum + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
+        return {
+          ...m,
+          invoiced,
+          collected,
+          outstanding: outstandingValue,
+          overdue: overdueValue,
+          invoiceCount: monthInvoices.length,
+          paidCount: monthInvoices.filter(i => i.status === 'paid').length,
+          openCount: open.length,
+          overdueCount: monthInvoices.filter(i => i.status === 'overdue').length,
+        }
+      }),
+    [last6, invoices]
+  )
+
+  const chartSeries = useMemo(
+    () =>
+      monthlyStats.map(m => ({
+        label: m.label,
+        shortLabel: m.shortLabel,
+        value: metricMode === 'invoiced' ? m.invoiced : metricMode === 'collected' ? m.collected : metricMode === 'outstanding' ? m.outstanding : m.overdue,
+        count: metricMode === 'invoiced' ? m.invoiceCount : metricMode === 'collected' ? m.paidCount : metricMode === 'outstanding' ? m.openCount : m.overdueCount,
+      })),
+    [monthlyStats, metricMode]
+  )
 
   const maxMonthly = Math.max(...chartSeries.map(m => m.value), 1)
 
   const topCustomers = useMemo(() => {
     const customerRevenue: Record<string, TopCustomer> = {}
+
     paid.forEach(inv => {
       const id = inv.customer_id || 'unknown'
       const name = `${inv.customers?.first_name || ''} ${inv.customers?.last_name || ''}`.trim() || 'Unknown'
+
       if (!customerRevenue[id]) customerRevenue[id] = { name, total: 0, count: 0 }
+
       customerRevenue[id].total += Number(inv.total || 0)
       customerRevenue[id].count += 1
     })
+
     return Object.values(customerRevenue).sort((a, b) => b.total - a.total).slice(0, 5)
   }, [paid])
 
   const maxCustomer = topCustomers.length ? topCustomers[0].total : 1
   const collectionRate = totalInvoiced > 0 ? Math.round((totalRevenue / totalInvoiced) * 100) : 0
-  const todayStr = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+  const todayStr = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
 
   const now = new Date()
   const startCurrent30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
   const startPrev30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
+
   function inRange(dateStr?: string | null, start?: Date, end?: Date) {
     if (!dateStr) return false
     const d = new Date(dateStr)
@@ -507,34 +526,136 @@ export default function RevenuePage() {
 
   const currentCollected = invoices.filter(i => i.status === 'paid' && inRange(i.created_at, startCurrent30, now)).reduce((s, i) => s + Number(i.total || 0), 0)
   const prevCollected = invoices.filter(i => i.status === 'paid' && inRange(i.created_at, startPrev30, startCurrent30)).reduce((s, i) => s + Number(i.total || 0), 0)
+
   const currentOutstanding = invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, startCurrent30, now)).reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
   const prevOutstanding = invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, startPrev30, startCurrent30)).reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
   const currentOverdue = invoices.filter(i => i.status === 'overdue' && inRange(i.created_at, startCurrent30, now)).reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
   const prevOverdue = invoices.filter(i => i.status === 'overdue' && inRange(i.created_at, startPrev30, startCurrent30)).reduce((s, i) => s + (Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
   const currentInvoiced = invoices.filter(i => inRange(i.created_at, startCurrent30, now)).reduce((s, i) => s + Number(i.total || 0), 0)
   const prevInvoiced = invoices.filter(i => inRange(i.created_at, startPrev30, startCurrent30)).reduce((s, i) => s + Number(i.total || 0), 0)
 
-  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
-  const sideCard: React.CSSProperties = { ...card, padding: '16px' }
-  const sectionHeaderTitle: React.CSSProperties = { fontSize: '15px', fontWeight: 800, color: TEXT, marginBottom: '4px', letterSpacing: '-0.02em' }
-  const cardArrowBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, display: 'flex', alignItems: 'center' }
-  const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }
-  const btnPrimary: React.CSSProperties = { height: '34px', padding: '0 16px', border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }
-  const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flex: 1 }
-  const btnMobilePrimary: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL}`, color: WHITE }
+  const card: React.CSSProperties = {
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    borderRadius: '18px',
+    overflow: 'hidden',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+  }
+
+  const sideCard: React.CSSProperties = {
+    ...card,
+    padding: '16px',
+  }
+
+  const cardArrowBtn: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: TEXT3,
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
+  }
+
+  const btnOutline: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
+  }
+
+  const btnTeal: React.CSSProperties = {
+    height: '34px',
+    padding: '0 14px',
+    border: 'none',
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: WHITE,
+    background: TEAL,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '7px',
+    whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
+  }
+
+  const btnMobileSm: React.CSSProperties = {
+    height: '36px',
+    padding: '0 12px',
+    border: `1px solid ${BORDER}`,
+    borderRadius: '9px',
+    fontSize: '12px',
+    fontWeight: 700,
+    color: TEXT2,
+    background: WHITE,
+    cursor: 'pointer',
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    flex: 1,
+  }
+
+  const btnMobileTeal: React.CSSProperties = {
+    ...btnMobileSm,
+    background: TEAL,
+    border: `1px solid ${TEAL}`,
+    color: WHITE,
+  }
 
   const topCards = [
-    { label: 'Collected', value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}`, delta: formatDelta(pctChange(currentCollected, prevCollected)), up: pctChange(currentCollected, prevCollected) >= 0 },
-    { label: 'Outstanding', value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}`, delta: formatDelta(pctChange(currentOutstanding, prevOutstanding)), up: pctChange(currentOutstanding, prevOutstanding) >= 0 },
-    { label: 'Overdue', value: `$${Math.round(totalOverdue).toLocaleString('en-AU')}`, delta: formatDelta(pctChange(currentOverdue, prevOverdue)), up: pctChange(currentOverdue, prevOverdue) >= 0 },
-    { label: 'Total invoiced', value: `$${Math.round(totalInvoiced).toLocaleString('en-AU')}`, delta: formatDelta(pctChange(currentInvoiced, prevInvoiced)), up: pctChange(currentInvoiced, prevInvoiced) >= 0 },
+    {
+      label: 'Collected',
+      value: `$${Math.round(totalRevenue).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentCollected, prevCollected)),
+      up: pctChange(currentCollected, prevCollected) >= 0,
+      onClick: () => setMetricMode('collected' as MetricMode),
+    },
+    {
+      label: 'Outstanding',
+      value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentOutstanding, prevOutstanding)),
+      up: pctChange(currentOutstanding, prevOutstanding) >= 0,
+      onClick: () => setMetricMode('outstanding' as MetricMode),
+    },
+    {
+      label: 'Overdue',
+      value: `$${Math.round(totalOverdue).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentOverdue, prevOverdue)),
+      up: pctChange(currentOverdue, prevOverdue) >= 0,
+      onClick: () => setMetricMode('overdue' as MetricMode),
+    },
+    {
+      label: 'Total invoiced',
+      value: `$${Math.round(totalInvoiced).toLocaleString('en-AU')}`,
+      delta: formatDelta(pctChange(currentInvoiced, prevInvoiced)),
+      up: pctChange(currentInvoiced, prevInvoiced) >= 0,
+      onClick: () => setMetricMode('invoiced' as MetricMode),
+    },
   ]
 
   const selectedMetricLabel = metricMode === 'invoiced' ? 'Invoiced value' : metricMode === 'collected' ? 'Collected value' : metricMode === 'outstanding' ? 'Outstanding value' : 'Overdue value'
-  const selectedMetricTotal = metricMode === 'invoiced' ? totalInvoiced : metricMode === 'collected' ? totalRevenue : metricMode === 'outstanding' ? totalOutstanding : totalOverdue
   const selectedMetricCount = metricMode === 'invoiced' ? invoices.length : metricMode === 'collected' ? paid.length : metricMode === 'outstanding' ? outstanding.length : overdue.length
 
-  // Stats items fed into new StatsGrid
   const statsItems: StatItem[] = [
     { label: 'Related invoices', value: selectedMetricCount },
     { label: 'Collection rate', value: `${collectionRate}%` },
@@ -559,105 +680,233 @@ export default function RevenuePage() {
       <Sidebar active="/dashboard/revenue" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        <div style={{ padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px' }}>
-
+        <div
+          style={{
+            padding: isMobile ? '0' : '20px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            background: BG,
+          }}
+        >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
-              <div style={{ background: WHITE, padding: '16px 16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </div>
-                  <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Revenue</h1>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: TEXT3,
+                    letterSpacing: '0.07em',
+                    textTransform: 'uppercase',
+                    marginBottom: '5px',
+                  }}
+                >
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </div>
+                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                  Revenue
+                </h1>
               </div>
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnMobilePrimary}><IconSpark size={12} /> View invoices</button>
-                  <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>Customers</button>
-                </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileTeal}>
+                  <IconSpark size={12} /> View invoices
+                </button>
+                <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>
+                  Customers
+                </button>
+              </div>
+
+              <div
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                }}
+              >
+                {topCards.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '10px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {chip.value}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{todayStr}</div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Revenue</h1>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {todayStr}
+                  </div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+                    Revenue
+                  </h1>
                 </div>
-                <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button onClick={() => router.push('/dashboard/customers')} style={btnOutline}>View customers</button>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}><IconSpark size={14} />View invoices</button>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => router.push('/dashboard/customers')}
+                    style={btnOutline}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
+                    View customers
+                  </button>
+
+                  <button
+                    onClick={() => router.push('/dashboard/invoices')}
+                    style={btnTeal}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
+                    <IconSpark size={14} />
+                    View invoices
+                  </button>
                 </div>
+              </div>
+
+              <div
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                }}
+              >
+                {topCards.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{
+                      padding: '14px 20px',
+                      cursor: 'pointer',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                      transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = TEAL_LIGHT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Top stat cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, 1fr)', gap: '12px' }}>
-            {topCards.map(item => (
-              <div key={item.label} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '10px 10px' : '10px 14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', minHeight: isMobile ? '62px' : '64px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {isMobile ? (
-                  <div style={{ display: 'grid', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flex: 1 }}>{item.label}</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0, alignSelf: 'flex-end', marginTop: '2px' }}>
-                        {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{item.delta}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gap: '14px',
+              alignItems: 'start',
+              padding: isMobile ? '0 12px' : 0,
+            }}
+          >
+            <div style={card}>
+              <div
+                style={{
+                  padding: isMobile ? '16px' : '18px 20px',
+                  borderBottom: `1px solid ${BORDER}`,
+                  display: 'flex',
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  justifyContent: 'space-between',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '14px',
+                  background: WHITE,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Monthly Performance</span>
+                      <span
+                        style={{
+                          height: '22px',
+                          padding: '0 8px',
+                          borderRadius: '999px',
+                          border: `1px solid #BFE7E3`,
+                          background: TEAL_LIGHT,
+                          color: TEAL_DARK,
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        Live
                       </span>
                     </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{item.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
+                      Last 6 months of invoice performance, collection activity, and open revenue.
                     </div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '999px', background: item.up ? '#E6F7F6' : '#FFF0EE', color: item.up ? TEAL_DARK : '#C0392B', fontSize: '9px', fontWeight: 800, flexShrink: 0 }}>
-                      {item.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}{item.delta}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Main content grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px', gap: '14px', alignItems: 'start' }}>
-
-            {/* ── Monthly performance card — full redesign ── */}
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-
-              {/* Header */}
-              <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-                {/* Title row */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div>
-                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: TEXT3, marginBottom: '5px' }}>
-                      Last 6 months
-                    </div>
-                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      Monthly Performance
-                    </div>
-                  </div>
-
-                  {/* Live badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: '#F0FDF9', border: '1px solid #BBF7ED', flexShrink: 0, marginTop: '2px' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>Live</span>
                   </div>
                 </div>
 
-                {/* Metric pill tabs */}
-                <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', borderRadius: '11px', padding: '3px', width: 'fit-content', maxWidth: '100%' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '4px',
+                    background: '#F1F5F9',
+                    borderRadius: '11px',
+                    padding: '3px',
+                    width: isMobile ? '100%' : 'fit-content',
+                    maxWidth: '100%',
+                    overflowX: 'auto',
+                  }}
+                >
                   {(['invoiced', 'collected', 'outstanding', 'overdue'] as MetricMode[]).map(mode => {
                     const active = metricMode === mode
-                    const labels: Record<MetricMode, string> = { invoiced: 'Invoiced', collected: 'Collected', outstanding: 'Outstanding', overdue: 'Overdue' }
+                    const labels: Record<MetricMode, string> = {
+                      invoiced: 'Invoiced',
+                      collected: 'Collected',
+                      outstanding: 'Outstanding',
+                      overdue: 'Overdue',
+                    }
+
                     return (
                       <button
                         key={mode}
@@ -676,6 +925,7 @@ export default function RevenuePage() {
                           boxShadow: active ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
                           transition: 'all 0.15s',
                           whiteSpace: 'nowrap' as const,
+                          flex: isMobile ? 1 : undefined,
                         }}
                       >
                         {labels[mode]}
@@ -683,34 +933,40 @@ export default function RevenuePage() {
                     )
                   })}
                 </div>
-
-                {/* KPI strip */}
-                <div style={{ display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: isMobile ? '-16px' : '-24px', marginRight: isMobile ? '-16px' : '-24px' }}>
-                  {statsItems.map((item, i) => (
-                    <div
-                      key={item.label}
-                      style={{
-                        flex: 1,
-                        padding: isMobile ? '12px 10px' : '14px 20px',
-                        borderRight: i < statsItems.length - 1 ? `1px solid ${BORDER}` : 'none',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px',
-                        minWidth: 0,
-                      }}
-                    >
-                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
-              {/* Chart area */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
+                  borderBottom: `1px solid ${BORDER}`,
+                  background: '#FCFCFD',
+                }}
+              >
+                {statsItems.map((item, i) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      padding: isMobile ? '12px 10px' : '14px 20px',
+                      borderLeft: !isMobile && i > 0 ? `1px solid ${BORDER}` : 'none',
+                      borderTop: isMobile && i > 1 ? `1px solid ${BORDER}` : 'none',
+                      borderRight: isMobile && i % 2 === 0 ? `1px solid ${BORDER}` : 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      minWidth: 0,
+                    }}
+                  >
+                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div style={{ padding: isMobile ? '16px 12px 12px' : '20px 24px 16px' }}>
                 <AreaChart
                   series={chartSeries}
@@ -719,9 +975,8 @@ export default function RevenuePage() {
                   isMobile={isMobile}
                 />
 
-                {/* Footer legend */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? '4px' : '52px', marginTop: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? '4px' : '52px', marginTop: '6px', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
                       <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{selectedMetricLabel}</span>
@@ -738,60 +993,125 @@ export default function RevenuePage() {
               </div>
             </div>
 
-            {/* Sidebar cards — unchanged */}
             <div style={{ display: 'grid', gap: '14px' }}>
               <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Revenue summary</div>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={cardArrowBtn}><IconExternalLink size={14} /></button>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Revenue summary</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Collection and open balance</div>
+                    </div>
+                  </div>
+                  <button onClick={() => router.push('/dashboard/invoices')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
                 </div>
+
                 <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
                   {collectionRate >= 80 ? (
-                    <span style={{ color: TEAL }}>Collections Strong</span>
+                    <span style={{ color: TEAL_DARK }}>Collections strong</span>
                   ) : (
-                    <><span style={{ color: RED }}>{collectionRate}%</span> Collection Rate</>
+                    <>
+                      <span style={{ color: RED }}>{collectionRate}%</span> collection rate
+                    </>
                   )}
                 </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: totalOverdue > 0 ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${totalOverdue > 0 ? '#FECACA' : BORDER}` }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: totalOverdue > 0 ? '#7F1D1D' : TEXT2 }}>Overdue</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: totalOverdue > 0 ? '#991B1B' : TEXT }}>${Math.round(totalOverdue).toLocaleString('en-AU')}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: totalOutstanding > 0 ? '#FFFBEB' : '#F8FAFC', border: `1px solid ${totalOutstanding > 0 ? '#FDE68A' : BORDER}` }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: totalOutstanding > 0 ? '#92400E' : TEXT2 }}>Outstanding</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: totalOutstanding > 0 ? '#92400E' : TEXT }}>${Math.round(totalOutstanding).toLocaleString('en-AU')}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>Drafts</span>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{drafts.length}</span>
-                  </div>
+                  {[
+                    {
+                      label: 'Overdue',
+                      value: `$${Math.round(totalOverdue).toLocaleString('en-AU')}`,
+                      bg: totalOverdue > 0 ? '#FEE2E2' : '#F8FAFC',
+                      border: totalOverdue > 0 ? '#FECACA' : BORDER,
+                      color: totalOverdue > 0 ? '#991B1B' : TEXT,
+                    },
+                    {
+                      label: 'Outstanding',
+                      value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}`,
+                      bg: totalOutstanding > 0 ? '#FEF3C7' : '#F8FAFC',
+                      border: totalOutstanding > 0 ? '#FDE68A' : BORDER,
+                      color: totalOutstanding > 0 ? AMBER : TEXT,
+                    },
+                    {
+                      label: 'Drafts',
+                      value: drafts.length,
+                      bg: '#F8FAFC',
+                      border: BORDER,
+                      color: TEXT,
+                    },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        background: item.bg,
+                        border: `1px solid ${item.border}`,
+                      }}
+                    >
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ ...TYPE.label }}>Top customers</div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}><IconExternalLink size={14} /></button>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Top customers</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Highest paid accounts</div>
+                    </div>
+                  </div>
+                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
+                    <IconExternalLink size={14} />
+                  </button>
                 </div>
+
                 <div style={{ marginBottom: '4px' }}>
                   <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>{topCustomers.length}</span>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>active revenue accounts</span>
                 </div>
+
                 <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {topCustomers.length === 0 ? (
-                    <div style={{ padding: '12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}`, fontSize: '12px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>No paid invoices yet</div>
+                    <div style={{ padding: '12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}`, fontSize: '12px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>
+                      No paid invoices yet
+                    </div>
                   ) : (
                     topCustomers.slice(0, 4).map((customer, index) => (
-                      <div key={`${customer.name}-${index}`} style={{ padding: '10px 12px', borderRadius: '10px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
+                      <div key={`${customer.name}-${index}`} style={{ padding: '10px 12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '7px' }}>
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{customer.name}</div>
-                            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{customer.count} paid invoice{customer.count === 1 ? '' : 's'}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {customer.name}
+                            </div>
+                            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
+                              {customer.count} paid invoice{customer.count === 1 ? '' : 's'}
+                            </div>
                           </div>
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2, flexShrink: 0 }}>${Math.round(customer.total).toLocaleString('en-AU')}</div>
+                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2, flexShrink: 0 }}>
+                            ${Math.round(customer.total).toLocaleString('en-AU')}
+                          </div>
                         </div>
+
                         <div style={{ width: '100%', height: '8px', background: '#EAEFF4', borderRadius: '999px', overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.max(10, Math.round((customer.total / maxCustomer) * 100))}%`, height: '100%', background: TEAL, borderRadius: '999px' }} />
+                          <div
+                            style={{
+                              width: `${Math.max(10, Math.round((customer.total / maxCustomer) * 100))}%`,
+                              height: '100%',
+                              background: TEAL,
+                              borderRadius: '999px',
+                            }}
+                          />
                         </div>
                       </div>
                     ))
