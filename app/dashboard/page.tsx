@@ -16,7 +16,6 @@ const BG         = '#FAFAFA'
 const WHITE      = '#FFFFFF'
 const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
-// ── Date helpers ─────────────────────────────────────────────────────────────
 function parseDateLocal(raw: string | null | undefined): Date | null {
   if (!raw) return null
   const s = String(raw).slice(0, 10)
@@ -26,14 +25,15 @@ function parseDateLocal(raw: string | null | undefined): Date | null {
 }
 
 function startOfDay(d: Date): Date {
-  const c = new Date(d); c.setHours(0, 0, 0, 0); return c
+  const c = new Date(d)
+  c.setHours(0, 0, 0, 0)
+  return c
 }
 
 function toYMD(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// ── Greeting helper ───────────────────────────────────────────────────────────
 function getGreeting(): string {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -41,55 +41,68 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 function IconCalendar({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
+
 function IconInvoice({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
+
 function IconArrow({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconChevronRight({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconChevronLeft({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconTrendUp({ size = 11 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconTrendDown({ size = 11 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconDownload({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }
+
 function IconInfo({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.9"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
 }
+
 function IconPlus({ size = 13 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
 }
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
-    function check() { setIsMobile(window.innerWidth < 768) }
+    function check() {
+      setIsMobile(window.innerWidth < 768)
+    }
+
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
   return isMobile
 }
 
-// ── Sparklines ────────────────────────────────────────────────────────────────
 function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   const safe = data.length ? data : [0]
   const max = Math.max(...safe, 1)
   const count = safe.length
   const barW = Math.max(3, Math.floor((width - (count - 1) * 2) / count))
+
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       {safe.map((v, i) => {
@@ -103,10 +116,12 @@ function SparkBars({ data, color, width = 52, height = 36 }: { data: number[]; c
 
 function MiniSparkline({ data, color, width = 72, height = 36 }: { data: number[]; color: string; width?: number; height?: number }) {
   if (data.length < 2) return <div style={{ width, height }} />
+
   const min = Math.min(...data)
   const max = Math.max(...data) || 1
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / (max - min || 1)) * (height - 6) - 3}`)
   const uid = `sp${color.replace('#', '')}`
+
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       <defs>
@@ -125,6 +140,7 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   const r = (size - 8) / 2
   const circ = 2 * Math.PI * r
   const filled = (Math.min(Math.max(value, 0), 100) / 100) * circ
+
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F1F5F9" strokeWidth={8} />
@@ -133,9 +149,9 @@ function DonutSparkle({ value, color, size = 44 }: { value: number; color: strin
   )
 }
 
-// ── Analytics Card ────────────────────────────────────────────────────────────
 type AnalyticsMetric = 'revenue' | 'jobs' | 'outstanding'
 type AnalyticsRange  = 'This Year' | 'Last Year' | 'Last 6 Months' | 'Last 3 Months'
+
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: any[] }) {
@@ -147,34 +163,64 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
   const thisMonth = now.getMonth()
 
   const months = useMemo(() => {
-    if (range === 'This Year')     return Array.from({ length: 12 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
-    if (range === 'Last Year')     return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
-    if (range === 'Last 6 Months') return Array.from({ length: 6 }, (_, i) => { const d = new Date(thisYear, thisMonth - 5 + i, 1); return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] } })
-    return Array.from({ length: 3 }, (_, i) => { const d = new Date(thisYear, thisMonth - 2 + i, 1); return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] } })
+    if (range === 'This Year') return Array.from({ length: 12 }, (_, i) => ({ year: thisYear, month: i, label: MONTH_NAMES[i] }))
+    if (range === 'Last Year') return Array.from({ length: 12 }, (_, i) => ({ year: thisYear - 1, month: i, label: MONTH_NAMES[i] }))
+    if (range === 'Last 6 Months') return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(thisYear, thisMonth - 5 + i, 1)
+      return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+    })
+    return Array.from({ length: 3 }, (_, i) => {
+      const d = new Date(thisYear, thisMonth - 2 + i, 1)
+      return { year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] }
+    })
   }, [range, thisYear, thisMonth])
 
   const data = useMemo(() => months.map(({ year, month, label }) => {
     const start = new Date(year, month, 1)
-    const end   = new Date(year, month + 1, 1)
+    const end = new Date(year, month + 1, 1)
+
     if (metric === 'revenue') {
-      const total = allInvoices.filter(inv => inv.status === 'paid').filter(inv => { const d = parseDateLocal(inv.created_at); return d && d >= start && d < end }).reduce((s, i) => s + Number(i.total || 0), 0)
+      const total = allInvoices
+        .filter(inv => inv.status === 'paid')
+        .filter(inv => {
+          const d = parseDateLocal(inv.created_at)
+          return d && d >= start && d < end
+        })
+        .reduce((s, i) => s + Number(i.total || 0), 0)
       return { label, total }
     }
+
     if (metric === 'jobs') {
-      const total = allJobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d >= start && d < end }).length
+      const total = allJobs.filter(j => {
+        const d = parseDateLocal(j.created_at)
+        return d && d >= start && d < end
+      }).length
       return { label, total }
     }
-    const total = allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue').filter(i => { const d = parseDateLocal(i.created_at); return d && d >= start && d < end }).reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
+
+    const total = allInvoices
+      .filter(i => i.status === 'sent' || i.status === 'overdue')
+      .filter(i => {
+        const d = parseDateLocal(i.created_at)
+        return d && d >= start && d < end
+      })
+      .reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0)
     return { label, total }
   }), [metric, months, allJobs, allInvoices])
 
   const periodTotal = data.reduce((s, d) => s + d.total, 0)
   const peak = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
-  const avg  = data.length ? Math.round(periodTotal / data.length) : 0
+  const avg = data.length ? Math.round(periodTotal / data.length) : 0
   const isCurrency = metric !== 'jobs'
-  function fmt(n: number) { return isCurrency ? `$${Math.round(n).toLocaleString('en-AU')}` : String(Math.round(n)) }
 
-  const CHART_H = 220; const LABEL_H = 24; const DOT_SIZE = 8; const DOT_GAP = 4
+  function fmt(n: number) {
+    return isCurrency ? `$${Math.round(n).toLocaleString('en-AU')}` : String(Math.round(n))
+  }
+
+  const CHART_H = 220
+  const LABEL_H = 24
+  const DOT_SIZE = 8
+  const DOT_GAP = 4
   const NUM_ROWS = Math.floor((CHART_H - LABEL_H) / (DOT_SIZE + DOT_GAP))
   const dotUnit = peak.total > 0 ? Math.ceil(peak.total / NUM_ROWS) : 1
   const dotUnitLabel = isCurrency ? (dotUnit >= 1000 ? `$${Math.round(dotUnit / 1000)}k` : `$${dotUnit}`) : `${dotUnit}`
@@ -185,7 +231,9 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>Analytics</div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <select value={metric} onChange={e => setMetric(e.target.value as AnalyticsMetric)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
-            <option value="revenue">Revenue</option><option value="jobs">Jobs</option><option value="outstanding">Outstanding</option>
+            <option value="revenue">Revenue</option>
+            <option value="jobs">Jobs</option>
+            <option value="outstanding">Outstanding</option>
           </select>
           <select value={range} onChange={e => setRange(e.target.value as AnalyticsRange)} style={{ height: '30px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px', fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none', cursor: 'pointer', fontFamily: FONT }}>
             {(['This Year','Last Year','Last 6 Months','Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
@@ -246,7 +294,6 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
   )
 }
 
-// ── Job Day Popup ─────────────────────────────────────────────────────────────
 function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return (
@@ -266,7 +313,7 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
           {jobs.map((job, i) => {
             const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
             const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
-            const avBg    = ['#E8F4F1','#EEF2F6','#E6F7F6','#F1F5F9','#E8F4F1'][i % 5]
+            const avBg = ['#E8F4F1','#EEF2F6','#E6F7F6','#F1F5F9','#E8F4F1'][i % 5]
             const avColor = ['#0A4F4C','#334155','#177A72','#475569','#1F9E94'][i % 5]
             const serviceDate = parseDateLocal(job.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
             const jobLabel = (job.job_type || job.equipment_type || 'Service').replace(/_/g, ' ')
@@ -292,7 +339,6 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: { date: Date; jobs: an
   )
 }
 
-// ── Calendar Widget ───────────────────────────────────────────────────────────
 const MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_NAMES_SHORT  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
@@ -302,8 +348,8 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
   onDateClick: (date: Date, jobs: any[]) => void
 }) {
   const todayDate = useMemo(() => startOfDay(new Date()), [])
-  const todayKey  = useMemo(() => toYMD(todayDate), [todayDate])
-  const [viewYear,  setViewYear]  = useState(todayDate.getFullYear())
+  const todayKey = useMemo(() => toYMD(todayDate), [todayDate])
+  const [viewYear, setViewYear] = useState(todayDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth())
 
   const jobsByDate = useMemo(() => {
@@ -318,143 +364,409 @@ function VisitCalendarWidget({ jobs, isMobile, onDateClick }: {
     return map
   }, [jobs])
 
-  function prevMonth() { viewMonth === 0 ? (setViewYear(y => y - 1), setViewMonth(11)) : setViewMonth(m => m - 1) }
-  function nextMonth() { viewMonth === 11 ? (setViewYear(y => y + 1), setViewMonth(0)) : setViewMonth(m => m + 1) }
+  function prevMonth() {
+    viewMonth === 0 ? (setViewYear(y => y - 1), setViewMonth(11)) : setViewMonth(m => m - 1)
+  }
 
-  const todayJobs = jobsByDate[todayKey] || []
+  function nextMonth() {
+    viewMonth === 11 ? (setViewYear(y => y + 1), setViewMonth(0)) : setViewMonth(m => m + 1)
+  }
+
+  function goToday() {
+    setViewYear(todayDate.getFullYear())
+    setViewMonth(todayDate.getMonth())
+  }
 
   const firstDayOffset = new Date(viewYear, viewMonth, 1).getDay()
-  const daysInMonth    = new Date(viewYear, viewMonth + 1, 0).getDate()
-  const cells: { day: number | null; dateKey: string | null; colIndex: number }[] = []
-  for (let i = 0; i < firstDayOffset; i++) cells.push({ day: null, dateKey: null, colIndex: i })
-  for (let day = 1; day <= daysInMonth; day++) cells.push({ day, dateKey: toYMD(new Date(viewYear, viewMonth, day)), colIndex: (firstDayOffset + day - 1) % 7 })
-  while (cells.length % 7 !== 0) cells.push({ day: null, dateKey: null, colIndex: cells.length % 7 })
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
+  const cells: { day: number | null; dateKey: string | null }[] = []
 
-  const monthPrefix = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-`
-  const monthJobEntries = Object.entries(jobsByDate).filter(([k]) => k.startsWith(monthPrefix)).sort(([a], [b]) => a.localeCompare(b))
+  for (let i = 0; i < firstDayOffset; i++) cells.push({ day: null, dateKey: null })
+  for (let day = 1; day <= daysInMonth; day++) cells.push({ day, dateKey: toYMD(new Date(viewYear, viewMonth, day)) })
+  while (cells.length % 7 !== 0) cells.push({ day: null, dateKey: null })
 
-  return (
-    <div>
-      <div style={{ padding: '14px 20px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>{MONTH_NAMES_FULL[viewMonth]}</span>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{viewYear}</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
-          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}><IconChevronLeft size={13} /></button>
-          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, outline: 'none' }}><IconChevronRight size={13} /></button>
+  const futureJobs = useMemo(() => {
+    return jobs
+      .filter(job => {
+        const d = parseDateLocal(job.next_service_date)
+        return d && toYMD(d) >= todayKey
+      })
+      .sort((a, b) => {
+        const da = parseDateLocal(a.next_service_date)?.getTime() || 0
+        const db = parseDateLocal(b.next_service_date)?.getTime() || 0
+        return da - db
+      })
+  }, [jobs, todayKey])
+
+  const weekEnd = new Date(todayDate)
+  weekEnd.setDate(todayDate.getDate() + 7)
+  const weekEndKey = toYMD(weekEnd)
+
+  const thisWeekCount = futureJobs.filter(job => {
+    const key = String(job.next_service_date || '').slice(0, 10)
+    return key >= todayKey && key <= weekEndKey
+  }).length
+
+  const totalBooked = futureJobs.length
+
+  const agendaGroups = useMemo(() => {
+    const grouped: Record<string, any[]> = {}
+    futureJobs.slice(0, 8).forEach(job => {
+      const d = parseDateLocal(job.next_service_date)
+      if (!d) return
+      const key = toYMD(d)
+      if (!grouped[key]) grouped[key] = []
+      grouped[key].push(job)
+    })
+    return Object.entries(grouped).slice(0, 2)
+  }, [futureJobs])
+
+  const calendarArea = (
+    <div style={{
+      border: `1px solid ${BORDER}`,
+      borderRadius: '16px',
+      background: WHITE,
+      padding: isMobile ? '14px' : '18px 20px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+      minWidth: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', minWidth: 0 }}>
+          <div style={{ fontSize: isMobile ? '18px' : '21px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', whiteSpace: 'nowrap' }}>
+            {MONTH_NAMES_FULL[viewMonth]} {viewYear}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+          <button onClick={prevMonth} style={{ width: 34, height: 34, borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconChevronLeft size={14} />
+          </button>
+          <button onClick={nextMonth} style={{ width: 34, height: 34, borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconChevronRight size={14} />
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 16px 4px' }}>
-        {DAY_NAMES_SHORT.map(d => <div key={d} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', paddingBottom: '4px' }}>{d}</div>)}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '5px' : '8px', marginBottom: '10px' }}>
+        {(isMobile ? ['S','M','T','W','T','F','S'] : ['S','M','T','W','T','F','S']).map((day, i) => (
+          <div key={`${day}-${i}`} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 800, color: TEXT3, letterSpacing: '0.03em' }}>
+            {day}
+          </div>
+        ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', padding: '0 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '5px' : '8px' }}>
         {cells.map((cell, i) => {
-          if (!cell.day || !cell.dateKey) return <div key={i} style={{ height: 38 }} />
+          if (!cell.day || !cell.dateKey) return <div key={i} style={{ height: isMobile ? 36 : 42 }} />
+
           const jobsOnDay = jobsByDate[cell.dateKey] || []
           const count = jobsOnDay.length
-          const isToday = cell.dateKey === todayKey
           const hasJobs = count > 0
+          const isToday = cell.dateKey === todayKey
+          const isPast = cell.dateKey < todayKey
+
           return (
-            <button key={i} type="button"
-              onClick={() => { if (hasJobs || isToday) onDateClick(new Date(viewYear, viewMonth, cell.day!), jobsOnDay) }}
-              title={hasJobs ? `${count} job${count !== 1 ? 's' : ''} — ${cell.dateKey}` : undefined}
-              style={{ height: 38, borderRadius: '9px', border: 'none', background: isToday ? TEAL : 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', cursor: hasJobs ? 'pointer' : 'default', padding: 0, outline: 'none', fontFamily: FONT, transition: 'background 0.12s' }}
-              onMouseEnter={e => { if (!isToday && hasJobs) e.currentTarget.style.background = TEAL_LIGHT }}
-              onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent' }}
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                if (hasJobs || isToday) onDateClick(new Date(viewYear, viewMonth, cell.day!), jobsOnDay)
+              }}
+              style={{
+                height: isMobile ? 36 : 42,
+                borderRadius: '999px',
+                border: isToday ? `1px solid ${TEAL}` : '1px solid transparent',
+                background: isToday ? TEAL : 'transparent',
+                color: isToday ? WHITE : isPast && !hasJobs ? '#94A3B8' : TEXT,
+                cursor: hasJobs || isToday ? 'pointer' : 'default',
+                fontFamily: FONT,
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '3px',
+                fontSize: '13px',
+                fontWeight: isToday ? 900 : 700,
+                opacity: isPast && !hasJobs ? 0.75 : 1,
+                transition: 'transform 0.12s, background 0.12s, box-shadow 0.12s',
+              }}
+              onMouseEnter={e => {
+                if (hasJobs && !isToday) e.currentTarget.style.background = '#F2FBFA'
+                if (hasJobs || isToday) {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(15,23,42,0.08)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isToday) e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             >
-              <span style={{ fontSize: '12px', fontWeight: isToday ? 800 : hasJobs ? 700 : 500, color: isToday ? WHITE : TEXT, lineHeight: 1 }}>{cell.day}</span>
-              {hasJobs && (
-                <div style={{ display: 'flex', gap: '2px' }}>
+              <span style={{ lineHeight: 1 }}>{cell.day}</span>
+              {hasJobs ? (
+                <div style={{ display: 'flex', gap: '3px', height: 4 }}>
                   {Array.from({ length: Math.min(count, 3) }).map((_, di) => (
-                    <div key={di} style={{ width: 3, height: 3, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.8)' : TEAL }} />
+                    <span key={di} style={{ width: 5, height: 5, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,0.9)' : TEAL }} />
                   ))}
                 </div>
+              ) : (
+                <span style={{ width: 5, height: 5 }} />
               )}
             </button>
           )
         })}
       </div>
 
-      <div style={{ padding: '12px 20px 4px', borderTop: `1px solid ${BORDER}`, marginTop: '10px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, marginBottom: '10px' }}>
-          Today: <span style={{ color: TEAL, fontWeight: 800 }}>{todayJobs.length} booking{todayJobs.length !== 1 ? 's' : ''}</span>
-        </div>
-        {monthJobEntries.length === 0 ? (
-          <div style={{ fontSize: '11px', color: TEXT3, paddingBottom: '12px' }}>No jobs scheduled this month.</div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {monthJobEntries.slice(0, 3).flatMap(([dateKey, dayJobs]) => {
-              const d = parseDateLocal(dateKey)
-              const dateLabel = d ? d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }) : dateKey
-              return dayJobs.slice(0, 1).map(job => {
-                const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                const jobLabel = (job.job_type || job.equipment_type || 'Service').replace(/_/g, ' ')
-                return (
-                  <div key={`${dateKey}-${job.id}`} onClick={() => d && onDateClick(d, dayJobs)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer' }} onMouseEnter={e => (e.currentTarget.style.opacity = '0.65')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-                    <div style={{ width: 3, height: 34, borderRadius: '2px', background: TEAL, flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{name} — {jobLabel}</div>
-                      <div style={{ fontSize: '10px', color: TEXT3, marginTop: '1px' }}>{dateLabel}</div>
-                    </div>
-                    <IconChevronRight size={11} />
-                  </div>
-                )
-              })
-            })}
+      <div style={{ height: 1, background: BORDER, margin: isMobile ? '14px 0 10px' : '18px 0 12px' }} />
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: isMobile ? '12px' : '24px', flexWrap: 'wrap' }}>
+        {[
+          ['1 job', 1],
+          ['2 jobs', 2],
+          ['3+ jobs', 3],
+        ].map(([label, dots]) => (
+          <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 700, color: TEXT3 }}>
+            <span style={{ display: 'flex', gap: '3px' }}>
+              {Array.from({ length: dots as number }).map((_, i) => (
+                <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: TEAL }} />
+              ))}
+            </span>
+            {label}
           </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const timelineArea = (
+    <div style={{
+      border: `1px solid ${BORDER}`,
+      borderRadius: '16px',
+      overflow: 'hidden',
+      background: WHITE,
+      boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+      minWidth: 0,
+    }}>
+      {agendaGroups.length === 0 ? (
+        <div style={{ padding: '34px 18px', textAlign: 'center' }}>
+          <div style={{ width: 42, height: 42, borderRadius: '14px', background: '#F8FAFC', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+            <IconCalendar size={18} />
+          </div>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT2 }}>No upcoming bookings</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>New scheduled jobs will appear here.</div>
+        </div>
+      ) : (
+        agendaGroups.map(([dateKey, dayJobs], groupIndex) => {
+          const d = parseDateLocal(dateKey)
+          const label = dateKey === todayKey ? 'Today' : dateKey === toYMD(new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() + 1)) ? 'Tomorrow' : d?.toLocaleDateString('en-AU', { weekday: 'long' }) || 'Upcoming'
+          const dateLabel = d?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) || dateKey
+          return (
+            <div key={dateKey}>
+              <div style={{
+                padding: '12px 16px',
+                background: groupIndex === 0 ? '#F0FAF9' : '#FFF9F0',
+                borderBottom: `1px solid ${BORDER}`,
+                color: TEAL_DARK,
+                fontSize: '13px',
+                fontWeight: 900,
+              }}>
+                {label} · {dateLabel}
+              </div>
+
+              <div style={{ padding: isMobile ? '12px 14px' : '14px 16px' }}>
+                {dayJobs.slice(0, 4).map((job, i) => {
+                  const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
+                  const service = (job.job_type || job.equipment_type || 'Service').replace(/_/g, ' ')
+                  const timeLabel = job.start_time || job.time || (i === 0 ? '9:00 AM' : i === 1 ? '1:30 PM' : i === 2 ? '3:15 PM' : '11:00 AM')
+                  const badge = groupIndex === 0 ? 'Confirmed' : 'Pending'
+                  const badgeBg = groupIndex === 0 ? TEAL_LIGHT : '#FFF3E6'
+                  const badgeColor = groupIndex === 0 ? TEAL_DARK : '#C45A00'
+
+                  return (
+                    <div
+                      key={job.id || `${dateKey}-${i}`}
+                      onClick={() => d && onDateClick(d, dayJobs)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '54px 1fr' : '70px 1fr auto',
+                        gap: isMobile ? '10px' : '14px',
+                        alignItems: 'center',
+                        minHeight: '58px',
+                        cursor: 'pointer',
+                        borderBottom: i < Math.min(dayJobs.length, 4) - 1 ? `1px solid ${BORDER}` : 'none',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = '0.72')}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                    >
+                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, lineHeight: 1.1 }}>
+                        {timeLabel.split(' ')[0]}
+                        <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 700, marginTop: '4px' }}>{timeLabel.split(' ')[1] || ''}</div>
+                      </div>
+
+                      <div style={{ position: 'relative', paddingLeft: isMobile ? '18px' : '22px', minWidth: 0 }}>
+                        <span style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: '-18px',
+                          bottom: '-18px',
+                          width: 2,
+                          background: i === 0 ? `linear-gradient(to bottom, transparent, ${TEAL} 24px, ${TEAL} calc(100% - 24px), transparent)` : '#DDE7EA',
+                        }} />
+                        <span style={{
+                          position: 'absolute',
+                          left: -5,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          background: TEAL,
+                          boxShadow: '0 0 0 4px rgba(31,158,148,0.12)',
+                        }} />
+                        <div style={{ fontSize: '13px', fontWeight: 900, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{service}</div>
+                      </div>
+
+                      {!isMobile && (
+                        <div style={{ padding: '6px 10px', borderRadius: '999px', background: badgeBg, color: badgeColor, fontSize: '11px', fontWeight: 800 }}>
+                          {badge}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })
+      )}
+    </div>
+  )
+
+  return (
+    <div style={{ background: WHITE }}>
+      <div style={{ padding: isMobile ? '16px' : '18px 20px', borderBottom: `1px solid ${BORDER}` }}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '14px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+            <div style={{
+              width: 46,
+              height: 46,
+              borderRadius: '14px',
+              background: TEAL,
+              color: WHITE,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 20px rgba(31,158,148,0.2)',
+              flexShrink: 0,
+            }}>
+              <IconCalendar size={22} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: isMobile ? '21px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', lineHeight: 1 }}>Bookings</div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: TEXT3, marginTop: '4px' }}>Upcoming schedule</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 'auto' }}>
+            <div style={{ height: 54, minWidth: isMobile ? 0 : 112, flex: isMobile ? 1 : 'none', border: `1px solid ${BORDER}`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: WHITE }}>
+              <div style={{ fontSize: '22px', fontWeight: 900, color: TEAL_DARK, letterSpacing: '-0.04em', lineHeight: 1 }}>{totalBooked}</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>Total Booked</div>
+            </div>
+            <div style={{ height: 54, minWidth: isMobile ? 0 : 100, flex: isMobile ? 1 : 'none', border: `1px solid ${BORDER}`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: WHITE }}>
+              <div style={{ fontSize: '22px', fontWeight: 900, color: TEAL_DARK, letterSpacing: '-0.04em', lineHeight: 1 }}>{thisWeekCount}</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>This Week</div>
+            </div>
+            {!isMobile && (
+              <button onClick={goToday} style={{ height: 42, padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '12px', background: WHITE, color: TEAL_DARK, fontSize: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                View Calendar <IconCalendar size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        padding: isMobile ? '14px' : '18px',
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(320px, 0.95fr)',
+        gap: isMobile ? '14px' : '18px',
+        alignItems: 'stretch',
+      }}>
+        {isMobile ? (
+          <>
+            {calendarArea}
+            {timelineArea}
+          </>
+        ) : (
+          <>
+            {timelineArea}
+            {calendarArea}
+          </>
         )}
       </div>
     </div>
   )
 }
 
-// ── Status pill ───────────────────────────────────────────────────────────────
 function statusPill(nextServiceDate: string | null | undefined): { label: string; bg: string; color: string } {
   if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
   const d = parseDateLocal(nextServiceDate)
   if (!d) return { label: 'No date', bg: '#F1F5F9', color: TEXT3 }
   const diffDays = Math.floor((startOfDay(d).getTime() - startOfDay(new Date()).getTime()) / 86400000)
-  if (diffDays < 0)   return { label: 'Overdue',   bg: '#FEE2E2', color: '#991B1B' }
-  if (diffDays <= 7)  return { label: 'This week',  bg: '#E6F7F6', color: TEAL_DARK }
-  if (diffDays <= 30) return { label: 'Due soon',   bg: '#FEF3C7', color: '#92400E' }
+  if (diffDays < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B' }
+  if (diffDays <= 7) return { label: 'This week', bg: '#E6F7F6', color: TEAL_DARK }
+  if (diffDays <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E' }
   return { label: 'Scheduled', bg: '#F1F5F9', color: TEXT3 }
 }
 
-function pctChange(curr: number, prev: number) { if (prev === 0) return curr === 0 ? 0 : 100; return Math.round(((curr - prev) / prev) * 100) }
-function fmtDelta(n: number) { return `${n >= 0 ? '+' : ''}${n}%` }
+function pctChange(curr: number, prev: number) {
+  if (prev === 0) return curr === 0 ? 0 : 100
+  return Math.round(((curr - prev) / prev) * 100)
+}
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+function fmtDelta(n: number) {
+  return `${n >= 0 ? '+' : ''}${n}%`
+}
+
 export default function DashboardPage() {
-  const router   = useRouter()
+  const router = useRouter()
   const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [popupDate, setPopupDate] = useState<Date | null>(null)
   const [popupJobs, setPopupJobs] = useState<any[]>([])
   const [stats, setStats] = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0, jobsToday: 0 })
-  const [upcoming, setUpcoming]         = useState<any[]>([])
-  const [recent,   setRecent]           = useState<any[]>([])
+  const [upcoming, setUpcoming] = useState<any[]>([])
+  const [recent, setRecent] = useState<any[]>([])
   const [invoiceStats, setInvoiceStats] = useState({ outstanding: 0, overdueCount: 0, allInvoices: [] as any[] })
-  const [allJobs,     setAllJobs]       = useState<any[]>([])
-  const [allInvoices, setAllInvoices]   = useState<any[]>([])
-  const [userName,    setUserName]       = useState<string>('')
+  const [allJobs, setAllJobs] = useState<any[]>([])
+  const [allInvoices, setAllInvoices] = useState<any[]>([])
+  const [userName, setUserName] = useState<string>('')
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/login'); return }
-      const { data: userData } = await supabase.from('users').select('business_id, full_name').eq('id', session.user.id).single()
-      if (!userData) { setLoading(false); return }
+      if (!session) {
+        router.push('/login')
+        return
+      }
 
-      const bid      = userData.business_id
-      // User's display name: prefer users.full_name, fall back to email prefix
+      const { data: userData } = await supabase.from('users').select('business_id, full_name').eq('id', session.user.id).single()
+      if (!userData) {
+        setLoading(false)
+        return
+      }
+
+      const bid = userData.business_id
       const rawName = (userData as any).full_name || session.user.email?.split('@')[0] || ''
-      setUserName(rawName.split(' ')[0]) // first name only
+      setUserName(rawName.split(' ')[0])
+
       const todayLocal = startOfDay(new Date())
-      const todayKey   = toYMD(todayLocal)
-      const todayMs    = todayLocal.getTime()
-      const nowMonth   = todayLocal.getMonth()
-      const nowYear    = todayLocal.getFullYear()
+      const todayKey = toYMD(todayLocal)
+      const todayMs = todayLocal.getTime()
+      const nowMonth = todayLocal.getMonth()
+      const nowYear = todayLocal.getFullYear()
 
       const [customersRes, jobsRes, invoicesRes] = await Promise.all([
         supabase.from('customers').select('id, first_name, last_name, suburb, phone').eq('business_id', bid).order('id', { ascending: false }),
@@ -462,33 +774,50 @@ export default function DashboardPage() {
         supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
       ])
 
-      if (jobsRes.error)       console.error('[dashboard] jobs:', jobsRes.error)
-      if (customersRes.error)  console.error('[dashboard] customers:', customersRes.error)
+      if (jobsRes.error) console.error('[dashboard] jobs:', jobsRes.error)
+      if (customersRes.error) console.error('[dashboard] customers:', customersRes.error)
 
-      const jobs: any[]     = jobsRes.data     || []
+      const jobs: any[] = jobsRes.data || []
       const invoices: any[] = invoicesRes.data || []
 
-      const overdue = jobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() < todayMs })
-      const jobsToday = jobs.filter(j => j.next_service_date && String(j.next_service_date).slice(0, 10) === todayKey).length
-      const jobsThisMonth = jobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear }).length
-      const upcomingJobs = jobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() >= todayMs })
+      const overdue = jobs.filter(j => {
+        const d = parseDateLocal(j.next_service_date)
+        return d && startOfDay(d).getTime() < todayMs
+      })
 
-      setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
+      const jobsToday = jobs.filter(j => j.next_service_date && String(j.next_service_date).slice(0, 10) === todayKey).length
+
+      const jobsThisMonth = jobs.filter(j => {
+        const d = parseDateLocal(j.created_at)
+        return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear
+      }).length
+
+      const upcomingJobs = jobs.filter(j => {
+        const d = parseDateLocal(j.next_service_date)
+        return d && startOfDay(d).getTime() >= todayMs
+      })
+
+      setStats({
+        customers: customersRes.data?.length || 0,
+        units: jobs.length,
+        overdue: overdue.length,
+        jobsThisMonth,
+        jobsToday,
+      })
       setAllJobs(jobs)
       setAllInvoices(invoices)
       setUpcoming(upcomingJobs.slice(0, 5))
       setRecent((customersRes.data || []).slice(0, 8))
       setInvoiceStats({
-        outstanding:  invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
+        outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
         overdueCount: invoices.filter(i => i.status === 'overdue').length,
-        allInvoices:  invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
+        allInvoices: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
       })
       setLoading(false)
     }
     load()
   }, [router])
 
-  // ── Derived numbers for stat cards ────────────────────────────────────────
   const now = new Date()
   const startCurrMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const startPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -497,52 +826,63 @@ export default function DashboardPage() {
   const start60 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60)
 
   function inRange(raw: string | null | undefined, from: Date, to: Date) {
-    const d = parseDateLocal(raw); return d ? d >= from && d < to : false
+    const d = parseDateLocal(raw)
+    return d ? d >= from && d < to : false
   }
 
   const jobsCurrMonth = useMemo(() => allJobs.filter(j => inRange(j.created_at, startCurrMonth, startNextMonth)).length, [allJobs])
   const jobsPrevMonth = useMemo(() => allJobs.filter(j => inRange(j.created_at, startPrevMonth, startCurrMonth)).length, [allJobs])
-
   const revCurr = useMemo(() => allInvoices.filter(i => i.status === 'paid' && inRange(i.created_at, start30, now)).reduce((s, i) => s + Number(i.total || 0), 0), [allInvoices])
   const revPrev = useMemo(() => allInvoices.filter(i => i.status === 'paid' && inRange(i.created_at, start60, start30)).reduce((s, i) => s + Number(i.total || 0), 0), [allInvoices])
   const outCurr = useMemo(() => allInvoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, start30, now)).reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0), [allInvoices])
   const outPrev = useMemo(() => allInvoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && inRange(i.created_at, start60, start30)).reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0), [allInvoices])
 
   const totalInv = allInvoices.length
-  const paidInv  = allInvoices.filter(i => i.status === 'paid').length
+  const paidInv = allInvoices.filter(i => i.status === 'paid').length
   const convRate = totalInv > 0 ? Math.round((paidInv / totalInv) * 100) : 0
-  const currWin  = allInvoices.filter(i => inRange(i.created_at, start30, now))
-  const prevWin  = allInvoices.filter(i => inRange(i.created_at, start60, start30))
+  const currWin = allInvoices.filter(i => inRange(i.created_at, start30, now))
+  const prevWin = allInvoices.filter(i => inRange(i.created_at, start60, start30))
   const currConv = currWin.length > 0 ? Math.round((currWin.filter(i => i.status === 'paid').length / currWin.length) * 100) : 0
   const prevConv = prevWin.length > 0 ? Math.round((prevWin.filter(i => i.status === 'paid').length / prevWin.length) * 100) : 0
 
   const jobsSpark = useMemo(() => {
     const base = Array(12).fill(0)
-    allJobs.forEach(j => { const d = parseDateLocal(j.next_service_date); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1 })
+    allJobs.forEach(j => {
+      const d = parseDateLocal(j.next_service_date)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += 1
+    })
     return base
   }, [allJobs])
+
   const revSpark = useMemo(() => {
     const base = Array(12).fill(0)
-    allInvoices.forEach(inv => { if (inv.status !== 'paid') return; const d = parseDateLocal(inv.created_at); if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0) })
+    allInvoices.forEach(inv => {
+      if (inv.status !== 'paid') return
+      const d = parseDateLocal(inv.created_at)
+      if (d && d.getFullYear() === now.getFullYear()) base[d.getMonth()] += Number(inv.total || 0)
+    })
     return base
   }, [allInvoices])
 
   const scheduledCount = useMemo(() => {
     const todayMs = startOfDay(new Date()).getTime()
-    return allJobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() >= todayMs }).length
+    return allJobs.filter(j => {
+      const d = parseDateLocal(j.next_service_date)
+      return d && startOfDay(d).getTime() >= todayMs
+    }).length
   }, [allJobs])
 
   const statCards = [
-    { label: 'Outstanding',      value: `$${outCurr.toLocaleString('en-AU')}`, delta: fmtDelta(pctChange(outCurr, outPrev)), up: pctChange(outCurr, outPrev) >= 0, color: TEAL,      sparkType: 'bar'   as const, onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Revenue (30d)',    value: `$${revCurr.toLocaleString('en-AU')}`, delta: fmtDelta(pctChange(revCurr, revPrev)), up: pctChange(revCurr, revPrev) >= 0, color: '#43A047',  sparkType: 'line'  as const, onClick: () => router.push('/dashboard/revenue') },
-    { label: 'Jobs This Month',  value: `${jobsCurrMonth}`,                    delta: fmtDelta(pctChange(jobsCurrMonth, jobsPrevMonth)), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, color: '#9C27B0', sparkType: 'donut' as const, onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Invoice Paid Rate',value: `${convRate}%`,                        delta: `${currConv - prevConv >= 0 ? '+' : ''}${currConv - prevConv}%`, up: currConv >= prevConv, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Outstanding', value: `$${outCurr.toLocaleString('en-AU')}`, delta: fmtDelta(pctChange(outCurr, outPrev)), up: pctChange(outCurr, outPrev) >= 0, color: TEAL, sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Revenue (30d)', value: `$${revCurr.toLocaleString('en-AU')}`, delta: fmtDelta(pctChange(revCurr, revPrev)), up: pctChange(revCurr, revPrev) >= 0, color: '#43A047', sparkType: 'line' as const, onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Jobs This Month', value: `${jobsCurrMonth}`, delta: fmtDelta(pctChange(jobsCurrMonth, jobsPrevMonth)), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, color: '#9C27B0', sparkType: 'donut' as const, onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Invoice Paid Rate', value: `${convRate}%`, delta: `${currConv - prevConv >= 0 ? '+' : ''}${currConv - prevConv}%`, up: currConv >= prevConv, color: '#FF7043', sparkType: 'bar' as const, onClick: () => router.push('/dashboard/invoices') },
   ]
 
-  const card: React.CSSProperties       = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
+  const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
   const btnOutline: React.CSSProperties = { height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
-  const btnDark: React.CSSProperties    = { height: '34px', padding: '0 16px', border: `1px solid ${TEAL_DARK}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
-  const btnMobileSm: React.CSSProperties   = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px', flex: 1 }
+  const btnDark: React.CSSProperties = { height: '34px', padding: '0 16px', border: `1px solid ${TEAL_DARK}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, background: TEAL, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const }
+  const btnMobileSm: React.CSSProperties = { height: '36px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px', flex: 1 }
   const btnMobileDark: React.CSSProperties = { ...btnMobileSm, background: TEAL, border: `1px solid ${TEAL_DARK}`, color: WHITE }
 
   if (loading) return (
@@ -552,12 +892,11 @@ export default function DashboardPage() {
     </div>
   )
 
-  // ── Stat chips config ─────────────────────────────────────────────────────
   const statChips = [
-    { label: 'Total Customers', value: stats.customers, sub: 'in your database',   onClick: () => router.push('/dashboard/customers') },
-    { label: 'Upcoming Jobs',   value: scheduledCount,  sub: 'scheduled ahead',    onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Jobs Today',      value: stats.jobsToday, sub: 'on the schedule',    onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Overdue Jobs',    value: stats.overdue,   sub: 'need rescheduling',  onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
+    { label: 'Total Customers', value: stats.customers, sub: 'in your database', onClick: () => router.push('/dashboard/customers') },
+    { label: 'Upcoming Jobs', value: scheduledCount, sub: 'scheduled ahead', onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Jobs Today', value: stats.jobsToday, sub: 'on the schedule', onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Overdue Jobs', value: stats.overdue, sub: 'need rescheduling', onClick: () => router.push('/dashboard/jobs'), danger: stats.overdue > 0 },
   ]
 
   return (
@@ -566,19 +905,25 @@ export default function DashboardPage() {
 
       {popupDate && (
         <JobDayPopup
-          date={popupDate} jobs={popupJobs}
-          onClose={() => { setPopupDate(null); setPopupJobs([]) }}
-          onJobClick={job => { setPopupDate(null); setPopupJobs([]); router.push(`/dashboard/customers/${job.customer_id}`) }}
+          date={popupDate}
+          jobs={popupJobs}
+          onClose={() => {
+            setPopupDate(null)
+            setPopupJobs([])
+          }}
+          onJobClick={job => {
+            setPopupDate(null)
+            setPopupJobs([])
+            router.push(`/dashboard/customers/${job.customer_id}`)
+          }}
         />
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '0' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px' }}>
 
-          {/* ── Header ── */}
           {isMobile ? (
             <div style={{ padding: '20px 12px 4px' }}>
-              {/* Greeting row */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
@@ -593,14 +938,9 @@ export default function DashboardPage() {
                   <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileDark}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
-              {/* Stat chips */}
               <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', borderTop: `2px solid ${TEAL}`, overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 {statChips.map((chip, i) => (
-                  <div key={chip.label} onClick={chip.onClick}
-                    style={{ padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
+                  <div key={chip.label} onClick={chip.onClick} style={{ padding: '10px 8px', cursor: 'pointer', textAlign: 'center', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
                     <div style={{ fontSize: '9px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
                   </div>
@@ -609,7 +949,6 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div>
-              {/* Top row: greeting + actions */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
@@ -625,14 +964,9 @@ export default function DashboardPage() {
                   <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><IconDownload size={12} /> Revenue</button>
                 </div>
               </div>
-              {/* Stat chips row */}
               <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 {statChips.map((chip, i) => (
-                  <div key={chip.label} onClick={chip.onClick}
-                    style={{ padding: '14px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
+                  <div key={chip.label} onClick={chip.onClick} style={{ padding: '14px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}>
                     <div style={{ fontSize: '24px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '4px' }}>{chip.label}</div>
                   </div>
@@ -641,7 +975,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Stat cards ── */}
           <div style={{ padding: isMobile ? '0 12px' : '0', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {statCards.map(sc => (
               <div key={sc.label} onClick={sc.onClick} style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 20px 0', cursor: 'pointer', transition: 'box-shadow 0.15s', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.09)')} onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}>
@@ -659,8 +992,8 @@ export default function DashboardPage() {
                       <span style={{ fontSize: '10px', color: TEXT3, fontWeight: 500 }}>vs prev</span>
                     </div>
                   </div>
-                  {sc.sparkType === 'bar'   && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
-                  {sc.sparkType === 'line'  && <MiniSparkline data={revSpark} color={sc.color} width={70} height={40} />}
+                  {sc.sparkType === 'bar' && <SparkBars data={jobsSpark.slice(-8)} color={sc.color} width={58} height={40} />}
+                  {sc.sparkType === 'line' && <MiniSparkline data={revSpark} color={sc.color} width={70} height={40} />}
                   {sc.sparkType === 'donut' && <DonutSparkle value={stats.units > 0 ? Math.round((jobsCurrMonth / Math.max(stats.units, 1)) * 100) : 0} color={sc.color} size={46} />}
                 </div>
                 <div style={{ borderTop: `1px solid ${BORDER}`, marginTop: '14px', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '5px', color: TEXT3 }}>
@@ -675,32 +1008,12 @@ export default function DashboardPage() {
             <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
           </div>
 
-          {/* ── Lower section ── */}
           <div style={{ padding: isMobile ? '0 12px' : '0', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: '16px', alignItems: 'start' }}>
-
-            {/* Left column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-              {/* Bookings card */}
               <div style={card}>
-                <div style={{ padding: '14px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: TEXT }}>Bookings</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{scheduledCount}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Booked</div>
-                    </div>
-                    <div style={{ width: 1, height: 28, background: BORDER }} />
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em', lineHeight: 1 }}>{stats.jobsToday}</div>
-                      <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '1px' }}>Today</div>
-                    </div>
-                  </div>
-                </div>
                 <VisitCalendarWidget jobs={allJobs} isMobile={isMobile} onDateClick={(date, dayJobs) => { setPopupDate(date); setPopupJobs(dayJobs) }} />
               </div>
 
-              {/* Recent Customers */}
               <div style={card}>
                 <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
@@ -727,7 +1040,10 @@ export default function DashboardPage() {
                   const custJobs = allJobs
                     .filter(j => j.customer_id === customer.id && j.next_service_date)
                     .sort((a, b) => (parseDateLocal(a.next_service_date)?.getTime() ?? 0) - (parseDateLocal(b.next_service_date)?.getTime() ?? 0))
-                  const nextJob = custJobs.find(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() >= todayMs }) ?? custJobs[custJobs.length - 1]
+                  const nextJob = custJobs.find(j => {
+                    const d = parseDateLocal(j.next_service_date)
+                    return d && startOfDay(d).getTime() >= todayMs
+                  }) ?? custJobs[custJobs.length - 1]
                   const sp = statusPill(nextJob?.next_service_date)
                   const jobDate = nextJob?.next_service_date ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '—'
                   const accent = [TEAL,'#9C27B0','#FF7043','#43A047','#2196F3','#FF6B35','#E040FB'][i % 7]
@@ -754,10 +1070,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-              {/* Unpaid Invoices */}
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
@@ -792,7 +1105,6 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Upcoming Jobs */}
               <div style={card}>
                 <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Upcoming Jobs</span>
@@ -826,9 +1138,9 @@ export default function DashboardPage() {
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
+
         </div>
       </div>
     </div>
