@@ -8,6 +8,7 @@ import { createCustomer, createJob } from '@/lib/queries'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
+const TEAL_LIGHT = '#E6F7F6'
 const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -61,7 +62,7 @@ function useIsMobile() {
 
 function IconSpark({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
       <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
     </svg>
@@ -70,7 +71,7 @@ function IconSpark({ size = 16 }: { size?: number }) {
 
 function IconArrowLeft({ size = 15 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -78,7 +79,7 @@ function IconArrowLeft({ size = 15 }: { size?: number }) {
 
 function IconUsers({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
       <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
@@ -89,7 +90,7 @@ function IconUsers({ size = 18 }: { size?: number }) {
 
 function IconJob({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
       <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
@@ -98,7 +99,7 @@ function IconJob({ size = 18 }: { size?: number }) {
 
 function IconCalendar({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
       <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
     </svg>
@@ -220,21 +221,14 @@ export default function AddJobPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
+    borderRadius: '18px',
     overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
   }
 
   const cardP: React.CSSProperties = {
     ...card,
     padding: isMobile ? '16px' : '18px',
-  }
-
-  const sectionLabel: React.CSSProperties = {
-    ...TYPE.title,
-    fontSize: '13px',
-    fontWeight: 800,
-    marginBottom: '12px',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -253,12 +247,13 @@ export default function AddJobPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
+    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
-    padding: '0 16px',
-    border: `1px solid ${TEAL}`,
+    padding: '0 14px',
+    border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -269,13 +264,14 @@ export default function AddJobPage() {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '7px',
     whiteSpace: 'nowrap',
+    transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
-    padding: '0 10px',
+    padding: '0 12px',
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
@@ -307,23 +303,24 @@ export default function AddJobPage() {
   const inputStyle: React.CSSProperties = {
     height: '42px',
     padding: '0 12px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
-    background: WHITE,
+    background: '#F8FAFC',
     color: TEXT,
     fontFamily: FONT,
     fontSize: '13px',
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
+    fontWeight: 600,
   }
 
   const textareaStyle: React.CSSProperties = {
     minHeight: '96px',
     padding: '12px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
-    background: WHITE,
+    background: '#F8FAFC',
     color: TEXT,
     fontFamily: FONT,
     fontSize: '13px',
@@ -332,20 +329,8 @@ export default function AddJobPage() {
     resize: 'vertical',
     lineHeight: 1.5,
     boxSizing: 'border-box',
+    fontWeight: 600,
   }
-
-  const iconWrapStep = (color: string): React.CSSProperties => ({
-    width: '36px',
-    height: '36px',
-    borderRadius: '11px',
-    background: '#F8FAFC',
-    color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `1px solid ${BORDER}`,
-    flexShrink: 0,
-  })
 
   const stepCard: React.CSSProperties = {
     borderRadius: '14px',
@@ -354,6 +339,26 @@ export default function AddJobPage() {
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
+
+  const stepIconWrap: React.CSSProperties = {
+    width: 42,
+    height: 42,
+    borderRadius: '12px',
+    background: TEAL_LIGHT,
+    border: `1px solid #BFE7E3`,
+    color: TEAL_DARK,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  }
+
+  const statChips = [
+    { label: 'Customer', value: form.first_name || form.last_name ? '1' : '0' },
+    { label: 'Unit type', value: form.equipment_type ? '1' : '0' },
+    { label: 'Brand', value: form.brand ? '1' : '0' },
+    { label: 'Schedule', value: form.install_date ? '1' : '0' },
+  ]
 
   return (
     <div
@@ -369,71 +374,83 @@ export default function AddJobPage() {
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
         <div
           style={{
-            padding: isMobile ? '12px' : '20px 24px',
+            padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            background: BG,
           }}
         >
           {isMobile ? (
-            <div style={{ margin: '-12px -12px 0', overflow: 'hidden', background: WHITE }}>
+            <div style={{ padding: '20px 12px 4px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: TEXT3,
+                    letterSpacing: '0.07em',
+                    textTransform: 'uppercase',
+                    marginBottom: '5px',
+                  }}
+                >
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                </div>
+
+                <h1
+                  style={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    color: TEXT,
+                    letterSpacing: '-0.05em',
+                    margin: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  Add new job
+                </h1>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
+                  <IconArrowLeft size={13} /> Back
+                </button>
+                <button form="job-form" type="submit" disabled={loading} style={btnMobileTeal}>
+                  {loading ? 'Saving...' : 'Save job'}
+                </button>
+              </div>
+
               <div
                 style={{
                   background: WHITE,
-                  padding: '16px 16px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                 }}
               >
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
+                {statChips.map((chip, i) => (
                   <div
+                    key={chip.label}
                     style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
+                      padding: '10px 8px',
+                      textAlign: 'center',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
                     }}
                   >
-                    {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
                   </div>
-
-                  <h1
-                    style={{
-                      fontSize: '26px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    Add new job
-                  </h1>
-                </div>
-              </div>
-
-              <div style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px' }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                    <IconArrowLeft size={13} /> Back
-                  </button>
-                  <button form="job-form" type="submit" disabled={loading} style={btnMobileTeal}>
-                    {loading ? 'Saving...' : 'Save job'}
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px', gap: 0 }}>
-                <div style={{ width: 4, background: TEAL, alignSelf: 'stretch', borderRadius: 0, flexShrink: 0, marginRight: 20 }} />
-
-                <div style={{ flexShrink: 0, minWidth: 0 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
                   <div
                     style={{
                       fontSize: '10px',
@@ -461,18 +478,63 @@ export default function AddJobPage() {
                   </h1>
                 </div>
 
-                <div style={{ flex: 1 }} />
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => router.push('/dashboard/jobs')}
+                    style={btnOutline}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
                     <IconArrowLeft size={13} /> Back to jobs
                   </button>
 
-                  <button form="job-form" type="submit" disabled={loading} style={btnTeal}>
+                  <button
+                    form="job-form"
+                    type="submit"
+                    disabled={loading}
+                    style={btnTeal}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.opacity = '0.82'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                  >
                     <IconSpark size={14} />
                     {loading ? 'Saving...' : 'Save job'}
                   </button>
                 </div>
+              </div>
+
+              <div
+                style={{
+                  background: WHITE,
+                  border: `1px solid ${BORDER}`,
+                  borderTop: `2px solid ${TEAL}`,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                }}
+              >
+                {statChips.map((chip, i) => (
+                  <div
+                    key={chip.label}
+                    style={{
+                      padding: '14px 20px',
+                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -487,40 +549,49 @@ export default function AddJobPage() {
                 fontSize: '14px',
                 border: '1px solid #FECACA',
                 fontWeight: 600,
+                margin: isMobile ? '0 12px' : 0,
               }}
             >
               {error}
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start', padding: isMobile ? '0 12px' : 0 }}>
             <div style={cardP}>
               <div
                 style={{
+                  paddingBottom: '16px',
+                  borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '12px',
+                  gap: '14px',
                   marginBottom: '14px',
                   flexWrap: 'wrap',
                 }}
               >
-                <div>
-                  <div style={sectionLabel}>New job workflow</div>
-                  <div style={{ ...TYPE.bodySm }}>Add the customer, installation details, and reminder timing in one pass.</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New job workflow</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
+                      Add the customer, installation details, and reminder timing in one pass.
+                    </div>
+                  </div>
                 </div>
 
                 <div
                   style={{
+                    height: '22px',
+                    padding: '0 8px',
+                    borderRadius: '999px',
+                    border: `1px solid #BFE7E3`,
+                    background: TEAL_LIGHT,
+                    color: TEAL_DARK,
+                    fontSize: '10px',
+                    fontWeight: 800,
                     display: 'inline-flex',
                     alignItems: 'center',
-                    padding: '7px 10px',
-                    borderRadius: '999px',
-                    background: '#E6F7F6',
-                    border: `1px solid #BFE7E3`,
-                    color: TEAL_DARK,
-                    fontSize: '11px',
-                    fontWeight: 800,
                   }}
                 >
                   Live form
@@ -530,13 +601,13 @@ export default function AddJobPage() {
               <form id="job-form" onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={iconWrapStep(TEAL_DARK)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={stepIconWrap}>
                         <IconUsers size={18} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
-                        <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Customer details</div>
+                        <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Customer details</div>
                       </div>
                     </div>
                   </div>
@@ -575,13 +646,13 @@ export default function AddJobPage() {
 
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={iconWrapStep(TEAL_DARK)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={stepIconWrap}>
                         <IconJob size={18} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
-                        <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Installation details</div>
+                        <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Installation details</div>
                       </div>
                     </div>
                   </div>
@@ -609,7 +680,7 @@ export default function AddJobPage() {
                     </div>
 
                     <div>
-                      <label style={labelStyle}>Capacity (kW)</label>
+                      <label style={labelStyle}>Capacity kW</label>
                       <input style={inputStyle} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder="7.1" />
                     </div>
 
@@ -642,13 +713,13 @@ export default function AddJobPage() {
 
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={iconWrapStep(TEAL_DARK)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={stepIconWrap}>
                         <IconCalendar size={18} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
-                        <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 800 }}>Service schedule</div>
+                        <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Service schedule</div>
                       </div>
                     </div>
                   </div>
