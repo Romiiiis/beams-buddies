@@ -451,7 +451,7 @@ export function Sidebar({ active }: { active: string }) {
 
           body {
             min-height: 100svh;
-            padding-bottom: calc(104px + env(safe-area-inset-bottom));
+            padding-bottom: calc(88px + env(safe-area-inset-bottom));
           }
 
           .mobile-tab-icon {
@@ -481,7 +481,7 @@ export function Sidebar({ active }: { active: string }) {
 
           @media (display-mode: standalone) {
             body {
-              padding-bottom: calc(112px + env(safe-area-inset-bottom));
+              padding-bottom: calc(96px + env(safe-area-inset-bottom));
             }
           }
         `}</style>
@@ -750,21 +750,22 @@ export function Sidebar({ active }: { active: string }) {
           <nav
             style={{
               position: 'fixed',
-              left: 14,
-              right: 14,
-              bottom: 'calc(14px + env(safe-area-inset-bottom))',
+              left: 0,
+              right: 0,
+              bottom: 0,
               zIndex: 100,
-              height: 74,
-              maxWidth: 460,
-              margin: '0 auto',
+              height: 'calc(78px + env(safe-area-inset-bottom))',
               background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 28,
+              borderTop: `1px solid ${BORDER}`,
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: 'none',
+              borderRadius: 0,
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
               alignItems: 'center',
-              padding: '7px 8px',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.14), 0 6px 18px rgba(15,23,42,0.08)',
+              padding: '8px 12px calc(8px + env(safe-area-inset-bottom))',
+              boxShadow: '0 -10px 30px rgba(15,23,42,0.08)',
               overflow: 'hidden',
               overscrollBehavior: 'none',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
