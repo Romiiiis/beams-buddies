@@ -42,17 +42,22 @@ const navManage = [
 ]
 
 const mobilePrimaryTabs = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Service schedule', href: '/dashboard/schedule' },
-  { label: 'Add job', href: '/dashboard/jobs' },
+  { label: 'Home', href: '/dashboard' },
+  { label: 'Jobs', href: '/dashboard/jobs' },
+  { label: 'Apps', href: 'menu' },
+  { label: 'Customers', href: '/dashboard/customers' },
+  { label: 'Settings', href: '/dashboard/settings' },
 ]
 
 const mobileMenuItems = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Jobs', href: '/dashboard/jobs' },
   { label: 'Customers', href: '/dashboard/customers' },
   { label: 'Leads', href: '/dashboard/leads' },
   { label: 'Quotes', href: '/dashboard/quotes' },
   { label: 'Invoices', href: '/dashboard/invoices' },
   { label: 'Revenue', href: '/dashboard/revenue' },
+  { label: 'Service schedule', href: '/dashboard/schedule' },
   { label: 'QR codes', href: '/dashboard/qrcodes' },
   { label: 'Reports', href: '/dashboard/reports' },
   { label: 'Settings', href: '/dashboard/settings' },
@@ -194,6 +199,17 @@ function SettingsIcon() {
   )
 }
 
+function AppsIcon() {
+  return (
+    <svg {...iconBase}>
+      <rect x="4.25" y="4.25" width="5.5" height="5.5" rx="1.4" />
+      <rect x="14.25" y="4.25" width="5.5" height="5.5" rx="1.4" />
+      <rect x="4.25" y="14.25" width="5.5" height="5.5" rx="1.4" />
+      <rect x="14.25" y="14.25" width="5.5" height="5.5" rx="1.4" />
+    </svg>
+  )
+}
+
 const icons: Record<string, React.ReactElement> = {
   '/dashboard': <DashboardIcon />,
   '/dashboard/customers': <CustomersIcon />,
@@ -206,6 +222,7 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/qrcodes': <QrCodesIcon />,
   '/dashboard/reports': <ReportsIcon />,
   '/dashboard/settings': <SettingsIcon />,
+  menu: <AppsIcon />,
 }
 
 function LogoutIcon() {
@@ -218,12 +235,11 @@ function LogoutIcon() {
   )
 }
 
-function MenuIcon() {
+function CloseIcon() {
   return (
     <svg {...iconBase}>
-      <path d="M4 7h16" />
-      <path d="M4 12h16" />
-      <path d="M4 17h16" />
+      <path d="M6 6l12 12" />
+      <path d="M18 6 6 18" />
     </svg>
   )
 }
@@ -407,7 +423,7 @@ export function Sidebar({ active }: { active: string }) {
 
           body {
             min-height: 100svh;
-            padding-bottom: calc(76px + env(safe-area-inset-bottom));
+            padding-bottom: calc(92px + env(safe-area-inset-bottom));
           }
 
           .mobile-tab {
@@ -425,8 +441,8 @@ export function Sidebar({ active }: { active: string }) {
           }
 
           .mobile-tab-icon {
-            width: 21px;
-            height: 21px;
+            width: 22px;
+            height: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -436,13 +452,22 @@ export function Sidebar({ active }: { active: string }) {
 
           .mobile-tab-icon svg {
             display: block;
-            width: 21px;
-            height: 21px;
+            width: 22px;
+            height: 22px;
+          }
+
+          .mobile-menu-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+
+          .mobile-menu-scroll::-webkit-scrollbar {
+            display: none;
           }
 
           @media (display-mode: standalone) {
             body {
-              padding-bottom: calc(88px + env(safe-area-inset-bottom));
+              padding-bottom: calc(104px + env(safe-area-inset-bottom));
             }
           }
         `}</style>
@@ -454,57 +479,158 @@ export function Sidebar({ active }: { active: string }) {
               style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(15, 23, 42, 0.32)',
+                background: 'rgba(15, 23, 42, 0.30)',
+                backdropFilter: 'blur(2px)',
                 zIndex: 109,
               }}
             />
           )}
 
-          <div
+          <aside
+            className="mobile-menu-scroll"
             style={{
               position: 'fixed',
-              top: 'max(22px, calc(env(safe-area-inset-top) + 16px))',
-              right: isMobileMenuOpen ? 10 : -320,
-              bottom: 'calc(92px + env(safe-area-inset-bottom))',
-              width: 'min(268px, calc(100vw - 24px))',
-              maxHeight: 'calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 118px)',
+              top: 0,
+              left: isMobileMenuOpen ? 0 : '-82vw',
+              bottom: 0,
+              width: 'min(78vw, 318px)',
               zIndex: 110,
               background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              boxShadow: '0 20px 60px rgba(15,23,42,0.18), 0 6px 20px rgba(15,23,42,0.08)',
-              padding: 12,
-              transition: 'right 0.22s ease',
+              borderRight: `1px solid ${BORDER}`,
+              boxShadow: isMobileMenuOpen
+                ? '18px 0 54px rgba(15,23,42,0.18), 6px 0 18px rgba(15,23,42,0.08)'
+                : 'none',
+              padding: 'calc(env(safe-area-inset-top) + 22px) 18px calc(106px + env(safe-area-inset-bottom))',
+              transition: 'left 0.24s ease',
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
               overflowX: 'hidden',
               overscrollBehavior: 'contain',
               WebkitOverflowScrolling: 'touch',
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             }}
           >
-            <div
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close menu"
               style={{
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: TEXT3,
-                padding: '2px 6px 10px',
+                position: 'absolute',
+                top: 'calc(env(safe-area-inset-top) + 16px)',
+                right: 14,
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                border: `1px solid ${BORDER}`,
+                background: WHITE,
+                color: TEXT2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                lineHeight: 0,
               }}
             >
-              Menu
+              <CloseIcon />
+            </button>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '8px 42px 22px 2px',
+              }}
+            >
+              {loading ? (
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    background: BG,
+                    border: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                  }}
+                />
+              ) : business?.logo_url ? (
+                <img
+                  src={business.logo_url}
+                  alt="Logo"
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    objectFit: 'contain',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${TEAL}, ${TEAL_DARK})`,
+                    color: WHITE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 17,
+                    fontWeight: 800,
+                    flexShrink: 0,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
+
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: TEXT,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.15,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {loading ? 'Loading...' : business?.full_name || 'Owner'}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: TEXT3,
+                    marginTop: 4,
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {loading ? '' : business?.role_title || business?.name || 'Jobyra workspace'}
+                </div>
+              </div>
             </div>
 
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 8,
+                gap: 7,
               }}
             >
               {mobileMenuItems.map(item => {
                 const isActive = item.href === active
+
                 return (
                   <button
                     key={item.href}
@@ -512,35 +638,38 @@ export function Sidebar({ active }: { active: string }) {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 10,
+                      gap: 12,
                       width: '100%',
-                      minHeight: 46,
-                      padding: '9px 12px',
+                      minHeight: 48,
+                      padding: '10px 12px',
                       borderRadius: 14,
-                      border: isActive ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
-                      background: isActive ? TEAL_SOFT : '#F8FAFC',
+                      border: 'none',
+                      background: isActive ? TEAL_SOFT : 'transparent',
                       color: isActive ? TEAL : TEXT2,
                       cursor: 'pointer',
                       textAlign: 'left',
+                      transition: 'background 0.15s ease, color 0.15s ease',
                     }}
                   >
                     <span
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: 28,
+                        height: 28,
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                         lineHeight: 0,
+                        color: isActive ? TEAL : TEXT3,
                       }}
                     >
                       {icons[item.href]}
                     </span>
+
                     <span
                       style={{
-                        fontSize: 12,
-                        fontWeight: 700,
+                        fontSize: 14,
+                        fontWeight: isActive ? 800 : 650,
                         letterSpacing: '-0.01em',
                         lineHeight: 1.2,
                       }}
@@ -550,129 +679,135 @@ export function Sidebar({ active }: { active: string }) {
                   </button>
                 )
               })}
+            </div>
 
+            <div
+              style={{
+                marginTop: 18,
+                paddingTop: 18,
+                borderTop: `1px solid ${BORDER}`,
+              }}
+            >
               <button
                 onClick={signOut}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
+                  gap: 12,
                   width: '100%',
-                  minHeight: 46,
-                  padding: '9px 12px',
+                  minHeight: 48,
+                  padding: '10px 12px',
                   borderRadius: 14,
-                  border: `1px solid ${BORDER}`,
-                  background: '#F8FAFC',
-                  color: TEXT2,
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#DC2626',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  marginTop: 4,
                 }}
               >
                 <span
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 28,
+                    height: 28,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                     lineHeight: 0,
-                    color: TEXT3,
                   }}
                 >
                   <LogoutIcon />
                 </span>
+
                 <span
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
+                    fontSize: 14,
+                    fontWeight: 800,
                     letterSpacing: '-0.01em',
                     lineHeight: 1.2,
                   }}
                 >
-                  Sign out
+                  Log out
                 </span>
               </button>
             </div>
-          </div>
+          </aside>
 
-          <div
+          <nav
             style={{
               position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
+              left: 12,
+              right: 12,
+              bottom: 'calc(10px + env(safe-area-inset-bottom))',
               zIndex: 100,
               background: WHITE,
-              borderTop: `1px solid ${BORDER}`,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 26,
               display: 'flex',
               alignItems: 'stretch',
-              minHeight: 'calc(64px + env(safe-area-inset-bottom))',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-              boxShadow: '0 -4px 20px rgba(15,23,42,0.06)',
+              minHeight: 68,
+              boxShadow: '0 16px 42px rgba(15,23,42,0.15), 0 5px 16px rgba(15,23,42,0.08)',
+              overflow: 'hidden',
               overscrollBehavior: 'none',
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             }}
           >
             {mobilePrimaryTabs.map(tab => {
-              const isActive = tab.href === active
+              const isMenuTab = tab.href === 'menu'
+              const isActive = isMenuTab ? isMobileMenuOpen : tab.href === active
 
               return (
                 <div
                   key={tab.href}
-                  onClick={() => navigateTo(tab.href)}
+                  onClick={() => {
+                    if (isMenuTab) {
+                      setIsMobileMenuOpen(prev => !prev)
+                      return
+                    }
+
+                    navigateTo(tab.href)
+                  }}
                   className="mobile-tab"
-                  style={{ color: isActive ? TEAL : TEXT3 }}
+                  style={{
+                    color: isActive ? TEAL : TEXT3,
+                  }}
                 >
-                  <span className="mobile-tab-icon" style={{ color: isActive ? TEAL : TEXT3 }}>
-                    {icons[tab.href]}
-                  </span>
                   <span
+                    className="mobile-tab-icon"
                     style={{
-                      fontSize: 9.5,
-                      fontWeight: isActive ? 700 : 600,
-                      lineHeight: 1.1,
-                      letterSpacing: '-0.01em',
-                      textAlign: 'center',
-                      textRendering: 'optimizeLegibility',
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale',
-                      whiteSpace: 'normal',
-                      maxWidth: 70,
+                      width: isMenuTab ? 42 : 22,
+                      height: isMenuTab ? 42 : 22,
+                      borderRadius: isMenuTab ? 16 : 0,
+                      background: isMenuTab ? TEAL : 'transparent',
+                      color: isMenuTab ? WHITE : isActive ? TEAL : TEXT3,
+                      boxShadow: isMenuTab ? '0 9px 22px rgba(31,158,148,0.26)' : 'none',
                     }}
                   >
-                    {tab.label}
+                    {icons[tab.href]}
                   </span>
+
+                  {!isMenuTab && (
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: isActive ? 800 : 650,
+                        lineHeight: 1.1,
+                        letterSpacing: '-0.01em',
+                        textAlign: 'center',
+                        textRendering: 'optimizeLegibility',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale',
+                        whiteSpace: 'normal',
+                        maxWidth: 70,
+                      }}
+                    >
+                      {tab.label}
+                    </span>
+                  )}
                 </div>
               )
             })}
-
-            <div
-              onClick={() => setIsMobileMenuOpen(prev => !prev)}
-              className="mobile-tab"
-              style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}
-            >
-              <span className="mobile-tab-icon" style={{ color: isMobileMenuOpen ? TEAL : TEXT3 }}>
-                <MenuIcon />
-              </span>
-              <span
-                style={{
-                  fontSize: 9.5,
-                  fontWeight: isMobileMenuOpen ? 700 : 600,
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.01em',
-                  textAlign: 'center',
-                  textRendering: 'optimizeLegibility',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
-                  whiteSpace: 'normal',
-                  maxWidth: 70,
-                }}
-              >
-                Menu
-              </span>
-            </div>
-          </div>
+          </nav>
         </>
       </>
     )
