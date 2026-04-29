@@ -315,6 +315,26 @@ export function Sidebar({ active }: { active: string }) {
     }
   }, [isMobile])
 
+  useEffect(() => {
+    if (!isMobile) return
+
+    const routes = [
+      '/dashboard',
+      '/dashboard/jobs',
+      '/dashboard/customers',
+      '/dashboard/settings',
+      '/dashboard/leads',
+      '/dashboard/quotes',
+      '/dashboard/invoices',
+      '/dashboard/revenue',
+      '/dashboard/schedule',
+      '/dashboard/qrcodes',
+      '/dashboard/reports',
+    ]
+
+    routes.forEach(route => router.prefetch(route))
+  }, [isMobile, router])
+
   const initials = business?.full_name
     ? business.full_name
         .split(' ')
@@ -330,12 +350,20 @@ export function Sidebar({ active }: { active: string }) {
   }
 
   function navigateTo(href: string) {
+    if (href === active) {
+      setIsMobileMenuOpen(false)
+      return
+    }
+
     const shouldCollapse = typeof window !== 'undefined' && window.innerWidth < AUTO_COLLAPSE_BREAKPOINT
+
     if (!isMobile) {
       setIsCollapsed(shouldCollapse)
     } else {
       setIsMobileMenuOpen(false)
     }
+
+    router.prefetch(href)
     router.push(href)
   }
 
@@ -423,21 +451,7 @@ export function Sidebar({ active }: { active: string }) {
 
           body {
             min-height: 100svh;
-            padding-bottom: calc(92px + env(safe-area-inset-bottom));
-          }
-
-          .mobile-tab {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 3px 7px;
-            cursor: pointer;
-            gap: 4px;
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            padding-bottom: calc(104px + env(safe-area-inset-bottom));
           }
 
           .mobile-tab-icon {
@@ -467,7 +481,7 @@ export function Sidebar({ active }: { active: string }) {
 
           @media (display-mode: standalone) {
             body {
-              padding-bottom: calc(104px + env(safe-area-inset-bottom));
+              padding-bottom: calc(112px + env(safe-area-inset-bottom));
             }
           }
         `}</style>
@@ -736,20 +750,26 @@ export function Sidebar({ active }: { active: string }) {
           <nav
             style={{
               position: 'fixed',
-              left: 12,
-              right: 12,
-              bottom: 'calc(10px + env(safe-area-inset-bottom))',
+              left: 14,
+              right: 14,
+              bottom: 'calc(14px + env(safe-area-inset-bottom))',
               zIndex: 100,
+              height: 74,
+              maxWidth: 460,
+              margin: '0 auto',
               background: WHITE,
               border: `1px solid ${BORDER}`,
-              borderRadius: 26,
-              display: 'flex',
-              alignItems: 'stretch',
-              minHeight: 68,
-              boxShadow: '0 16px 42px rgba(15,23,42,0.15), 0 5px 16px rgba(15,23,42,0.08)',
+              borderRadius: 28,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              alignItems: 'center',
+              padding: '7px 8px',
+              boxShadow: '0 18px 44px rgba(15,23,42,0.14), 0 6px 18px rgba(15,23,42,0.08)',
               overflow: 'hidden',
               overscrollBehavior: 'none',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)',
             }}
           >
             {mobilePrimaryTabs.map(tab => {
@@ -757,8 +777,9 @@ export function Sidebar({ active }: { active: string }) {
               const isActive = isMenuTab ? isMobileMenuOpen : tab.href === active
 
               return (
-                <div
+                <button
                   key={tab.href}
+                  type="button"
                   onClick={() => {
                     if (isMenuTab) {
                       setIsMobileMenuOpen(prev => !prev)
@@ -767,20 +788,37 @@ export function Sidebar({ active }: { active: string }) {
 
                     navigateTo(tab.href)
                   }}
-                  className="mobile-tab"
                   style={{
+                    height: '100%',
+                    minWidth: 0,
+                    border: 'none',
+                    background: 'transparent',
                     color: isActive ? TEAL : TEXT3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: isMenuTab ? 0 : 4,
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontFamily: 'inherit',
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   <span
                     className="mobile-tab-icon"
                     style={{
-                      width: isMenuTab ? 42 : 22,
-                      height: isMenuTab ? 42 : 22,
+                      width: isMenuTab ? 46 : 22,
+                      height: isMenuTab ? 46 : 22,
                       borderRadius: isMenuTab ? 16 : 0,
                       background: isMenuTab ? TEAL : 'transparent',
                       color: isMenuTab ? WHITE : isActive ? TEAL : TEXT3,
-                      boxShadow: isMenuTab ? '0 9px 22px rgba(31,158,148,0.26)' : 'none',
+                      boxShadow: isMenuTab ? '0 10px 22px rgba(31,158,148,0.24)' : 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      lineHeight: 0,
                     }}
                   >
                     {icons[tab.href]}
@@ -789,7 +827,7 @@ export function Sidebar({ active }: { active: string }) {
                   {!isMenuTab && (
                     <span
                       style={{
-                        fontSize: 9.5,
+                        fontSize: 10,
                         fontWeight: isActive ? 800 : 650,
                         lineHeight: 1.1,
                         letterSpacing: '-0.01em',
@@ -797,14 +835,16 @@ export function Sidebar({ active }: { active: string }) {
                         textRendering: 'optimizeLegibility',
                         WebkitFontSmoothing: 'antialiased',
                         MozOsxFontSmoothing: 'grayscale',
-                        whiteSpace: 'normal',
-                        maxWidth: 70,
+                        whiteSpace: 'nowrap',
+                        maxWidth: 72,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {tab.label}
                     </span>
                   )}
-                </div>
+                </button>
               )
             })}
           </nav>
