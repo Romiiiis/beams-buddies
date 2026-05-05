@@ -14,14 +14,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ background: '#EDF6F5' }}>
+    <html lang="en" style={{ background: '#FAFAFA' }}>
       <head>
-        <meta name="theme-color" content="#EDF6F5" />
+        <meta name="theme-color" content="#FAFAFA" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
-      <body style={{ margin: 0, padding: 0, background: '#EDF6F5' }}>
+      <body style={{ margin: 0, padding: 0, background: '#FAFAFA' }}>
         {children}
       </body>
     </html>
