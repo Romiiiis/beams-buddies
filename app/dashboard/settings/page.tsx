@@ -768,7 +768,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '16px' }}>
+          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '16px', margin: isMobile ? '0 12px' : undefined }}>
             <div id="profile-section" style={card}>
               <SectionHeader
                 title="Your Profile"
