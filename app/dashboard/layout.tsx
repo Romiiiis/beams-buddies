@@ -11,6 +11,7 @@ type BusinessData = {
   logo_url: string | null
   full_name: string | null
   role_title: string | null
+  industry: string | null
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { data: bizData } = await supabase
         .from('businesses')
-        .select('name, logo_url')
+        .select('name, logo_url, industry')
         .eq('id', userData.business_id)
         .single()
 
@@ -55,6 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           logo_url: bizData.logo_url,
           full_name: userData.full_name,
           role_title: userData.role_title,
+          industry: bizData.industry ?? null,
         }
         setBusiness(data)
         setLoading(false)

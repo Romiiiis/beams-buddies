@@ -6,6 +6,7 @@ import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
+import { INDUSTRIES } from '@/lib/industry-config'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
@@ -171,6 +172,7 @@ export default function SettingsPage() {
     email: '',
     phone: '',
     logo_url: '',
+    industry: 'hvac',
   })
 
   const [userProfile, setUserProfile] = useState({
@@ -251,6 +253,7 @@ export default function SettingsPage() {
           email: businessRes.data.email || '',
           phone: businessRes.data.phone || '',
           logo_url: businessRes.data.logo_url || '',
+          industry: businessRes.data.industry || 'hvac',
         })
       }
 
@@ -345,6 +348,7 @@ export default function SettingsPage() {
           logo_url: business.logo_url || null,
           phone: business.phone,
           email: business.email,
+          industry: business.industry,
         })
         .eq('id', businessId),
 
@@ -814,6 +818,16 @@ export default function SettingsPage() {
                   <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
                     <label style={label}>Email</label>
                     <input style={input} value={business.email} onChange={e => setBiz('email', e.target.value)} placeholder="hello@yourbusiness.com" />
+                  </div>
+
+                  <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
+                    <label style={label}>Industry</label>
+                    <select style={selectStyle} value={business.industry} onChange={e => setBiz('industry', e.target.value)}>
+                      {INDUSTRIES.map(ind => (
+                        <option key={ind.id} value={ind.id}>{ind.label}</option>
+                      ))}
+                    </select>
+                    <p style={hint}>Controls the equipment types and field labels throughout the app</p>
                   </div>
                 </div>
 

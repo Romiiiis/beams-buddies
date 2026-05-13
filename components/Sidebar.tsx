@@ -922,7 +922,7 @@ export function Sidebar({ active }: { active: string }) {
             }}
           >
             <img
-              src="https://static.wixstatic.com/media/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png/v1/fill/w_200,h_200/48c433_c590b541a9f246f7bd6d0d9861627f55~mv2.png"
+              src="/favicon.ico"
               alt="Jobyra"
               style={{
                 width: 40,

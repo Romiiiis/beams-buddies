@@ -7,6 +7,7 @@ type BusinessData = {
   logo_url: string | null
   full_name: string | null
   role_title: string | null
+  industry: string | null
 }
 
 type BusinessContextType = {

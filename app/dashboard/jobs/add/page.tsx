@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { createCustomer, createJob } from '@/lib/queries'
+import { useBusinessData } from '@/lib/business-context'
+import { getIndustry } from '@/lib/industry-config'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
@@ -130,7 +132,15 @@ type FormState = {
 export default function AddJobPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { business: bizContext } = useBusinessData()
+  const industryConfig = getIndustry(bizContext?.industry)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (industryConfig.equipmentTypes.length > 0) {
+      setForm(prev => prev.equipment_type ? prev : { ...prev, equipment_type: industryConfig.equipmentTypes[0].value })
+    }
+  }, [industryConfig])
   const [error, setError] = useState('')
   const [form, setForm] = useState<FormState>({
     first_name: '',
@@ -140,7 +150,7 @@ export default function AddJobPage() {
     address: '',
     suburb: '',
     postcode: '',
-    equipment_type: 'split_system',
+    equipment_type: '',
     brand: '',
     model: '',
     capacity_kw: '',
@@ -661,32 +671,32 @@ export default function AddJobPage() {
                     <div>
                       <label style={labelStyle}>Equipment type *</label>
                       <select required style={inputStyle} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
-                        <option value="split_system">Split system</option>
-                        <option value="ducted">Ducted system</option>
-                        <option value="multi_head">Multi-head split</option>
-                        <option value="cassette">Cassette unit</option>
-                        <option value="other">Other</option>
+                        {industryConfig.equipmentTypes.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
-                      <label style={labelStyle}>Brand *</label>
-                      <input required style={inputStyle} value={form.brand} onChange={e => set('brand', e.target.value)} placeholder="Daikin" />
+                      <label style={labelStyle}>{industryConfig.fields.brand.label} *</label>
+                      <input required style={inputStyle} value={form.brand} onChange={e => set('brand', e.target.value)} placeholder={industryConfig.fields.brand.placeholder} />
                     </div>
 
                     <div>
-                      <label style={labelStyle}>Model</label>
-                      <input style={inputStyle} value={form.model} onChange={e => set('model', e.target.value)} placeholder="FTXM71WVMA" />
+                      <label style={labelStyle}>{industryConfig.fields.model.label}</label>
+                      <input style={inputStyle} value={form.model} onChange={e => set('model', e.target.value)} placeholder={industryConfig.fields.model.placeholder} />
                     </div>
 
-                    <div>
-                      <label style={labelStyle}>Capacity kW</label>
-                      <input style={inputStyle} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder="7.1" />
-                    </div>
+                    {industryConfig.fields.capacityKw.show && (
+                      <div>
+                        <label style={labelStyle}>{industryConfig.fields.capacityKw.label}</label>
+                        <input style={inputStyle} value={form.capacity_kw} onChange={e => set('capacity_kw', e.target.value)} placeholder={industryConfig.fields.capacityKw.placeholder} />
+                      </div>
+                    )}
 
                     <div>
                       <label style={labelStyle}>Serial number</label>
-                      <input style={inputStyle} value={form.serial_number} onChange={e => set('serial_number', e.target.value)} placeholder="DKSP2024XXXXXX" />
+                      <input style={inputStyle} value={form.serial_number} onChange={e => set('serial_number', e.target.value)} placeholder="SN-XXXXXX" />
                     </div>
 
                     <div>
@@ -695,18 +705,18 @@ export default function AddJobPage() {
                     </div>
 
                     <div>
-                      <label style={labelStyle}>Installation date *</label>
+                      <label style={labelStyle}>{industryConfig.fields.installDate.label} *</label>
                       <input required type="date" style={inputStyle} value={form.install_date} onChange={e => set('install_date', e.target.value)} />
                     </div>
 
                     <div>
-                      <label style={labelStyle}>Location in property</label>
-                      <input style={inputStyle} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder="Master bedroom" />
+                      <label style={labelStyle}>{industryConfig.fields.installLocation.label}</label>
+                      <input style={inputStyle} value={form.install_location} onChange={e => set('install_location', e.target.value)} placeholder={industryConfig.fields.installLocation.placeholder} />
                     </div>
 
                     <div style={{ gridColumn: isMobile ? '1' : 'span 2' }}>
-                      <label style={labelStyle}>Job notes</label>
-                      <textarea style={textareaStyle} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Any notes about the installation..." />
+                      <label style={labelStyle}>Notes</label>
+                      <textarea style={textareaStyle} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder={industryConfig.fields.notes.placeholder} />
                     </div>
                   </div>
                 </div>
