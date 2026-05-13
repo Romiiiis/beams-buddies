@@ -922,13 +922,13 @@ export function Sidebar({ active }: { active: string }) {
             }}
           >
             <img
-              src="/favicon.ico"
+              src="/jobyra-logo.png"
               alt="Jobyra"
               style={{
                 width: 40,
                 height: 40,
                 borderRadius: 12,
-                objectFit: 'cover',
+                objectFit: 'contain',
                 background: WHITE,
                 border: `1px solid ${BORDER}`,
                 flexShrink: 0,
