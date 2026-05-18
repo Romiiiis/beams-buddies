@@ -22,24 +22,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   function refresh() { setTick(t => t + 1) }
 
   useEffect(() => {
-    // Read cache on client only
-    try {
-      const raw = localStorage.getItem(CACHE_KEY)
-      if (raw) {
-        const cached = JSON.parse(raw)
-        setBusiness(cached)
-        setLoading(false)
-      }
-    } catch {}
-
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { setLoading(false); return }
 
+      const userId = session.user.id
+      const userCacheKey = `${CACHE_KEY}_${userId}`
+
+      // Read cache keyed by user ID so different accounts don't bleed into each other
+      try {
+        const raw = localStorage.getItem(userCacheKey)
+        if (raw) {
+          const cached = JSON.parse(raw)
+          setBusiness(cached)
+          setLoading(false)
+        }
+      } catch {}
+
       const { data: userData } = await supabase
         .from('users')
         .select('business_id, full_name, role_title')
-        .eq('id', session.user.id)
+        .eq('id', userId)
         .single()
 
       if (!userData) { setLoading(false); return }
@@ -60,7 +63,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         setBusiness(data)
         setLoading(false)
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)) } catch {}
+        try { localStorage.setItem(userCacheKey, JSON.stringify(data)) } catch {}
       }
     }
 
