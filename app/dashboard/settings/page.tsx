@@ -241,16 +241,23 @@ export default function SettingsPage() {
           .single()
 
         if (bizErr || !newBiz) {
+          setSaveError(`Account setup failed: ${bizErr?.message || 'Could not create business record'}. Please check your Supabase RLS policies allow INSERT on the businesses table.`)
           setLoading(false)
           return
         }
 
-        await supabase.from('users').insert({
+        const { error: userInsertErr } = await supabase.from('users').insert({
           id: session.user.id,
           business_id: newBiz.id,
           full_name: '',
           role_title: '',
         })
+
+        if (userInsertErr) {
+          setSaveError(`Account setup failed: ${userInsertErr.message}. Please check your Supabase RLS policies allow INSERT on the users table.`)
+          setLoading(false)
+          return
+        }
 
         userData = { business_id: newBiz.id, full_name: '', role_title: '' }
       }
@@ -362,6 +369,10 @@ export default function SettingsPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
+    if (!businessId || !userId) {
+      setSaveError('Your account is not fully set up yet. Please refresh the page and try again.')
+      return
+    }
     setSaving(true)
     setSaved(false)
     setSaveError('')
