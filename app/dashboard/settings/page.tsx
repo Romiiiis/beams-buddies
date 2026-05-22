@@ -234,14 +234,15 @@ export default function SettingsPage() {
 
       // New user — auto-create a blank business and user row
       if (!userData) {
+        // Try inserting a new blank business (no email to avoid unique constraint issues)
         const { data: newBiz, error: bizErr } = await supabase
           .from('businesses')
-          .insert({ name: '', email: session.user.email || '', industry: 'hvac' })
+          .insert({ name: '', industry: 'hvac' })
           .select('id')
           .single()
 
         if (bizErr || !newBiz) {
-          setSaveError(`Account setup failed: ${bizErr?.message || 'Could not create business record'}. Please check your Supabase RLS policies allow INSERT on the businesses table.`)
+          setSaveError(`Account setup failed: ${bizErr?.message || 'Could not create business record.'}`)
           setLoading(false)
           return
         }
@@ -254,7 +255,7 @@ export default function SettingsPage() {
         })
 
         if (userInsertErr) {
-          setSaveError(`Account setup failed: ${userInsertErr.message}. Please check your Supabase RLS policies allow INSERT on the users table.`)
+          setSaveError(`Account setup failed: ${userInsertErr.message}`)
           setLoading(false)
           return
         }
