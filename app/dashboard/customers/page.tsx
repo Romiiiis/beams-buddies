@@ -96,6 +96,10 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconPlus({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+}
+
 function IconSearch({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -520,7 +524,7 @@ export default function CustomersPage() {
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                 <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconSpark size={12} /> Add Job
+                  <IconPlus size={12} /> Add Job
                 </button>
 
                 <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>
@@ -635,7 +639,7 @@ export default function CustomersPage() {
                       e.currentTarget.style.color = TEXT2
                     }}
                   >
-                    <IconSpark size={12} /> Add Job
+                    <IconPlus size={12} /> Add Job
                   </button>
 
                   <button

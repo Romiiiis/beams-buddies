@@ -77,6 +77,10 @@ function IconSpark({ size = 16 }: { size?: number }) {
   )
 }
 
+function IconPlus({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+}
+
 function IconSearch({ size = 15 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -966,7 +970,7 @@ export default function JobsPage() {
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                 <button onClick={() => router.push('/dashboard/jobs/add')} style={btnMobilePrimary}>
-                  <IconSpark size={12} /> Add job
+                  <IconPlus size={12} /> Add job
                 </button>
                 <button
                   onClick={() => {
@@ -1056,7 +1060,7 @@ export default function JobsPage() {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
-                    <IconSpark size={12} /> Add job
+                    <IconPlus size={12} /> Add job
                   </button>
 
                   <button
