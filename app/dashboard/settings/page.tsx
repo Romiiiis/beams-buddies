@@ -253,6 +253,7 @@ export default function SettingsPage() {
         const { error: userInsertErr } = await supabase.from('users').insert({
           id: session.user.id,
           business_id: newBiz.id,
+          email: session.user.email ?? '',
           full_name: '',
           role_title: '',
         })
