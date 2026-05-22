@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
@@ -363,8 +363,9 @@ export default function SettingsPage() {
     e.preventDefault()
     setSaving(true)
     setSaved(false)
+    setUploadError('')
 
-    await Promise.all([
+    const [bizRes, userRes, settingsRes] = await Promise.all([
       supabase
         .from('businesses')
         .upsert({
@@ -407,6 +408,13 @@ export default function SettingsPage() {
     ])
 
     setSaving(false)
+
+    const err = bizRes.error || userRes.error || settingsRes.error
+    if (err) {
+      setUploadError(`Save failed: ${err.message}`)
+      return
+    }
+
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
     refresh()
@@ -447,40 +455,6 @@ export default function SettingsPage() {
     year: 'numeric',
   })
 
-  const enabledPlatforms = useMemo(() => {
-    return (
-      (form.google_review_url ? 1 : 0) +
-      (form.facebook_review_url ? 1 : 0) +
-      platforms.filter(p => p.url).length
-    )
-  }, [form.google_review_url, form.facebook_review_url, platforms])
-
-  const statChips = [
-    {
-      label: 'Profile',
-      value: userProfile.full_name ? 'Ready' : 'Setup',
-      sub: 'account details',
-      onClick: () => document.getElementById('profile-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    },
-    {
-      label: 'Business',
-      value: business.name ? 'Active' : 'Setup',
-      sub: 'brand details',
-      onClick: () => document.getElementById('business-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    },
-    {
-      label: 'Banking',
-      value: bankDetails.account_number ? 'Saved' : 'Setup',
-      sub: 'invoice details',
-      onClick: () => document.getElementById('bank-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    },
-    {
-      label: 'Platforms',
-      value: enabledPlatforms,
-      sub: 'review links',
-      onClick: () => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    },
-  ]
 
   const input: React.CSSProperties = {
     width: '100%',
@@ -678,7 +652,7 @@ export default function SettingsPage() {
                 <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                 {saved && (
                   <span
                     style={{
@@ -702,28 +676,6 @@ export default function SettingsPage() {
                   <IconSpark size={12} />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
-              </div>
-
-              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                      minWidth: 0,
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
-                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
               </div>
             </div>
           ) : (
@@ -774,26 +726,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                      minWidth: 0,
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
