@@ -167,6 +167,7 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState('')
   const [businessId, setBusinessId] = useState('')
   const [userId, setUserId] = useState('')
+  const [userEmail, setUserEmail] = useState('')
 
   const [business, setBusiness] = useState({
     name: '',
@@ -225,6 +226,7 @@ export default function SettingsPage() {
       }
 
       setUserId(session.user.id)
+      setUserEmail(session.user.email ?? '')
 
       let { data: userData } = await supabase
         .from('users')
@@ -401,6 +403,7 @@ export default function SettingsPage() {
         .upsert({
           id: userId,
           business_id: businessId,
+          email: userEmail,
           full_name: userProfile.full_name,
           role_title: userProfile.role_title,
           role: 'owner',
