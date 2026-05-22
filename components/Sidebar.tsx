@@ -143,8 +143,7 @@ function RevenueIcon() {
     <svg {...iconBase}>
       <circle cx="12" cy="12" r="8.5" />
       <path d="M12 5.5v13" />
-      <path d="M15.5 9.5A3.5 3 0 0 0 8.5 9.5" />
-      <path d="M8.5 14.5A3.5 3 0 0 0 15.5 14.5" />
+      <path d="M15 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H9" />
     </svg>
   )
 }
