@@ -141,9 +141,9 @@ function InvoicesIcon() {
 function RevenueIcon() {
   return (
     <svg {...iconBase}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 5.5v13" />
-      <path d="M15 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H9" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+      <path d="M12 6v2M12 16v2" />
     </svg>
   )
 }
