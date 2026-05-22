@@ -225,15 +225,33 @@ export default function SettingsPage() {
 
       setUserId(session.user.id)
 
-      const { data: userData } = await supabase
+      let { data: userData } = await supabase
         .from('users')
         .select('business_id, full_name, role_title')
         .eq('id', session.user.id)
         .single()
 
+      // New user — auto-create a blank business and user row
       if (!userData) {
-        setLoading(false)
-        return
+        const { data: newBiz, error: bizErr } = await supabase
+          .from('businesses')
+          .insert({ name: '', email: session.user.email || '', industry: 'hvac' })
+          .select('id')
+          .single()
+
+        if (bizErr || !newBiz) {
+          setLoading(false)
+          return
+        }
+
+        await supabase.from('users').insert({
+          id: session.user.id,
+          business_id: newBiz.id,
+          full_name: '',
+          role_title: '',
+        })
+
+        userData = { business_id: newBiz.id, full_name: '', role_title: '' }
       }
 
       setBusinessId(userData.business_id)
@@ -316,6 +334,11 @@ export default function SettingsPage() {
         return
       }
 
+      // Save logo_url to DB immediately
+      await supabase
+        .from('businesses')
+        .upsert({ id: businessId, logo_url: publicData.publicUrl }, { onConflict: 'id' })
+
       setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
       setShowCropper(false)
       setSelectedImage('')
@@ -324,6 +347,7 @@ export default function SettingsPage() {
       setZoom(1)
       setCroppedAreaPixels(null)
       setUploadingLogo(false)
+      refresh()
     } catch (err: any) {
       setUploadError(err?.message || 'Could not crop and upload image.')
       setUploadingLogo(false)
@@ -343,22 +367,23 @@ export default function SettingsPage() {
     await Promise.all([
       supabase
         .from('businesses')
-        .update({
+        .upsert({
+          id: businessId,
           name: business.name,
           logo_url: business.logo_url || null,
           phone: business.phone,
           email: business.email,
           industry: business.industry,
-        })
-        .eq('id', businessId),
+        }, { onConflict: 'id' }),
 
       supabase
         .from('users')
-        .update({
+        .upsert({
+          id: userId,
+          business_id: businessId,
           full_name: userProfile.full_name,
           role_title: userProfile.role_title,
-        })
-        .eq('id', userId),
+        }, { onConflict: 'id' }),
 
       supabase.from('business_settings').upsert(
         {
@@ -1221,6 +1246,8 @@ export default function SettingsPage() {
                   image={selectedImage}
                   crop={crop}
                   zoom={zoom}
+                  minZoom={0.1}
+                  maxZoom={6}
                   aspect={1}
                   cropShape="round"
                   showGrid={false}
@@ -1235,8 +1262,8 @@ export default function SettingsPage() {
                 <label style={{ ...label, marginBottom: '8px' }}>Zoom</label>
                 <input
                   type="range"
-                  min="1"
-                  max="3"
+                  min="0.1"
+                  max="6"
                   step="0.01"
                   value={zoom}
                   onChange={e => setZoom(Number(e.target.value))}
