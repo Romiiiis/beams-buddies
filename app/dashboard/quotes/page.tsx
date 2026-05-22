@@ -4,6 +4,29 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { useBusinessData } from '@/lib/business-context'
+
+const LINE_ITEM_PLACEHOLDER: Record<string, string> = {
+  hvac: 'e.g. Split system install',
+  plumbing: 'e.g. Hot water unit installation',
+  electrical: 'e.g. Switchboard upgrade',
+  solar: 'e.g. 6.6kW solar system installation',
+  gas_fitting: 'e.g. Gas hot water installation',
+  refrigeration: 'e.g. Cool room installation',
+  med_spa: 'e.g. Laser treatment session',
+  painting: 'e.g. Interior room painting',
+  carpentry: 'e.g. Timber deck installation',
+  tiling: 'e.g. Bathroom floor tiling',
+  roofing: 'e.g. Metal roof installation',
+  landscaping: 'e.g. Turf supply and lay',
+  cleaning: 'e.g. End of lease clean',
+  pest_control: 'e.g. General pest treatment',
+  security: 'e.g. Alarm system installation',
+  concreting: 'e.g. Exposed aggregate driveway',
+  fencing: 'e.g. Colorbond fence installation',
+  glazing: 'e.g. Shower screen installation',
+  general_trade: 'e.g. General repair / maintenance',
+}
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
@@ -186,7 +209,9 @@ function StatusPill({ status }: { status: string }) {
 
 export default function QuotesPage() {
   const router = useRouter()
+  const { business } = useBusinessData()
   const isMobile = useIsMobile()
+  const lineItemPlaceholder = LINE_ITEM_PLACEHOLDER[business?.industry ?? ''] ?? 'e.g. Split system install'
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [customers, setCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -1361,7 +1386,7 @@ export default function QuotesPage() {
                         }}
                         value={item.description}
                         onChange={e => setLine(idx, 'description', e.target.value)}
-                        placeholder="e.g. Split system install"
+                        placeholder={lineItemPlaceholder}
                       />
 
                       <input

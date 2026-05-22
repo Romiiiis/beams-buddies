@@ -353,7 +353,8 @@ export default function SettingsPage() {
       // Save logo_url to DB immediately
       await supabase
         .from('businesses')
-        .upsert({ id: businessId, logo_url: publicData.publicUrl }, { onConflict: 'id' })
+        .update({ logo_url: publicData.publicUrl })
+        .eq('id', businessId)
 
       setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
       setShowCropper(false)
