@@ -164,6 +164,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [businessId, setBusinessId] = useState('')
   const [userId, setUserId] = useState('')
 
@@ -363,6 +364,7 @@ export default function SettingsPage() {
     e.preventDefault()
     setSaving(true)
     setSaved(false)
+    setSaveError('')
     setUploadError('')
 
     const [bizRes, userRes, settingsRes] = await Promise.all([
@@ -411,7 +413,8 @@ export default function SettingsPage() {
 
     const err = bizRes.error || userRes.error || settingsRes.error
     if (err) {
-      setUploadError(`Save failed: ${err.message}`)
+      console.error('Save error:', { bizRes: bizRes.error, userRes: userRes.error, settingsRes: settingsRes.error })
+      setSaveError(`Save failed: ${err.message}`)
       return
     }
 
@@ -726,6 +729,22 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {saveError && (
+            <div style={{
+              margin: isMobile ? '0 12px' : undefined,
+              padding: '14px 16px',
+              background: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: '12px',
+              color: RED,
+              fontSize: '13px',
+              fontWeight: 600,
+              lineHeight: 1.5,
+            }}>
+              {saveError}
             </div>
           )}
 
