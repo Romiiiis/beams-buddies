@@ -256,6 +256,7 @@ export default function SettingsPage() {
           email: session.user.email ?? '',
           full_name: '',
           role_title: '',
+          role: 'owner',
         })
 
         if (userInsertErr) {
@@ -402,6 +403,7 @@ export default function SettingsPage() {
           business_id: businessId,
           full_name: userProfile.full_name,
           role_title: userProfile.role_title,
+          role: 'owner',
         }, { onConflict: 'id' }),
 
       supabase.from('business_settings').upsert(
