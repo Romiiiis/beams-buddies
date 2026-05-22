@@ -1118,7 +1118,7 @@ export default function JobsPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'start',
               padding: isMobile ? '0 12px' : 0,
@@ -1437,93 +1437,6 @@ export default function JobsPage() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Service status</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Upcoming service health</div>
-                    </div>
-                  </div>
-                  <button onClick={() => router.push('/dashboard/jobs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, display: 'flex', alignItems: 'center' }}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  {overdueCount > 0 ? (
-                    <>
-                      <span style={{ color: TEXT }}>{overdueCount}</span> overdue
-                    </>
-                  ) : (
-                    <span style={{ color: TEAL_DARK }}>All clear</span>
-                  )}
-                </div>
-
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {[
-                    { label: 'Overdue', value: overdueCount, bg: '#FEE2E2', border: '#FECACA' },
-                    { label: 'Due soon', value: dueSoonCount, bg: '#FEF3C7', border: '#FDE68A' },
-                    { label: 'Up to date', value: upToDateCount, bg: TEAL_LIGHT, border: '#BFE7E3' },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        borderRadius: '12px',
-                        background: item.bg,
-                        border: `1px solid ${item.border}`,
-                        padding: '10px 12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>{item.label}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 900, color: TEXT }}>{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Equipment breakdown</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Tracked units by type</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {Object.entries(EQUIPMENT_LABELS).map(([key, label]) => {
-                    const count = jobs.filter(j => j.equipment_type === key).length
-                    if (count === 0) return null
-                    const pct = jobs.length ? Math.round((count / jobs.length) * 100) : 0
-                    return (
-                      <div key={key}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT2 }}>{label}</span>
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: TEXT3 }}>{count}</span>
-                        </div>
-                        <div style={{ height: '6px', borderRadius: '999px', background: BORDER, overflow: 'hidden' }}>
-                          <div
-                            style={{
-                              height: '100%',
-                              width: `${pct}%`,
-                              background: TEAL,
-                              borderRadius: '999px',
-                              transition: 'width 0.4s',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

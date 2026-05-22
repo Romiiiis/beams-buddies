@@ -660,7 +660,7 @@ export default function SchedulePage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 300px',
+                gridTemplateColumns: '1fr',
                 gap: '14px',
                 alignItems: 'start',
               }}
@@ -1004,100 +1004,6 @@ export default function SchedulePage() {
                 )}
               </div>
 
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Next 5 due</div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Upcoming service reminders</div>
-                      </div>
-                    </div>
-
-                    <button onClick={() => setFilter('due_soon')} style={cardArrowBtn}>
-                      <IconExternalLink size={14} />
-                    </button>
-                  </div>
-
-                  <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>{dueSoonJobs.length}</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>inside 30 days</span>
-                  </div>
-
-                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {dueSoonJobs.length === 0 ? (
-                      <div style={{ padding: '12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}`, fontSize: '12px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>
-                        No due soon services
-                      </div>
-                    ) : (
-                      dueSoonJobs.slice(0, 5).map(job => {
-                        const u = getUrgency(job.next_service_date)
-
-                        return (
-                          <div
-                            key={job.id}
-                            onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                            style={{ padding: '10px 12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}`, cursor: 'pointer' }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = '#F1F5F9'
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = '#F8FAFC'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '4px' }}>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {job.customers?.first_name} {job.customers?.last_name}
-                              </div>
-                              <div style={{ fontSize: '12px', fontWeight: 800, color: u.valColor, flexShrink: 0 }}>{u.sub.replace(' until due', '')}</div>
-                            </div>
-
-                            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {u.dateLabel}
-                            </div>
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-                </div>
-
-                <div style={sideCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Reminder status</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Service workload snapshot</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gap: '8px' }}>
-                    {[
-                      { label: 'Overdue', value: counts.overdue, bg: '#FEE2E2', border: '#FECACA', color: '#991B1B' },
-                      { label: 'Due soon', value: counts.due_soon, bg: '#FEF3C7', border: '#FDE68A', color: AMBER },
-                      { label: 'On track', value: counts.good, bg: TEAL_LIGHT, border: '#BFE7E3', color: TEAL_DARK },
-                    ].map(item => (
-                      <div
-                        key={item.label}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                          padding: '10px 12px',
-                          borderRadius: '12px',
-                          background: item.bg,
-                          border: `1px solid ${item.border}`,
-                        }}
-                      >
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

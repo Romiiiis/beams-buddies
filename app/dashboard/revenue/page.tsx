@@ -839,7 +839,7 @@ export default function RevenuePage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'start',
               padding: isMobile ? '0 12px' : 0,
@@ -993,132 +993,6 @@ export default function RevenuePage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Revenue summary</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Collection and open balance</div>
-                    </div>
-                  </div>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  {collectionRate >= 80 ? (
-                    <span style={{ color: TEAL_DARK }}>Collections strong</span>
-                  ) : (
-                    <>
-                      <span style={{ color: RED }}>{collectionRate}%</span> collection rate
-                    </>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    {
-                      label: 'Overdue',
-                      value: `$${Math.round(totalOverdue).toLocaleString('en-AU')}`,
-                      bg: totalOverdue > 0 ? '#FEE2E2' : '#F8FAFC',
-                      border: totalOverdue > 0 ? '#FECACA' : BORDER,
-                      color: totalOverdue > 0 ? '#991B1B' : TEXT,
-                    },
-                    {
-                      label: 'Outstanding',
-                      value: `$${Math.round(totalOutstanding).toLocaleString('en-AU')}`,
-                      bg: totalOutstanding > 0 ? '#FEF3C7' : '#F8FAFC',
-                      border: totalOutstanding > 0 ? '#FDE68A' : BORDER,
-                      color: totalOutstanding > 0 ? AMBER : TEXT,
-                    },
-                    {
-                      label: 'Drafts',
-                      value: drafts.length,
-                      bg: '#F8FAFC',
-                      border: BORDER,
-                      color: TEXT,
-                    },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: item.bg,
-                        border: `1px solid ${item.border}`,
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Top customers</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Highest paid accounts</div>
-                    </div>
-                  </div>
-                  <button onClick={() => router.push('/dashboard/customers')} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginBottom: '4px' }}>
-                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>{topCustomers.length}</span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>active revenue accounts</span>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {topCustomers.length === 0 ? (
-                    <div style={{ padding: '12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}`, fontSize: '12px', fontWeight: 600, color: TEXT3, textAlign: 'center' }}>
-                      No paid invoices yet
-                    </div>
-                  ) : (
-                    topCustomers.slice(0, 4).map((customer, index) => (
-                      <div key={`${customer.name}-${index}`} style={{ padding: '10px 12px', borderRadius: '12px', background: '#F8FAFC', border: `1px solid ${BORDER}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '7px' }}>
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {customer.name}
-                            </div>
-                            <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                              {customer.count} paid invoice{customer.count === 1 ? '' : 's'}
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2, flexShrink: 0 }}>
-                            ${Math.round(customer.total).toLocaleString('en-AU')}
-                          </div>
-                        </div>
-
-                        <div style={{ width: '100%', height: '8px', background: '#EAEFF4', borderRadius: '999px', overflow: 'hidden' }}>
-                          <div
-                            style={{
-                              width: `${Math.max(10, Math.round((customer.total / maxCustomer) * 100))}%`,
-                              height: '100%',
-                              background: TEAL,
-                              borderRadius: '999px',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

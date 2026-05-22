@@ -1143,51 +1143,6 @@ export default function QuotesPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Quote summary</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Current quote pipeline</div>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowForm(true)} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginBottom: '14px' }}>
-                  <span style={{ color: TEAL_DARK }}>{statusCounts.accepted}</span> accepted
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { label: 'Total quotes', value: quotes.length, bg: '#F8FAFC', border: BORDER, color: TEXT },
-                    { label: 'Accepted value', value: `$${acceptedValue.toFixed(0)}`, bg: TEAL_LIGHT, border: '#BFE7E3', color: TEAL_DARK },
-                    { label: 'Total value', value: `$${totalValue.toFixed(0)}`, bg: '#F8FAFC', border: BORDER, color: TEXT },
-                    { label: 'Declined', value: statusCounts.declined, bg: '#FEE2E2', border: '#FECACA', color: '#7F1D1D' },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '10px',
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: item.bg,
-                        border: `1px solid ${item.border}`,
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
                       <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Draft preview</div>
                       <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Current unsaved quote</div>
                     </div>
