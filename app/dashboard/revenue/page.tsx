@@ -863,22 +863,6 @@ export default function RevenuePage() {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Monthly Performance</span>
-                      <span
-                        style={{
-                          height: '22px',
-                          padding: '0 8px',
-                          borderRadius: '999px',
-                          border: `1px solid #BFE7E3`,
-                          background: TEAL_LIGHT,
-                          color: TEAL_DARK,
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        Live
-                      </span>
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
                       Last 6 months of invoice performance, collection activity, and open revenue.

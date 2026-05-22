@@ -680,22 +680,6 @@ export default function SchedulePage() {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Scheduled services</span>
-                        <span
-                          style={{
-                            height: '22px',
-                            padding: '0 8px',
-                            borderRadius: '999px',
-                            border: `1px solid ${BORDER}`,
-                            background: '#F8FAFC',
-                            color: TEXT3,
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {filtered.length} shown
-                        </span>
                       </div>
                       <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
                         Track upcoming service timing, customer details, and reminder actions.

@@ -747,22 +747,6 @@ export default function CustomersPage() {
                       Customer Directory
                     </span>
 
-                    <span
-                      style={{
-                        height: '22px',
-                        padding: '0 8px',
-                        borderRadius: '999px',
-                        border: `1px solid ${BORDER}`,
-                        background: '#F8FAFC',
-                        color: TEXT3,
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {filtered.length} shown
-                    </span>
                   </div>
 
                   <div

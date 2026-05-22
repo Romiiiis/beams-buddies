@@ -749,9 +749,6 @@ export default function ReportsPage() {
                 <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>
                   {title}
                 </span>
-                <span style={{ height: '22px', padding: '0 8px', borderRadius: '999px', border: `1px solid ${BORDER}`, background: '#F8FAFC', color: TEXT3, fontSize: '10px', fontWeight: 800, display: 'inline-flex', alignItems: 'center' }}>
-                  {data.length} shown
-                </span>
               </div>
               <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{subtitle}</div>
             </div>
@@ -1014,10 +1011,6 @@ export default function ReportsPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '999px', background: TEAL_LIGHT, border: '1px solid #BFE7E3', flexShrink: 0, marginTop: '2px' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL }} />
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: TEAL_DARK, letterSpacing: '0.04em' }}>Live</span>
-                  </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>

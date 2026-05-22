@@ -925,12 +925,9 @@ export function Sidebar({ active }: { active: string }) {
               src="/jobyra-logo.png"
               alt="Jobyra"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                width: 60,
+                height: 60,
                 objectFit: 'contain',
-                background: WHITE,
-                border: `1px solid ${BORDER}`,
                 flexShrink: 0,
               }}
             />
