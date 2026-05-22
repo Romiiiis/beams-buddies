@@ -234,10 +234,13 @@ export default function SettingsPage() {
 
       // New user — auto-create a blank business and user row
       if (!userData) {
-        // Try inserting a new blank business (no email to avoid unique constraint issues)
+        // Upsert on email so orphaned rows from previous attempts are reused
         const { data: newBiz, error: bizErr } = await supabase
           .from('businesses')
-          .insert({ name: '', industry: 'hvac' })
+          .upsert(
+            { name: '', email: session.user.email ?? '', industry: 'hvac' },
+            { onConflict: 'email' }
+          )
           .select('id')
           .single()
 
