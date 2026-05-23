@@ -171,6 +171,14 @@ function IconArrow({ size = 15 }: { size?: number }) {
   )
 }
 
+function IconMessage({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -189,6 +197,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [editingJobId, setEditingJobId] = useState<string | null>(null)
   const [customerForm, setCustomerForm] = useState<any>({})
   const [jobForms, setJobForms] = useState<Record<string, any>>({})
+  const [showContact, setShowContact] = useState(false)
+  const [contactChannel, setContactChannel] = useState<'call' | 'text' | 'email'>('call')
+  const [contactTemplate, setContactTemplate] = useState('custom')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSubject, setContactSubject] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -356,6 +369,19 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }, [jobs, totalServiceRecords, reviewClicks])
 
   const reviewRate = stats.jobs > 0 ? Math.round((stats.reviewClicks / stats.jobs) * 100) : 0
+
+  const contactTemplates = useMemo(() => {
+    const firstName = customer?.first_name || 'there'
+    const jobType = jobs[0]?.equipment_type || jobs[0]?.brand || 'your system'
+    return {
+      custom:           { label: 'Custom',              subject: '',                           body: '' },
+      new_quote:        { label: 'New quote',           subject: 'Your Quote',                 body: `Hi ${firstName},\n\nWe've prepared a quote for you. Please let us know if you'd like to proceed or if you have any questions.\n\nThanks,\nThe team` },
+      outstanding:      { label: 'Outstanding invoice', subject: 'Outstanding Invoice Reminder', body: `Hi ${firstName},\n\nThis is a friendly reminder that you have an outstanding invoice with us. Please get in touch to arrange payment at your earliest convenience.\n\nThanks,\nThe team` },
+      service_reminder: { label: 'Service reminder',    subject: 'Service Reminder',            body: `Hi ${firstName},\n\nIt's time to schedule your next service for your ${jobType}. Give us a call or reply to book in.\n\nThanks,\nThe team` },
+      follow_up:        { label: 'Follow-up',           subject: 'Following Up',               body: `Hi ${firstName},\n\nJust following up on our recent visit. Please don't hesitate to reach out if you have any questions.\n\nThanks,\nThe team` },
+      review:           { label: 'Review request',      subject: 'How Did We Do?',             body: `Hi ${firstName},\n\nThank you for your business! If you're happy with the service, we'd really appreciate a quick review.\n\nThanks,\nThe team` },
+    }
+  }, [customer, jobs])
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -570,6 +596,10 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <IconPlus size={12} />
                   Add job
                 </button>
+                <button onClick={() => { setShowContact(true); setContactChannel('call'); setContactTemplate('custom'); setContactMessage(''); setContactSubject('') }} style={btnMobileSm}>
+                  <IconPhone size={12} />
+                  Contact
+                </button>
                 <button onClick={() => setEditingCustomer(true)} style={btnMobileSm}>
                   <IconEdit size={12} />
                   Edit
@@ -673,6 +703,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   >
                     <IconPlus size={12} />
                     Add job
+                  </button>
+
+                  <button
+                    onClick={() => { setShowContact(true); setContactChannel('call'); setContactTemplate('custom'); setContactMessage(''); setContactSubject('') }}
+                    style={btnOutline}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = TEXT
+                      e.currentTarget.style.color = TEXT
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = BORDER
+                      e.currentTarget.style.color = TEXT2
+                    }}
+                  >
+                    <IconPhone size={12} />
+                    Contact
                   </button>
 
                   <button
@@ -1446,6 +1492,119 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 {deleting ? 'Deleting...' : 'Yes, delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showContact && (
+        <div
+          onClick={() => setShowContact(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? 0 : '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: WHITE, borderRadius: isMobile ? '20px 20px 0 0' : '16px', width: '100%', maxWidth: isMobile ? '100%' : '480px', border: `1px solid ${BORDER}`, overflow: 'hidden', fontFamily: FONT }}
+          >
+            <div style={{ height: '4px', background: TEAL }} />
+
+            <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '17px', fontWeight: 800, color: TEXT, letterSpacing: '-0.03em' }}>
+                Contact {customer.first_name}
+              </div>
+              <button onClick={() => setShowContact(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: TEXT3, fontSize: '22px', lineHeight: 1, padding: '0 4px', fontFamily: FONT }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '6px', padding: '0 20px 16px' }}>
+              {([
+                { key: 'call' as const, label: 'Call', icon: <IconPhone size={13} /> },
+                { key: 'text' as const, label: 'Text', icon: <IconMessage size={13} /> },
+                { key: 'email' as const, label: 'Email', icon: <IconMail size={13} /> },
+              ]).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setContactChannel(tab.key)}
+                  style={{ height: '34px', padding: '0 14px', borderRadius: '9px', border: contactChannel === tab.key ? 'none' : `1px solid ${BORDER}`, background: contactChannel === tab.key ? TEAL : WHITE, color: contactChannel === tab.key ? WHITE : TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                >
+                  {tab.icon}{tab.label}
+                </button>
+              ))}
+            </div>
+
+            {contactChannel === 'call' ? (
+              <div style={{ padding: '0 20px 24px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3, marginBottom: '14px' }}>
+                  {customer.phone ? `Will dial ${customer.phone}` : 'No phone number on file'}
+                </div>
+                <a
+                  href={customer.phone ? `tel:${customer.phone}` : undefined}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', height: '44px', background: customer.phone ? TEAL : '#E2E8F0', color: customer.phone ? WHITE : TEXT3, borderRadius: '10px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: FONT, cursor: customer.phone ? 'pointer' : 'default' }}
+                >
+                  <IconPhone size={15} />
+                  {customer.phone ? `Call ${customer.first_name}` : 'No phone number on file'}
+                </a>
+              </div>
+            ) : (
+              <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <div style={labelStyle}>Template</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                    {Object.entries(contactTemplates).map(([key, tpl]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setContactTemplate(key)
+                          if (key !== 'custom') {
+                            setContactMessage(tpl.body)
+                            setContactSubject(tpl.subject)
+                          } else {
+                            setContactMessage('')
+                            setContactSubject('')
+                          }
+                        }}
+                        style={{ height: '28px', padding: '0 10px', borderRadius: '999px', border: contactTemplate === key ? `1px solid ${TEAL}` : `1px solid ${BORDER}`, background: contactTemplate === key ? TEAL_LIGHT : WHITE, color: contactTemplate === key ? TEAL_DARK : TEXT2, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {contactChannel === 'email' && (
+                  <div>
+                    <div style={labelStyle}>Subject</div>
+                    <input value={contactSubject} onChange={e => setContactSubject(e.target.value)} style={inputStyle} placeholder="Email subject" />
+                  </div>
+                )}
+
+                <div>
+                  <div style={labelStyle}>Message</div>
+                  <textarea
+                    value={contactMessage}
+                    onChange={e => setContactMessage(e.target.value)}
+                    style={{ ...textareaStyle, height: '130px' }}
+                    placeholder={contactChannel === 'text' ? 'Write your message...' : 'Write your email body...'}
+                  />
+                </div>
+
+                {contactChannel === 'text' ? (
+                  <a
+                    href={customer.phone ? `sms:${customer.phone}${contactMessage ? `?body=${encodeURIComponent(contactMessage)}` : ''}` : undefined}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', height: '44px', background: customer.phone ? TEAL : '#E2E8F0', color: customer.phone ? WHITE : TEXT3, borderRadius: '10px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: FONT, cursor: customer.phone ? 'pointer' : 'default' }}
+                  >
+                    <IconMessage size={15} />
+                    {customer.phone ? 'Open Messages' : 'No phone number on file'}
+                  </a>
+                ) : (
+                  <a
+                    href={customer.email ? `mailto:${customer.email}?subject=${encodeURIComponent(contactSubject)}&body=${encodeURIComponent(contactMessage)}` : undefined}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', height: '44px', background: customer.email ? TEAL : '#E2E8F0', color: customer.email ? WHITE : TEXT3, borderRadius: '10px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: FONT, cursor: customer.email ? 'pointer' : 'default' }}
+                  >
+                    <IconMail size={15} />
+                    {customer.email ? 'Open Email' : 'No email address on file'}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
