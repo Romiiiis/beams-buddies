@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { ContactDrawer } from '@/components/ContactDrawer'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
@@ -248,6 +249,7 @@ export default function InvoicesPage() {
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null)
   const [saving, setSaving] = useState(false)
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null)
+  const [showContact, setShowContact] = useState(false)
   const [businessId, setBusinessId] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [businessSettings, setBusinessSettings] = useState<any>(null)
@@ -1207,6 +1209,11 @@ export default function InvoicesPage() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {viewingInvoice.customers && (
+                  <button onClick={() => setShowContact(true)} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                    Contact
+                  </button>
+                )}
                 <button onClick={e => { e.stopPropagation(); handleDeleteInvoice(viewingInvoice.id) }} disabled={deletingInvoiceId === viewingInvoice.id} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: RED, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', opacity: deletingInvoiceId === viewingInvoice.id ? 0.6 : 1 }}>
                   <IconTrash size={14} /> Delete
                 </button>
@@ -1309,6 +1316,15 @@ export default function InvoicesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {viewingInvoice && (
+        <ContactDrawer
+          customer={viewingInvoice.customers || {}}
+          isOpen={showContact}
+          onClose={() => setShowContact(false)}
+          isMobile={isMobile}
+        />
       )}
     </div>
   )

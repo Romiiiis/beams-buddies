@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { ContactDrawer } from '@/components/ContactDrawer'
 
 const TEAL = '#1F9E94'
 const TEAL_DARK = '#177A72'
@@ -186,6 +187,7 @@ function JobDrawer({
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showContact, setShowContact] = useState(false)
   const [form, setForm] = useState({
     brand: job.brand || '',
     model: job.model || '',
@@ -326,24 +328,21 @@ function JobDrawer({
               {customer?.phone && <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{customer.phone}</div>}
             </div>
 
-            <button
-              onClick={onClose}
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT3,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <IconClose size={16} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <button
+                onClick={() => setShowContact(true)}
+                style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+              >
+                <IconPhone size={13} />
+                Contact
+              </button>
+              <button
+                onClick={onClose}
+                style={{ width: '34px', height: '34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <IconClose size={16} />
+              </button>
+            </div>
           </div>
 
           <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -667,6 +666,14 @@ function JobDrawer({
           )}
         </div>
       </div>
+
+      <ContactDrawer
+        customer={customer || {}}
+        jobType={job.equipment_type || job.brand}
+        isOpen={showContact}
+        onClose={() => setShowContact(false)}
+        isMobile={isMobile}
+      />
     </>
   )
 }
@@ -696,7 +703,7 @@ export default function JobsPage() {
       }
       const { data } = await supabase
         .from('jobs')
-        .select(`*, customers ( first_name, last_name, phone, suburb, address )`)
+        .select(`*, customers ( first_name, last_name, phone, email, suburb, address )`)
         .eq('business_id', userData.business_id)
         .order('install_date', { ascending: false })
       setJobs(data || [])
