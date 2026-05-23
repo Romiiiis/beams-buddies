@@ -1547,26 +1547,26 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div>
                   <div style={labelStyle}>Template</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                  <select
+                    value={contactTemplate}
+                    onChange={e => {
+                      const key = e.target.value
+                      setContactTemplate(key)
+                      const tpl = contactTemplates[key as keyof typeof contactTemplates]
+                      if (key !== 'custom' && tpl) {
+                        setContactMessage(tpl.body)
+                        setContactSubject(tpl.subject)
+                      } else {
+                        setContactMessage('')
+                        setContactSubject('')
+                      }
+                    }}
+                    style={{ ...inputStyle, cursor: 'pointer' }}
+                  >
                     {Object.entries(contactTemplates).map(([key, tpl]) => (
-                      <button
-                        key={key}
-                        onClick={() => {
-                          setContactTemplate(key)
-                          if (key !== 'custom') {
-                            setContactMessage(tpl.body)
-                            setContactSubject(tpl.subject)
-                          } else {
-                            setContactMessage('')
-                            setContactSubject('')
-                          }
-                        }}
-                        style={{ height: '28px', padding: '0 10px', borderRadius: '999px', border: contactTemplate === key ? `1px solid ${TEAL}` : `1px solid ${BORDER}`, background: contactTemplate === key ? TEAL_LIGHT : WHITE, color: contactTemplate === key ? TEAL_DARK : TEXT2, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
-                      >
-                        {tpl.label}
-                      </button>
+                      <option key={key} value={key}>{tpl.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
 
                 {contactChannel === 'email' && (
