@@ -912,47 +912,114 @@ export function Sidebar({ active }: { active: string }) {
         >
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'space-between',
-              flexDirection: 'row',
-              gap: 10,
-              padding: '8px 8px 12px',
+              padding: '6px 4px 14px',
               borderBottom: `1px solid ${BORDER}`,
               marginBottom: 10,
             }}
           >
-            <img
-              src="/jobyra-logo.png"
-              alt="Jobyra"
-              style={{
-                width: 44,
-                height: 44,
-                objectFit: 'contain',
-                flexShrink: 0,
-              }}
-            />
+            {isCollapsed ? (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <img
+                  src="/jobyra-logo.png"
+                  alt="Jobyra"
+                  style={{ width: 36, height: 36, objectFit: 'contain' }}
+                />
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <img
+                    src="/jobyra-logo.png"
+                    alt="Jobyra"
+                    style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0, opacity: 0.85 }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: TEXT3,
+                      lineHeight: 1,
+                    }}
+                  >
+                    Jobyra
+                  </span>
+                </div>
 
-            {!isCollapsed && (
-              <div style={{ minWidth: 0, flex: 1, textAlign: 'right' }}>
                 <div
                   style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: TEXT,
-                    letterSpacing: '-0.01em',
-                    lineHeight: 1.2,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 10px',
+                    background: TEAL_SOFT,
+                    borderRadius: 10,
                   }}
                 >
-                  {loading ? 'Loading...' : business?.name || 'Trade CRM'}
+                  {business?.logo_url ? (
+                    <img
+                      src={business.logo_url}
+                      alt="Business logo"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        objectFit: 'contain',
+                        background: WHITE,
+                        border: `1px solid ${BORDER}`,
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: TEAL,
+                        color: WHITE,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 13,
+                        fontWeight: 800,
+                        flexShrink: 0,
+                        letterSpacing: '-0.01em',
+                      }}
+                    >
+                      {initials}
+                    </div>
+                  )}
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: TEXT,
+                        letterSpacing: '-0.01em',
+                        lineHeight: 1.2,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {loading ? 'Loading...' : business?.name || 'My Business'}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: TEAL,
+                        marginTop: 2,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Workspace
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 
