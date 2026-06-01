@@ -914,9 +914,9 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: 4,
+              justifyContent: isCollapsed ? 'center' : 'space-between',
+              flexDirection: 'row',
+              gap: 10,
               padding: '8px 8px 12px',
               borderBottom: `1px solid ${BORDER}`,
               marginBottom: 10,
@@ -926,30 +926,33 @@ export function Sidebar({ active }: { active: string }) {
               src="/jobyra-logo.png"
               alt="Jobyra"
               style={{
-                width: isCollapsed ? 44 : '100%',
-                height: isCollapsed ? 44 : 'auto',
-                maxHeight: isCollapsed ? 44 : 48,
+                width: isCollapsed ? 44 : 'auto',
+                height: 44,
+                maxWidth: isCollapsed ? 44 : 120,
                 objectFit: 'contain',
                 flexShrink: 0,
               }}
             />
 
             {!isCollapsed && (
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: TEXT3,
-                  lineHeight: 1.2,
-                  textRendering: 'optimizeLegibility',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
-                  textAlign: 'center',
-                }}
-              >
-                {loading ? 'Loading...' : business?.name || 'Trade CRM'}
+              <div style={{ minWidth: 0, flex: 1, textAlign: 'right' }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: TEXT,
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
+                  }}
+                >
+                  {loading ? 'Loading...' : business?.name || 'Trade CRM'}
+                </div>
               </div>
             )}
           </div>
