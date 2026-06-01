@@ -922,15 +922,13 @@ export function Sidebar({ active }: { active: string }) {
               marginBottom: 10,
             }}
           >
-            <div
-              aria-label="Jobyra"
+            <img
+              src="/jobyra-logo.png"
+              alt="Jobyra"
               style={{
-                width: isCollapsed ? 44 : 120,
-                height: isCollapsed ? 44 : 40,
-                backgroundImage: 'url(/jobyra-logo.png)',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: isCollapsed ? 'contain' : '150%',
-                backgroundPosition: 'center',
+                width: 44,
+                height: 44,
+                objectFit: 'contain',
                 flexShrink: 0,
               }}
             />
