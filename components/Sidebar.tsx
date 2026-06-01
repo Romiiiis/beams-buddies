@@ -914,8 +914,9 @@ export function Sidebar({ active }: { active: string }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              gap: 12,
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 4,
               padding: '8px 8px 12px',
               borderBottom: `1px solid ${BORDER}`,
               marginBottom: 10,
@@ -925,45 +926,30 @@ export function Sidebar({ active }: { active: string }) {
               src="/jobyra-logo.png"
               alt="Jobyra"
               style={{
-                width: 60,
-                height: 60,
+                width: isCollapsed ? 44 : '100%',
+                height: isCollapsed ? 44 : 'auto',
+                maxHeight: isCollapsed ? 44 : 48,
                 objectFit: 'contain',
                 flexShrink: 0,
               }}
             />
 
             {!isCollapsed && (
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: TEXT,
-                    letterSpacing: '-0.02em',
-                    lineHeight: 1.1,
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
-                  }}
-                >
-                  Jobyra
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: TEXT3,
-                    marginTop: 3,
-                    lineHeight: 1.2,
-                    textRendering: 'optimizeLegibility',
-                    WebkitFontSmoothing: 'antialiased',
-                    MozOsxFontSmoothing: 'grayscale',
-                  }}
-                >
-                  {loading ? 'Loading...' : business?.name || 'Trade CRM'}
-                </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: TEXT3,
+                  lineHeight: 1.2,
+                  textRendering: 'optimizeLegibility',
+                  WebkitFontSmoothing: 'antialiased',
+                  MozOsxFontSmoothing: 'grayscale',
+                  textAlign: 'center',
+                }}
+              >
+                {loading ? 'Loading...' : business?.name || 'Trade CRM'}
               </div>
             )}
           </div>
