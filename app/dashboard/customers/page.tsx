@@ -93,75 +93,6 @@ function IconSpark({ size = 16 }: { size?: number }) {
         strokeLinejoin="round"
       />
     </svg>
-
-      {/* New Customer Modal */}
-      {showAddCustomer && (
-        <div
-          onClick={() => setShowAddCustomer(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden' }}
-          >
-            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>New Customer</span>
-              <button onClick={() => setShowAddCustomer(false)} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            </div>
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {[['First name *', 'firstName'], ['Last name', 'lastName']].map(([label, key]) => (
-                  <div key={key}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>{label}</div>
-                    <input
-                      value={(addForm as any)[key]}
-                      onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
-                      placeholder={label.replace(' *', '')}
-                      style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
-                    />
-                  </div>
-                ))}
-              </div>
-              {[['Phone', 'phone', 'tel'], ['Email', 'email', 'email']].map(([label, key, type]) => (
-                <div key={key}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>{label}</div>
-                  <input
-                    type={type}
-                    value={(addForm as any)[key]}
-                    onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
-                    placeholder={label}
-                    style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '14px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowAddCustomer(false)} style={{ height: '36px', padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer' }}>Cancel</button>
-              <button
-                disabled={!addForm.firstName.trim() || addSaving}
-                onClick={async () => {
-                  if (!businessId || !addForm.firstName.trim()) return
-                  setAddSaving(true)
-                  const { data } = await supabase.from('customers').insert({
-                    business_id: businessId,
-                    first_name: addForm.firstName.trim(),
-                    last_name: addForm.lastName.trim() || null,
-                    phone: addForm.phone.trim() || null,
-                    email: addForm.email.trim() || null,
-                  }).select('id').single()
-                  setAddSaving(false)
-                  setShowAddCustomer(false)
-                  setAddForm({ firstName: '', lastName: '', phone: '', email: '' })
-                  if (data?.id) router.push(`/dashboard/customers/${data.id}`)
-                }}
-                style={{ height: '36px', padding: '0 20px', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: WHITE, background: addForm.firstName.trim() ? TEAL : '#A0AEC0', cursor: addForm.firstName.trim() ? 'pointer' : 'not-allowed' }}
-              >
-                {addSaving ? 'Saving...' : 'Create Customer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
   )
 }
 
@@ -547,6 +478,7 @@ export default function CustomersPage() {
   }
 
   return (
+    <>
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/customers" />
 
@@ -701,12 +633,8 @@ export default function CustomersPage() {
                   <button
                     onClick={() => setShowAddCustomer(true)}
                     style={btnTeal}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.82' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
                   >
                     <IconPlus size={12} /> New Customer
                   </button>
@@ -1215,5 +1143,77 @@ export default function CustomersPage() {
         </div>
       </div>
     </div>
+
+      {showAddCustomer && (
+        <div
+          onClick={() => setShowAddCustomer(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden' }}
+          >
+            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>New Customer</span>
+              <button onClick={() => setShowAddCustomer(false)} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            </div>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {(['First name *', 'Last name'] as const).map((label) => {
+                  const key = label === 'First name *' ? 'firstName' : 'lastName'
+                  return (
+                    <div key={key}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '6px' }}>{label}</div>
+                      <input
+                        value={addForm[key as keyof typeof addForm]}
+                        onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
+                        placeholder={label.replace(' *', '')}
+                        style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+              {(['phone', 'email'] as const).map((key) => (
+                <div key={key}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '6px' }}>{key.charAt(0).toUpperCase() + key.slice(1)}</div>
+                  <input
+                    type={key}
+                    value={addForm[key]}
+                    onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
+                    placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                    style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '14px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowAddCustomer(false)} style={{ height: '36px', padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer' }}>Cancel</button>
+              <button
+                disabled={!addForm.firstName.trim() || addSaving}
+                onClick={async () => {
+                  if (!businessId || !addForm.firstName.trim()) return
+                  setAddSaving(true)
+                  const { data } = await supabase.from('customers').insert({
+                    business_id: businessId,
+                    first_name: addForm.firstName.trim(),
+                    last_name: addForm.lastName.trim() || null,
+                    phone: addForm.phone.trim() || null,
+                    email: addForm.email.trim() || null,
+                  }).select('id').single()
+                  setAddSaving(false)
+                  setShowAddCustomer(false)
+                  setAddForm({ firstName: '', lastName: '', phone: '', email: '' })
+                  if (data?.id) router.push(`/dashboard/customers/${data.id}`)
+                }}
+                style={{ height: '36px', padding: '0 20px', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: WHITE, background: addForm.firstName.trim() ? TEAL : '#A0AEC0', cursor: addForm.firstName.trim() ? 'pointer' : 'not-allowed' }}
+              >
+                {addSaving ? 'Saving...' : 'Create Customer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
