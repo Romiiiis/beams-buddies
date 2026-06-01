@@ -929,7 +929,7 @@ export function Sidebar({ active }: { active: string }) {
                 height: isCollapsed ? 44 : 40,
                 backgroundImage: 'url(/jobyra-logo.png)',
                 backgroundRepeat: 'no-repeat',
-                backgroundSize: isCollapsed ? 'contain' : '205%',
+                backgroundSize: isCollapsed ? 'contain' : '150%',
                 backgroundPosition: 'center',
                 flexShrink: 0,
               }}
