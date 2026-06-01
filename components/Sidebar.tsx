@@ -890,13 +890,53 @@ export function Sidebar({ active }: { active: string }) {
           transition: 'width 0.2s ease, min-width 0.2s ease',
         }}
       >
+        {/* Logo strip — sits ABOVE the floating card, like Monday CRM */}
         <div
           style={{
             position: 'fixed',
-            top: 16,
+            top: 0,
+            left: 0,
+            width: shellWidth,
+            height: 56,
+            background: BG,
+            zIndex: 61,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            padding: isCollapsed ? '0 24px' : '0 28px',
+            transition: 'width 0.2s ease',
+          }}
+        >
+          <img
+            src="/jobyra-logo.png"
+            alt="Jobyra"
+            style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }}
+          />
+          {!isCollapsed && (
+            <span
+              style={{
+                fontSize: 17,
+                fontWeight: 800,
+                color: TEXT,
+                letterSpacing: '-0.03em',
+                marginLeft: 9,
+                lineHeight: 1,
+                fontFamily: 'Inter, -apple-system, sans-serif',
+              }}
+            >
+              Jobyra
+            </span>
+          )}
+        </div>
+
+        {/* Floating sidebar card — starts below logo strip */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 62,
             left: 16,
             width: sidebarWidth,
-            height: 'calc(100vh - 32px)',
+            height: 'calc(100vh - 78px)',
             background: WHITE,
             border: `1px solid ${BORDER}`,
             borderRadius: 16,
@@ -910,98 +950,64 @@ export function Sidebar({ active }: { active: string }) {
             transition: 'width 0.2s ease',
           }}
         >
+          {/* Workspace row */}
           <div
             style={{
-              padding: '6px 4px 12px',
+              padding: '4px 2px 10px',
               borderBottom: `1px solid ${BORDER}`,
               marginBottom: 10,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
             }}
           >
-            {/* App branding row */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: isCollapsed ? 'center' : 'flex-start',
                 gap: 8,
-                padding: '4px 6px',
+                padding: isCollapsed ? '6px' : '6px 8px',
+                borderRadius: 10,
+                background: TEAL_SOFT,
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
               }}
             >
-              <img
-                src="/jobyra-logo.png"
-                alt="Jobyra"
-                style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }}
-              />
+              {business?.logo_url ? (
+                <img
+                  src={business.logo_url}
+                  alt="Business logo"
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 7,
+                    objectFit: 'contain',
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 7,
+                    background: TEAL,
+                    color: WHITE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 10,
+                    fontWeight: 800,
+                    flexShrink: 0,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
               {!isCollapsed && (
                 <span
                   style={{
-                    fontSize: 16,
-                    fontWeight: 800,
-                    color: TEXT,
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1,
-                    fontFamily: 'Inter, -apple-system, sans-serif',
-                  }}
-                >
-                  Jobyra
-                </span>
-              )}
-            </div>
-
-            {/* Workspace row */}
-            {!isCollapsed && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '6px 8px',
-                  borderRadius: 8,
-                  background: TEAL_SOFT,
-                  cursor: 'default',
-                }}
-              >
-                {business?.logo_url ? (
-                  <img
-                    src={business.logo_url}
-                    alt="Business logo"
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 6,
-                      objectFit: 'contain',
-                      background: WHITE,
-                      border: `1px solid ${BORDER}`,
-                      flexShrink: 0,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 6,
-                      background: TEAL,
-                      color: WHITE,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 10,
-                      fontWeight: 800,
-                      flexShrink: 0,
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {initials}
-                  </div>
-                )}
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
+                    fontSize: 12,
+                    fontWeight: 700,
                     color: TEAL_DARK,
                     letterSpacing: '-0.01em',
                     whiteSpace: 'nowrap',
@@ -1013,8 +1019,8 @@ export function Sidebar({ active }: { active: string }) {
                 >
                   {loading ? '...' : business?.name || 'My Business'}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div

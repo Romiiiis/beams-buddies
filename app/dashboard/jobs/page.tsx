@@ -1065,24 +1065,6 @@ export default function JobsPage() {
                   >
                     <IconPlus size={12} /> Add job
                   </button>
-
-                  <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterType('all')
-                    }}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    Reset filters
-                  </button>
                 </div>
               </div>
 

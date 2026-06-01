@@ -983,17 +983,8 @@ export default function LeadsPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconSpark size={12} /> Open Jobs
-                </button>
-                <button
-                  onClick={() => {
-                    setSearch('')
-                    setFilterStatus('all')
-                  }}
-                  style={btnMobileTeal}
-                >
-                  Reset
+                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>
+                  Convert to Job
                 </button>
               </div>
 
@@ -1065,7 +1056,7 @@ export default function LeadsPage() {
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    onClick={() => router.push('/dashboard/jobs')}
+                    onClick={() => router.push('/dashboard/customers')}
                     style={btnOutline}
                     onMouseEnter={e => {
                       e.currentTarget.style.borderColor = TEXT
@@ -1076,14 +1067,10 @@ export default function LeadsPage() {
                       e.currentTarget.style.color = TEXT2
                     }}
                   >
-                    <IconSpark size={12} /> Open Jobs
+                    View Customers
                   </button>
-
                   <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterStatus('all')
-                    }}
+                    onClick={() => router.push('/dashboard/jobs')}
                     style={btnTeal}
                     onMouseEnter={e => {
                       e.currentTarget.style.opacity = '0.82'
@@ -1092,7 +1079,7 @@ export default function LeadsPage() {
                       e.currentTarget.style.opacity = '1'
                     }}
                   >
-                    Reset Filters
+                    Convert to Job
                   </button>
                 </div>
               </div>

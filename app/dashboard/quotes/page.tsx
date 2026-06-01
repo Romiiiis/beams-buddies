@@ -694,24 +694,6 @@ export default function QuotesPage() {
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    onClick={() => {
-                      setSearch('')
-                      setFilterStatus('all')
-                    }}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    Reset filters
-                  </button>
-
-                  <button
                     onClick={() => setShowForm(true)}
                     style={btnTeal}
                     onMouseEnter={e => {
