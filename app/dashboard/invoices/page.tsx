@@ -753,8 +753,10 @@ export default function InvoicesPage() {
                           onClick={() => setViewingInvoice(inv)}
                           style={{
                             display: 'block',
+                            margin: '6px 12px',
                             padding: '14px 16px',
-                            borderBottom: `1px solid ${BORDER}`,
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: '12px',
                             background: WHITE,
                             cursor: 'pointer',
                             transition: 'background 0.12s',
