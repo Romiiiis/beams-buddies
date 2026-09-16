@@ -98,6 +98,12 @@ function IconBarChart({ size = 14 }: { size?: number }) {
 function IconClipboard({ size = 15 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.9"/><path d="M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
 }
+function IconClock({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconAlertCircle({ size = 13 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+}
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -475,10 +481,10 @@ export default function DashboardPage() {
 
   // Stat chips (row 1)
   const statChips = [
-    { label: 'Total Customers', value: stats.customers,  danger: false,              onClick: () => router.push('/dashboard/customers') },
-    { label: 'Upcoming Jobs',   value: scheduledCount,   danger: false,              onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Jobs Today',      value: stats.jobsToday,  danger: false,              onClick: () => router.push('/dashboard/schedule') },
-    { label: 'Overdue Jobs',    value: stats.overdue,    danger: stats.overdue > 0,  onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Total Customers', value: stats.customers,  danger: false,              icon: <IconUsers size={13} />,       onClick: () => router.push('/dashboard/customers') },
+    { label: 'Upcoming Jobs',   value: scheduledCount,   danger: false,              icon: <IconCalendar size={13} />,    onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Jobs Today',      value: stats.jobsToday,  danger: false,              icon: <IconClock size={13} />,       onClick: () => router.push('/dashboard/schedule') },
+    { label: 'Overdue Jobs',    value: stats.overdue,    danger: stats.overdue > 0,  icon: <IconAlertCircle size={13} />, onClick: () => router.push('/dashboard/jobs') },
   ]
 
   // Metric cards (row 2)
@@ -554,27 +560,29 @@ export default function DashboardPage() {
           {/* ── Row 1: Stat chips ── */}
           <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}` }}>
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
-              {statChips.map((chip, i) => (
-                <div
-                  key={chip.label}
-                  onClick={chip.onClick}
-                  style={{ padding: isMobile ? '11px 10px' : '14px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
-                  onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <div style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              {statChips.map((chip, i) => {
+                const isAlert = chip.danger && chip.value > 0
+                const accentColor = isAlert ? '#EF4444' : TEAL
+                return (
+                  <div
+                    key={chip.label}
+                    onClick={chip.onClick}
+                    style={{ padding: isMobile ? '12px 10px' : '16px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
+                    onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
+                  >
+                    <div style={{ color: accentColor, marginBottom: isMobile ? '5px' : '7px', display: 'flex' }}>
+                      {chip.icon}
+                    </div>
+                    <div style={{ fontSize: isMobile ? '20px' : '26px', fontWeight: 900, color: isAlert ? '#EF4444' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                       {chip.value}
                     </div>
-                    {chip.danger && chip.value > 0 && (
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF4444', flexShrink: 0, marginBottom: 2, display: 'inline-block' }} />
-                    )}
+                    <div style={{ fontSize: isMobile ? '10px' : '11px', fontWeight: 600, color: isAlert ? '#EF4444' : TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
+                      {chip.label}
+                    </div>
                   </div>
-                  <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
-                    {chip.label}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
