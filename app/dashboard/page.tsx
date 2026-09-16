@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { useBusiness } from '@/lib/useBusiness'
 
 const TEAL       = '#1F9E94'
 const TEAL_DARK  = '#177A72'
@@ -372,8 +373,10 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
 // ── Dashboard Page ─────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const router   = useRouter()
-  const isMobile = useIsMobile()
+  const router    = useRouter()
+  const isMobile  = useIsMobile()
+  const business  = useBusiness()
+  const logoUrl   = business?.logo_url ?? null
   const [loading,      setLoading]      = useState(true)
   const [popupDate,    setPopupDate]    = useState<Date | null>(null)
   const [popupJobs,    setPopupJobs]    = useState<any[]>([])
@@ -518,10 +521,14 @@ export default function DashboardPage() {
           {/* ── Header ── */}
           <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
-              <div style={{ width: isMobile ? 42 : 48, height: isMobile ? 42 : 48, borderRadius: '13px', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(31,158,148,0.35)' }}>
-                <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                  {userName ? userName[0].toUpperCase() : '?'}
-                </span>
+              <div style={{ width: isMobile ? 42 : 48, height: isMobile ? 42 : 48, borderRadius: '13px', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(31,158,148,0.35)', overflow: 'hidden' }}>
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Business logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                    {userName ? userName[0].toUpperCase() : '?'}
+                  </span>
+                )}
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
@@ -577,9 +584,9 @@ export default function DashboardPage() {
               <div
                 key={mc.label}
                 onClick={mc.onClick}
-                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.1s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderTop: `3px solid ${mc.accent}`, overflow: 'hidden' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 18px rgba(0,0,0,0.09)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
+                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderLeft: `3px solid ${TEAL}` }}
+                onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 5px 16px rgba(0,0,0,0.09)')}
+                onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)')}
               >
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
                   {mc.label}
@@ -589,7 +596,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                   {mc.hasDelta ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '12px', background: mc.up ? '#E6F7F6' : '#FFF0EE', color: mc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800, flexShrink: 0 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '12px', background: mc.up ? TEAL_LIGHT : '#FFF0EE', color: mc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800, flexShrink: 0 }}>
                       {mc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                       {fmtDelta(mc.delta)}
                     </span>
@@ -770,11 +777,11 @@ export default function DashboardPage() {
                 <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
               </div>
               {([
-                { label: 'New Job',       sub: 'Create a new job for a customer',     icon: <IconPlus size={16} />,     iconBg: TEAL,       iconColor: WHITE,     onClick: () => router.push('/dashboard/jobs/add') },
-                { label: 'New Invoice',   sub: 'Create and send an invoice',          icon: <IconInvoice size={16} />,  iconBg: '#EEF2FF',  iconColor: '#6366F1', onClick: () => router.push('/dashboard/invoices') },
-                { label: 'Add Customer',  sub: 'Register a new customer',             icon: <IconUsers size={16} />,    iconBg: '#FFF7ED',  iconColor: '#F59E0B', onClick: () => router.push('/dashboard/customers') },
-                { label: 'View Schedule', sub: 'Open the full job calendar',          icon: <IconCalendar size={16} />, iconBg: TEAL_LIGHT, iconColor: TEAL_DARK, onClick: () => router.push('/dashboard/schedule') },
-              ] as { label: string; sub: string; icon: React.ReactNode; iconBg: string; iconColor: string; onClick: () => void }[]).map((action, i, arr) => (
+                { label: 'New Job',       sub: 'Create a new job for a customer',  icon: <IconPlus size={16} />,     onClick: () => router.push('/dashboard/jobs/add') },
+                { label: 'New Invoice',   sub: 'Create and send an invoice',       icon: <IconInvoice size={16} />,  onClick: () => router.push('/dashboard/invoices') },
+                { label: 'Add Customer',  sub: 'Register a new customer',          icon: <IconUsers size={16} />,    onClick: () => router.push('/dashboard/customers') },
+                { label: 'View Schedule', sub: 'Open the full job calendar',       icon: <IconCalendar size={16} />, onClick: () => router.push('/dashboard/schedule') },
+              ] as { label: string; sub: string; icon: React.ReactNode; onClick: () => void }[]).map((action, i, arr) => (
                 <div
                   key={action.label}
                   onClick={action.onClick}
@@ -782,7 +789,7 @@ export default function DashboardPage() {
                   onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
                   onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
                 >
-                  <div style={{ width: 38, height: 38, borderRadius: '11px', background: action.iconBg, color: action.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, color: TEAL_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {action.icon}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
