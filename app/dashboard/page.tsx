@@ -545,23 +545,30 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 1: Stat chips ── */}
-          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: isMobile ? '8px' : '10px' }}>
-            {statChips.map((chip) => (
-              <div
-                key={chip.label}
-                onClick={chip.onClick}
-                style={{ padding: isMobile ? '10px 10px' : '13px 18px', cursor: 'pointer', background: WHITE, borderRadius: '13px', border: `1px solid ${chip.danger ? '#FCA5A5' : BORDER}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s, border-color 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#F87171' : TEAL }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#FCA5A5' : BORDER }}
-              >
-                <div style={{ fontSize: isMobile ? '18px' : '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                  {chip.value}
+          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
+              {statChips.map((chip, i) => (
+                <div
+                  key={chip.label}
+                  onClick={chip.onClick}
+                  style={{ padding: isMobile ? '11px 10px' : '14px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                      {chip.value}
+                    </div>
+                    {chip.danger && chip.value > 0 && (
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF4444', flexShrink: 0, marginBottom: 2, display: 'inline-block' }} />
+                    )}
+                  </div>
+                  <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
+                    {chip.label}
+                  </div>
                 </div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
-                  {chip.label}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* ── Row 2: Metric cards ── */}
@@ -762,40 +769,29 @@ export default function DashboardPage() {
               <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
               </div>
-              <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '10px' }}>
-                {[
-                  { label: 'New Job',       icon: <IconPlus size={18} />,     onClick: () => router.push('/dashboard/jobs/add'),  primary: true },
-                  { label: 'New Invoice',   icon: <IconInvoice size={18} />,  onClick: () => router.push('/dashboard/invoices'),  primary: false },
-                  { label: 'Add Customer',  icon: <IconUsers size={18} />,    onClick: () => router.push('/dashboard/customers'), primary: false },
-                  { label: 'Open Schedule', icon: <IconCalendar size={18} />, onClick: () => router.push('/dashboard/schedule'),  primary: false },
-                ].map(action => (
-                  <button
-                    key={action.label}
-                    onClick={action.onClick}
-                    style={{
-                      height: isMobile ? '60px' : '56px',
-                      border: `1px solid ${action.primary ? TEAL : BORDER}`,
-                      borderRadius: '12px', fontSize: '12px', fontWeight: 700, fontFamily: FONT,
-                      background: action.primary ? TEAL : WHITE,
-                      color: action.primary ? WHITE : TEXT2,
-                      cursor: 'pointer', display: 'flex', flexDirection: 'row',
-                      alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      if (!action.primary) { e.currentTarget.style.background = TEAL_LIGHT; e.currentTarget.style.borderColor = TEAL }
-                      else { e.currentTarget.style.background = TEAL_DARK; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.3)' }
-                    }}
-                    onMouseLeave={e => {
-                      if (!action.primary) { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER }
-                      else { e.currentTarget.style.background = TEAL; e.currentTarget.style.boxShadow = 'none' }
-                    }}
-                  >
+              {([
+                { label: 'New Job',       sub: 'Create a new job for a customer',     icon: <IconPlus size={16} />,     iconBg: TEAL,       iconColor: WHITE,     onClick: () => router.push('/dashboard/jobs/add') },
+                { label: 'New Invoice',   sub: 'Create and send an invoice',          icon: <IconInvoice size={16} />,  iconBg: '#EEF2FF',  iconColor: '#6366F1', onClick: () => router.push('/dashboard/invoices') },
+                { label: 'Add Customer',  sub: 'Register a new customer',             icon: <IconUsers size={16} />,    iconBg: '#FFF7ED',  iconColor: '#F59E0B', onClick: () => router.push('/dashboard/customers') },
+                { label: 'View Schedule', sub: 'Open the full job calendar',          icon: <IconCalendar size={16} />, iconBg: TEAL_LIGHT, iconColor: TEAL_DARK, onClick: () => router.push('/dashboard/schedule') },
+              ] as { label: string; sub: string; icon: React.ReactNode; iconBg: string; iconColor: string; onClick: () => void }[]).map((action, i, arr) => (
+                <div
+                  key={action.label}
+                  onClick={action.onClick}
+                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
+                >
+                  <div style={{ width: 38, height: 38, borderRadius: '11px', background: action.iconBg, color: action.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {action.icon}
-                    {action.label}
-                  </button>
-                ))}
-              </div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{action.label}</div>
+                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>{action.sub}</div>
+                  </div>
+                  <div style={{ color: TEXT3, flexShrink: 0 }}><IconChevronRight size={14} /></div>
+                </div>
+              ))}
             </div>
           </div>
 
