@@ -370,9 +370,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const inputStyle: React.CSSProperties = {
@@ -401,14 +401,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     display: 'block',
   }
 
-  const sectionHeaderTitle: React.CSSProperties = {
-    fontSize: '17px',
-    fontWeight: 900,
-    color: TEXT,
-    marginBottom: '4px',
-    letterSpacing: '-0.035em',
-  }
-
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
@@ -425,51 +417,24 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: TEAL,
+    color: WHITE,
     border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
-    color: WHITE,
-    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '7px',
+    gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
-  }
-
-  const btnMobileSm: React.CSSProperties = {
-    height: '36px',
-    padding: '0 12px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-    flex: 1,
-  }
-
-  const btnMobileTeal: React.CSSProperties = {
-    ...btnMobileSm,
-    background: TEAL,
-    border: `1px solid ${TEAL}`,
-    color: WHITE,
   }
 
   const statChips = [
@@ -513,258 +478,159 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   if (!customer) return null
 
   return (
-    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
+    <div style={{ display: 'flex', background: BG, minHeight: '100vh', fontFamily: FONT }}>
       <Sidebar active="/dashboard/customers" />
 
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        {/* Unified sticky page header */}
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <button
+              onClick={() => router.push('/dashboard/customers')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                color: TEXT3,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: FONT,
+                marginBottom: '4px',
+              }}
+            >
+              <IconArrowLeft size={12} />
+              Customers
+            </button>
+            <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {customer.first_name} {customer.last_name}
+            </h1>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            {!isMobile && (
+              <>
+                <button
+                  onClick={() => router.push('/dashboard/jobs')}
+                  style={btnOutline}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                >
+                  <IconPlus size={12} />
+                  Add job
+                </button>
+
+                <button
+                  onClick={() => setShowContact(true)}
+                  style={btnOutline}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                >
+                  <IconPhone size={12} />
+                  Contact
+                </button>
+
+                <button
+                  onClick={() => setEditingCustomer(true)}
+                  style={btnOutline}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
+                >
+                  <IconEdit size={12} />
+                  Edit customer
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              style={btnTeal}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.85' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            >
+              <IconTrash size={12} />
+              {isMobile ? 'Delete' : 'Delete'}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile action buttons row */}
+        {isMobile && (
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', gap: '8px', background: BG }}>
+            <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
+              <IconPlus size={12} /> Add job
+            </button>
+            <button onClick={() => setShowContact(true)} style={{ ...btnOutline, flex: 1 }}>
+              <IconPhone size={12} /> Contact
+            </button>
+            <button onClick={() => setEditingCustomer(true)} style={{ ...btnOutline, flex: 1 }}>
+              <IconEdit size={12} /> Edit
+            </button>
+          </div>
+        )}
+
+        {/* Scrollable content */}
         <div
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '0' : '20px 24px',
+            padding: isMobile ? '12px 14px' : '16px 24px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
             background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <button
-                  onClick={() => router.push('/dashboard/customers')}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                    margin: 0,
-                    color: TEXT3,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    marginBottom: '6px',
-                  }}
-                >
-                  <IconArrowLeft size={13} />
-                  Customers
-                </button>
-
-                <h1
-                  style={{
-                    fontSize: '26px',
-                    fontWeight: 900,
-                    color: TEXT,
-                    letterSpacing: '-0.05em',
-                    margin: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  {customer.first_name} {customer.last_name}
-                </h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconPlus size={12} />
-                  Add job
-                </button>
-                <button onClick={() => setShowContact(true)} style={btnMobileSm}>
-                  <IconPhone size={12} />
-                  Contact
-                </button>
-                <button onClick={() => setEditingCustomer(true)} style={btnMobileSm}>
-                  <IconEdit size={12} />
-                  Edit
-                </button>
-                <button onClick={() => setShowDeleteConfirm(true)} style={btnMobileTeal}>
-                  Delete
-                </button>
-              </div>
-
+          {/* Connected stat chips bar */}
+          <div
+            style={{
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: '14px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              overflow: 'hidden',
+            }}
+          >
+            {statChips.map((chip, i) => (
               <div
+                key={chip.label}
+                onClick={chip.onClick}
                 style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  padding: isMobile ? '11px 10px' : '14px 20px',
+                  cursor: 'pointer',
+                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  transition: 'background 0.12s',
+                }}
+                onMouseEnter={e => {
+                  ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
+                }}
+                onMouseLeave={e => {
+                  ;(e.currentTarget as HTMLElement).style.background = WHITE
                 }}
               >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      ;(e.currentTarget as HTMLElement).style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
+                <div style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{chip.value}</div>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {todayStr}
-                  </div>
-
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 0,
-                      margin: 0,
-                      color: TEXT3,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <IconArrowLeft size={13} />
-                    Customers
-                  </button>
-
-                  <h1
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {customer.first_name} {customer.last_name}
-                  </h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconPlus size={12} />
-                    Add job
-                  </button>
-
-                  <button
-                    onClick={() => setShowContact(true)}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconPhone size={12} />
-                    Contact
-                  </button>
-
-                  <button
-                    onClick={() => setEditingCustomer(true)}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconEdit size={12} />
-                    Edit customer
-                  </button>
-
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconTrash size={12} />
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      ;(e.currentTarget as HTMLElement).style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
 
           {saved && (
             <div
@@ -777,32 +643,25 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 fontSize: '12px',
                 fontWeight: 700,
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                margin: isMobile ? '0 12px' : 0,
               }}
             >
               Changes saved successfully.
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: isMobile ? '0 12px' : 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Customer profile card */}
             <div style={card}>
               <div
                 style={{
-                  padding: isMobile ? '16px' : '18px 20px',
+                  padding: '13px 18px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  background: WHITE,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={sectionHeaderTitle}>Customer profile</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>Contact details, address, and internal notes.</div>
-                  </div>
-                </div>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Customer profile</span>
               </div>
 
               {!editingCustomer ? (
@@ -929,31 +788,25 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
+            {/* Installed units card */}
             <div style={card}>
               <div
                 style={{
-                  padding: isMobile ? '16px' : '18px 20px',
+                  padding: '13px 18px',
                   borderBottom: `1px solid ${BORDER}`,
                   display: 'flex',
                   alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
                   flexDirection: isMobile ? 'column' : 'row',
-                  gap: '14px',
-                  background: WHITE,
+                  gap: '10px',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={sectionHeaderTitle}>Installed units</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>View equipment details, service timing, and history for this customer.</div>
-                  </div>
-                </div>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Installed units</span>
 
                 <div
                   style={{
                     height: '34px',
-                    borderRadius: '10px',
+                    borderRadius: '9px',
                     border: `1px solid ${BORDER}`,
                     background: '#F8FAFC',
                     color: TEXT2,
@@ -1038,7 +891,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 onClick={() => setEditingJobId(job.id)}
                                 style={{
                                   height: '34px',
-                                  borderRadius: '10px',
+                                  borderRadius: '9px',
                                   border: `1px solid ${BORDER}`,
                                   background: WHITE,
                                   color: TEXT2,
@@ -1300,27 +1153,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
+            {/* Review activity card */}
             {reviewClicks.length > 0 && (
               <div style={card}>
                 <div
                   style={{
-                    padding: isMobile ? '16px' : '18px 20px',
+                    padding: '13px 18px',
                     borderBottom: `1px solid ${BORDER}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: WHITE,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={sectionHeaderTitle}>Review activity</div>
-                      <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '2px' }}>
-                        {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'} used by this customer.
-                      </div>
-                    </div>
-                  </div>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Review activity</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
+                    {uniquePlatforms.length} platform{uniquePlatforms.length === 1 ? '' : 's'}
+                  </span>
                 </div>
 
                 <div style={{ display: 'grid' }}>
