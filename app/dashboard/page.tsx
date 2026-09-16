@@ -480,10 +480,10 @@ export default function DashboardPage() {
 
   // Metric cards (row 2)
   const metricCards = [
-    { label: 'Outstanding',       value: `$${outCurr.toLocaleString('en-AU')}`,  delta: pctChange(outCurr, outPrev),         up: pctChange(outCurr, outPrev) >= 0,         hasDelta: outPrev > 0,          sub: `${invoiceStats.overdueCount} overdue`,                     onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Revenue (30d)',      value: `$${revCurr.toLocaleString('en-AU')}`,  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                                          onClick: () => router.push('/dashboard/revenue') },
-    { label: 'Jobs This Month',    value: `${jobsCurrMonth}`,                     delta: pctChange(jobsCurrMonth, jobsPrevMonth), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, hasDelta: jobsPrevMonth > 0, sub: 'vs last month',                                         onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Invoice Paid Rate',  value: `${convRate}%`,                         delta: currConv - prevConv,                  up: currConv >= prevConv,                     hasDelta: prevWin.length > 0,   sub: `${paidInv} of ${totalInv} invoices`,                       onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Outstanding',       value: `$${outCurr.toLocaleString('en-AU')}`,  delta: pctChange(outCurr, outPrev),         up: pctChange(outCurr, outPrev) >= 0,         hasDelta: outPrev > 0,          sub: `${invoiceStats.overdueCount} overdue`,      accent: '#EF4444', onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Revenue (30d)',      value: `$${revCurr.toLocaleString('en-AU')}`,  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                           accent: TEAL,      onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Jobs This Month',    value: `${jobsCurrMonth}`,                     delta: pctChange(jobsCurrMonth, jobsPrevMonth), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, hasDelta: jobsPrevMonth > 0, sub: 'vs last month',                           accent: '#6366F1', onClick: () => router.push('/dashboard/jobs') },
+    { label: 'Invoice Paid Rate',  value: `${convRate}%`,                         delta: currConv - prevConv,                  up: currConv >= prevConv,                     hasDelta: prevWin.length > 0,   sub: `${paidInv} of ${totalInv} invoices`,        accent: '#10B981', onClick: () => router.push('/dashboard/invoices') },
   ]
 
   const card: React.CSSProperties = {
@@ -545,19 +545,19 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 1: Stat chips ── */}
-          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '10px' }}>
+          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: isMobile ? '8px' : '10px' }}>
             {statChips.map((chip) => (
               <div
                 key={chip.label}
                 onClick={chip.onClick}
-                style={{ padding: isMobile ? '12px 14px' : '13px 18px', cursor: 'pointer', background: WHITE, borderRadius: '13px', border: `1px solid ${chip.danger ? '#FCA5A5' : BORDER}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s, border-color 0.15s' }}
+                style={{ padding: isMobile ? '10px 10px' : '13px 18px', cursor: 'pointer', background: WHITE, borderRadius: '13px', border: `1px solid ${chip.danger ? '#FCA5A5' : BORDER}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s, border-color 0.15s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#F87171' : TEAL }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#FCA5A5' : BORDER }}
               >
-                <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ fontSize: isMobile ? '18px' : '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {chip.value}
                 </div>
-                <div style={{ fontSize: isMobile ? '10px' : '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '5px' }}>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
                   {chip.label}
                 </div>
               </div>
@@ -565,23 +565,24 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 2: Metric cards ── */}
-          <div style={{ padding: isMobile ? '12px 14px' : '16px 24px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
+          <div style={{ padding: isMobile ? '12px 14px' : '0 24px 16px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
             {metricCards.map(mc => (
               <div
                 key={mc.label}
                 onClick={mc.onClick}
-                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 18px', cursor: 'pointer', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)')}
+                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.1s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderTop: `3px solid ${mc.accent}`, overflow: 'hidden' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 18px rgba(0,0,0,0.09)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{mc.label}</span>
-                  <span style={{ color: TEXT3, opacity: 0.5 }}><IconArrow size={11} /></span>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+                  {mc.label}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1.05, fontVariantNumeric: 'tabular-nums' }}>{mc.value}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                <div style={{ fontSize: isMobile ? '24px' : '30px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: '10px' }}>
+                  {mc.value}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                   {mc.hasDelta ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 7px', borderRadius: '12px', background: mc.up ? '#E6F7F6' : '#FFF0EE', color: mc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '3px 7px', borderRadius: '12px', background: mc.up ? '#E6F7F6' : '#FFF0EE', color: mc.up ? TEAL_DARK : '#C0392B', fontSize: '10px', fontWeight: 800, flexShrink: 0 }}>
                       {mc.up ? <IconTrendUp size={9} /> : <IconTrendDown size={9} />}
                       {fmtDelta(mc.delta)}
                     </span>
@@ -695,12 +696,7 @@ export default function DashboardPage() {
               <div style={card}>
                 <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEAL_DARK }}>
-                        <IconInvoice size={13} />
-                      </div>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
                     <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '28px', padding: '0 10px', background: TEAL, border: 'none', borderRadius: '8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: WHITE, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       View all <IconArrow size={9} />
                     </button>
@@ -752,52 +748,55 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Quick Actions */}
-              <div style={card}>
-                <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
-                </div>
-                <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {[
-                    { label: 'New Job',       icon: <IconPlus size={17} />,     onClick: () => router.push('/dashboard/jobs/add'),  primary: true },
-                    { label: 'New Invoice',   icon: <IconInvoice size={17} />,  onClick: () => router.push('/dashboard/invoices'),  primary: false },
-                    { label: 'Add Customer',  icon: <IconUsers size={17} />,    onClick: () => router.push('/dashboard/customers'), primary: false },
-                    { label: 'Open Schedule', icon: <IconCalendar size={17} />, onClick: () => router.push('/dashboard/schedule'),  primary: false },
-                  ].map(action => (
-                    <button
-                      key={action.label}
-                      onClick={action.onClick}
-                      style={{
-                        height: '64px', border: `1px solid ${action.primary ? TEAL : BORDER}`,
-                        borderRadius: '10px', fontSize: '11px', fontWeight: 700, fontFamily: FONT,
-                        background: action.primary ? TEAL : WHITE,
-                        color: action.primary ? WHITE : TEXT2,
-                        cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center', gap: '6px',
-                        transition: 'background 0.12s, border-color 0.12s',
-                      }}
-                      onMouseEnter={e => {
-                        if (!action.primary) { e.currentTarget.style.background = TEAL_LIGHT; e.currentTarget.style.borderColor = TEAL }
-                        else e.currentTarget.style.background = TEAL_DARK
-                      }}
-                      onMouseLeave={e => {
-                        if (!action.primary) { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER }
-                        else e.currentTarget.style.background = TEAL
-                      }}
-                    >
-                      {action.icon}
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
             </div>
           </div>
 
-          {/* ── Analytics (full width, bottom) ── */}
+          {/* ── Analytics (full width) ── */}
           <div style={{ padding: isMobile ? '16px 14px 0' : '16px 24px 0' }}>
             <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} isMobile={isMobile} />
+          </div>
+
+          {/* ── Quick Actions (full width, bottom) ── */}
+          <div style={{ padding: isMobile ? '12px 14px 0' : '16px 24px 0' }}>
+            <div style={card}>
+              <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
+              </div>
+              <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '10px' }}>
+                {[
+                  { label: 'New Job',       icon: <IconPlus size={18} />,     onClick: () => router.push('/dashboard/jobs/add'),  primary: true },
+                  { label: 'New Invoice',   icon: <IconInvoice size={18} />,  onClick: () => router.push('/dashboard/invoices'),  primary: false },
+                  { label: 'Add Customer',  icon: <IconUsers size={18} />,    onClick: () => router.push('/dashboard/customers'), primary: false },
+                  { label: 'Open Schedule', icon: <IconCalendar size={18} />, onClick: () => router.push('/dashboard/schedule'),  primary: false },
+                ].map(action => (
+                  <button
+                    key={action.label}
+                    onClick={action.onClick}
+                    style={{
+                      height: isMobile ? '60px' : '56px',
+                      border: `1px solid ${action.primary ? TEAL : BORDER}`,
+                      borderRadius: '12px', fontSize: '12px', fontWeight: 700, fontFamily: FONT,
+                      background: action.primary ? TEAL : WHITE,
+                      color: action.primary ? WHITE : TEXT2,
+                      cursor: 'pointer', display: 'flex', flexDirection: 'row',
+                      alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      if (!action.primary) { e.currentTarget.style.background = TEAL_LIGHT; e.currentTarget.style.borderColor = TEAL }
+                      else { e.currentTarget.style.background = TEAL_DARK; e.currentTarget.style.boxShadow = '0 4px 12px rgba(31,158,148,0.3)' }
+                    }}
+                    onMouseLeave={e => {
+                      if (!action.primary) { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER }
+                      else { e.currentTarget.style.background = TEAL; e.currentTarget.style.boxShadow = 'none' }
+                    }}
+                  >
+                    {action.icon}
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
         </div>
