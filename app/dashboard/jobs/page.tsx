@@ -227,8 +227,8 @@ function JobDrawer({
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '14px',
-    padding: '12px 14px',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    overflow: 'hidden',
+    padding: '16px',
   }
 
   const days = (() => {
@@ -812,9 +812,9 @@ export default function JobsPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
@@ -823,14 +823,14 @@ export default function JobsPage() {
   }
 
   const btnOutline: React.CSSProperties = {
-    height: '34px',
+    height: '36px',
     padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
+    border: 'none',
+    borderRadius: '6px',
     fontSize: '12px',
     fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
+    color: TEXT3,
+    background: 'transparent',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -838,7 +838,6 @@ export default function JobsPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnPrimary: React.CSSProperties = {
@@ -863,7 +862,7 @@ export default function JobsPage() {
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
     padding: '0 12px',
-    border: `1px solid ${BORDER}`,
+    border: '1px solid #E8EDF2',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -875,6 +874,7 @@ export default function JobsPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
+    whiteSpace: 'nowrap',
     flex: 1,
   }
 
@@ -931,9 +931,33 @@ export default function JobsPage() {
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Jobs
+          </h1>
+          <button
+            onClick={() => router.push('/dashboard/jobs/add')}
+            style={btnPrimary}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+          >
+            <IconPlus size={12} /> Add job
+          </button>
+        </div>
+
+        <div
+          style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '0' : '20px 24px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -941,168 +965,39 @@ export default function JobsPage() {
             background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: TEXT3,
-                    letterSpacing: '0.07em',
-                    textTransform: 'uppercase',
-                    marginBottom: '5px',
-                  }}
-                >
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
-
-                <h1
-                  style={{
-                    fontSize: '26px',
-                    fontWeight: 900,
-                    color: TEXT,
-                    letterSpacing: '-0.05em',
-                    margin: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  Jobs
-                </h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => router.push('/dashboard/jobs/add')} style={btnMobilePrimary}>
-                  <IconPlus size={12} /> Add job
-                </button>
-                <button
-                  onClick={() => {
-                    setSearch('')
-                    setFilterType('all')
-                  }}
-                  style={btnMobileSm}
-                >
-                  Reset
-                </button>
-              </div>
-
+          <div
+            style={{
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: '14px',
+              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+            }}
+          >
+            {statChips.map((chip, i) => (
               <div
+                key={chip.label}
+                onClick={chip.onClick}
                 style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  padding: isMobile ? '10px 8px' : '14px 20px',
+                  cursor: 'pointer',
+                  textAlign: isMobile ? 'center' as const : undefined,
+                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  transition: 'background 0.12s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = TEAL_LIGHT
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent'
                 }}
               >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
+                <div style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: isMobile ? 1.2 : undefined }}>{chip.label}</div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    {todayStr}
-                  </div>
-
-                  <h1
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    Jobs
-                  </h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs/add')}
-                    style={btnPrimary}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconPlus size={12} /> Add job
-                  </button>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
 
           <div
             style={{
@@ -1110,7 +1005,6 @@ export default function JobsPage() {
               gridTemplateColumns: '1fr',
               gap: '14px',
               alignItems: 'start',
-              padding: isMobile ? '0 12px' : 0,
             }}
           >
             <div style={card}>

@@ -231,9 +231,9 @@ export default function AddJobPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const cardP: React.CSSProperties = {
@@ -242,14 +242,14 @@ export default function AddJobPage() {
   }
 
   const btnOutline: React.CSSProperties = {
-    height: '34px',
+    height: '36px',
     padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
+    border: 'none',
+    borderRadius: '6px',
     fontSize: '12px',
     fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
+    color: TEXT3,
+    background: 'transparent',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -257,18 +257,18 @@ export default function AddJobPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnTeal: React.CSSProperties = {
-    height: '34px',
+    height: '36px',
     padding: '0 14px',
     border: 'none',
-    borderRadius: '9px',
+    borderBottom: '2px solid #1F9E94',
+    borderRadius: 0,
     fontSize: '12px',
-    fontWeight: 700,
-    color: WHITE,
-    background: TEAL,
+    fontWeight: 800,
+    color: TEAL,
+    background: 'transparent',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -276,13 +276,12 @@ export default function AddJobPage() {
     justifyContent: 'center',
     gap: '7px',
     whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
     padding: '0 12px',
-    border: `1px solid ${BORDER}`,
+    border: '1px solid #E8EDF2',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -294,6 +293,7 @@ export default function AddJobPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
+    whiteSpace: 'nowrap',
     flex: 1,
   }
 
@@ -381,10 +381,46 @@ export default function AddJobPage() {
     >
       <Sidebar active="/dashboard/jobs" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
-            padding: isMobile ? '0' : '20px 24px',
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Add new job
+          </h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => router.push('/dashboard/jobs')}
+              style={{ height: '34px', padding: '0 14px', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <IconArrowLeft size={13} /> Back
+            </button>
+            <button
+              form="job-form"
+              type="submit"
+              disabled={loading}
+              style={{ height: '34px', padding: '0 14px', background: TEAL, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: loading ? 0.7 : 1 }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = loading ? '0.7' : '1' }}
+            >
+              <IconSpark size={13} /> {loading ? 'Saving...' : 'Save job'}
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -392,162 +428,30 @@ export default function AddJobPage() {
             background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: TEXT3,
-                    letterSpacing: '0.07em',
-                    textTransform: 'uppercase',
-                    marginBottom: '5px',
-                  }}
-                >
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
-
-                <h1
-                  style={{
-                    fontSize: '26px',
-                    fontWeight: 900,
-                    color: TEXT,
-                    letterSpacing: '-0.05em',
-                    margin: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  Add new job
-                </h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileSm}>
-                  <IconArrowLeft size={13} /> Back
-                </button>
-                <button form="job-form" type="submit" disabled={loading} style={btnMobileTeal}>
-                  {loading ? 'Saving...' : 'Save job'}
-                </button>
-              </div>
-
+          <div
+            style={{
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: '14px',
+              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+            }}
+          >
+            {statChips.map((chip, i) => (
               <div
+                key={chip.label}
                 style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  padding: isMobile ? '10px 8px' : '14px 20px',
+                  textAlign: isMobile ? 'center' as const : undefined,
+                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
                 }}
               >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    style={{
-                      padding: '10px 8px',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                    }}
-                  >
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
+                <div style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: isMobile ? 1.2 : undefined }}>{chip.label}</div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.07em',
-                      textTransform: 'uppercase',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    {todayStr}
-                  </div>
-
-                  <h1
-                    style={{
-                      fontSize: '28px',
-                      fontWeight: 900,
-                      color: TEXT,
-                      letterSpacing: '-0.05em',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    Add new job
-                  </h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconArrowLeft size={13} /> Back to jobs
-                  </button>
-
-                  <button
-                    form="job-form"
-                    type="submit"
-                    disabled={loading}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconSpark size={14} />
-                    {loading ? 'Saving...' : 'Save job'}
-                  </button>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    style={{
-                      padding: '14px 20px',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                    }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
 
           {error && (
             <div
