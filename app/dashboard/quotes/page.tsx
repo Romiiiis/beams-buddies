@@ -595,6 +595,7 @@ export default function QuotesPage() {
             style={{
               background: WHITE,
               border: `1px solid ${BORDER}`,
+              borderTop: `2px solid ${TEAL}`,
               borderRadius: '14px',
               overflow: 'hidden',
               display: 'grid',
@@ -606,9 +607,8 @@ export default function QuotesPage() {
                 key={chip.label}
                 onClick={chip.onClick}
                 style={{
-                  padding: isMobile ? '10px 8px' : '14px 20px',
+                  padding: isMobile ? '10px 10px' : '12px 18px',
                   cursor: 'pointer',
-                  textAlign: isMobile ? 'center' : undefined,
                   borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
                   transition: 'background 0.12s',
                 }}
@@ -616,11 +616,14 @@ export default function QuotesPage() {
                   e.currentTarget.style.background = TEAL_LIGHT
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.background = WHITE
                 }}
               >
-                <div style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: 1.2 }}>{chip.label}</div>
+                <div style={{ fontSize: isMobile ? '16px' : '20px', fontWeight: 800, color: TEXT2, letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{chip.value}</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
+                {chip.sub && (
+                  <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, marginTop: '2px', lineHeight: 1.2 }}>{chip.sub}</div>
+                )}
               </div>
             ))}
           </div>
