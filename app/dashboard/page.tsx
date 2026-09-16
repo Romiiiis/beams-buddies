@@ -176,15 +176,6 @@ function BookingsWidget({ allJobs, isMobile, onDateClick }: {
   function prevMonth() { viewMonth === 0 ? (setViewYear(y => y - 1), setViewMonth(11)) : setViewMonth(m => m - 1) }
   function nextMonth() { viewMonth === 11 ? (setViewYear(y => y + 1), setViewMonth(0)) : setViewMonth(m => m + 1) }
 
-  // Week strip Mon–Sun
-  const dayOfWeek    = todayDate.getDay()
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const weekDays     = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(todayDate)
-    d.setDate(todayDate.getDate() + mondayOffset + i)
-    return d
-  })
-
   // Month calendar cells
   const firstDayOffset = new Date(viewYear, viewMonth, 1).getDay()
   const daysInMonth    = new Date(viewYear, viewMonth + 1, 0).getDate()
@@ -195,34 +186,6 @@ function BookingsWidget({ allJobs, isMobile, onDateClick }: {
 
   return (
     <div>
-      {/* This Week strip */}
-      <div style={{ padding: '14px 18px 12px', borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '10px' }}>This Week</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-          {weekDays.map(day => {
-            const key     = toYMD(day)
-            const jobs    = jobsByDate[key] || []
-            const isToday = key === todayKey
-            const isPast  = day < todayDate
-            return (
-              <div key={key} onClick={() => jobs.length > 0 && onDateClick(day, jobs)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: jobs.length > 0 ? 'pointer' : 'default' }}>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: isToday ? TEAL_DARK : TEXT3, letterSpacing: '0.05em' }}>
-                  {DAY_LABELS[day.getDay()]}
-                </div>
-                <div style={{ width: 26, height: 26, borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: isToday ? 800 : 600, color: isToday ? WHITE : isPast ? TEXT3 : TEXT2, background: isToday ? TEAL : 'transparent', opacity: isPast && !isToday ? 0.5 : 1 }}>
-                  {day.getDate()}
-                </div>
-                <div style={{ display: 'flex', gap: '2px', minHeight: 5 }}>
-                  {Array.from({ length: Math.min(jobs.length, 3) }).map((_, i) => (
-                    <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: isPast ? TEXT3 : TEAL, opacity: isPast ? 0.3 : 1 }} />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Month calendar */}
       <div style={{ padding: '14px 18px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -281,7 +244,7 @@ function BookingsWidget({ allJobs, isMobile, onDateClick }: {
 type AnalyticsMetric = 'revenue' | 'jobs' | 'outstanding'
 type AnalyticsRange  = 'This Year' | 'Last Year' | 'Last 6 Months' | 'Last 3 Months'
 
-function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: any[] }) {
+function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; allInvoices: any[]; isMobile: boolean }) {
   const [metric,  setMetric]  = useState<AnalyticsMetric>('revenue')
   const [range,   setRange]   = useState<AnalyticsRange>('This Year')
   const [hovered, setHovered] = useState<number | null>(null)
@@ -348,18 +311,18 @@ function AnalyticsCard({ allJobs, allInvoices }: { allJobs: any[]; allInvoices: 
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '170px minmax(0,1fr)' }}>
+      <div style={{ display: isMobile ? 'flex' : 'grid', flexDirection: isMobile ? 'column' : undefined, gridTemplateColumns: isMobile ? undefined : '170px minmax(0,1fr)' }}>
         {/* Left stats panel */}
-        <div style={{ borderRight: `1px solid ${BORDER}`, padding: '20px 18px' }}>
+        <div style={{ borderRight: isMobile ? 'none' : `1px solid ${BORDER}`, borderBottom: isMobile ? `1px solid ${BORDER}` : 'none', padding: isMobile ? '16px 20px' : '20px 18px', display: isMobile ? 'grid' : 'block', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : undefined, gap: isMobile ? '0' : undefined }}>
           {[
             { label: 'Period total', value: fmt(periodTotal), color: TEAL_DARK },
             { label: 'Monthly avg',  value: fmt(avg),         color: TEXT },
             { label: 'Best month',   value: fmt(peak.total),  color: TEXT, sub: peak.label },
           ].map((item, i) => (
-            <div key={i}>
-              {i > 0 && <div style={{ height: 1, background: BORDER, margin: '16px 0' }} />}
+            <div key={i} style={isMobile ? { padding: '0 12px', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none' } : {}}>
+              {!isMobile && i > 0 && <div style={{ height: 1, background: BORDER, margin: '16px 0' }} />}
               <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
-              <div style={{ fontSize: '22px', fontWeight: 900, color: item.color, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{item.value}</div>
+              <div style={{ fontSize: isMobile ? '16px' : '22px', fontWeight: 900, color: item.color, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{item.value}</div>
               {item.sub && <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 600, marginTop: '5px' }}>{item.sub}</div>}
             </div>
           ))}
@@ -553,14 +516,21 @@ export default function DashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '0', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px' }}>
 
           {/* ── Header ── */}
-          <div style={{ padding: isMobile ? '16px 14px 12px' : '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: WHITE, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
-            <div>
-              <h1 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
-                {getGreeting()}{userName ? `, ${userName}` : ''}
-              </h1>
-              <p style={{ fontSize: '12px', color: TEXT3, fontWeight: 500, margin: '5px 0 0' }}>
-                Here's what's happening across your business.
-              </p>
+          <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
+              <div style={{ width: isMobile ? 42 : 48, height: isMobile ? 42 : 48, borderRadius: '13px', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(31,158,148,0.35)' }}>
+                <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  {userName ? userName[0].toUpperCase() : '?'}
+                </span>
+              </div>
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
+                  {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </div>
+                <h1 style={{ fontSize: isMobile ? '19px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
+                  {getGreeting()}{userName ? `, ${userName}` : ''}
+                </h1>
+              </div>
             </div>
             {!isMobile && (
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
@@ -569,22 +539,25 @@ export default function DashboardPage() {
                 <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><IconDownload size={12} /> Revenue</button>
               </div>
             )}
+            {isMobile && (
+              <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnDark, flexShrink: 0 }}><IconPlus size={12} /> Add Job</button>
+            )}
           </div>
 
           {/* ── Row 1: Stat chips ── */}
-          <div style={{ background: WHITE, borderTop: `2px solid ${TEAL}`, borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            {statChips.map((chip, i) => (
+          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '10px' }}>
+            {statChips.map((chip) => (
               <div
                 key={chip.label}
                 onClick={chip.onClick}
-                style={{ padding: isMobile ? '10px 8px' : '14px 20px', cursor: 'pointer', textAlign: isMobile ? 'center' : 'left', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
-                onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
+                style={{ padding: isMobile ? '12px 14px' : '13px 18px', cursor: 'pointer', background: WHITE, borderRadius: '13px', border: `1px solid ${chip.danger ? '#FCA5A5' : BORDER}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s, border-color 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#F87171' : TEAL }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLDivElement).style.borderColor = chip.danger ? '#FCA5A5' : BORDER }}
               >
                 <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: chip.danger ? '#991B1B' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {chip.value}
                 </div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '4px' }}>
+                <div style={{ fontSize: isMobile ? '10px' : '11px', fontWeight: 600, color: chip.danger ? '#DC2626' : TEXT3, marginTop: '5px' }}>
                   {chip.label}
                 </div>
               </div>
@@ -720,39 +693,57 @@ export default function DashboardPage() {
 
               {/* Unpaid Invoices */}
               <div style={card}>
-                <div style={{ padding: '13px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                  <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '26px', padding: '0 8px', background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '7px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: TEXT2, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    All <IconArrow size={10} />
-                  </button>
-                </div>
-                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#991B1B' : TEXT, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>${invoiceStats.outstanding.toLocaleString('en-AU')}</span>
-                  <span style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginLeft: '8px' }}>· {invoiceStats.overdueCount} overdue</span>
+                <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEAL_DARK }}>
+                        <IconInvoice size={13} />
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
+                    </div>
+                    <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '28px', padding: '0 10px', background: TEAL, border: 'none', borderRadius: '8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: WHITE, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      View all <IconArrow size={9} />
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '28px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#DC2626' : TEAL_DARK, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                      ${invoiceStats.outstanding.toLocaleString('en-AU')}
+                    </span>
+                    {invoiceStats.overdueCount > 0 && (
+                      <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px', background: '#FEE2E2', color: '#991B1B' }}>
+                        {invoiceStats.overdueCount} overdue
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {invoiceStats.allInvoices.length === 0 ? (
-                  <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '8px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px', color: TEAL_DARK }}>
-                      <IconInvoice size={14} />
+                  <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', color: TEAL_DARK }}>
+                      <IconInvoice size={16} />
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3 }}>All invoices paid</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>All clear</div>
+                    <div style={{ fontSize: '11px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>No outstanding invoices</div>
                   </div>
                 ) : invoiceStats.allInvoices.map((inv, i) => {
                   const name      = `${inv.customers?.first_name || ''} ${inv.customers?.last_name || ''}`.trim() || 'Customer'
                   const isOverdue = inv.status === 'overdue'
                   const amt       = Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0))
                   return (
-                    <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                      <div style={{ width: 28, height: 28, borderRadius: '8px', background: isOverdue ? '#FEF2F2' : '#F8FAFC', border: `1px solid ${isOverdue ? '#FECACA' : BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOverdue ? '#B91C1C' : TEXT3 }}>
-                        <IconInvoice size={12} />
+                    <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')}
+                      style={{ display: 'grid', gridTemplateColumns: '3px 1fr auto', cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.12s', overflow: 'hidden' }}
+                      onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
+                      onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
+                    >
+                      <div style={{ background: isOverdue ? '#EF4444' : '#F59E0B', flexShrink: 0 }} />
+                      <div style={{ padding: '10px 12px', minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', fontWeight: 500 }}>
+                          {parseDateLocal(inv.created_at)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) || ''}
+                        </div>
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                        <div style={{ fontSize: '10px', color: TEXT3 }}>{parseDateLocal(inv.created_at)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) || ''}</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT, fontVariantNumeric: 'tabular-nums' }}>${amt.toLocaleString('en-AU')}</div>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E' }}>
+                      <div style={{ padding: '10px 14px 10px 0', textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT, fontVariantNumeric: 'tabular-nums' }}>${amt.toLocaleString('en-AU')}</div>
+                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E', textAlign: 'center' }}>
                           {isOverdue ? 'Overdue' : 'Sent'}
                         </span>
                       </div>
@@ -806,7 +797,7 @@ export default function DashboardPage() {
 
           {/* ── Analytics (full width, bottom) ── */}
           <div style={{ padding: isMobile ? '16px 14px 0' : '16px 24px 0' }}>
-            <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} />
+            <AnalyticsCard allJobs={allJobs} allInvoices={allInvoices} isMobile={isMobile} />
           </div>
 
         </div>
