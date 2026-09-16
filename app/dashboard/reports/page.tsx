@@ -624,12 +624,12 @@ export default function ReportsPage() {
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: TEXT2,
-    background: WHITE,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -637,51 +637,23 @@ export default function ReportsPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
-  const btnTeal: React.CSSProperties = {
+  const btnPrimary: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: TEAL,
+    color: WHITE,
     border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
-    color: WHITE,
-    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: '7px',
+    gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
-  }
-
-  const btnMobileSm: React.CSSProperties = {
-    height: '36px',
-    padding: '0 12px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-    flex: 1,
-  }
-
-  const btnMobileTeal: React.CSSProperties = {
-    ...btnMobileSm,
-    background: TEAL,
-    border: `1px solid ${TEAL}`,
-    color: WHITE,
   }
 
   const statChips = [
@@ -882,9 +854,32 @@ export default function ReportsPage() {
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => window.print()} style={btnOutline}>
+              <IconPrint size={14} />
+              Print
+            </button>
+            <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}>
+              View invoices
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '0' : '20px 24px',
+            padding: isMobile ? '12px' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -892,108 +887,27 @@ export default function ReportsPage() {
             background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
-                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
+          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            {statChips.map((chip, i) => (
+              <div
+                key={chip.label}
+                onClick={chip.onClick}
+                style={{
+                  padding: isMobile ? '10px 8px' : '14px 20px',
+                  cursor: 'pointer',
+                  textAlign: isMobile ? 'center' : undefined,
+                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  transition: 'background 0.12s',
+                  minWidth: 0,
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                <div style={{ fontSize: isMobile ? '17px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: 1.2 }}>{chip.label}</div>
               </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => window.print()} style={btnMobileSm}>
-                  <IconPrint size={13} />
-                  Print
-                </button>
-                <button onClick={() => router.push('/dashboard/invoices')} style={btnMobileTeal}>
-                  View Invoices
-                </button>
-              </div>
-
-              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                      minWidth: 0,
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
-                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{todayStr}</div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Reports</h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => window.print()}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconPrint size={14} />
-                    Print Report
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard/invoices')}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    View Invoices
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `2px solid ${TEAL}`, borderRadius: '12px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                      minWidth: 0,
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
