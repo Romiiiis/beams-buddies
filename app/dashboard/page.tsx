@@ -522,7 +522,7 @@ export default function DashboardPage() {
           <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
               {logoUrl ? (
-                <img src={logoUrl} alt="Business logo" style={{ width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, objectFit: 'contain', flexShrink: 0 }} />
+                <img src={logoUrl} alt="Business logo" style={{ width: isMobile ? 72 : 84, height: isMobile ? 72 : 84, objectFit: 'contain', flexShrink: 0 }} />
               ) : (
                 <div style={{ width: isMobile ? 42 : 48, height: isMobile ? 42 : 48, borderRadius: '13px', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.02em', lineHeight: 1 }}>
