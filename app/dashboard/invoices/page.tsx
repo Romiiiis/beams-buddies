@@ -438,9 +438,9 @@ export default function InvoicesPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -456,35 +456,29 @@ export default function InvoicesPage() {
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: '6px',
-    whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: TEAL,
+    color: WHITE,
     border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
-    color: WHITE,
-    background: TEAL,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: '7px',
-    whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
+    gap: '6px',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
     padding: '0 12px',
-    border: `1px solid ${BORDER}`,
+    border: '1px solid #E8EDF2',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -496,6 +490,7 @@ export default function InvoicesPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
+    whiteSpace: 'nowrap',
     flex: 1,
   }
 
@@ -530,164 +525,85 @@ export default function InvoicesPage() {
   const countByStatus = (status: string) => status === 'all' ? invoices.length : invoices.filter(i => i.status === status).length
 
   return (
-    <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
+    <div style={{ display: 'flex', background: BG, minHeight: '100vh', fontFamily: FONT }}>
       <Sidebar active="/dashboard/invoices" />
 
-      <div style={{ flex: 1, minWidth: 0, background: BG }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div
           style={{
-            padding: isMobile ? '0' : '20px 24px',
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Invoices
+          </h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => router.push('/dashboard/revenue')}
+              style={btnOutline}
+            >
+              <IconRevenue size={14} /> View revenue
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              style={btnTeal}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            >
+              <IconPlus size={13} /> New invoice
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '12px 14px' : '16px 24px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
-            background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: TEXT3,
-                    letterSpacing: '0.07em',
-                    textTransform: 'uppercase',
-                    marginBottom: '5px',
-                  }}
-                >
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
-                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                  Invoices
-                </h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => setShowForm(true)} style={btnMobileTeal}>
-                  <IconPlus size={12} /> New invoice
-                </button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={btnMobileSm}>
-                  <IconRevenue size={12} /> Revenue
-                </button>
-              </div>
-
+          <div
+            style={{
+              background: WHITE,
+              border: `1px solid ${BORDER}`,
+              borderRadius: '14px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              overflow: 'hidden',
+            }}
+          >
+            {statChips.map((chip, i) => (
               <div
+                key={chip.label}
+                onClick={chip.onClick}
                 style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  padding: isMobile ? '11px 10px' : '14px 20px',
+                  cursor: 'pointer',
+                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  transition: 'background 0.12s',
                 }}
+                onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
+                onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
               >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
+                <div style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{chip.value}</div>
+                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {todayStr}
-                  </div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
-                    Invoices
-                  </h1>
-                </div>
+            ))}
+          </div>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/revenue')}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    <IconRevenue size={14} /> View revenue
-                  </button>
-
-                  <button
-                    onClick={() => setShowForm(true)}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconPlus size={14} /> New invoice
-                  </button>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div style={{ padding: isMobile ? '0 12px' : 0 }}>
+          <div>
             <div style={card}>
               <div
                 style={{

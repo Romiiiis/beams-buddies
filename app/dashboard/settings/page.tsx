@@ -523,54 +523,48 @@ export default function SettingsPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const btnTeal: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: TEAL,
+    color: WHITE,
     border: 'none',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
-    color: WHITE,
-    background: TEAL,
     cursor: saving || uploadingLogo ? 'not-allowed' : 'pointer',
+    opacity: saving || uploadingLogo ? 0.7 : 1,
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: '7px',
-    whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
-    opacity: saving || uploadingLogo ? 0.7 : 1,
+    gap: '6px',
   }
 
   const btnOutline: React.CSSProperties = {
     height: '34px',
     padding: '0 14px',
+    background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
     color: TEXT2,
-    background: WHITE,
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: '6px',
-    whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
     padding: '0 12px',
-    border: `1px solid ${BORDER}`,
+    border: '1px solid #E8EDF2',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -582,6 +576,7 @@ export default function SettingsPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
+    whiteSpace: 'nowrap',
     flex: 1,
   }
 
@@ -658,9 +653,44 @@ export default function SettingsPage() {
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
         <div
           style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Settings
+          </h1>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {saved && (
+              <span style={{ height: '34px', padding: '0 12px', borderRadius: '9px', background: TEAL_LIGHT, border: '1px solid #BFE7E3', color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 800 }}>
+                Saved
+              </span>
+            )}
+            <button
+              form="settings-form"
+              type="submit"
+              disabled={saving || uploadingLogo}
+              style={btnTeal}
+              onMouseEnter={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82' }}
+              onMouseLeave={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1' }}
+            >
+              <IconSpark size={12} />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
             flex: 1,
             overflowY: 'auto',
-            padding: isMobile ? '0' : '20px 24px',
+            padding: isMobile ? '12px 14px' : '16px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -668,95 +698,8 @@ export default function SettingsPage() {
             background: BG,
           }}
         >
-          {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
-                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                {saved && (
-                  <span
-                    style={{
-                      height: '36px',
-                      padding: '0 12px',
-                      borderRadius: '9px',
-                      background: TEAL_LIGHT,
-                      border: '1px solid #BFE7E3',
-                      color: TEAL_DARK,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                    }}
-                  >
-                    Saved
-                  </span>
-                )}
-
-                <button form="settings-form" type="submit" disabled={saving || uploadingLogo} style={btnMobileTeal}>
-                  <IconSpark size={12} />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                    {todayStr}
-                  </div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>Settings</h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  {saved && (
-                    <span
-                      style={{
-                        height: '34px',
-                        padding: '0 12px',
-                        borderRadius: '9px',
-                        background: TEAL_LIGHT,
-                        border: '1px solid #BFE7E3',
-                        color: TEAL_DARK,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                      }}
-                    >
-                      Saved
-                    </span>
-                  )}
-
-                  <button
-                    form="settings-form"
-                    type="submit"
-                    disabled={saving || uploadingLogo}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconSpark size={12} />
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          )}
-
           {saveError && (
             <div style={{
-              margin: isMobile ? '0 12px' : undefined,
               padding: '14px 16px',
               background: '#FEF2F2',
               border: '1px solid #FECACA',
@@ -770,7 +713,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '16px', margin: isMobile ? '0 12px' : undefined }}>
+          <form id="settings-form" onSubmit={handleSave} style={{ display: 'grid', gap: '16px' }}>
             <div id="profile-section" style={card}>
               <SectionHeader
                 title="Your Profile"
