@@ -27,10 +27,28 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Guaranteed breathing room under the last section of every page and drawer.
-   Bottom padding alone is dropped by some browsers (notably iOS Safari) when a
+/* One bottom-spacing rule for every dashboard page, so the gap under the last
+   section is identical everywhere. On phones the fixed bottom tab bar is
+   78px + the home-indicator inset tall, so content must clear that plus a 24px gap. */
+.page-content {
+  padding-bottom: 48px !important;
+}
+
+@media (max-width: 767px) {
+  .page-content {
+    padding-bottom: calc(78px + 24px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Slide-out drawers sit above the tab bar, so they only need to clear the home indicator */
+.drawer-content {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Bottom padding alone is dropped by some browsers (notably iOS Safari) when a
    flex/grid container scrolls, so a spacer element is added as the last item. */
-.page-content::after {
+.page-content::after,
+.drawer-content::after {
   content: '';
   display: block;
   flex: none;

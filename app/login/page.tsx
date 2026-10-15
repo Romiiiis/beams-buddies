@@ -38,16 +38,29 @@ export default function LoginPage() {
 
   return (
     <div
+      className="login-page"
       style={{
-        minHeight: '100vh',
         background: BG,
         fontFamily: FONT,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '24px',
       }}
     >
+      {/* Sizing lives in CSS so phones get the right layout on the first paint.
+          100svh is the visible screen height on iOS (100vh is taller than the screen there). */}
+      <style>{`
+        .login-page {
+          min-height: 100vh;
+          min-height: 100svh;
+          padding: calc(env(safe-area-inset-top) + 24px) 24px calc(env(safe-area-inset-bottom) + 24px);
+        }
+        .login-card { padding: 36px; }
+        @media (max-width: 767px) {
+          .login-page { padding-left: 16px; padding-right: 16px; }
+          .login-card { padding: 24px 20px; }
+        }
+      `}</style>
       <div
         style={{
           width: '100%',
@@ -68,11 +81,11 @@ export default function LoginPage() {
 
         {/* Card */}
         <div
+          className="login-card"
           style={{
             background: WHITE,
             border: `1px solid ${BORDER}`,
             borderRadius: '20px',
-            padding: '36px',
             boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
             boxSizing: 'border-box',
           }}
@@ -107,12 +120,12 @@ export default function LoginPage() {
                 required
                 style={{
                   width: '100%',
-                  height: '44px',
+                  height: '46px',
                   padding: '0 14px',
                   borderRadius: '10px',
                   border: `1.5px solid ${BORDER}`,
                   background: WHITE,
-                  fontSize: '14px',
+                  fontSize: '16px',
                   outline: 'none',
                   color: TEXT,
                   fontFamily: FONT,
@@ -136,12 +149,12 @@ export default function LoginPage() {
                 required
                 style={{
                   width: '100%',
-                  height: '44px',
+                  height: '46px',
                   padding: '0 14px',
                   borderRadius: '10px',
                   border: `1.5px solid ${BORDER}`,
                   background: WHITE,
-                  fontSize: '14px',
+                  fontSize: '16px',
                   outline: 'none',
                   color: TEXT,
                   fontFamily: FONT,

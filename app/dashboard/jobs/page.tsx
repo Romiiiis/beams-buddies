@@ -7,7 +7,6 @@ import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
-import { AppIcon } from '@/components/AppIcon'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -62,50 +61,6 @@ function useIsMobile() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return isMobile
-}
-
-function IconPlus({ size = 16 }: { size?: number }) {
-  return <AppIcon name="add" size={size} />
-}
-
-function IconSpark({ size = 16 }: { size?: number }) {
-  return <AppIcon name="sparkle" size={size} />
-}
-
-function IconSearch({ size = 15 }: { size?: number }) {
-  return <AppIcon name="search" size={size} />
-}
-
-function IconCalendar({ size = 15 }: { size?: number }) {
-  return <AppIcon name="calendar" size={size} />
-}
-
-function IconFilter({ size = 15 }: { size?: number }) {
-  return <AppIcon name="filter" size={size} />
-}
-
-function IconArrow({ size = 14 }: { size?: number }) {
-  return <AppIcon name="arrow-right" size={size} />
-}
-
-function IconClose({ size = 18 }: { size?: number }) {
-  return <AppIcon name="close" size={size} />
-}
-
-function IconPhone({ size = 15 }: { size?: number }) {
-  return <AppIcon name="call" size={size} />
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return <AppIcon name="external-link" size={size} />
-}
-
-function IconEdit({ size = 15 }: { size?: number }) {
-  return <AppIcon name="edit" size={size} />
-}
-
-function IconSave({ size = 15 }: { size?: number }) {
-  return <AppIcon name="tick" size={size} />
 }
 
 function pctChange(current: number, previous: number) {
@@ -281,14 +236,14 @@ function JobDrawer({
                 onClick={() => setShowContact(true)}
                 style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
               >
-                <IconPhone size={13} />
                 Contact
               </button>
               <button
                 onClick={onClose}
-                style={{ width: '34px', height: '34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                aria-label="Close"
+                style={{ width: '34px', height: '34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', lineHeight: 1, fontFamily: FONT }}
               >
-                <IconClose size={16} />
+                ×
               </button>
             </div>
           </div>
@@ -308,7 +263,6 @@ function JobDrawer({
                 gap: '5px',
               }}
             >
-              <IconCalendar size={12} />
               {serviceLabel}
             </span>
 
@@ -330,7 +284,7 @@ function JobDrawer({
           </div>
         </div>
 
-        <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
+        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
           <div style={fieldBox}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
@@ -528,7 +482,7 @@ function JobDrawer({
                   gap: '8px',
                 }}
               >
-                <IconEdit size={15} /> Edit job
+                Edit job
               </button>
 
               <button
@@ -549,7 +503,7 @@ function JobDrawer({
                   gap: '8px',
                 }}
               >
-                <IconPlus size={15} /> Add another job
+                Add another job
               </button>
 
               {customer?.phone && (
@@ -570,7 +524,7 @@ function JobDrawer({
                     textDecoration: 'none',
                   }}
                 >
-                  <IconPhone size={15} /> Call {customer.first_name}
+                  Call {customer.first_name}
                 </a>
               )}
             </>
@@ -596,7 +550,7 @@ function JobDrawer({
                   opacity: saving ? 0.7 : 1,
                 }}
               >
-                <IconSave size={15} /> {saving ? 'Saving...' : 'Save changes'}
+                {saving ? 'Saving...' : 'Save changes'}
               </button>
 
               <button
@@ -904,7 +858,7 @@ export default function JobsPage() {
             onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
           >
-            <IconPlus size={12} /> Add job
+            Add job
           </button>
         </div>
 
@@ -1006,18 +960,6 @@ export default function JobsPage() {
                       maxWidth: '100%',
                     }}
                   >
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: TEXT3,
-                        display: 'inline-flex',
-                      }}
-                    >
-                      <IconSearch size={14} />
-                    </span>
                     <input
                       value={search}
                       onChange={e => setSearch(e.target.value)}
@@ -1027,7 +969,7 @@ export default function JobsPage() {
                         width: '100%',
                         borderRadius: '12px',
                         border: `1px solid ${BORDER}`,
-                        padding: '0 12px 0 38px',
+                        padding: '0 12px',
                         fontSize: '12px',
                         background: '#F8FAFC',
                         color: TEXT,
@@ -1070,7 +1012,7 @@ export default function JobsPage() {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px 28px',
+                    gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px',
                     gap: '14px',
                     alignItems: 'center',
                     padding: '11px 20px',
@@ -1112,7 +1054,7 @@ export default function JobsPage() {
                       onClick={() => setSelectedJob(job)}
                       style={{
                         display: isMobile ? 'block' : 'grid',
-                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px 28px',
+                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px',
                         gap: isMobile ? undefined : '14px',
                         alignItems: isMobile ? undefined : 'center',
                         margin: isMobile ? '6px 12px' : '10px 12px',
@@ -1132,23 +1074,6 @@ export default function JobsPage() {
                     >
                       {isMobile ? (
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                          <div
-                            style={{
-                              width: 42,
-                              height: 42,
-                              borderRadius: '12px',
-                              background: WHITE,
-                              border: `1px solid ${BORDER}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              color: TEXT2,
-                            }}
-                          >
-                            <IconCalendar size={22} />
-                          </div>
-
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
                               <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1192,10 +1117,6 @@ export default function JobsPage() {
                                 {meta.next ? `Next: ${meta.next}` : 'No service date'}
                               </span>
                             </div>
-                          </div>
-
-                          <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}>
-                            <IconArrow size={12} />
                           </div>
                         </div>
                       ) : (
@@ -1248,10 +1169,6 @@ export default function JobsPage() {
                             >
                               {meta.serviceLabel}
                             </span>
-                          </div>
-
-                          <div style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <IconArrow size={12} />
                           </div>
                         </>
                       )}

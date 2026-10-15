@@ -301,7 +301,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           </div>
         </div>
 
-        <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
+        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
           <div
             style={{
               background: WHITE,
