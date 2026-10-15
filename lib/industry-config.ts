@@ -459,3 +459,54 @@ export const INDUSTRIES: IndustryConfig[] = [
 export function getIndustry(id: string | null | undefined): IndustryConfig {
   return INDUSTRIES.find(i => i.id === id) ?? INDUSTRIES[0]
 }
+
+const LINE_ITEM_PLACEHOLDER: Record<IndustryId, string> = {
+  hvac: 'e.g. Split system install',
+  plumbing: 'e.g. Hot water unit installation',
+  electrical: 'e.g. Switchboard upgrade',
+  solar: 'e.g. 6.6kW solar system installation',
+  gas_fitting: 'e.g. Gas hot water installation',
+  refrigeration: 'e.g. Cool room installation',
+  med_spa: 'e.g. Laser treatment session',
+  painting: 'e.g. Interior room painting',
+  carpentry: 'e.g. Timber deck installation',
+  tiling: 'e.g. Bathroom floor tiling',
+  roofing: 'e.g. Metal roof installation',
+  landscaping: 'e.g. Turf supply and lay',
+  cleaning: 'e.g. End of lease clean',
+  pest_control: 'e.g. General pest treatment',
+  security: 'e.g. Alarm system installation',
+  concreting: 'e.g. Exposed aggregate driveway',
+  fencing: 'e.g. Colorbond fence installation',
+  glazing: 'e.g. Shower screen installation',
+  general_trade: 'e.g. General repair / maintenance',
+}
+
+export function getLineItemPlaceholder(id: string | null | undefined): string {
+  return LINE_ITEM_PLACEHOLDER[id as IndustryId] ?? 'e.g. Service or item description'
+}
+
+const CAPACITY_UNIT: Partial<Record<IndustryId, string>> = {
+  hvac: 'kW',
+  plumbing: 'L',
+  electrical: 'A',
+  solar: 'kW',
+  gas_fitting: 'MJ/h',
+  refrigeration: 'L',
+}
+
+export function formatCapacity(value: string | number | null | undefined, industryId: string | null | undefined): string {
+  if (value === null || value === undefined || value === '') return ''
+  const unit = CAPACITY_UNIT[getIndustry(industryId).id]
+  return unit ? `${value} ${unit}` : String(value)
+}
+
+// Looks across every industry so jobs saved under a previous industry still show a readable label
+export function getEquipmentLabel(value: string | null | undefined): string {
+  if (!value) return ''
+  for (const industry of INDUSTRIES) {
+    const match = industry.equipmentTypes.find(t => t.value === value)
+    if (match) return match.label
+  }
+  return value
+}

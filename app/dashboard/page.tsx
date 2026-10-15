@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { useBusiness } from '@/lib/useBusiness'
+import { getEquipmentLabel } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL       = '#1F9E94'
-const TEAL_DARK  = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL       = '#2AA198'
+const TEAL_DARK  = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const TEXT       = '#0B1220'
 const TEXT2      = '#1F2937'
 const TEXT3      = '#64748B'
@@ -63,46 +65,43 @@ function useIsMobile() {
 // ── Icons ──────────────────────────────────────────────────────────────────
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 function IconCalendar({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
-}
-function IconDownload({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="calendar" size={size} />
 }
 function IconArrow({ size = 11 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="arrow-right" size={size} />
 }
 function IconChevronLeft({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="chevron-left" size={size} />
 }
 function IconChevronRight({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="chevron-right" size={size} />
 }
 function IconTrendUp({ size = 11 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="trend-up" size={size} />
 }
 function IconTrendDown({ size = 11 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="trend-down" size={size} />
 }
 function IconInvoice({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+  return <AppIcon name="invoice" size={size} />
 }
 function IconUsers({ size = 15 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.9"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+  return <AppIcon name="customers" size={size} />
 }
 function IconBarChart({ size = 14 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+  return <AppIcon name="stats" size={size} />
 }
 function IconClipboard({ size = 15 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.9"/><path d="M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/></svg>
+  return <AppIcon name="clipboard" size={size} />
 }
 function IconClock({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  return <AppIcon name="clock" size={size} />
 }
 function IconAlertCircle({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9"/><path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+  return <AppIcon name="warning" size={size} />
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -135,7 +134,7 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
           {jobs.map(job => {
             const name     = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
             const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
-            const jobLabel = (job.job_type || job.equipment_type || 'Service').replace(/_/g, ' ')
+            const jobLabel = job.job_type ? job.job_type.replace(/_/g, ' ') : getEquipmentLabel(job.equipment_type) || 'Job'
             return (
               <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
                 <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, color: TEAL_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
@@ -298,8 +297,8 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: 30, height: 30, borderRadius: '8px', background: TEAL_LIGHT, color: TEAL_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconBarChart size={14} />
+          <div style={{ width: 30, height: 30, borderRadius: '8px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconBarChart size={17} />
           </div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1 }}>Analytics</div>
@@ -398,7 +397,8 @@ export default function DashboardPage() {
       if (!session) { router.push('/login'); return }
 
       const { data: userData } = await supabase.from('users').select('business_id, full_name').eq('id', session.user.id).single()
-      if (!userData) { setLoading(false); return }
+      // First sign-in: Settings creates the business record, so send new logins there.
+      if (!userData) { router.push('/dashboard/settings'); return }
 
       const bid     = userData.business_id
       const rawName = (userData as any).full_name || session.user.email?.split('@')[0] || ''
@@ -522,7 +522,7 @@ export default function DashboardPage() {
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '0', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px' }}>
+        <div className="page-content" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '0', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px' }}>
 
           {/* ── Header ── */}
           <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
@@ -549,7 +549,7 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconPlus size={12} /> Add Job</button>
                 <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconCalendar size={12} /> Schedule</button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><IconDownload size={12} /> Revenue</button>
+                <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><AppIcon name="dollar" size={12} /> Revenue</button>
               </div>
             )}
             {isMobile && (
@@ -624,12 +624,11 @@ export default function DashboardPage() {
               {/* Today's Schedule */}
               <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: TEAL, color: WHITE, padding: '4px 10px 4px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.03em' }}>
-                      <span style={{ width: 7, height: 7, background: 'rgba(255,255,255,0.8)', borderRadius: '50%', animation: 'pulse 2s ease-in-out infinite' }} />
-                      TODAY
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Today&apos;s schedule</div>
+                    <div style={{ fontSize: '11px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>
+                      {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>Schedule</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayJobs.length} job{todayJobs.length !== 1 ? 's' : ''}</span>
@@ -639,12 +638,10 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }`}</style>
-
                 {todayJobs.length === 0 ? (
                   <div style={{ padding: '28px', textAlign: 'center' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: TEAL_DARK }}>
-                      <IconClipboard size={18} />
+                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: TEXT2 }}>
+                      <IconClipboard size={22} />
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>No jobs scheduled today</div>
                     <button onClick={() => router.push('/dashboard/jobs')} style={{ marginTop: '8px', color: TEAL, fontWeight: 700, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: '11px' }}>
@@ -653,7 +650,7 @@ export default function DashboardPage() {
                   </div>
                 ) : todayJobs.map((job, i) => {
                   const name     = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                  const jobLabel = (job.job_type || job.equipment_type || 'Service').replace(/_/g, ' ')
+                  const jobLabel = job.job_type ? job.job_type.replace(/_/g, ' ') : getEquipmentLabel(job.equipment_type) || 'Job'
                   const timeStr  = job.start_time || job.time || null
                   const isFirst  = i === 0
                   const isLast   = i === todayJobs.length - 1
@@ -662,7 +659,7 @@ export default function DashboardPage() {
                       key={job.id}
                       onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
                       style={{ display: 'grid', gridTemplateColumns: timeStr ? '64px 18px 1fr auto' : '18px 1fr auto', alignItems: 'stretch', padding: '0 18px', cursor: 'pointer', minHeight: '64px', borderBottom: isLast ? 'none' : `1px solid ${BORDER}`, transition: 'background 0.1s' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
                       {timeStr && (
@@ -736,8 +733,8 @@ export default function DashboardPage() {
                 </div>
                 {invoiceStats.allInvoices.length === 0 ? (
                   <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', color: TEAL_DARK }}>
-                      <IconInvoice size={16} />
+                    <div style={{ width: 36, height: 36, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', color: TEXT2 }}>
+                      <IconInvoice size={20} />
                     </div>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>All clear</div>
                     <div style={{ fontSize: '11px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>No outstanding invoices</div>
@@ -785,19 +782,19 @@ export default function DashboardPage() {
                 <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
               </div>
               {([
-                { label: 'New Job',       sub: 'Create a new job for a customer',  icon: <IconPlus size={16} />,     onClick: () => router.push('/dashboard/jobs/add') },
-                { label: 'New Invoice',   sub: 'Create and send an invoice',       icon: <IconInvoice size={16} />,  onClick: () => router.push('/dashboard/invoices') },
-                { label: 'Add Customer',  sub: 'Register a new customer',          icon: <IconUsers size={16} />,    onClick: () => router.push('/dashboard/customers') },
-                { label: 'View Schedule', sub: 'Open the full job calendar',       icon: <IconCalendar size={16} />, onClick: () => router.push('/dashboard/schedule') },
+                { label: 'New Job',       sub: 'Create a new job for a customer',  icon: <IconPlus size={20} />,     onClick: () => router.push('/dashboard/jobs/add') },
+                { label: 'New Invoice',   sub: 'Create and send an invoice',       icon: <IconInvoice size={20} />,  onClick: () => router.push('/dashboard/invoices') },
+                { label: 'Add Customer',  sub: 'Register a new customer',          icon: <IconUsers size={20} />,    onClick: () => router.push('/dashboard/customers') },
+                { label: 'View Schedule', sub: 'Open the full job calendar',       icon: <IconCalendar size={20} />, onClick: () => router.push('/dashboard/schedule') },
               ] as { label: string; sub: string; icon: React.ReactNode; onClick: () => void }[]).map((action, i, arr) => (
                 <div
                   key={action.label}
                   onClick={action.onClick}
                   style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', transition: 'background 0.12s' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
+                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = '#F8FAFC')}
                   onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, color: TEAL_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxSizing: 'border-box' }}>
                     {action.icon}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>

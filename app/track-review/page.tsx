@@ -4,9 +4,9 @@ import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const TEXT3 = '#5A5A5A'
-const BORDER = '#EBEBEB'
-const BG = '#FAFAF8'
+const TEXT3 = '#64748B'
+const BORDER = '#E8EDF2'
+const BG = '#FAFAFA'
 
 function CenterState({ text }: { text: string }) {
   return (

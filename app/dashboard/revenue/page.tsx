@@ -4,10 +4,11 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
@@ -79,39 +80,6 @@ function useIsMobile() {
   }, [])
 
   return isMobile
-}
-
-function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
 }
 
 function pctChange(current: number, previous: number) {
@@ -669,13 +637,13 @@ export default function RevenuePage() {
               View customers
             </button>
             <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}>
-              <IconSpark size={14} />
+              <AppIcon name="invoice" size={14} />
               View invoices
             </button>
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -683,7 +651,7 @@ export default function RevenuePage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >

@@ -4,10 +4,13 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { useBusinessData } from '@/lib/business-context'
+import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
@@ -94,46 +97,15 @@ function useIsMobile() {
 }
 
 function IconMail({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="mail" size={size} />
 }
 
 function IconSms({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconSpark({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sms" size={size} />
 }
 
 function IconArrow({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-right" size={size} />
 }
 
 function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
@@ -165,6 +137,7 @@ function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
 export default function SchedulePage() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { business } = useBusinessData()
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -314,7 +287,7 @@ export default function SchedulePage() {
     height: '36px',
     padding: '0 14px',
     border: 'none',
-    borderBottom: '2px solid #1F9E94',
+    borderBottom: '2px solid #2AA198',
     borderRadius: 0,
     fontSize: '12px',
     fontWeight: 800,
@@ -357,7 +330,7 @@ export default function SchedulePage() {
 
   const statChips = [
     {
-      label: 'Scheduled Units',
+      label: 'Scheduled Jobs',
       value: counts.all,
       sub: 'With service tracking',
       onClick: () => setFilter('all'),
@@ -417,7 +390,7 @@ export default function SchedulePage() {
               onClick={() => router.push('/dashboard/customers')}
               style={{ height: '34px', padding: '0 14px', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <IconArrow size={13} /> Customers
+              <AppIcon name="customers" size={13} /> Customers
             </button>
             <button
               onClick={() => {}}
@@ -425,12 +398,12 @@ export default function SchedulePage() {
               onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
               onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
             >
-              <IconSpark size={13} /> Send reminders
+              <AppIcon name="bell" size={13} /> Send reminders
             </button>
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -438,7 +411,7 @@ export default function SchedulePage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -539,7 +512,7 @@ export default function SchedulePage() {
                             {job.customers?.first_name} {job.customers?.last_name}
                           </div>
                           <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.brand} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} · {job.customers?.suburb || '—'}
+                            {job.brand} {formatCapacity(job.capacity_kw, business?.industry)} · {job.customers?.suburb || '—'}
                           </div>
                         </div>
 
@@ -651,7 +624,7 @@ export default function SchedulePage() {
                   >
                     <div />
                     <div style={{ ...TYPE.label, paddingRight: '12px' }}>Customer</div>
-                    <div style={TYPE.label}>Unit</div>
+                    <div style={TYPE.label}>Job</div>
                     <div style={TYPE.label}>Service timing</div>
                     <div style={{ ...TYPE.label, textAlign: 'right' as const }}>Actions</div>
                   </div>
@@ -696,12 +669,12 @@ export default function SchedulePage() {
 
                                 <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                                   <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Unit</div>
+                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Job</div>
                                     <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>
-                                      {job.brand || '—'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                                      {job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}
                                     </div>
                                     <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                                      {job.equipment_type ? String(job.equipment_type).replace('_', ' ') : '—'}
+                                      {job.equipment_type ? getEquipmentLabel(job.equipment_type) : '—'}
                                     </div>
                                   </div>
 
@@ -800,10 +773,10 @@ export default function SchedulePage() {
 
                           <div style={{ padding: '0 12px 0 0', minWidth: 0 }}>
                             <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.brand || '—'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                              {job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}
                             </div>
                             <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.equipment_type ? String(job.equipment_type).replace('_', ' ') : 'No type set'}
+                              {job.equipment_type ? getEquipmentLabel(job.equipment_type) : 'No type set'}
                             </div>
                           </div>
 
@@ -873,7 +846,7 @@ export default function SchedulePage() {
 
                     <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
-                        Showing {filtered.length} of {jobs.length} scheduled units
+                        Showing {filtered.length} of {jobs.length} scheduled jobs
                       </span>
                       <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>
                         {counts.overdue > 0 && <span style={{ color: RED }}>{counts.overdue} overdue · </span>}

@@ -5,32 +5,12 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
+import { getLineItemPlaceholder } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const LINE_ITEM_PLACEHOLDER: Record<string, string> = {
-  hvac: 'e.g. Split system install',
-  plumbing: 'e.g. Hot water unit installation',
-  electrical: 'e.g. Switchboard upgrade',
-  solar: 'e.g. 6.6kW solar system installation',
-  gas_fitting: 'e.g. Gas hot water installation',
-  refrigeration: 'e.g. Cool room installation',
-  med_spa: 'e.g. Laser treatment session',
-  painting: 'e.g. Interior room painting',
-  carpentry: 'e.g. Timber deck installation',
-  tiling: 'e.g. Bathroom floor tiling',
-  roofing: 'e.g. Metal roof installation',
-  landscaping: 'e.g. Turf supply and lay',
-  cleaning: 'e.g. End of lease clean',
-  pest_control: 'e.g. General pest treatment',
-  security: 'e.g. Alarm system installation',
-  concreting: 'e.g. Exposed aggregate driveway',
-  fencing: 'e.g. Colorbond fence installation',
-  glazing: 'e.g. Shower screen installation',
-  general_trade: 'e.g. General repair / maintenance',
-}
-
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const BLUE = '#1E3A8A'
 const GREEN = '#166534'
@@ -136,49 +116,27 @@ function useIsMobile() {
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 
 function IconFilter({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="filter" size={size} />
 }
 
 function IconSearch({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="search" size={size} />
 }
 
 function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="external-link" size={size} />
 }
 
 function IconArrow({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-right" size={size} />
 }
 
 function pctChange(current: number, previous: number) {
@@ -215,7 +173,7 @@ export default function QuotesPage() {
   const router = useRouter()
   const { business } = useBusinessData()
   const isMobile = useIsMobile()
-  const lineItemPlaceholder = LINE_ITEM_PLACEHOLDER[business?.industry ?? ''] ?? 'e.g. Split system install'
+  const lineItemPlaceholder = getLineItemPlaceholder(business?.industry)
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [customers, setCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -579,7 +537,7 @@ export default function QuotesPage() {
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -587,7 +545,7 @@ export default function QuotesPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >

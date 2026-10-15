@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
 const TEAL_SOFT = '#E8F7F5'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -59,151 +60,52 @@ const mobileMenuItems = [
   { label: 'Reports', href: '/dashboard/reports' },
 ]
 
-const iconBase = {
-  width: 20,
-  height: 20,
-  viewBox: '0 0 24 24',
-  fill: 'none' as const,
-  stroke: 'currentColor',
-  strokeWidth: 1.9,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  style: {
-    display: 'block',
-    flexShrink: 0,
-    overflow: 'visible',
-    vectorEffect: 'non-scaling-stroke' as const,
-  },
-}
-
 function DashboardIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="3.2" />
-      <path d="M8 15.5V11" />
-      <path d="M12 15.5V7.5" />
-      <path d="M16 15.5v-5" />
-    </svg>
-  )
+  return <AppIcon name="dashboard" size={20} />
 }
 
 function CustomersIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-      <path d="M5 20a7 7 0 0 1 14 0" />
-    </svg>
-  )
+  return <AppIcon name="customers" size={20} />
 }
 
 function LeadsIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M12 20s-6.5-3.9-8.3-7.8A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8.3 5.2C18.5 16.1 12 20 12 20Z" />
-    </svg>
-  )
+  return <AppIcon name="leads" size={20} />
 }
 
 function JobsIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M8 9h8" />
-      <path d="M8 12h8" />
-      <path d="M8 15h5" />
-    </svg>
-  )
+  return <AppIcon name="jobs" size={20} />
 }
 
 function QuotesIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M4 20h4.2l9.9-9.9a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20Z" />
-      <path d="m12.6 7.4 4 4" />
-    </svg>
-  )
+  return <AppIcon name="document" size={20} />
 }
 
 function InvoicesIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
-      <path d="M3.5 10h17" />
-      <path d="M7 14h3" />
-    </svg>
-  )
+  return <AppIcon name="invoice" size={20} />
 }
 
 function RevenueIcon() {
-  return (
-    <svg {...iconBase}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
-      <path d="M12 6v2M12 16v2" />
-    </svg>
-  )
+  return <AppIcon name="dollar" size={20} />
 }
 
 function ScheduleIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
-      <path d="M8 3.8v2.7" />
-      <path d="M16 3.8v2.7" />
-      <path d="M3.5 9.5h17" />
-    </svg>
-  )
+  return <AppIcon name="calendar-clock" size={20} />
 }
 
 function QrCodesIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="4" y="4" width="6" height="6" rx="1.2" />
-      <rect x="14" y="4" width="6" height="6" rx="1.2" />
-      <rect x="4" y="14" width="6" height="6" rx="1.2" />
-      <path d="M14 14h2" />
-      <path d="M18 14h2" />
-      <path d="M14 18h2" />
-      <path d="M18 16v4" />
-    </svg>
-  )
+  return <AppIcon name="qrcode" size={20} />
 }
 
 function ReportsIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M6 7h12" />
-      <path d="M6 12h12" />
-      <path d="M6 17h8" />
-    </svg>
-  )
+  return <AppIcon name="reports" size={20} />
 }
 
 function SettingsIcon() {
-  return (
-    <svg {...iconBase}>
-      <circle cx="12" cy="12" r="3.25" />
-      <path d="M12 2.75v2.1" />
-      <path d="M12 19.15v2.1" />
-      <path d="M21.25 12h-2.1" />
-      <path d="M4.85 12h-2.1" />
-      <path d="m18.54 5.46-1.48 1.48" />
-      <path d="m6.94 17.06-1.48 1.48" />
-      <path d="m18.54 18.54-1.48-1.48" />
-      <path d="m6.94 6.94-1.48-1.48" />
-    </svg>
-  )
+  return <AppIcon name="settings" size={20} />
 }
 
 function AppsIcon() {
-  return (
-    <svg {...iconBase}>
-      <rect x="4.25" y="4.25" width="5.5" height="5.5" rx="1.4" />
-      <rect x="14.25" y="4.25" width="5.5" height="5.5" rx="1.4" />
-      <rect x="4.25" y="14.25" width="5.5" height="5.5" rx="1.4" />
-      <rect x="14.25" y="14.25" width="5.5" height="5.5" rx="1.4" />
-    </svg>
-  )
+  return <AppIcon name="menu" size={20} />
 }
 
 const icons: Record<string, React.ReactElement> = {
@@ -222,22 +124,11 @@ const icons: Record<string, React.ReactElement> = {
 }
 
 function LogoutIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M10 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4" />
-      <path d="M14 16l4-4-4-4" />
-      <path d="M18 12H9" />
-    </svg>
-  )
+  return <AppIcon name="logout" size={20} />
 }
 
 function CloseIcon() {
-  return (
-    <svg {...iconBase}>
-      <path d="M6 6l12 12" />
-      <path d="M18 6 6 18" />
-    </svg>
-  )
+  return <AppIcon name="close" size={20} />
 }
 
 export function Sidebar({ active }: { active: string }) {
@@ -867,8 +758,7 @@ export function Sidebar({ active }: { active: string }) {
           height: 0;
         }
 
-        .sidebar-icon svg,
-        .mobile-tab-icon svg {
+        .sidebar-icon svg {
           display: block;
           width: 20px;
           height: 20px;

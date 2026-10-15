@@ -7,10 +7,11 @@ import { Sidebar } from '@/components/Sidebar'
 import { createCustomer, createJob } from '@/lib/queries'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -62,50 +63,20 @@ function useIsMobile() {
   return isMobile
 }
 
-function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function IconArrowLeft({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-left" size={size} />
 }
 
 function IconUsers({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 8.5a3.5 3.5 0 0 1 0 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M22 21v-2a3.5 3.5 0 0 0-2.5-3.35" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="customers" size={size} />
 }
 
 function IconJob({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="jobs" size={size} />
 }
 
 function IconCalendar({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="calendar" size={size} />
 }
 
 type FormState = {
@@ -263,7 +234,7 @@ export default function AddJobPage() {
     height: '36px',
     padding: '0 14px',
     border: 'none',
-    borderBottom: '2px solid #1F9E94',
+    borderBottom: '2px solid #2AA198',
     borderRadius: 0,
     fontSize: '12px',
     fontWeight: 800,
@@ -354,9 +325,9 @@ export default function AddJobPage() {
     width: 42,
     height: 42,
     borderRadius: '12px',
-    background: TEAL_LIGHT,
-    border: `1px solid #BFE7E3`,
-    color: TEAL_DARK,
+    background: WHITE,
+    border: `1px solid ${BORDER}`,
+    color: TEXT2,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -365,8 +336,8 @@ export default function AddJobPage() {
 
   const statChips = [
     { label: 'Customer', value: form.first_name || form.last_name ? '1' : '0' },
-    { label: 'Unit type', value: form.equipment_type ? '1' : '0' },
-    { label: 'Brand', value: form.brand ? '1' : '0' },
+    { label: 'Type', value: form.equipment_type ? '1' : '0' },
+    { label: industryConfig.fields.brand.label, value: form.brand ? '1' : '0' },
     { label: 'Schedule', value: form.install_date ? '1' : '0' },
   ]
 
@@ -411,12 +382,12 @@ export default function AddJobPage() {
               onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
               onMouseLeave={e => { e.currentTarget.style.opacity = loading ? '0.7' : '1' }}
             >
-              <IconSpark size={13} /> {loading ? 'Saving...' : 'Save job'}
+              <AppIcon name="tick" size={13} /> {loading ? 'Saving...' : 'Save job'}
             </button>
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -424,7 +395,7 @@ export default function AddJobPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -517,7 +488,7 @@ export default function AddJobPage() {
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={stepIconWrap}>
-                        <IconUsers size={18} />
+                        <IconUsers size={22} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
@@ -562,18 +533,18 @@ export default function AddJobPage() {
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={stepIconWrap}>
-                        <IconJob size={18} />
+                        <IconJob size={22} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
-                        <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Installation details</div>
+                        <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Job details</div>
                       </div>
                     </div>
                   </div>
 
                   <div style={{ padding: isMobile ? '14px' : '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
-                      <label style={labelStyle}>Equipment type *</label>
+                      <label style={labelStyle}>Type *</label>
                       <select required style={inputStyle} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
                         {industryConfig.equipmentTypes.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -629,7 +600,7 @@ export default function AddJobPage() {
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={stepIconWrap}>
-                        <IconCalendar size={18} />
+                        <IconCalendar size={22} />
                       </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>

@@ -4,10 +4,11 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -133,29 +134,15 @@ function monthLabelFromOffset(base: Date, offset: number) {
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconPrint({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <rect x="7" y="14" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
+  return <AppIcon name="print" size={size} />
 }
 
 function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="external-link" size={size} />
 }
 
 function AreaChart({
@@ -875,7 +862,7 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -883,7 +870,7 @@ export default function ReportsPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -967,9 +954,7 @@ export default function ReportsPage() {
                         alignItems: 'center',
                       }}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <AppIcon name="arrow-down" size={14} />
                     </div>
                   </div>
 
@@ -1056,8 +1041,8 @@ export default function ReportsPage() {
             })}
 
             {renderRankingCard({
-              title: 'Top installed brands',
-              subtitle: 'Most common equipment brands recorded across jobs.',
+              title: 'Top brands & products',
+              subtitle: 'Most common brands and products recorded across jobs.',
               data: report.topBrands,
               empty: 'No brand data yet.',
               route: '/dashboard/jobs',

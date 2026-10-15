@@ -6,11 +6,12 @@ import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
+import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -127,33 +128,6 @@ async function getCroppedImg(
       resolve(blob)
     }, 'image/png')
   })
-}
-
-function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconPercent({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m19 5-14 14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <circle cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
-}
-
-function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
 }
 
 export default function SettingsPage() {
@@ -509,6 +483,11 @@ export default function SettingsPage() {
     appearance: 'none',
   }
 
+  const selectStyle: React.CSSProperties = {
+    ...input,
+    appearance: 'none',
+  }
+
   const label: React.CSSProperties = {
     ...TYPE.label,
     marginBottom: '6px',
@@ -680,13 +659,13 @@ export default function SettingsPage() {
               onMouseEnter={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82' }}
               onMouseLeave={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1' }}
             >
-              <IconSpark size={12} />
+              <AppIcon name="tick" size={12} />
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -694,7 +673,7 @@ export default function SettingsPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -938,7 +917,7 @@ export default function SettingsPage() {
             <div id="reviews-section" style={card}>
               <SectionHeader
                 title="Review Platforms"
-                description="Add the links shown to customers after each installation."
+                description="Add the links shown to customers after each job."
                 action={
                   <button
                     type="button"
@@ -1111,7 +1090,7 @@ export default function SettingsPage() {
                       }}
                     >
                       <div style={{ ...TYPE.title, color: TEAL_DARK, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900 }}>
-                        <IconPercent size={16} />
+                        <AppIcon name="eye" size={16} />
                         Customer preview
                       </div>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT2, lineHeight: 1.7 }}>
@@ -1224,7 +1203,7 @@ export default function SettingsPage() {
                   }}
                 >
                   {uploadingLogo ? 'Saving...' : 'Save image'}
-                  {!uploadingLogo && <IconArrow size={13} />}
+                  {!uploadingLogo && <AppIcon name="upload" size={13} />}
                 </button>
               </div>
             </div>

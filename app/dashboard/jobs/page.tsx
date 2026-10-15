@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
+import { useBusinessData } from '@/lib/business-context'
+import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
@@ -62,96 +65,47 @@ function useIsMobile() {
 }
 
 function IconPlus({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="add" size={size} />
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconSearch({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="search" size={size} />
 }
 
 function IconCalendar({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="calendar" size={size} />
 }
 
 function IconFilter({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="filter" size={size} />
 }
 
 function IconArrow({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-right" size={size} />
 }
 
 function IconClose({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="close" size={size} />
 }
 
 function IconPhone({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="call" size={size} />
 }
 
 function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="external-link" size={size} />
 }
 
 function IconEdit({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 20h9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="m16.5 3.5 4 4L7 21l-4 1 1-4L16.5 3.5Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="edit" size={size} />
 }
 
 function IconSave({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 21h14a2 2 0 0 0 2-2V7l-4-4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="tick" size={size} />
 }
 
 function pctChange(current: number, previous: number) {
@@ -160,14 +114,6 @@ function pctChange(current: number, previous: number) {
     return 100
   }
   return Math.round(((current - previous) / previous) * 100)
-}
-
-const EQUIPMENT_LABELS: Record<string, string> = {
-  split_system: 'Split system',
-  ducted: 'Ducted',
-  multi_head: 'Multi-head',
-  cassette: 'Cassette',
-  other: 'Other',
 }
 
 function JobDrawer({
@@ -182,6 +128,8 @@ function JobDrawer({
   onSaved: (updatedJob: any) => void
 }) {
   const router = useRouter()
+  const { business } = useBusinessData()
+  const industryConfig = getIndustry(business?.industry)
   const customer = job.customers
   const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown'
   const [editing, setEditing] = useState(false)
@@ -192,7 +140,7 @@ function JobDrawer({
     brand: job.brand || '',
     model: job.model || '',
     capacity_kw: job.capacity_kw ?? '',
-    equipment_type: job.equipment_type || 'split_system',
+    equipment_type: job.equipment_type || industryConfig.equipmentTypes[0]?.value || 'other',
     serial_number: job.serial_number || '',
     install_location: job.install_location || '',
     install_date: job.install_date ? String(job.install_date).slice(0, 10) : '',
@@ -320,7 +268,7 @@ function JobDrawer({
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
             <div>
               <div style={{ ...TYPE.label, marginBottom: '6px' }}>
-                {EQUIPMENT_LABELS[form.equipment_type] || form.equipment_type}
+                {getEquipmentLabel(form.equipment_type)}
               </div>
               <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px', letterSpacing: '-0.035em' }}>
                 {name}
@@ -382,7 +330,7 @@ function JobDrawer({
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
+        <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
           <div style={fieldBox}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
@@ -408,16 +356,18 @@ function JobDrawer({
               <div style={fieldBox}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                   <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Unit details</div>
+                  <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, textTransform: 'capitalize' }}>{industryConfig.terminology.equipment} details</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   {[
-                    { label: 'Brand', value: form.brand || '—' },
-                    { label: 'Model', value: form.model || '—' },
-                    { label: 'Capacity', value: form.capacity_kw ? `${form.capacity_kw} kW` : '—' },
+                    { label: industryConfig.fields.brand.label, value: form.brand || '—' },
+                    { label: industryConfig.fields.model.label, value: form.model || '—' },
+                    ...(industryConfig.fields.capacityKw.show
+                      ? [{ label: industryConfig.fields.capacityKw.label, value: form.capacity_kw || '—' }]
+                      : []),
                     { label: 'Serial number', value: form.serial_number || '—' },
-                    { label: 'Location', value: form.install_location || '—' },
-                    { label: 'Type', value: EQUIPMENT_LABELS[form.equipment_type] || form.equipment_type || '—' },
+                    { label: industryConfig.fields.installLocation.label, value: form.install_location || '—' },
+                    { label: 'Type', value: getEquipmentLabel(form.equipment_type) || '—' },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ background: '#FCFCFD', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 12px' }}>
                       <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
@@ -435,7 +385,7 @@ function JobDrawer({
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   {[
                     {
-                      label: 'Installed',
+                      label: industryConfig.fields.installDate.label,
                       value: form.install_date
                         ? new Date(form.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
                         : '—',
@@ -474,25 +424,28 @@ function JobDrawer({
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Brand</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.brand.label}</div>
                     <input style={inputStyle} value={form.brand} onChange={e => setForm(p => ({ ...p, brand: e.target.value }))} />
                   </div>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Model</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.model.label}</div>
                     <input style={inputStyle} value={form.model} onChange={e => setForm(p => ({ ...p, model: e.target.value }))} />
                   </div>
+                  {industryConfig.fields.capacityKw.show && (
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.capacityKw.label}</div>
+                      <input style={inputStyle} value={form.capacity_kw} onChange={e => setForm(p => ({ ...p, capacity_kw: e.target.value }))} />
+                    </div>
+                  )}
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Capacity kW</div>
-                    <input style={inputStyle} value={form.capacity_kw} onChange={e => setForm(p => ({ ...p, capacity_kw: e.target.value }))} />
-                  </div>
-                  <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Equipment type</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Type</div>
                     <select style={inputStyle} value={form.equipment_type} onChange={e => setForm(p => ({ ...p, equipment_type: e.target.value }))}>
-                      <option value="split_system">Split system</option>
-                      <option value="ducted">Ducted</option>
-                      <option value="multi_head">Multi-head</option>
-                      <option value="cassette">Cassette</option>
-                      <option value="other">Other</option>
+                      {industryConfig.equipmentTypes.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                      {form.equipment_type && !industryConfig.equipmentTypes.some(opt => opt.value === form.equipment_type) && (
+                        <option value={form.equipment_type}>{getEquipmentLabel(form.equipment_type)}</option>
+                      )}
                     </select>
                   </div>
                   <div>
@@ -500,11 +453,11 @@ function JobDrawer({
                     <input style={inputStyle} value={form.serial_number} onChange={e => setForm(p => ({ ...p, serial_number: e.target.value }))} />
                   </div>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Install location</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.installLocation.label}</div>
                     <input style={inputStyle} value={form.install_location} onChange={e => setForm(p => ({ ...p, install_location: e.target.value }))} />
                   </div>
                   <div>
-                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Install date</div>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.installDate.label}</div>
                     <input type="date" style={inputStyle} value={form.install_date} onChange={e => setForm(p => ({ ...p, install_date: e.target.value }))} />
                   </div>
                   <div>
@@ -712,7 +665,9 @@ export default function JobsPage() {
     load()
   }, [router])
 
-  const equipmentTypes = ['all', 'split_system', 'ducted', 'multi_head', 'cassette', 'other']
+  const { business } = useBusinessData()
+  const industryConfig = getIndustry(business?.industry)
+  const equipmentTypes = ['all', ...industryConfig.equipmentTypes.map(t => t.value)]
 
   const filtered = useMemo(() => {
     return jobs.filter(j => {
@@ -953,7 +908,7 @@ export default function JobsPage() {
           </button>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -961,7 +916,7 @@ export default function JobsPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -1030,7 +985,7 @@ export default function JobsPage() {
                       <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>All jobs</span>
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      View installed units, service timing, and customer details.
+                      View jobs, service timing, and customer details.
                     </div>
                   </div>
                 </div>
@@ -1104,7 +1059,7 @@ export default function JobsPage() {
                   >
                     {equipmentTypes.map(t => (
                       <option key={t} value={t}>
-                        {t === 'all' ? 'All types' : EQUIPMENT_LABELS[t]}
+                        {t === 'all' ? 'All types' : getEquipmentLabel(t)}
                       </option>
                     ))}
                   </select>
@@ -1123,7 +1078,7 @@ export default function JobsPage() {
                     background: '#FCFCFD',
                   }}
                 >
-                  {['Customer', 'Equipment', 'Next service', 'Status'].map(label => (
+                  {['Customer', 'Job', 'Next service', 'Status'].map(label => (
                     <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                       {label}
                     </div>
@@ -1182,16 +1137,16 @@ export default function JobsPage() {
                               width: 42,
                               height: 42,
                               borderRadius: '12px',
-                              background: TEAL_LIGHT,
-                              border: `1px solid #BFE7E3`,
+                              background: WHITE,
+                              border: `1px solid ${BORDER}`,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
-                              color: TEAL_DARK,
+                              color: TEXT2,
                             }}
                           >
-                            <IconCalendar size={16} />
+                            <IconCalendar size={22} />
                           </div>
 
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -1225,12 +1180,12 @@ export default function JobsPage() {
                             <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
                               {job.brand || 'TBC'}
                               {job.model ? ` ${job.model}` : ''}
-                              {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
+                              {job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                               <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT2 }}>
-                                {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type || 'Other'}
+                                {getEquipmentLabel(job.equipment_type) || 'Other'}
                               </span>
                               <div style={{ width: 1, height: 10, background: BORDER }} />
                               <span style={{ fontSize: '10px', fontWeight: 700, color: meta.next ? TEAL_DARK : TEXT3 }}>
@@ -1256,7 +1211,7 @@ export default function JobsPage() {
                                 {customer?.suburb ? ` · ${customer.suburb}` : ''}
                               </div>
                               <div style={{ fontSize: '10px', fontWeight: 750, color: TEAL_DARK, marginTop: '5px' }}>
-                                {EQUIPMENT_LABELS[job.equipment_type] || job.equipment_type || 'Other'}
+                                {getEquipmentLabel(job.equipment_type) || 'Other'}
                               </div>
                             </div>
                           </div>
@@ -1265,10 +1220,10 @@ export default function JobsPage() {
                             <div style={{ fontSize: '12px', fontWeight: 750, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {job.brand || 'TBC'}
                               {job.model ? ` ${job.model}` : ''}
-                              {job.capacity_kw ? ` · ${job.capacity_kw}kW` : ''}
+                              {job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}
                             </div>
                             <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.install_location || 'No install location'}
+                              {job.install_location || 'No location recorded'}
                             </div>
                           </div>
 

@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
+import { useBusinessData } from '@/lib/business-context'
+import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const AMBER = '#92400E'
 const TEXT = '#0B1220'
@@ -90,86 +93,35 @@ function startOfDay(d: Date) {
 }
 
 function IconArrowLeft({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-left" size={size} />
 }
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 
 function IconEdit({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 20h9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="m16.5 3.5 4 4L7 21l-4 1 1-4L16.5 3.5Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="edit" size={size} />
 }
 
 function IconTrash({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 6h18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="trash" size={size} />
 }
 
 function IconMail({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="mail" size={size} />
 }
 
 function IconPhone({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72l.34 2.71a2 2 0 0 1-.57 1.72L7.1 9.9a16 16 0 0 0 7 7l1.75-1.78a2 2 0 0 1 1.72-.57l2.71.34A2 2 0 0 1 22 16.92Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="call" size={size} />
 }
 
 function IconMapPin({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
+  return <AppIcon name="location" size={size} />
 }
 
 function IconClock({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="clock" size={size} />
 }
 
 
@@ -177,6 +129,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const { id } = use(params)
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { business } = useBusinessData()
+  const industryConfig = getIndustry(business?.industry)
 
   const [customer, setCustomer] = useState<any>(null)
   const [jobs, setJobs] = useState<any[]>([])
@@ -439,7 +393,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const statChips = [
     {
-      label: 'Units installed',
+      label: 'Jobs completed',
       value: stats.jobs.toLocaleString('en-AU'),
       sub: 'Tracked on this customer',
       onClick: () => router.push('/dashboard/jobs'),
@@ -585,12 +539,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         )}
 
         {/* Scrollable content */}
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
             padding: isMobile ? '12px 14px' : '16px 24px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -788,7 +742,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
-            {/* Installed units card */}
+            {/* Jobs card */}
             <div style={card}>
               <div
                 style={{
@@ -801,7 +755,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   gap: '10px',
                 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Installed units</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Jobs &amp; equipment</span>
 
                 <div
                   style={{
@@ -821,7 +775,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     width: isMobile ? '100%' : undefined,
                   }}
                 >
-                  {jobs.length} unit{jobs.length !== 1 ? 's' : ''}
+                  {jobs.length} job{jobs.length !== 1 ? 's' : ''}
                 </div>
               </div>
 
@@ -864,9 +818,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                             <div style={{ minWidth: 0 }}>
                               <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 850, color: TEXT }}>
-                                {job.brand || 'Unit'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''} {job.equipment_type?.replace('_', ' ') || ''}
+                                {getEquipmentLabel(job.equipment_type) || 'Job'}{job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}{job.brand ? ` · ${job.brand}` : ''}
                               </div>
-                              {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>Model: {job.model}</div>}
+                              {job.model && <div style={{ ...TYPE.bodySm, marginTop: '4px' }}>{industryConfig.fields.model.label}: {job.model}</div>}
                             </div>
                           </div>
 
@@ -928,33 +882,33 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   label: 'Serial number',
                                   value: job.serial_number || '—',
                                   mono: true,
-                                  icon: <IconArrow size={12} />,
+                                  icon: <AppIcon name="receipt" size={14} />,
                                 },
                                 {
-                                  label: 'Installed',
+                                  label: industryConfig.fields.installDate.label,
                                   value: job.install_date ? new Date(job.install_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
-                                  icon: <IconClock size={14} />,
+                                  icon: <AppIcon name="calendar-check" size={14} />,
                                 },
                                 {
                                   label: 'Next service',
                                   value: job.next_service_date ? new Date(job.next_service_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
                                   danger: job.next_service_date && getDays(job.next_service_date) < 0,
-                                  icon: <IconClock size={14} />,
+                                  icon: <AppIcon name="calendar-clock" size={14} />,
                                 },
                                 {
                                   label: 'Warranty expiry',
                                   value: job.warranty_expiry ? new Date(job.warranty_expiry).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
-                                  icon: <IconClock size={14} />,
+                                  icon: <AppIcon name="shield" size={14} />,
                                 },
                                 {
-                                  label: 'Location',
+                                  label: industryConfig.fields.installLocation.label,
                                   value: job.install_location || '—',
                                   icon: <IconMapPin size={14} />,
                                 },
                                 {
                                   label: 'Service interval',
                                   value: `Every ${job.service_interval_months} months`,
-                                  icon: <IconClock size={14} />,
+                                  icon: <AppIcon name="repeat" size={14} />,
                                 },
                               ].map(row => (
                                 <div
@@ -1005,25 +959,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           <div style={{ padding: '18px', display: 'grid', gap: '10px', borderTop: `1px solid ${BORDER}` }}>
                             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                               <div>
-                                <label style={labelStyle}>Brand</label>
+                                <label style={labelStyle}>{industryConfig.fields.brand.label}</label>
                                 <input style={inputStyle} value={f.brand || ''} onChange={e => setJobField(job.id, 'brand', e.target.value)} />
                               </div>
                               <div>
-                                <label style={labelStyle}>Model</label>
+                                <label style={labelStyle}>{industryConfig.fields.model.label}</label>
                                 <input style={inputStyle} value={f.model || ''} onChange={e => setJobField(job.id, 'model', e.target.value)} />
                               </div>
+                              {industryConfig.fields.capacityKw.show && (
+                                <div>
+                                  <label style={labelStyle}>{industryConfig.fields.capacityKw.label}</label>
+                                  <input style={inputStyle} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} />
+                                </div>
+                              )}
                               <div>
-                                <label style={labelStyle}>Capacity kW</label>
-                                <input style={inputStyle} value={f.capacity_kw || ''} onChange={e => setJobField(job.id, 'capacity_kw', e.target.value)} />
-                              </div>
-                              <div>
-                                <label style={labelStyle}>Equipment type</label>
+                                <label style={labelStyle}>Type</label>
                                 <select style={inputStyle} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
-                                  <option value="split_system">Split system</option>
-                                  <option value="ducted">Ducted system</option>
-                                  <option value="multi_head">Multi-head split</option>
-                                  <option value="cassette">Cassette unit</option>
-                                  <option value="other">Other</option>
+                                  {industryConfig.equipmentTypes.map(opt => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                  ))}
+                                  {f.equipment_type && !industryConfig.equipmentTypes.some(opt => opt.value === f.equipment_type) && (
+                                    <option value={f.equipment_type}>{getEquipmentLabel(f.equipment_type)}</option>
+                                  )}
                                 </select>
                               </div>
                               <div>
@@ -1031,11 +988,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 <input style={inputStyle} value={f.serial_number || ''} onChange={e => setJobField(job.id, 'serial_number', e.target.value)} />
                               </div>
                               <div>
-                                <label style={labelStyle}>Location</label>
+                                <label style={labelStyle}>{industryConfig.fields.installLocation.label}</label>
                                 <input style={inputStyle} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)} />
                               </div>
                               <div>
-                                <label style={labelStyle}>Install date</label>
+                                <label style={labelStyle}>{industryConfig.fields.installDate.label}</label>
                                 <input type="date" style={inputStyle} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)} />
                               </div>
                               <div>

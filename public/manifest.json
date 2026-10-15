@@ -1,7 +1,7 @@
 {
   "name": "Jobyra",
   "short_name": "Jobyra",
-  "description": "HVAC job and customer management",
+  "description": "Job and customer management for trades",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111111",

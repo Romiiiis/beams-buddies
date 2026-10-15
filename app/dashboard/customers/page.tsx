@@ -4,10 +4,11 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -78,77 +79,27 @@ function formatDelta(n: number) {
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 
 function IconSearch({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="search" size={size} />
 }
 
 function IconArrow({ size = 15 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M5 12h14M13 5l7 7-7 7"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <AppIcon name="arrow-right" size={size} />
 }
 
 function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M22 7l-8 8-4-4-6 6"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <AppIcon name="trend-up" size={size} />
 }
 
 function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M22 17l-8-8-4 4-6-6"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <AppIcon name="trend-down" size={size} />
 }
 
 export default function CustomersPage() {
@@ -250,7 +201,7 @@ export default function CustomersPage() {
 
   function statusPill(jobs: any[]) {
     if (!jobs?.length) {
-      return { label: 'No units', bg: '#F1F5F9', color: TEXT3, border: BORDER }
+      return { label: 'No jobs', bg: '#F1F5F9', color: TEXT3, border: BORDER }
     }
 
     const datedJobs = [...jobs]
@@ -363,7 +314,7 @@ export default function CustomersPage() {
       onClick: () => router.push('/dashboard/customers'),
     },
     {
-      label: 'Tracked Units',
+      label: 'Total Jobs',
       value: stats.totalUnits,
       sub: 'linked to profiles',
       onClick: () => router.push('/dashboard/customers'),
@@ -483,12 +434,12 @@ export default function CustomersPage() {
         </div>
 
         {/* Scrollable content */}
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
             padding: isMobile ? '12px 14px' : '16px 24px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -601,7 +552,7 @@ export default function CustomersPage() {
                   background: '#FCFCFD',
                 }}
               >
-                {['Customer', 'Contact', 'Units', 'Next service', 'Status'].map((label) => (
+                {['Customer', 'Contact', 'Jobs', 'Next maintenance', 'Status'].map((label) => (
                   <div
                     key={label}
                     style={{
@@ -645,7 +596,7 @@ export default function CustomersPage() {
                 const unitLine =
                   latestUnit?.brand || latestUnit?.model
                     ? `${latestUnit?.brand || ''} ${latestUnit?.model || ''}`.trim()
-                    : 'No unit details'
+                    : 'No job details'
                 const serviceDate = nextJob?.next_service_date
                   ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
                       day: 'numeric',
@@ -776,10 +727,10 @@ export default function CustomersPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT2 }}>
-                                {unitCount} unit{unitCount === 1 ? '' : 's'}
+                                {unitCount} job{unitCount === 1 ? '' : 's'}
                               </span>
 
-                              {unitLine !== 'No unit details' && (
+                              {unitLine !== 'No job details' && (
                                 <span style={{ fontSize: '10px', color: TEXT3 }}>· {unitLine}</span>
                               )}
                             </div>
@@ -888,7 +839,7 @@ export default function CustomersPage() {
 
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
-                            {unitCount} unit{unitCount === 1 ? '' : 's'}
+                            {unitCount} job{unitCount === 1 ? '' : 's'}
                           </div>
 
                           <div

@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import QRCode from 'qrcode'
+import { useBusinessData } from '@/lib/business-context'
+import { formatCapacity } from '@/lib/industry-config'
+import { AppIcon } from '@/components/AppIcon'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -63,73 +66,41 @@ function formatDate(date?: string | null) {
 }
 
 function IconSearch({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="search" size={size} />
 }
 
 function IconSpark({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 
 function IconDownload({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="download" size={size} />
 }
 
 function IconPrint({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <rect x="7" y="14" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  )
+  return <AppIcon name="print" size={size} />
 }
 
 function IconExternalLink({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="external-link" size={size} />
 }
 
 function IconCheckCircle({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-      <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="tick" size={size} />
 }
 
 function IconClock({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="clock" size={size} />
 }
 
 export default function QRCodesPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { business } = useBusinessData()
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [qrUrls, setQrUrls] = useState<Record<string, string>>({})
@@ -195,7 +166,7 @@ export default function QRCodesPage() {
 
     return jobs.filter(job => {
       const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim()
-      return [name, job.customers?.suburb || '', job.brand || '', job.model || '', job.capacity_kw ? `${job.capacity_kw}kw` : ''].join(' ').toLowerCase().includes(q)
+      return [name, job.customers?.suburb || '', job.brand || '', job.model || '', formatCapacity(job.capacity_kw, business?.industry)].join(' ').toLowerCase().includes(q)
     })
   }, [jobs, search])
 
@@ -224,9 +195,9 @@ export default function QRCodesPage() {
   const card: React.CSSProperties = {
     background: WHITE,
     border: `1px solid ${BORDER}`,
-    borderRadius: '18px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
   const sideCard: React.CSSProperties = {
@@ -245,14 +216,14 @@ export default function QRCodesPage() {
   }
 
   const btnOutline: React.CSSProperties = {
-    height: '34px',
+    height: '36px',
     padding: '0 14px',
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
+    border: 'none',
+    borderRadius: '6px',
     fontSize: '12px',
     fontWeight: 700,
-    color: TEXT2,
-    background: WHITE,
+    color: TEXT3,
+    background: 'transparent',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
@@ -260,32 +231,31 @@ export default function QRCodesPage() {
     justifyContent: 'center',
     gap: '6px',
     whiteSpace: 'nowrap',
-    transition: 'border-color 0.12s, color 0.12s',
   }
 
   const btnTeal: React.CSSProperties = {
-    height: '34px',
+    height: '36px',
     padding: '0 14px',
+    border: 'none',
+    borderBottom: '2px solid #2AA198',
+    borderRadius: 0,
     fontSize: '12px',
-    fontWeight: 700,
+    fontWeight: 800,
+    color: TEAL,
+    background: 'transparent',
     cursor: 'pointer',
     fontFamily: FONT,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '7px',
-    background: TEAL,
-    color: WHITE,
-    border: 'none',
-    borderRadius: '9px',
     whiteSpace: 'nowrap',
-    transition: 'opacity 0.12s',
   }
 
   const btnMobileSm: React.CSSProperties = {
     height: '36px',
     padding: '0 12px',
-    border: `1px solid ${BORDER}`,
+    border: '1px solid #E8EDF2',
     borderRadius: '9px',
     fontSize: '12px',
     fontWeight: 700,
@@ -297,6 +267,7 @@ export default function QRCodesPage() {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
+    whiteSpace: 'nowrap',
     flex: 1,
   }
 
@@ -350,13 +321,13 @@ export default function QRCodesPage() {
       <Sidebar active="/dashboard/qrcodes" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        <div
+        <div className="page-content"
           style={{
             padding: isMobile ? '0' : '20px 24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '60px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             background: BG,
           }}
         >
@@ -522,7 +493,7 @@ export default function QRCodesPage() {
                     <input
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      placeholder="Search customer, suburb, unit..."
+                      placeholder="Search customer, suburb, job..."
                       style={{
                         height: '42px',
                         width: '100%',
@@ -556,8 +527,8 @@ export default function QRCodesPage() {
                   >
                     <div />
                     <div style={{ ...TYPE.label, paddingRight: '12px', paddingLeft: '10px' }}>Customer</div>
-                    <div style={TYPE.label}>Unit</div>
-                    <div style={TYPE.label}>Installed</div>
+                    <div style={TYPE.label}>Job</div>
+                    <div style={TYPE.label}>Completed</div>
                     <div style={TYPE.label}>Review</div>
                     <div style={{ ...TYPE.label, textAlign: 'right' as const }}>QR</div>
                   </div>
@@ -619,7 +590,7 @@ export default function QRCodesPage() {
                                         gap: '4px',
                                         padding: '3px 8px',
                                         borderRadius: '999px',
-                                        background: reviewClicked ? '#F0FDF9' : '#FFF7ED',
+                                        background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
                                         border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
                                         fontSize: '10px',
                                         fontWeight: 800,
@@ -654,12 +625,12 @@ export default function QRCodesPage() {
 
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '8px 10px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Unit</div>
-                                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>{job.brand || '—'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}</div>
+                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Job</div>
+                                    <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>{job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}</div>
                                   </div>
 
                                   <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '8px 10px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Installed</div>
+                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Completed</div>
                                     <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>{formatDate(job.install_date)}</div>
                                   </div>
                                 </div>
@@ -702,7 +673,7 @@ export default function QRCodesPage() {
 
                             <div style={{ padding: '0 12px 0 0', minWidth: 0 }}>
                               <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {job.brand || '—'} {job.capacity_kw ? `${job.capacity_kw}kW` : ''}
+                                {job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}
                               </div>
                               <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.model || '—'}</div>
                             </div>
@@ -719,7 +690,7 @@ export default function QRCodesPage() {
                                   gap: '5px',
                                   padding: '4px 9px',
                                   borderRadius: '999px',
-                                  background: reviewClicked ? '#F0FDF9' : '#FFF7ED',
+                                  background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
                                   border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
                                   fontSize: '10px',
                                   fontWeight: 800,
@@ -740,7 +711,7 @@ export default function QRCodesPage() {
                                   gap: '5px',
                                   padding: '4px 9px',
                                   borderRadius: '999px',
-                                  background: isSelected ? '#DDF7F5' : hasQR ? '#F0FDF9' : '#F1F5F9',
+                                  background: isSelected ? '#DDF7F5' : hasQR ? '#F0FBFA' : '#F1F5F9',
                                   border: `1px solid ${isSelected ? '#B8ECE7' : hasQR ? '#BBF7D0' : BORDER}`,
                                   fontSize: '10px',
                                   fontWeight: 800,
@@ -808,7 +779,7 @@ export default function QRCodesPage() {
                             gap: '5px',
                             padding: '4px 10px',
                             borderRadius: '999px',
-                            background: '#F0FDF9',
+                            background: '#F0FBFA',
                             border: '1px solid #BBF7D0',
                             fontSize: '10px',
                             fontWeight: 800,
@@ -838,7 +809,7 @@ export default function QRCodesPage() {
                               padding: '4px 10px',
                               borderRadius: '999px',
                               flexShrink: 0,
-                              background: selectedJob.review_link_clicked ? '#F0FDF9' : '#FFF7ED',
+                              background: selectedJob.review_link_clicked ? '#F0FBFA' : '#FFF7ED',
                               border: `1px solid ${selectedJob.review_link_clicked ? '#BBF7D0' : '#FDE68A'}`,
                               fontSize: '10px',
                               fontWeight: 800,
@@ -852,13 +823,13 @@ export default function QRCodesPage() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                           <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Unit</div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{selectedJob.brand || '—'} {selectedJob.capacity_kw ? `${selectedJob.capacity_kw}kW` : ''}</div>
+                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Job</div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{selectedJob.brand || '—'} {formatCapacity(selectedJob.capacity_kw, business?.industry)}</div>
                             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{selectedJob.model || '—'}</div>
                           </div>
 
                           <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Installed</div>
+                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Completed</div>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{formatDate(selectedJob.install_date)}</div>
                             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Job linked</div>
                           </div>

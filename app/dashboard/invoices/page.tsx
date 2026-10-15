@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
+import { AppIcon } from '@/components/AppIcon'
+import { useBusinessData } from '@/lib/business-context'
+import { getLineItemPlaceholder } from '@/lib/industry-config'
 
-const TEAL = '#1F9E94'
-const TEAL_DARK = '#177A72'
-const TEAL_LIGHT = '#E6F7F6'
+const TEAL = '#2AA198'
+const TEAL_DARK = '#1F857C'
+const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
 const BLUE = '#2563EB'
 const TEXT = '#0B1220'
@@ -137,68 +140,35 @@ function useIsMobile() {
 }
 
 function IconRevenue({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2v20M17 6.5c0-1.93-2.24-3.5-5-3.5S7 4.57 7 6.5 9.24 10 12 10s5 1.57 5 3.5S14.76 17 12 17s-5-1.57-5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="dollar" size={size} />
 }
 
 function IconSpark({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="sparkle" size={size} />
 }
 
 function IconPlus({ size = 13 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+  return <AppIcon name="add" size={size} />
 }
 
 function IconSearch({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  )
+  return <AppIcon name="search" size={size} />
 }
 
 function IconTrash({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 7h16" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-      <path d="M6 7l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="trash" size={size} />
 }
 
 function IconArrow({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="arrow-right" size={size} />
 }
 
 function IconTrendUp({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 7l-8 8-4-4-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="trend-up" size={size} />
 }
 
 function IconTrendDown({ size = 11 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M22 17l-8-8-4 4-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <AppIcon name="trend-down" size={size} />
 }
 
 function StatusPill({ status, isAutoOverdue = false }: { status: string; isAutoOverdue?: boolean }) {
@@ -241,7 +211,9 @@ function formatDelta(n: number) {
 
 export default function InvoicesPage() {
   const router = useRouter()
+  const { business } = useBusinessData()
   const isMobile = useIsMobile()
+  const lineItemPlaceholder = getLineItemPlaceholder(business?.industry)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [customers, setCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -562,12 +534,12 @@ export default function InvoicesPage() {
           </div>
         </div>
 
-        <div
+        <div className="page-content"
           style={{
             flex: 1,
             overflowY: 'auto',
             padding: isMobile ? '12px 14px' : '16px 24px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '40px',
+            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
@@ -777,16 +749,16 @@ export default function InvoicesPage() {
                                 width: 42,
                                 height: 42,
                                 borderRadius: '12px',
-                                background: TEAL_LIGHT,
-                                border: `1px solid #BFE7E3`,
+                                background: WHITE,
+                                border: `1px solid ${BORDER}`,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 flexShrink: 0,
-                                color: TEAL_DARK,
+                                color: TEXT2,
                               }}
                             >
-                              <IconRevenue size={16} />
+                              <IconRevenue size={22} />
                             </div>
 
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1059,7 +1031,7 @@ export default function InvoicesPage() {
                   </div>
                   {form.line_items.map((item, idx) => (
                     <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 60px 90px 32px', gap: isMobile ? '8px' : '0', padding: '8px 12px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
-                      <input style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder="e.g. Split system installation" />
+                      <input style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder={lineItemPlaceholder} />
                       <input type="number" style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.qty} onChange={e => setLine(idx, 'qty', e.target.value)} min="1" placeholder="Qty" />
                       <input type="number" style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
                       <button onClick={() => removeLine(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: RED, fontSize: '18px', lineHeight: 1, height: '34px' }}>×</button>
