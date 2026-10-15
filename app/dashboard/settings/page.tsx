@@ -483,11 +483,6 @@ export default function SettingsPage() {
     appearance: 'none',
   }
 
-  const selectStyle: React.CSSProperties = {
-    ...input,
-    appearance: 'none',
-  }
-
   const label: React.CSSProperties = {
     ...TYPE.label,
     marginBottom: '6px',
