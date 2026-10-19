@@ -505,7 +505,7 @@ export default function CustomersPage() {
 
           {/* Customer directory card */}
           <DataList<any>
-            title="Customer directory"
+            title="All customers"
             isMobile={isMobile}
             rows={filtered}
             rowKey={c => c.id}
@@ -527,7 +527,7 @@ export default function CustomersPage() {
                 key: 'customer',
                 label: 'Customer',
                 width: 'minmax(0,1.4fr)',
-                render: c => <PersonCell name={`${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unnamed customer'} sub={c.address || c.suburb || 'No address saved'} />,
+                render: c => <PersonCell name={`${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unnamed customer'} sub={isMobile ? c.phone || c.email || c.address || c.suburb || 'No contact saved' : c.address || c.suburb || 'No address saved'} />,
               },
               {
                 key: 'contact',
@@ -551,7 +551,7 @@ export default function CustomersPage() {
                 key: 'next',
                 label: 'Next maintenance',
                 width: '130px',
-                mobileLabel: 'Next',
+                mobileLabel: 'Next maintenance',
                 render: c => <TextCell>{nextServiceLabel(c.jobs)}</TextCell>,
               },
               {
