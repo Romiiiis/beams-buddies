@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Button Mockups</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #F1F5F9; padding: 40px 32px; color: #0B1220; }
+
+  section { margin-bottom: 20px; }
+  .section-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #94A3B8; margin-bottom: 10px; padding-left: 4px; }
+
+  .card { background: #fff; border: 1px solid #E8EDF2; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 18px; font-weight: 900; color: #0B1220; letter-spacing: -0.04em; }
+  .card-sub { font-size: 12px; color: #64748B; margin-top: 3px; }
+  .btns { display: flex; align-items: center; gap: 8px; }
+
+  svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+  /* ── E  Segmented toolbar ── */
+  .seg { display: flex; align-items: center; border: 1.5px solid #E8EDF2; border-radius: 11px; overflow: hidden; background: #fff; }
+  .seg button { height: 36px; padding: 0 14px; border: none; border-right: 1.5px solid #E8EDF2; font-size: 12px; font-weight: 700; color: #334155; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; white-space: nowrap; }
+  .seg button:last-child { border-right: none; }
+  .seg button.seg-primary { background: #1F9E94; color: #fff; }
+  .seg button:hover:not(.seg-primary) { background: #F8FAFC; }
+
+  /* ── F  Icon chip + label ── */
+  .f-btn { height: 36px; padding: 0 14px 0 6px; border: 1.5px solid #E8EDF2; border-radius: 10px; font-size: 12px; font-weight: 700; color: #334155; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; }
+  .f-btn .chip { width: 24px; height: 24px; border-radius: 6px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; color: #334155; flex-shrink: 0; }
+  .f-btn.f-primary { border-color: #1F9E94; background: #1F9E94; color: #fff; }
+  .f-btn.f-primary .chip { background: rgba(255,255,255,0.2); color: #fff; }
+
+  /* ── G  Elevated shadow ── */
+  .g-btn { height: 36px; padding: 0 16px; border: none; border-radius: 10px; font-size: 12px; font-weight: 700; color: #334155; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); }
+  .g-btn.g-primary { background: #0B1220; color: #fff; box-shadow: 0 2px 8px rgba(11,18,32,0.28), 0 1px 2px rgba(0,0,0,0.2); }
+
+  /* ── H  Minimal text + divider ── */
+  .h-group { display: flex; align-items: center; gap: 0; }
+  .h-btn { height: 36px; padding: 0 14px; border: none; border-radius: 0; font-size: 12px; font-weight: 700; color: #64748B; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; position: relative; }
+  .h-btn + .h-btn::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: #E8EDF2; }
+  .h-btn.h-primary { color: #1F9E94; font-weight: 800; }
+  .h-btn.h-primary::after { content: ''; position: absolute; bottom: 4px; left: 14px; right: 14px; height: 2px; background: #1F9E94; border-radius: 1px; }
+
+  /* ── I  Teal tinted secondary ── */
+  .i-btn { height: 36px; padding: 0 14px; border: none; border-radius: 10px; font-size: 12px; font-weight: 700; color: #177A72; background: #E6F7F6; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+  .i-btn.i-primary { background: #1F9E94; color: #fff; }
+
+  /* ── J  Large pill with dot accent ── */
+  .j-btn { height: 38px; padding: 0 16px; border: 1.5px solid #E8EDF2; border-radius: 999px; font-size: 12px; font-weight: 700; color: #334155; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; font-family: inherit; }
+  .j-btn .dot { width: 7px; height: 7px; border-radius: 50%; background: #CBD5E1; flex-shrink: 0; }
+  .j-btn.j-primary { background: #1F9E94; border-color: #1F9E94; color: #fff; }
+  .j-btn.j-primary .dot { background: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+
+<!-- E -->
+<section>
+  <div class="section-label">E — Segmented toolbar</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="seg">
+      <button><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Add Job</button>
+      <button><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Schedule</button>
+      <button class="seg-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Revenue</button>
+    </div>
+  </div>
+</section>
+
+<!-- F -->
+<section>
+  <div class="section-label">F — Icon chip inside button</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="btns">
+      <button class="f-btn"><span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>Add Job</button>
+      <button class="f-btn"><span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>Schedule</button>
+      <button class="f-btn f-primary"><span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Revenue</button>
+    </div>
+  </div>
+</section>
+
+<!-- G -->
+<section>
+  <div class="section-label">G — Elevated / floating</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="btns">
+      <button class="g-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Add Job</button>
+      <button class="g-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Schedule</button>
+      <button class="g-btn g-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Revenue</button>
+    </div>
+  </div>
+</section>
+
+<!-- H -->
+<section>
+  <div class="section-label">H — Minimal text with underline accent</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="h-group">
+      <button class="h-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Add Job</button>
+      <button class="h-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Schedule</button>
+      <button class="h-btn h-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Revenue</button>
+    </div>
+  </div>
+</section>
+
+<!-- I -->
+<section>
+  <div class="section-label">I — Teal tinted secondary</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="btns">
+      <button class="i-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Add Job</button>
+      <button class="i-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Schedule</button>
+      <button class="i-btn i-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Revenue</button>
+    </div>
+  </div>
+</section>
+
+<!-- J -->
+<section>
+  <div class="section-label">J — Pill with dot accent</div>
+  <div class="card">
+    <div><div class="card-title">Dashboard</div><div class="card-sub">Here's what's happening today.</div></div>
+    <div class="btns">
+      <button class="j-btn"><span class="dot"></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Add Job</button>
+      <button class="j-btn"><span class="dot"></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M16 3v4M8 3v4M3 10h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Schedule</button>
+      <button class="j-btn j-primary"><span class="dot"></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg> Revenue</button>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

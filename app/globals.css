@@ -21,7 +21,8 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
   /* Nothing may be wider than the screen, or phones zoom out to fit it */
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
@@ -53,4 +54,11 @@ body {
   display: block;
   flex: none;
   height: 1px;
+}
+/* Form controls do not inherit the page font by default */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }

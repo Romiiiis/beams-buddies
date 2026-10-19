@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { AppIcon } from '@/components/AppIcon'
+import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -19,7 +20,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -118,6 +119,14 @@ const STATUS_CONFIG: Record<string, { bg: string; color: string; border: string;
   converted: { bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3', label: 'Converted' },
 }
 
+const LEAD_TONE: Record<string, 'success' | 'warn' | 'neutral' | 'danger' | 'brand'> = {
+  booked: 'success',
+  pending: 'warn',
+  incomplete: 'neutral',
+  wrong_number: 'danger',
+  converted: 'brand',
+}
+
 function StatusBadge({ status }: { status: string }) {
   const s = STATUS_CONFIG[status] || { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: status }
   return (
@@ -127,7 +136,7 @@ function StatusBadge({ status }: { status: string }) {
         color: s.color,
         border: `1px solid ${s.border}`,
         padding: '6px 10px',
-        borderRadius: '999px',
+        borderRadius: '8px',
         fontSize: '10px',
         fontWeight: 800,
         whiteSpace: 'nowrap',
@@ -158,7 +167,7 @@ function JobTypeBadge({ type }: { type: string }) {
         color: s.color,
         border: `1px solid ${s.border}`,
         padding: '6px 10px',
-        borderRadius: '999px',
+        borderRadius: '8px',
         fontSize: '10px',
         fontWeight: 800,
         textTransform: 'capitalize',
@@ -301,14 +310,14 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
           </div>
         </div>
 
-        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
+        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gridAutoRows: 'max-content', alignContent: 'start', gap: '12px', background: BG }}>
           <div
             style={{
               background: WHITE,
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -326,7 +335,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -372,7 +381,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               border: `1px solid ${BORDER}`,
               borderRadius: '14px',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             }}
           >
             <div
@@ -399,7 +408,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                       style={{
                         height: '32px',
                         padding: '0 12px',
-                        borderRadius: '999px',
+                        borderRadius: '8px',
                         border: status === key ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
                         background: status === key ? TEAL : WHITE,
                         color: status === key ? WHITE : TEXT2,
@@ -455,7 +464,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
                 border: `1px solid ${BORDER}`,
                 borderRadius: '14px',
                 overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               }}
             >
               <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
@@ -640,6 +649,15 @@ export default function LeadsPage() {
       return matchSearch && matchStatus
     })
   }, [leads, search, filterStatus])
+
+  const statusTabs = [
+    { value: 'all', label: 'All leads', count: leads.length },
+    ...['pending', 'booked', 'converted', 'incomplete', 'wrong_number'].map(k => ({
+      value: k,
+      label: STATUS_CONFIG[k].label,
+      count: leads.filter(l => l.status === k).length,
+    })),
+  ]
 
   const handleUpdate = useCallback((updated: any) => {
     setLeads(prev => prev.map(l => (l.id === updated.id ? updated : l)))
@@ -912,320 +930,66 @@ export default function LeadsPage() {
             ))}
           </div>
 
-          <div style={card}>
-              <div
-                style={{
-                  padding: isMobile ? '16px' : '18px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '14px',
-                  background: WHITE,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Inbound calls</span>
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      Calls captured from Chloe, ready for follow-up and job conversion.
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                    width: isMobile ? '100%' : 'auto',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: isMobile ? '100%' : '320px',
-                      maxWidth: '100%',
-                      position: 'relative',
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: TEXT3,
-                        display: 'inline-flex',
-                      }}
-                    >
-                      <IconSearch size={15} />
-                    </span>
-
-                    <input
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                      placeholder="Search by name, phone, suburb..."
-                      style={{
-                        height: '42px',
-                        width: '100%',
-                        borderRadius: '12px',
-                        border: `1px solid ${BORDER}`,
-                        padding: '0 12px 0 38px',
-                        fontSize: '12px',
-                        background: '#F8FAFC',
-                        color: TEXT,
-                        fontFamily: FONT,
-                        outline: 'none',
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
-
-                  <select
-                    value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
-                    style={{
-                      height: '42px',
-                      minWidth: isMobile ? '100%' : '190px',
-                      width: isMobile ? '100%' : 'auto',
-                      padding: '0 12px',
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      background: '#F8FAFC',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      fontFamily: FONT,
-                      outline: 'none',
-                    }}
-                  >
-                    <option value="all">All</option>
-                    <option value="booked">Booked</option>
-                    <option value="pending">Pending</option>
-                    <option value="incomplete">Incomplete</option>
-                    <option value="converted">Converted</option>
-                    <option value="wrong_number">Wrong number</option>
-                  </select>
-                </div>
-              </div>
-
-              {!isMobile && filtered.length > 0 && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) 120px',
-                    gap: '14px',
-                    alignItems: 'center',
-                    padding: '11px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    background: '#FCFCFD',
-                  }}
-                >
-                  {['Lead', 'Suburb', 'Preferred booking', 'Call summary', 'Status'].map(label => (
-                    <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                      {label}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
-                  No leads yet. Calls from Chloe will appear here.
-                </div>
-              ) : (
-                filtered.map(lead => {
-                  const preferredBooking = lead.preferred_date
-                    ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}`
-                    : 'Not set'
-
-                  return (
-                    <div
-                      key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
-                      style={{
-                        display: isMobile ? 'block' : 'grid',
-                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) 120px',
-                        gap: isMobile ? undefined : '14px',
-                        alignItems: isMobile ? undefined : 'center',
-                        margin: isMobile ? '6px 12px' : '10px 12px',
-                        padding: '14px 16px',
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: '12px',
-                        background: WHITE,
-                        cursor: 'pointer',
-                        transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = TEAL_LIGHT
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = WHITE
-                      }}
-                    >
-                      {isMobile ? (
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                          <div
-                            style={{
-                              width: 42,
-                              height: 42,
-                              borderRadius: '12px',
-                              background: WHITE,
-                              border: `1px solid ${BORDER}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              color: TEXT2,
-                            }}
-                          >
-                            <IconPhone size={22} />
-                          </div>
-
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  fontWeight: 800,
-                                  color: TEXT,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {lead.customer_name}
-                              </div>
-                              <StatusBadge status={lead.status} />
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>
-                              {lead.phone_number || 'No phone saved'}
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
-                              {lead.suburb || 'No suburb saved'}
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <JobTypeBadge type={lead.job_type} />
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: preferredBooking === 'Not set' ? TEXT3 : TEAL_DARK }}>
-                                {preferredBooking === 'Not set' ? 'No booking set' : preferredBooking}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}>
-                            <IconArrow size={12} />
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div
-                                style={{
-                                  fontSize: '13px',
-                                  fontWeight: 850,
-                                  color: TEXT,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {lead.customer_name}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '11px',
-                                  color: TEXT3,
-                                  marginTop: '3px',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {lead.phone_number || 'No phone saved'}
-                              </div>
-                              <div style={{ marginTop: '6px' }}>
-                                <JobTypeBadge type={lead.job_type} />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 750,
-                                color: TEXT2,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.suburb || 'Not provided'}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '11px',
-                                color: TEXT3,
-                                marginTop: '3px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.address || 'No address saved'}
-                            </div>
-                          </div>
-
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: preferredBooking === 'Not set' ? TEXT3 : TEXT2 }}>{preferredBooking}</div>
-                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px' }}>Preferred time</div>
-                          </div>
-
-                          <div style={{ minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                color: TEXT3,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {lead.issue_summary || 'No summary recorded'}
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                            <StatusBadge status={lead.status} />
-                            <span style={{ color: TEXT3, display: 'inline-flex', alignItems: 'center' }}>
-                              <IconArrow size={12} />
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })
-              )}
-            </div>
+          <DataList<any>
+            title="Inbound calls"
+            isMobile={isMobile}
+            rows={filtered}
+            rowKey={lead => lead.id}
+            emptyText="No leads yet. Calls from Chloe will appear here."
+            onRowClick={lead => setSelectedLead(lead)}
+            rowActions={() => [{ label: 'View lead', onClick: lead => setSelectedLead(lead) }]}
+            tabs={statusTabs}
+            activeTab={filterStatus}
+            onTabChange={setFilterStatus}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by name, phone, suburb..."
+            columns={[
+              {
+                key: 'lead',
+                label: 'Lead',
+                width: 'minmax(0,1.3fr)',
+                render: lead => <PersonCell name={lead.customer_name || 'Unknown caller'} sub={lead.phone_number || 'No phone saved'} />,
+              },
+              {
+                key: 'type',
+                label: 'Job type',
+                width: '110px',
+                render: lead => (lead.job_type ? <JobTypeBadge type={lead.job_type} /> : <TextCell>—</TextCell>),
+              },
+              {
+                key: 'suburb',
+                label: 'Suburb',
+                width: 'minmax(0,1fr)',
+                hideOnMobile: true,
+                render: lead => <TitleCell title={lead.suburb || 'Not provided'} sub={lead.address || 'No address saved'} />,
+              },
+              {
+                key: 'booking',
+                label: 'Preferred booking',
+                width: 'minmax(0,1.1fr)',
+                mobileLabel: 'Booking',
+                render: lead => (
+                  <TextCell strong={!!lead.preferred_date}>
+                    {lead.preferred_date ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}` : 'Not set'}
+                  </TextCell>
+                ),
+              },
+              {
+                key: 'summary',
+                label: 'Call summary',
+                width: 'minmax(0,1.4fr)',
+                hideOnMobile: true,
+                render: lead => <TextCell>{lead.issue_summary || 'No summary recorded'}</TextCell>,
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                width: '120px',
+                render: lead => <StatusPill label={STATUS_CONFIG[lead.status]?.label || lead.status} tone={LEAD_TONE[lead.status] || 'neutral'} />,
+              },
+            ]}
+          />
         </div>
       </div>
 

@@ -2,9 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
+import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 
@@ -19,7 +21,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -132,6 +134,7 @@ function JobDrawer({
     borderRadius: '14px',
     overflow: 'hidden',
     padding: '16px',
+    flexShrink: 0,
   }
 
   const days = (() => {
@@ -255,7 +258,7 @@ function JobDrawer({
                 color: serviceColor,
                 border: `1px solid ${serviceBorder}`,
                 padding: '6px 12px',
-                borderRadius: '999px',
+                borderRadius: '8px',
                 fontSize: '11px',
                 fontWeight: 800,
                 display: 'inline-flex',
@@ -273,7 +276,7 @@ function JobDrawer({
                   color: TEAL_DARK,
                   border: '1px solid #BFE7E3',
                   padding: '6px 12px',
-                  borderRadius: '999px',
+                  borderRadius: '8px',
                   fontSize: '11px',
                   fontWeight: 800,
                 }}
@@ -284,7 +287,7 @@ function JobDrawer({
           </div>
         </div>
 
-        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gap: '12px', background: BG }}>
+        <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gridAutoRows: 'max-content', alignContent: 'start', gap: '12px', background: BG }}>
           <div style={fieldBox}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
@@ -585,6 +588,154 @@ function JobDrawer({
   )
 }
 
+function QrModal({
+  job,
+  onClose,
+  onCreated,
+}: {
+  job: any
+  onClose: () => void
+  onCreated: (updated: any) => void
+}) {
+  const [dataUrl, setDataUrl] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState('')
+  const customer = job.customers
+  const name = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() : 'Unknown customer'
+  const jobLine = `${job.brand || 'TBC'}${job.model ? ` ${job.model}` : ''}`
+  const registerUrl = job.qr_code_token ? `${typeof window !== 'undefined' ? window.location.origin : ''}/register/${job.qr_code_token}` : ''
+
+  useEffect(() => {
+    let cancelled = false
+    if (!registerUrl) {
+      setDataUrl('')
+      return
+    }
+    QRCode.toDataURL(registerUrl, { width: 260, margin: 1 }).then(url => {
+      if (!cancelled) setDataUrl(url)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [registerUrl])
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  async function createQr() {
+    setCreating(true)
+    setError('')
+    const token = crypto.randomUUID()
+    const { error: err } = await supabase.from('jobs').update({ qr_code_token: token }).eq('id', job.id)
+    setCreating(false)
+    if (err) {
+      setError('Could not create the QR code. Please try again.')
+      return
+    }
+    onCreated({ id: job.id, qr_code_token: token })
+  }
+
+  function saveQr() {
+    if (!dataUrl) return
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = `qr-${name.replace(/\s+/g, '-').toLowerCase()}.png`
+    a.click()
+  }
+
+  function printQr() {
+    if (!dataUrl) return
+    const w = window.open('', '_blank', 'width=480,height=640')
+    if (!w) return
+    w.document.write(
+      `<html><head><title>QR - ${name}</title></head><body style="font-family:sans-serif;text-align:center;padding:40px"><h2 style="margin:0 0 4px">${name}</h2><p style="margin:0 0 24px;color:#64748B">${jobLine}</p><img src="${dataUrl}" style="width:320px;height:320px" /></body></html>`
+    )
+    w.document.close()
+    w.focus()
+    w.onload = () => w.print()
+    setTimeout(() => w.print(), 400)
+  }
+
+  const modalBtn: React.CSSProperties = {
+    flex: 1,
+    height: '40px',
+    borderRadius: '10px',
+    border: `1px solid ${BORDER}`,
+    background: WHITE,
+    color: TEXT2,
+    fontFamily: FONT,
+    fontSize: '12px',
+    fontWeight: 800,
+    cursor: 'pointer',
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.45)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '380px', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: FONT }}
+      >
+        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '15px', fontWeight: 900, color: TEXT, letterSpacing: '-0.02em' }}>QR code</div>
+            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {name} · {jobLine}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontSize: '16px', color: TEXT3, flexShrink: 0 }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          {job.qr_code_token ? (
+            <>
+              <div style={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, borderRadius: '14px', background: WHITE }}>
+                {dataUrl ? <img src={dataUrl} alt={`QR code for ${name}`} style={{ width: 240, height: 240 }} /> : <span style={{ fontSize: '12px', color: TEXT3 }}>Generating...</span>}
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT3, textAlign: 'center' }}>Customers scan this to register their equipment.</div>
+              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                <button onClick={saveQr} disabled={!dataUrl} style={modalBtn}>
+                  Save
+                </button>
+                <button onClick={printQr} disabled={!dataUrl} style={{ ...modalBtn, background: TEAL, borderColor: TEAL, color: WHITE }}>
+                  Print
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ width: 260, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', border: `1px dashed ${BORDER}`, borderRadius: '14px', color: TEXT3, fontSize: '13px', fontWeight: 600, padding: '0 24px' }}>
+                This job doesn’t have a QR code yet.
+              </div>
+              <button
+                onClick={createQr}
+                disabled={creating}
+                style={{ width: '100%', height: '42px', borderRadius: '10px', border: 'none', background: TEAL, color: WHITE, fontFamily: FONT, fontSize: '13px', fontWeight: 800, cursor: creating ? 'default' : 'pointer', opacity: creating ? 0.7 : 1 }}
+              >
+                {creating ? 'Creating...' : 'Create QR code'}
+              </button>
+              {error && <div style={{ fontSize: '12px', color: RED, fontWeight: 600 }}>{error}</div>}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function JobsPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -592,7 +743,9 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState('all')
+  const [statusTab, setStatusTab] = useState('all')
   const [selectedJob, setSelectedJob] = useState<any | null>(null)
+  const [qrJobId, setQrJobId] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -632,9 +785,18 @@ export default function JobsPage() {
             .includes(search.toLowerCase())
         : true
       const matchType = filterType === 'all' ? true : j.equipment_type === filterType
-      return matchSearch && matchType
+      const days = daysUntil(j.install_date, j.service_interval_months)
+      const matchStatus =
+        statusTab === 'all'
+          ? true
+          : statusTab === 'overdue'
+          ? days !== null && days < 0
+          : statusTab === 'due-soon'
+          ? days !== null && days >= 0 && days <= 30
+          : days !== null && days > 30
+      return matchSearch && matchType && matchStatus
     })
-  }, [jobs, search, filterType])
+  }, [jobs, search, filterType, statusTab])
 
   function daysUntil(installDate: string, intervalMonths: number) {
     if (!installDate) return null
@@ -694,6 +856,13 @@ export default function JobsPage() {
     const d = daysUntil(j.install_date, j.service_interval_months)
     return d !== null && d > 30
   }).length
+
+  const statusTabs = [
+    { value: 'all', label: 'All jobs', count: jobs.length },
+    { value: 'overdue', label: 'Overdue', count: overdueCount },
+    { value: 'due-soon', label: 'Due soon', count: dueSoonCount },
+    { value: 'scheduled', label: 'Scheduled', count: upToDateCount },
+  ]
 
   const currentJobs = jobs.filter(j => inRange(j.install_date, startCurrent30, now)).length
   const prevJobs = jobs.filter(j => inRange(j.install_date, startPrev30, startCurrent30)).length
@@ -852,14 +1021,6 @@ export default function JobsPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Jobs
           </h1>
-          <button
-            onClick={() => router.push('/dashboard/jobs/add')}
-            style={btnPrimary}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-          >
-            Add job
-          </button>
         </div>
 
         <div className="page-content"
@@ -911,276 +1072,136 @@ export default function JobsPage() {
             ))}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '14px',
-              alignItems: 'start',
-            }}
-          >
-            <div style={card}>
-              <div
+          <DataList<any>
+            title="All jobs"
+            isMobile={isMobile}
+            rows={filtered}
+            rowKey={job => job.id}
+            loading={loading}
+            loadingText="Loading jobs..."
+            emptyText="No jobs yet. Add your first job or convert a lead to get started."
+            onRowClick={job => setSelectedJob(job)}
+            rowActions={() => [{ label: 'View / edit job', onClick: job => setSelectedJob(job) }]}
+            tabs={statusTabs}
+            activeTab={statusTab}
+            onTabChange={setStatusTab}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by name, brand, suburb..."
+            filters={
+              <select
+                value={filterType}
+                onChange={e => setFilterType(e.target.value)}
                 style={{
-                  padding: isMobile ? '16px' : '18px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '14px',
-                  background: WHITE,
+                  height: '38px',
+                  minWidth: '180px',
+                  padding: '0 12px',
+                  borderRadius: '12px',
+                  border: `1px solid ${BORDER}`,
+                  background: '#F8FAFC',
+                  color: TEXT2,
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  fontFamily: FONT,
+                  outline: 'none',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>All jobs</span>
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      View jobs, service timing, and customer details.
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                    width: isMobile ? '100%' : 'auto',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: isMobile ? '100%' : '320px',
-                      maxWidth: '100%',
+                {equipmentTypes.map(t => (
+                  <option key={t} value={t}>
+                    {t === 'all' ? 'All types' : getEquipmentLabel(t)}
+                  </option>
+                ))}
+              </select>
+            }
+            addLabel="Add job"
+            onAdd={() => router.push('/dashboard/jobs/add')}
+            columns={[
+              {
+                key: 'customer',
+                label: 'Customer',
+                width: 'minmax(0,1.3fr)',
+                render: job => {
+                  const c = job.customers
+                  const name = c ? `${c.first_name} ${c.last_name}`.trim() : 'Unknown customer'
+                  return <PersonCell name={name || 'Unknown customer'} sub={[c?.phone || 'No phone saved', c?.suburb].filter(Boolean).join(' · ')} />
+                },
+              },
+              {
+                key: 'job',
+                label: 'Job',
+                width: 'minmax(0,1.4fr)',
+                render: job => (
+                  <TitleCell
+                    title={`${job.brand || 'TBC'}${job.model ? ` ${job.model}` : ''}${job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}`}
+                    sub={[getEquipmentLabel(job.equipment_type) || 'Other', job.install_location].filter(Boolean).join(' · ')}
+                  />
+                ),
+              },
+              {
+                key: 'qr',
+                label: 'QR code',
+                width: '110px',
+                render: job => (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      setQrJobId(job.id)
                     }}
-                  >
-                    <input
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                      placeholder="Search by name, brand, suburb..."
-                      style={{
-                        height: '42px',
-                        width: '100%',
-                        borderRadius: '12px',
-                        border: `1px solid ${BORDER}`,
-                        padding: '0 12px',
-                        fontSize: '12px',
-                        background: '#F8FAFC',
-                        color: TEXT,
-                        fontFamily: FONT,
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
-
-                  <select
-                    value={filterType}
-                    onChange={e => setFilterType(e.target.value)}
                     style={{
-                      height: '42px',
-                      minWidth: isMobile ? '100%' : '180px',
-                      width: isMobile ? '100%' : '180px',
-                      padding: '0 12px',
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      background: '#F8FAFC',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: 0,
+                      border: 'none',
+                      background: 'transparent',
+                      color: job.qr_code_token ? TEAL_DARK : TEXT3,
                       fontFamily: FONT,
-                      outline: 'none',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
                     }}
                   >
-                    {equipmentTypes.map(t => (
-                      <option key={t} value={t}>
-                        {t === 'all' ? 'All types' : getEquipmentLabel(t)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {!isMobile && filtered.length > 0 && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px',
-                    gap: '14px',
-                    alignItems: 'center',
-                    padding: '11px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    background: '#FCFCFD',
-                  }}
-                >
-                  {['Customer', 'Job', 'Next service', 'Status'].map(label => (
-                    <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                      {label}
-                    </div>
-                  ))}
-                  <div />
-                </div>
-              )}
-
-              {loading ? (
-                <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>Loading jobs...</div>
-              ) : filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
-                  No jobs yet. Add your first job or convert a lead to get started.
-                </div>
-              ) : (
-                filtered.map(job => {
-                  const customer = job.customers
-                  const name = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unknown customer'
-                  const meta = serviceMeta(job)
-
-                  return (
-                    <div
-                      key={job.id}
-                      onClick={() => setSelectedJob(job)}
-                      style={{
-                        display: isMobile ? 'block' : 'grid',
-                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.55fr) minmax(0,1.25fr) 140px 120px',
-                        gap: isMobile ? undefined : '14px',
-                        alignItems: isMobile ? undefined : 'center',
-                        margin: isMobile ? '6px 12px' : '10px 12px',
-                        padding: '14px 16px',
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: '12px',
-                        background: WHITE,
-                        cursor: 'pointer',
-                        transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = TEAL_LIGHT
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = WHITE
-                      }}
-                    >
-                      {isMobile ? (
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-                              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {name}
-                              </div>
-
-                              <span
-                                style={{
-                                  background: meta.serviceBg,
-                                  color: meta.serviceColor,
-                                  border: `1px solid ${meta.serviceBorder}`,
-                                  padding: '3px 8px',
-                                  borderRadius: '999px',
-                                  fontSize: '9px',
-                                  fontWeight: 800,
-                                  whiteSpace: 'nowrap',
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {meta.serviceLabel}
-                              </span>
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>
-                              {customer?.phone || 'No phone saved'}
-                              {customer?.suburb ? ` · ${customer.suburb}` : ''}
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
-                              {job.brand || 'TBC'}
-                              {job.model ? ` ${job.model}` : ''}
-                              {job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT2 }}>
-                                {getEquipmentLabel(job.equipment_type) || 'Other'}
-                              </span>
-                              <div style={{ width: 1, height: 10, background: BORDER }} />
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: meta.next ? TEAL_DARK : TEXT3 }}>
-                                {meta.next ? `Next: ${meta.next}` : 'No service date'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div style={{ fontSize: '13px', fontWeight: 850, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {name}
-                              </div>
-                              <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {customer?.phone || 'No phone saved'}
-                                {customer?.suburb ? ` · ${customer.suburb}` : ''}
-                              </div>
-                              <div style={{ fontSize: '10px', fontWeight: 750, color: TEAL_DARK, marginTop: '5px' }}>
-                                {getEquipmentLabel(job.equipment_type) || 'Other'}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 750, color: TEXT2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.brand || 'TBC'}
-                              {job.model ? ` ${job.model}` : ''}
-                              {job.capacity_kw ? ` · ${formatCapacity(job.capacity_kw, business?.industry)}` : ''}
-                            </div>
-                            <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.install_location || 'No location recorded'}
-                            </div>
-                          </div>
-
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
-                            {meta.next || '—'}
-                          </div>
-
-                          <div>
-                            <span
-                              style={{
-                                background: meta.serviceBg,
-                                color: meta.serviceColor,
-                                border: `1px solid ${meta.serviceBorder}`,
-                                padding: '6px 9px',
-                                borderRadius: '999px',
-                                fontSize: '10px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                              }}
-                            >
-                              {meta.serviceLabel}
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })
-              )}
-            </div>
-
-          </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                      <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20h.01M17 20v-3" />
+                    </svg>
+                    {job.qr_code_token ? 'View QR' : 'Create QR'}
+                  </button>
+                ),
+              },
+              {
+                key: 'next',
+                label: 'Next service',
+                width: '130px',
+                mobileLabel: 'Next',
+                render: job => <TextCell>{serviceMeta(job).next || '—'}</TextCell>,
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                width: '120px',
+                render: job => {
+                  const m = serviceMeta(job)
+                  return <StatusPill label={m.serviceLabel} tone={m.isOverdue ? 'danger' : m.isDueSoon ? 'warn' : m.next ? 'brand' : 'neutral'} />
+                },
+              },
+            ]}
+          />
         </div>
       </div>
+
+      {qrJobId && jobs.find(j => j.id === qrJobId) && (
+        <QrModal
+          job={jobs.find(j => j.id === qrJobId)}
+          onClose={() => setQrJobId(null)}
+          onCreated={updateJobInList}
+        />
+      )}
 
       {selectedJob && (
         <JobDrawer

@@ -17,7 +17,7 @@ const TEXT3      = '#64748B'
 const BORDER     = '#E8EDF2'
 const BG         = '#FAFAFA'
 const WHITE      = '#FFFFFF'
-const FONT       = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT       = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -558,7 +558,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 1: Stat chips ── */}
-          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG }}>
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
               {statChips.map((chip, i) => {
                 const isAlert = chip.danger && chip.value > 0
@@ -592,9 +592,7 @@ export default function DashboardPage() {
               <div
                 key={mc.label}
                 onClick={mc.onClick}
-                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderLeft: `3px solid ${TEAL}` }}
-                onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 5px 16px rgba(0,0,0,0.09)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)')}
+                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderLeft: `3px solid ${TEAL}` }}
               >
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
                   {mc.label}
@@ -626,9 +624,6 @@ export default function DashboardPage() {
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Today&apos;s schedule</div>
-                    <div style={{ fontSize: '11px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>
-                      {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayJobs.length} job{todayJobs.length !== 1 ? 's' : ''}</span>
@@ -670,7 +665,7 @@ export default function DashboardPage() {
                       )}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 18 }}>
                         <div style={{ width: 2, flex: 1, background: isFirst ? 'transparent' : BORDER }} />
-                        <div style={{ width: isFirst ? 13 : 10, height: isFirst ? 13 : 10, borderRadius: '50%', background: isFirst ? TEAL : BORDER, border: `2px solid ${WHITE}`, flexShrink: 0, zIndex: 1, marginLeft: isFirst ? '-1.5px' : 0, boxShadow: isFirst ? `0 0 0 4px ${TEAL_LIGHT}` : 'none' }} />
+                        <div style={{ width: isFirst ? 13 : 10, height: isFirst ? 13 : 10, borderRadius: '50%', background: isFirst ? TEAL : BORDER, border: `2px solid ${WHITE}`, flexShrink: 0, zIndex: 1, marginLeft: isFirst ? '-1.5px' : 0, }} />
                         <div style={{ width: 2, flex: 1, background: isLast ? 'transparent' : BORDER }} />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '12px 0 12px 12px', minWidth: 0 }}>

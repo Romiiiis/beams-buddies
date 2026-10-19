@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -19,7 +20,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -118,7 +119,7 @@ function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
         alignItems: 'center',
         gap: '5px',
         padding: '6px 9px',
-        borderRadius: '999px',
+        borderRadius: '8px',
         background: st.pillBg,
         border: `1px solid ${st.pillBorder}`,
         fontSize: '10px',
@@ -451,8 +452,8 @@ export default function SchedulePage() {
 
           <div style={{ padding: isMobile ? '0 12px' : 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {overdueJobs.length > 0 && (
-              <div style={{ background: WHITE, border: `1px solid #FECACA`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: `1px solid #FECACA`, gap: '10px', background: '#FFF7F7' }}>
+              <div style={{ background: WHITE, border: `1px solid #FECACA`, borderRadius: '14px', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', gap: '10px', background: '#FFF7F7' }}>
                   <div style={{ width: 4, height: 28, borderRadius: '999px', background: RED, flexShrink: 0 }} />
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#991B1B', flex: 1 }}>
                     {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''}
@@ -460,8 +461,8 @@ export default function SchedulePage() {
                   <button
                     onClick={() => setFilter('overdue')}
                     style={{
-                      height: '28px',
-                      padding: '0 10px',
+                      height: '30px',
+                      padding: '0 12px',
                       background: WHITE,
                       border: `1px solid #FECACA`,
                       borderRadius: '8px',
@@ -479,383 +480,105 @@ export default function SchedulePage() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0,1fr))' }}>
-                  {overdueJobs.slice(0, 4).map((job, i, arr) => {
-                    const days = Math.abs(getDays(job.next_service_date))
-                    const isLast = i >= arr.length - (isMobile ? 1 : 2)
-
-                    return (
-                      <div
-                        key={job.id}
-                        onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                        style={{
-                          padding: '11px 16px',
-                          borderBottom: isLast ? 'none' : `1px solid ${BORDER}`,
-                          borderRight: !isMobile && i % 2 === 0 ? `1px solid ${BORDER}` : 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '12px',
-                          background: WHITE,
-                          transition: 'background 0.1s',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.background = '#F8FAFC'
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.background = WHITE
-                        }}
-                      >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.customers?.first_name} {job.customers?.last_name}
-                          </div>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {job.brand} {formatCapacity(job.capacity_kw, business?.industry)} · {job.customers?.suburb || '—'}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 8px', borderRadius: '999px', background: '#FEE2E2', border: '1px solid #FECACA', flexShrink: 0 }}>
-                          <span style={{ fontSize: '11px', fontWeight: 800, color: RED }}>{days}d overdue</span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
               </div>
             )}
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr',
+                gridTemplateColumns: 'minmax(0,1fr)',
                 gap: '14px',
                 alignItems: 'start',
               }}
             >
-              <div style={card}>
-                <div
-                  style={{
-                    padding: isMobile ? '16px 16px 0' : '18px 20px 0',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '14px',
-                    background: WHITE,
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Scheduled services</span>
-                      </div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                        Track upcoming service timing, customer details, and reminder actions.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
-                    {FILTER_TABS.map(tab => {
-                      const active = filter === tab.key
-                      const count = tab.key === 'all' ? counts.all : tab.key === 'overdue' ? counts.overdue : tab.key === 'due_soon' ? counts.due_soon : counts.good
-
-                      return (
-                        <button
-                          key={tab.key}
-                          onClick={() => setFilter(tab.key)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            height: '34px',
-                            padding: '0 12px',
-                            borderRadius: '8px 8px 0 0',
-                            border: 'none',
-                            borderBottom: active ? `2px solid ${TEAL}` : '2px solid transparent',
-                            background: 'transparent',
-                            color: active ? TEAL : TEXT3,
-                            fontSize: '12px',
-                            fontWeight: active ? 800 : 600,
-                            fontFamily: FONT,
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap' as const,
-                            flexShrink: 0,
-                            transition: 'all 0.12s',
-                          }}
-                        >
-                          {tab.label}
-                          {count > 0 && (
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: 800,
-                                padding: '1px 5px',
-                                borderRadius: '999px',
-                                background: active ? TEAL : '#E8EDF3',
-                                color: active ? WHITE : TEXT3,
-                                lineHeight: 1.4,
-                              }}
-                            >
-                              {count}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                    <div style={{ flex: 1, borderBottom: `1px solid ${BORDER}` }} />
-                  </div>
-                </div>
-
-                {!isMobile && filtered.length > 0 && (
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '28px minmax(0,1.8fr) minmax(0,1.1fr) minmax(0,1fr) 180px',
-                      gap: '0',
-                      padding: '0 20px',
-                      background: '#FCFCFD',
-                      borderTop: `1px solid ${BORDER}`,
-                      borderBottom: `1px solid ${BORDER}`,
-                      alignItems: 'center',
-                      height: '38px',
-                    }}
-                  >
-                    <div />
-                    <div style={{ ...TYPE.label, paddingRight: '12px' }}>Customer</div>
-                    <div style={TYPE.label}>Job</div>
-                    <div style={TYPE.label}>Service timing</div>
-                    <div style={{ ...TYPE.label, textAlign: 'right' as const }}>Actions</div>
-                  </div>
-                )}
-
-                {filtered.length === 0 ? (
-                  <div style={{ padding: '56px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ fontSize: '32px', opacity: 0.25 }}>📅</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT2 }}>No services in this category</div>
-                    <div style={{ fontSize: '12px', color: TEXT3 }}>Try a different filter above.</div>
-                  </div>
-                ) : (
-                  <div>
-                    {filtered.map(job => {
+              <DataList<any>
+                title="Scheduled services"
+                isMobile={isMobile}
+                rows={filtered}
+                rowKey={job => job.id}
+                loading={loading}
+                loadingText="Loading..."
+                emptyText="No services in this category."
+                onRowClick={job => router.push(`/dashboard/customers/${job.customer_id}`)}
+                tabs={FILTER_TABS.map(t => ({
+                  value: t.key,
+                  label: t.label,
+                  count: t.key === 'all' ? counts.all : t.key === 'overdue' ? counts.overdue : t.key === 'due_soon' ? counts.due_soon : counts.good,
+                }))}
+                activeTab={filter}
+                onTabChange={setFilter}
+                columns={[
+                  {
+                    key: 'customer',
+                    label: 'Customer',
+                    width: 'minmax(0,1.5fr)',
+                    render: job => (
+                      <PersonCell
+                        name={`${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Unknown customer'}
+                        sub={[job.customers?.suburb || '—', job.customers?.email || job.customers?.phone].filter(Boolean).join(' · ')}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'job',
+                    label: 'Job',
+                    width: 'minmax(0,1.1fr)',
+                    hideOnMobile: true,
+                    render: job => (
+                      <TitleCell
+                        title={`${job.brand || '—'} ${formatCapacity(job.capacity_kw, business?.industry)}`.trim()}
+                        sub={job.equipment_type ? getEquipmentLabel(job.equipment_type) : 'No type set'}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'timing',
+                    label: 'Service timing',
+                    width: 'minmax(0,1fr)',
+                    mobileLabel: 'Timing',
+                    render: job => {
                       const u = job.next_service_date ? getUrgency(job.next_service_date) : null
-
-                      if (isMobile) {
-                        return (
-                          <div
-                            key={job.id}
-                            onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                            style={{ borderTop: `1px solid ${BORDER}`, background: WHITE, cursor: 'pointer' }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = '#FAFBFC'
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = WHITE
-                            }}
-                          >
-                            <div style={{ display: 'grid', gridTemplateColumns: '3px 1fr' }}>
-                              <div style={{ background: u?.accentBar || BORDER }} />
-                              <div style={{ padding: '14px 14px 14px 12px' }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '10px' }}>
-                                  <div style={{ minWidth: 0 }}>
-                                    <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2, marginBottom: '3px' }}>
-                                      {job.customers?.first_name} {job.customers?.last_name}
-                                    </div>
-                                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>{job.customers?.suburb || '—'}</div>
-                                  </div>
-                                  {u && <UrgencyPill status={u.status} />}
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                                  <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Job</div>
-                                    <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>
-                                      {job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}
-                                    </div>
-                                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>
-                                      {job.equipment_type ? getEquipmentLabel(job.equipment_type) : '—'}
-                                    </div>
-                                  </div>
-
-                                  <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Timing</div>
-                                    <div style={{ fontSize: '12px', fontWeight: 800, color: u?.valColor || TEXT }}>{u?.sub || 'No date'}</div>
-                                    <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{u?.dateLabel || '—'}</div>
-                                  </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '8px' }} onClick={e => e.stopPropagation()}>
-                                  <button
-                                    style={{
-                                      flex: 1,
-                                      height: '34px',
-                                      borderRadius: '9px',
-                                      border: `1px solid ${BORDER}`,
-                                      background: WHITE,
-                                      color: TEXT2,
-                                      fontSize: '12px',
-                                      fontWeight: 700,
-                                      cursor: 'pointer',
-                                      fontFamily: FONT,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      gap: '6px',
-                                    }}
-                                  >
-                                    <IconMail size={13} /> Email
-                                  </button>
-
-                                  <button
-                                    style={{
-                                      flex: 1,
-                                      height: '34px',
-                                      borderRadius: '9px',
-                                      border: 'none',
-                                      background: TEAL,
-                                      color: WHITE,
-                                      fontSize: '12px',
-                                      fontWeight: 700,
-                                      cursor: 'pointer',
-                                      fontFamily: FONT,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      gap: '6px',
-                                    }}
-                                  >
-                                    <IconSms size={13} /> SMS
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      }
-
                       return (
-                        <div
-                          key={job.id}
-                          onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: '28px minmax(0,1.8fr) minmax(0,1.1fr) minmax(0,1fr) 180px',
-                            gap: '0',
-                            borderTop: `1px solid ${BORDER}`,
-                            background: WHITE,
-                            cursor: 'pointer',
-                            alignItems: 'center',
-                            minHeight: '64px',
-                            transition: 'background 0.1s',
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.background = '#F8FAFC'
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.background = WHITE
-                          }}
-                        >
-                          <div style={{ height: '100%', width: '3px', background: u?.accentBar || BORDER, marginLeft: '6px', borderRadius: '2px', alignSelf: 'stretch', minHeight: '64px' }} />
-
-                          <div style={{ padding: '0 12px 0 10px', minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {job.customers?.first_name} {job.customers?.last_name}
-                              </div>
-                              {u && <UrgencyPill status={u.status} />}
-                            </div>
-                            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.customers?.suburb || '—'}
-                              {job.customers?.email || job.customers?.phone ? <span style={{ color: '#C4CCDA' }}> · {job.customers?.email || job.customers?.phone}</span> : ''}
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '0 12px 0 0', minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}
-                            </div>
-                            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {job.equipment_type ? getEquipmentLabel(job.equipment_type) : 'No type set'}
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '0 12px 0 0', minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 800, color: u?.valColor || TEXT3 }}>{u?.sub || 'No date set'}</div>
-                            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{u?.dateLabel || '—'}</div>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', paddingRight: '16px' }} onClick={e => e.stopPropagation()}>
-                            <button
-                              style={{
-                                height: '30px',
-                                padding: '0 10px',
-                                borderRadius: '8px',
-                                border: `1px solid ${BORDER}`,
-                                background: WHITE,
-                                color: TEXT2,
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                fontFamily: FONT,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                transition: 'all 0.1s',
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.background = '#F1F5F9'
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.background = WHITE
-                              }}
-                            >
-                              <IconMail size={12} /> Email
-                            </button>
-
-                            <button
-                              style={{
-                                height: '30px',
-                                padding: '0 10px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                background: TEAL,
-                                color: WHITE,
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                fontFamily: FONT,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                transition: 'opacity 0.1s',
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.opacity = '0.85'
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.opacity = '1'
-                              }}
-                            >
-                              <IconSms size={12} /> SMS
-                            </button>
-                          </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: u?.valColor || TEXT3, whiteSpace: 'nowrap' }}>{u?.sub || 'No date set'}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 2, whiteSpace: 'nowrap' }}>{u?.dateLabel || '—'}</div>
                         </div>
                       )
-                    })}
-
-                    <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
-                        Showing {filtered.length} of {jobs.length} scheduled jobs
-                      </span>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>
-                        {counts.overdue > 0 && <span style={{ color: RED }}>{counts.overdue} overdue · </span>}
-                        {counts.due_soon} due within 30d
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                    },
+                  },
+                  {
+                    key: 'status',
+                    label: 'Status',
+                    width: '110px',
+                    render: job => {
+                      const u = job.next_service_date ? getUrgency(job.next_service_date) : null
+                      if (!u) return <StatusPill label="No date" tone="neutral" />
+                      return <StatusPill label={u.status === 'overdue' ? 'Overdue' : u.status === 'due_soon' ? 'Due soon' : 'On track'} tone={u.status === 'overdue' ? 'danger' : u.status === 'due_soon' ? 'warn' : 'success'} />
+                    },
+                  },
+                  {
+                    key: 'actions',
+                    label: 'Actions',
+                    width: '160px',
+                    align: 'right',
+                    hideOnMobile: true,
+                    render: () => (
+                      <div style={{ display: 'inline-flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
+                        <button
+                          style={{ height: '30px', padding: '0 10px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <IconMail size={12} /> Email
+                        </button>
+                        <button
+                          style={{ height: '30px', padding: '0 10px', borderRadius: '8px', border: 'none', background: TEAL, color: WHITE, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <IconSms size={12} /> SMS
+                        </button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
 
             </div>
           </div>

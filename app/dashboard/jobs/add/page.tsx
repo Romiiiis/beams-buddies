@@ -19,7 +19,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -456,12 +456,9 @@ export default function AddJobPage() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                  <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New job workflow</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      Add the customer, installation details, and reminder timing in one pass.
-                    </div>
                   </div>
                 </div>
 
@@ -469,7 +466,7 @@ export default function AddJobPage() {
                   style={{
                     height: '22px',
                     padding: '0 8px',
-                    borderRadius: '999px',
+                    borderRadius: '8px',
                     border: `1px solid #BFE7E3`,
                     background: TEAL_LIGHT,
                     color: TEAL_DARK,

@@ -11,7 +11,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E2E8F0'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -86,7 +86,7 @@ export default function LoginPage() {
             background: WHITE,
             border: `1px solid ${BORDER}`,
             borderRadius: '20px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             boxSizing: 'border-box',
           }}
         >

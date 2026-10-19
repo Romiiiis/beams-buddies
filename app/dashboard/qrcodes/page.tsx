@@ -18,7 +18,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -133,7 +133,8 @@ export default function QRCodesPage() {
 
       const jobRows = data || []
       setJobs(jobRows)
-      if (jobRows.length > 0) setSelectedJobId(jobRows[0].id)
+      const wanted = new URLSearchParams(window.location.search).get('job')
+      if (jobRows.length > 0) setSelectedJobId(jobRows.find(j => j.id === wanted)?.id || jobRows[0].id)
 
       const urls: Record<string, string> = {}
 
@@ -308,7 +309,7 @@ export default function QRCodesPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
-        <Sidebar active="/dashboard/qrcodes" />
+        <Sidebar active="/dashboard/jobs" />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>
           Generating QR codes...
         </div>
@@ -318,9 +319,28 @@ export default function QRCodesPage() {
 
   return (
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
-      <Sidebar active="/dashboard/qrcodes" />
+      <Sidebar active="/dashboard/jobs" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
+        {!isMobile && (
+          <div
+            style={{
+              background: BG,
+              borderBottom: `1px solid ${BORDER}`,
+              padding: '16px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}
+          >
+            <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>QR codes</h1>
+            <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}>
+              ← Back to jobs
+            </button>
+          </div>
+        )}
+
         <div className="page-content"
           style={{
             padding: isMobile ? '0' : '20px 24px',
@@ -334,15 +354,12 @@ export default function QRCodesPage() {
           {isMobile ? (
             <div style={{ padding: '20px 12px 4px' }}>
               <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </div>
                 <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>QR Codes</h1>
               </div>
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                 <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>
-                  <IconPlus size={12} /> Add Job
+                  ← Back to jobs
                 </button>
                 <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>
                   Customers
@@ -386,43 +403,6 @@ export default function QRCodesPage() {
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '5px' }}>{todayStr}</div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>QR Codes</h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => router.push('/dashboard/customers')}
-                    style={btnOutline}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = TEXT
-                      e.currentTarget.style.color = TEXT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = BORDER
-                      e.currentTarget.style.color = TEXT2
-                    }}
-                  >
-                    View customers
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/dashboard/jobs')}
-                    style={btnTeal}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = '0.82'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                  >
-                    <IconPlus size={14} /> Add Job
-                  </button>
-                </div>
-              </div>
-
               <div
                 style={{
                   background: WHITE,
@@ -475,13 +455,10 @@ export default function QRCodesPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>QR job library</span>
-                      </div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                        Select a job to preview, save, or print its customer registration QR code.
                       </div>
                     </div>
                   </div>
@@ -589,7 +566,7 @@ export default function QRCodesPage() {
                                         alignItems: 'center',
                                         gap: '4px',
                                         padding: '3px 8px',
-                                        borderRadius: '999px',
+                                        borderRadius: '8px',
                                         background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
                                         border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
                                         fontSize: '10px',
@@ -608,7 +585,7 @@ export default function QRCodesPage() {
                                         alignItems: 'center',
                                         gap: '5px',
                                         padding: '4px 9px',
-                                        borderRadius: '999px',
+                                        borderRadius: '8px',
                                         background: isSelected ? '#DDF7F5' : '#F1F5F9',
                                         border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`,
                                         fontSize: '10px',
@@ -689,7 +666,7 @@ export default function QRCodesPage() {
                                   alignItems: 'center',
                                   gap: '5px',
                                   padding: '4px 9px',
-                                  borderRadius: '999px',
+                                  borderRadius: '8px',
                                   background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
                                   border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
                                   fontSize: '10px',
@@ -710,7 +687,7 @@ export default function QRCodesPage() {
                                   alignItems: 'center',
                                   gap: '5px',
                                   padding: '4px 9px',
-                                  borderRadius: '999px',
+                                  borderRadius: '8px',
                                   background: isSelected ? '#DDF7F5' : hasQR ? '#F0FBFA' : '#F1F5F9',
                                   border: `1px solid ${isSelected ? '#B8ECE7' : hasQR ? '#BBF7D0' : BORDER}`,
                                   fontSize: '10px',
@@ -746,7 +723,6 @@ export default function QRCodesPage() {
                       <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Selected QR</div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Preview and export</div>
                       </div>
                     </div>
 
@@ -778,7 +754,7 @@ export default function QRCodesPage() {
                             alignItems: 'center',
                             gap: '5px',
                             padding: '4px 10px',
-                            borderRadius: '999px',
+                            borderRadius: '8px',
                             background: '#F0FBFA',
                             border: '1px solid #BBF7D0',
                             fontSize: '10px',
@@ -807,7 +783,7 @@ export default function QRCodesPage() {
                               alignItems: 'center',
                               gap: '5px',
                               padding: '4px 10px',
-                              borderRadius: '999px',
+                              borderRadius: '8px',
                               flexShrink: 0,
                               background: selectedJob.review_link_clicked ? '#F0FBFA' : '#FFF7ED',
                               border: `1px solid ${selectedJob.review_link_clicked ? '#BBF7D0' : '#FDE68A'}`,

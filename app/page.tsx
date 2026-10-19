@@ -4,7 +4,7 @@ const TEAL = '#2AA198'
 const TEXT = '#0B1220'
 const TEXT3 = '#64748B'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 // Layout lives in CSS (not inline styles) so phones get a stacked layout from the very
 // first paint; this page is server-rendered, so there's no useIsMobile hook to rely on.

@@ -12,7 +12,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 interface Platform {
   id: string
@@ -144,7 +144,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     background: WHITE,
     border: `1px solid ${BORDER}`,
     borderRadius: '16px',
-    boxShadow: '0 4px 16px rgba(15,23,42,0.05)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
     overflow: 'hidden',
   }
 

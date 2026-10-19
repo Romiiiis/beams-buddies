@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+
+// One typeface for the whole CRM. Pages reference it through the --font-sans variable.
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
 
 // Lock the initial zoom to the phone's width. Pages render a desktop layout for a moment
 // before switching to mobile, and without a max scale iOS zooms out to fit that first
@@ -25,12 +29,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ background: '#FAFAFA' }}>
+    <html lang="en" className={inter.variable} style={{ background: '#FAFAFA' }}>
       <head>
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="apple-touch-icon" href="/jobyra-logo.png" />
       </head>
-      <body style={{ margin: 0, padding: 0, background: '#FAFAFA' }}>
+      <body suppressHydrationWarning style={{ margin: 0, padding: 0, background: '#FAFAFA' }}>
         {children}
       </body>
     </html>

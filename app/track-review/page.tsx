@@ -18,7 +18,7 @@ function CenterState({ text }: { text: string }) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
       <div

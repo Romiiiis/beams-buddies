@@ -15,7 +15,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -689,7 +689,7 @@ export default function ReportsPage() {
     const totalCount = data.reduce((sum, item) => sum + item[1], 0)
 
     return (
-      <div style={{ ...card, borderRadius: '18px', border: `1px solid ${BORDER}`, boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
+      <div style={{ ...card, borderRadius: '18px', border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
         <div
           style={{
             padding: isMobile ? '16px' : '18px 20px',
@@ -702,14 +702,13 @@ export default function ReportsPage() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-            <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>
                   {title}
                 </span>
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{subtitle}</div>
             </div>
           </div>
 
@@ -784,7 +783,7 @@ export default function ReportsPage() {
                         style={{
                           minWidth: 34,
                           height: 28,
-                          borderRadius: '999px',
+                          borderRadius: '8px',
                           background: '#F8FAFC',
                           border: `1px solid ${BORDER}`,
                           color: TEXT,
@@ -897,24 +896,17 @@ export default function ReportsPage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                    <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT3, marginBottom: '5px' }}>
-                        Last 6 months
-                      </div>
-                      <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                        {trendConfig.title}
-                      </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {trendConfig.title}
                     </div>
                   </div>
 
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
                     <select
                       value={reportView}
@@ -974,6 +966,7 @@ export default function ReportsPage() {
                     }}
                   >
                     {trendConfig.pill}
+                  </div>
                   </div>
                 </div>
 

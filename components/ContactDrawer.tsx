@@ -9,7 +9,7 @@ const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function IconPhone({ size = 15 }: { size?: number }) {
   return <AppIcon name="call" size={size} />

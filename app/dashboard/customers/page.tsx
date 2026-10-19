@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { AppIcon } from '@/components/AppIcon'
+import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -15,7 +16,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -111,6 +112,7 @@ export default function CustomersPage() {
   const [totalPlatforms, setTotalPlatforms] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [statusTab, setStatusTab] = useState('all')
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', phone: '', email: '' })
@@ -235,15 +237,35 @@ export default function CustomersPage() {
     return { label: 'Good', bg: '#F1F5F9', color: TEXT3, border: BORDER }
   }
 
-  const filtered = useMemo(() => {
-    if (!search) return customers
+  const STATUS_TONE: Record<string, 'danger' | 'warn' | 'brand' | 'success' | 'neutral'> = {
+    Overdue: 'danger',
+    'Due soon': 'warn',
+    Scheduled: 'brand',
+    Good: 'success',
+  }
 
-    return customers.filter((c) =>
-      `${c.first_name || ''} ${c.last_name || ''} ${c.email || ''} ${c.phone || ''} ${c.suburb || ''} ${c.address || ''}`
+  function nextServiceLabel(jobs: any[]) {
+    const next = [...(jobs || [])]
+      .filter((j: any) => j?.next_service_date)
+      .sort((a: any, b: any) => (parseDateLocal(a.next_service_date)?.getTime() || 0) - (parseDateLocal(b.next_service_date)?.getTime() || 0))[0]
+    if (!next) return 'Not set'
+    return parseDateLocal(next.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) || 'Not set'
+  }
+
+  const filtered = useMemo(() => {
+    return customers.filter((c) => {
+      if (statusTab !== 'all' && statusPill(c.jobs).label !== statusTab) return false
+      if (!search) return true
+      return `${c.first_name || ''} ${c.last_name || ''} ${c.email || ''} ${c.phone || ''} ${c.suburb || ''} ${c.address || ''}`
         .toLowerCase()
         .includes(search.toLowerCase())
-    )
-  }, [customers, search])
+    })
+  }, [customers, search, statusTab])
+
+  const statusTabs = ['Overdue', 'Due soon', 'Scheduled', 'Good'].reduce(
+    (tabs, label) => [...tabs, { value: label, label, count: customers.filter((c) => statusPill(c.jobs).label === label).length }],
+    [{ value: 'all', label: 'All customers', count: customers.length }] as { value: string; label: string; count: number }[]
+  )
 
   const stats = useMemo(() => {
     const totalCustomers = customers.length
@@ -423,14 +445,6 @@ export default function CustomersPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Customers
           </h1>
-          <button
-            onClick={() => setShowAddCustomer(true)}
-            style={btnTeal}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85' }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-          >
-            <IconPlus size={12} /> New Customer
-          </button>
         </div>
 
         {/* Scrollable content */}
@@ -489,411 +503,77 @@ export default function CustomersPage() {
           </div>
 
           {/* Customer directory card */}
-          <div style={card}>
-            <div
-              style={{
-                padding: '13px 18px',
-                borderBottom: `1px solid ${BORDER}`,
-                display: 'flex',
-                alignItems: isMobile ? 'stretch' : 'center',
-                justifyContent: 'space-between',
-                flexDirection: isMobile ? 'column' : 'row',
-                gap: '12px',
-              }}
-            >
-              <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>
-                Customer Directory
-              </span>
-
-              <div style={{ width: isMobile ? '100%' : '340px', maxWidth: '100%', position: 'relative' }}>
-                <span
-                  style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: TEXT3,
-                    display: 'inline-flex',
-                  }}
-                >
-                  <IconSearch size={15} />
-                </span>
-
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search customers, contact, suburb..."
-                  style={{
-                    height: '42px',
-                    width: '100%',
-                    borderRadius: '12px',
-                    border: `1px solid ${BORDER}`,
-                    padding: '0 12px 0 38px',
-                    fontSize: '12px',
-                    background: '#F8FAFC',
-                    color: TEXT,
-                    fontFamily: FONT,
-                    outline: 'none',
-                    fontWeight: 600,
-                  }}
-                />
-              </div>
-            </div>
-
-            {!isMobile && filtered.length > 0 && (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px',
-                  gap: '14px',
-                  alignItems: 'center',
-                  padding: '11px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  background: '#FCFCFD',
-                }}
-              >
-                {['Customer', 'Contact', 'Jobs', 'Next maintenance', 'Status'].map((label) => (
-                  <div
-                    key={label}
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: TEXT3,
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {label}
-                  </div>
-                ))}
-
-                <div />
-              </div>
-            )}
-
-            {filtered.length === 0 ? (
-              <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: '13px' }}>
-                No matching customers.
-              </div>
-            ) : (
-              filtered.map((c) => {
-                const s = statusPill(c.jobs)
-
-                const nextJob = [...(c.jobs || [])]
-                  .filter((j: any) => j?.next_service_date)
-                  .sort((a: any, b: any) => {
-                    const ad = parseDateLocal(a.next_service_date)?.getTime() || 0
-                    const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
-                    return ad - bd
-                  })[0]
-
-                const unitCount = c.jobs?.length || 0
-                const latestUnit = c.jobs?.[0]
-                const reviewCount = reviewClicks[c.id] || 0
-                const contactLine = c.email || c.phone || 'No contact saved'
-                const secondaryContact = c.email && c.phone ? c.phone : ''
-                const addressLine = c.address || c.suburb || 'No address saved'
-                const unitLine =
-                  latestUnit?.brand || latestUnit?.model
-                    ? `${latestUnit?.brand || ''} ${latestUnit?.model || ''}`.trim()
-                    : 'No job details'
-                const serviceDate = nextJob?.next_service_date
-                  ? parseDateLocal(nextJob.next_service_date)?.toLocaleDateString('en-AU', {
-                      day: 'numeric',
-                      month: 'short',
-                    })
-                  : 'Not set'
-
-                return (
-                  <div
-                    key={c.id}
-                    onClick={() => router.push(`/dashboard/customers/${c.id}`)}
-                    style={{
-                      display: isMobile ? 'block' : 'grid',
-                      gridTemplateColumns: isMobile
-                        ? undefined
-                        : 'minmax(0,1.55fr) minmax(0,1.3fr) 128px 128px 112px 28px',
-                      gap: isMobile ? undefined : '14px',
-                      alignItems: isMobile ? undefined : 'center',
-                      margin: isMobile ? '6px 12px' : '10px 12px',
-                      padding: '14px 16px',
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: '12px',
-                      background: WHITE,
-                      cursor: 'pointer',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = WHITE
-                    }}
-                  >
-                    {isMobile ? (
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                        <div
-                          style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: '12px',
-                            background: TEAL_LIGHT,
-                            border: `1px solid #BFE7E3`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 800,
-                              color: TEAL_DARK,
-                              letterSpacing: '-0.02em',
-                            }}
-                          >
-                            {(c.first_name?.[0] || '').toUpperCase()}
-                            {(c.last_name?.[0] || '').toUpperCase()}
-                          </span>
-                        </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '8px',
-                              marginBottom: '4px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: '14px',
-                                fontWeight: 800,
-                                color: TEXT,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {c.first_name} {c.last_name}
-                            </div>
-
-                            <span
-                              style={{
-                                background: s.bg,
-                                color: s.color,
-                                border: `1px solid ${s.border}`,
-                                padding: '3px 8px',
-                                borderRadius: '999px',
-                                fontSize: '9px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0,
-                              }}
-                            >
-                              {s.label}
-                            </span>
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              marginBottom: '2px',
-                            }}
-                          >
-                            {contactLine}
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              marginBottom: '8px',
-                            }}
-                          >
-                            {addressLine}
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT2 }}>
-                                {unitCount} job{unitCount === 1 ? '' : 's'}
-                              </span>
-
-                              {unitLine !== 'No job details' && (
-                                <span style={{ fontSize: '10px', color: TEXT3 }}>· {unitLine}</span>
-                              )}
-                            </div>
-
-                            <div style={{ width: 1, height: 10, background: BORDER }} />
-
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: 700,
-                                color: serviceDate === 'Not set' ? TEXT3 : TEAL_DARK,
-                              }}
-                            >
-                              {serviceDate === 'Not set' ? 'No service date' : `Next: ${serviceDate}`}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}>
-                          <IconArrow size={12} />
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                          <div
-                            style={{
-                              width: 4,
-                              alignSelf: 'stretch',
-                              minHeight: 46,
-                              borderRadius: '999px',
-                              background: TEAL,
-                              flexShrink: 0,
-                            }}
-                          />
-
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div
-                              style={{
-                                fontSize: '13px',
-                                fontWeight: 850,
-                                color: TEXT,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {c.first_name} {c.last_name}
-                            </div>
-
-                            <div
-                              style={{
-                                fontSize: '11px',
-                                color: TEXT3,
-                                marginTop: '3px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {addressLine}
-                            </div>
-
-                            <div
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: 750,
-                                color: TEAL_DARK,
-                                marginTop: '5px',
-                              }}
-                            >
-                              {reviewCount} review click{reviewCount === 1 ? '' : 's'}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              fontWeight: 750,
-                              color: TEXT2,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {contactLine}
-                          </div>
-
-                          {secondaryContact && (
-                            <div
-                              style={{
-                                fontSize: '11px',
-                                color: TEXT3,
-                                marginTop: '3px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {secondaryContact}
-                            </div>
-                          )}
-                        </div>
-
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
-                            {unitCount} job{unitCount === 1 ? '' : 's'}
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: TEXT3,
-                              marginTop: '3px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {unitLine}
-                          </div>
-                        </div>
-
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>{serviceDate}</div>
-
-                        <div>
-                          <span
-                            style={{
-                              background: s.bg,
-                              color: s.color,
-                              border: `1px solid ${s.border}`,
-                              padding: '6px 9px',
-                              borderRadius: '999px',
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              whiteSpace: 'nowrap',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            {s.label}
-                          </span>
-                        </div>
-
-                        <div
-                          style={{
-                            color: TEXT3,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                          }}
-                        >
-                          <IconArrow size={12} />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )
-              })
-            )}
-          </div>
+          <DataList<any>
+            title="Customer directory"
+            isMobile={isMobile}
+            rows={filtered}
+            rowKey={c => c.id}
+            loading={loading}
+            loadingText="Loading customers..."
+            emptyText="No matching customers."
+            onRowClick={c => router.push(`/dashboard/customers/${c.id}`)}
+            rowActions={() => [{ label: 'Open customer', onClick: c => router.push(`/dashboard/customers/${c.id}`) }]}
+            tabs={statusTabs}
+            activeTab={statusTab}
+            onTabChange={setStatusTab}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search customers, contact, suburb..."
+            addLabel="New customer"
+            onAdd={() => setShowAddCustomer(true)}
+            columns={[
+              {
+                key: 'customer',
+                label: 'Customer',
+                width: 'minmax(0,1.4fr)',
+                render: c => <PersonCell name={`${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unnamed customer'} sub={c.address || c.suburb || 'No address saved'} />,
+              },
+              {
+                key: 'contact',
+                label: 'Contact',
+                width: 'minmax(0,1.2fr)',
+                hideOnMobile: true,
+                render: c => <TitleCell title={c.email || c.phone || 'No contact saved'} sub={c.email && c.phone ? c.phone : ''} />,
+              },
+              {
+                key: 'jobs',
+                label: 'Jobs',
+                width: 'minmax(0,1fr)',
+                render: c => {
+                  const n = c.jobs?.length || 0
+                  const latest = c.jobs?.[0]
+                  const unit = latest?.brand || latest?.model ? `${latest?.brand || ''} ${latest?.model || ''}`.trim() : 'No job details'
+                  return <TitleCell title={`${n} job${n === 1 ? '' : 's'}`} sub={unit} />
+                },
+              },
+              {
+                key: 'next',
+                label: 'Next maintenance',
+                width: '130px',
+                mobileLabel: 'Next',
+                render: c => <TextCell>{nextServiceLabel(c.jobs)}</TextCell>,
+              },
+              {
+                key: 'reviews',
+                label: 'Reviews',
+                width: '90px',
+                hideOnMobile: true,
+                render: c => {
+                  const n = reviewClicks[c.id] || 0
+                  return <TextCell>{n} click{n === 1 ? '' : 's'}</TextCell>
+                },
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                width: '120px',
+                render: c => {
+                  const label = statusPill(c.jobs).label
+                  return <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
+                },
+              },
+            ]}
+          />
         </div>
       </div>
     </div>

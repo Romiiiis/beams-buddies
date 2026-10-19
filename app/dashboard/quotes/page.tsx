@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -21,7 +22,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -156,7 +157,7 @@ function StatusPill({ status }: { status: string }) {
         color: st.color,
         border: `1px solid ${st.border}`,
         padding: '6px 9px',
-        borderRadius: '999px',
+        borderRadius: '8px',
         fontSize: '10px',
         fontWeight: 800,
         whiteSpace: 'nowrap',
@@ -322,6 +323,15 @@ export default function QuotesPage() {
     })
     return counts
   }, [quotes])
+
+  const quoteTabs = [
+    { value: 'all', label: 'All quotes', count: quotes.length },
+    ...(['draft', 'sent', 'accepted', 'declined', 'expired'] as const).map(k => ({
+      value: k,
+      label: STATUS_STYLES[k].label,
+      count: statusCounts[k],
+    })),
+  ]
 
   const filtered = useMemo(() => {
     const byStatus = filterStatus === 'all' ? quotes : quotes.filter(q => q.status === filterStatus)
@@ -529,12 +539,6 @@ export default function QuotesPage() {
           }}
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Quotes</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setShowForm(true)} style={btnPrimary}>
-              <IconPlus size={13} />
-              New quote
-            </button>
-          </div>
         </div>
 
         <div className="page-content"
@@ -589,407 +593,75 @@ export default function QuotesPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 320px',
+              gridTemplateColumns: 'minmax(0,1fr)',
               gap: '14px',
               alignItems: 'start',
             }}
           >
-            <div style={card}>
-              <div
-                style={{
-                  padding: isMobile ? '16px' : '18px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '14px',
-                  background: WHITE,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Quote list</span>
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      Track draft, sent, accepted, declined, and expired quotes.
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                    width: isMobile ? '100%' : 'auto',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: isMobile ? '100%' : '300px',
-                      maxWidth: '100%',
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: TEXT3,
-                        display: 'inline-flex',
-                      }}
-                    >
-                      <IconSearch size={15} />
-                    </span>
-
-                    <input
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                      placeholder="Search quotes..."
-                      style={{
-                        height: '42px',
-                        width: '100%',
-                        borderRadius: '12px',
-                        border: `1px solid ${BORDER}`,
-                        padding: '0 12px 0 38px',
-                        fontSize: '12px',
-                        background: '#F8FAFC',
-                        color: TEXT,
-                        fontFamily: FONT,
-                        outline: 'none',
-                        fontWeight: 600,
-                      }}
+            <DataList<Quote>
+              title="Quote list"
+              isMobile={isMobile}
+              rows={filtered}
+              rowKey={q => q.id}
+              emptyText="No quotes found."
+              rowActions={() => [{ label: 'Delete quote', danger: true, onClick: q => setDeleteTarget(q) }]}
+              tabs={quoteTabs}
+              activeTab={filterStatus}
+              onTabChange={setFilterStatus}
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search quotes..."
+              addLabel="New quote"
+              onAdd={() => setShowForm(true)}
+              columns={[
+                {
+                  key: 'customer',
+                  label: 'Customer / Quote',
+                  width: 'minmax(0,1.5fr)',
+                  render: q => (
+                    <PersonCell
+                      name={`${q.customers?.first_name || ''} ${q.customers?.last_name || ''}`.trim() || 'Unknown customer'}
+                      sub={[q.quote_number, q.customers?.suburb || 'No suburb'].filter(Boolean).join(' · ')}
                     />
-                  </div>
-
-                  <select
-                    value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
-                    style={{
-                      minWidth: isMobile ? '100%' : '180px',
-                      width: isMobile ? '100%' : '180px',
-                      height: '42px',
-                      padding: '0 12px',
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      background: '#F8FAFC',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      fontFamily: FONT,
-                      outline: 'none',
-                    }}
-                  >
-                    <option value="all">All ({quotes.length})</option>
-                    <option value="draft">Draft ({statusCounts.draft})</option>
-                    <option value="sent">Sent ({statusCounts.sent})</option>
-                    <option value="accepted">Accepted ({statusCounts.accepted})</option>
-                    <option value="declined">Declined ({statusCounts.declined})</option>
-                    <option value="expired">Expired ({statusCounts.expired})</option>
-                  </select>
-                </div>
-              </div>
-
-              {!isMobile && filtered.length > 0 && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.35fr) 110px 120px 150px 82px',
-                    gap: '14px',
-                    alignItems: 'center',
-                    padding: '11px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    background: '#FCFCFD',
-                  }}
-                >
-                  {['Customer / Quote', 'Total', 'Valid until', 'Status', 'Delete'].map(label => (
-                    <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', textAlign: label === 'Delete' ? 'right' : 'left' }}>
-                      {label}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {filtered.length === 0 ? (
-                <div
-                  style={{
-                    padding: '32px 18px',
-                    textAlign: 'center',
-                    color: TEXT3,
-                    fontSize: '13px',
-                  }}
-                >
-                  No quotes found.
-                </div>
-              ) : (
-                filtered.map(q => {
-                  const st = STATUS_STYLES[q.status] || STATUS_STYLES.draft
-
-                  return (
-                    <div
-                      key={q.id}
-                      style={{
-                        display: isMobile ? 'block' : 'grid',
-                        gridTemplateColumns: isMobile ? undefined : 'minmax(0,1.35fr) 110px 120px 150px 82px',
-                        gap: isMobile ? undefined : '14px',
-                        alignItems: isMobile ? undefined : 'center',
-                        margin: isMobile ? '6px 12px' : '10px 12px',
-                        padding: '14px 16px',
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: '12px',
-                        background: WHITE,
-                        transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = TEAL_LIGHT
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = WHITE
-                      }}
-                    >
-                      {isMobile ? (
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                          <div
-                            style={{
-                              width: 42,
-                              height: 42,
-                              borderRadius: '12px',
-                              background: TEAL_LIGHT,
-                              border: `1px solid #BFE7E3`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              color: TEAL_DARK,
-                              fontSize: '11px',
-                              fontWeight: 900,
-                            }}
-                          >
-                            $
-                          </div>
-
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-                              <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {q.customers?.first_name} {q.customers?.last_name}
-                              </div>
-                              <StatusPill status={q.status} />
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>
-                              {q.quote_number} · ${q.total.toFixed(2)}
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
-                              {q.customers?.suburb || 'No suburb'}
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: q.valid_until ? TEAL_DARK : TEXT3 }}>
-                                {q.valid_until
-                                  ? `Valid: ${new Date(q.valid_until).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                                  : 'No expiry set'}
-                              </span>
-
-                              <button
-                                onClick={() => setDeleteTarget(q)}
-                                style={{
-                                  height: '30px',
-                                  padding: '0 10px',
-                                  borderRadius: '8px',
-                                  border: '1px solid #FECACA',
-                                  background: '#FEE2E2',
-                                  color: '#7F1D1D',
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  cursor: 'pointer',
-                                  fontFamily: FONT,
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div
-                                style={{
-                                  ...TYPE.label,
-                                  marginBottom: '5px',
-                                  color: st.color,
-                                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                                }}
-                              >
-                                {q.quote_number}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '13px',
-                                  fontWeight: 850,
-                                  color: TEXT,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {q.customers?.first_name} {q.customers?.last_name}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '11px',
-                                  color: TEXT3,
-                                  marginTop: '3px',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {q.customers?.suburb || 'No suburb'}
-                                {q.notes ? ` · ${q.notes}` : ''}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2 }}>
-                            ${q.total.toFixed(2)}
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              color: TEXT2,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {q.valid_until
-                              ? new Date(q.valid_until).toLocaleDateString('en-AU', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })
-                              : 'Not set'}
-                          </div>
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              flexWrap: 'wrap',
-                            }}
-                          >
-                            <StatusPill status={q.status} />
-
-                            <select
-                              value={q.status}
-                              onChange={e => updateStatus(q.id, e.target.value)}
-                              style={{
-                                minWidth: '110px',
-                                height: '32px',
-                                padding: '0 12px',
-                                borderRadius: '999px',
-                                border: `1px solid ${st.border}`,
-                                background: st.bg,
-                                color: st.color,
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                fontFamily: FONT,
-                                outline: 'none',
-                              }}
-                            >
-                              {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                                <option key={k} value={k}>
-                                  {v.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => setDeleteTarget(q)}
-                              style={{
-                                height: '32px',
-                                padding: '0 10px',
-                                borderRadius: '8px',
-                                border: '1px solid #FECACA',
-                                background: '#FEE2E2',
-                                color: '#7F1D1D',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                fontFamily: FONT,
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })
-              )}
-            </div>
-
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div style={sideCard}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, letterSpacing: '-0.025em' }}>Draft preview</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Current unsaved quote</div>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowForm(true)} style={cardArrowBtn}>
-                    <IconExternalLink size={14} />
-                  </button>
-                </div>
-
-                <div style={{ marginBottom: '4px' }}>
-                  <span style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em' }}>
-                    ${previewTotals.total.toFixed(2)}
-                  </span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginLeft: 6 }}>current draft</span>
-                </div>
-
-                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { label: 'Subtotal', value: `$${previewTotals.subtotal.toFixed(2)}`, bg: '#F8FAFC', border: BORDER, color: TEXT },
-                    { label: 'GST', value: `$${previewTotals.tax_amount.toFixed(2)}`, bg: '#F8FAFC', border: BORDER, color: TEXT },
-                    { label: 'Total', value: `$${previewTotals.total.toFixed(2)}`, bg: TEAL_LIGHT, border: '#BFE7E3', color: TEAL_DARK },
-                  ].map(item => (
-                    <div
-                      key={item.label}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '12px',
-                        background: item.bg,
-                        border: `1px solid ${item.border}`,
-                      }}
-                    >
-                      <div style={{ ...TYPE.label, marginBottom: '4px', color: item.color }}>{item.label}</div>
-                      <div style={{ ...TYPE.valueSm, color: item.color }}>{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+                  ),
+                },
+                {
+                  key: 'total',
+                  label: 'Total',
+                  width: '100px',
+                  mobileLabel: 'Total',
+                  render: q => <TextCell strong>${Number(q.total || 0).toFixed(2)}</TextCell>,
+                },
+                {
+                  key: 'valid',
+                  label: 'Valid until',
+                  width: '120px',
+                  mobileLabel: 'Valid until',
+                  render: q => (
+                    <TextCell>
+                      {q.valid_until ? new Date(q.valid_until).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set'}
+                    </TextCell>
+                  ),
+                },
+                {
+                  key: 'status',
+                  label: 'Status',
+                  width: '130px',
+                  render: q => {
+                    const st = STATUS_STYLES[q.status] || STATUS_STYLES.draft
+                    return (
+                      <StatusSelect
+                        value={q.status}
+                        options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
+                        onChange={v => updateStatus(q.id, v)}
+                        colors={{ bg: st.bg, fg: st.color, border: st.border }}
+                        label="Quote status"
+                      />
+                    )
+                  },
+                },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -1030,7 +702,7 @@ export default function QuotesPage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                 <div>
                   <div style={{ ...TYPE.label, color: TEAL_DARK, marginBottom: '4px' }}>Create</div>
                   <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New quote</div>

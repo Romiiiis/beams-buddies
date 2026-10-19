@@ -37,7 +37,6 @@ const navFinance = [
 
 const navManage = [
   { label: 'Service schedule', href: '/dashboard/schedule' },
-  { label: 'QR codes', href: '/dashboard/qrcodes' },
   { label: 'Reports', href: '/dashboard/reports' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
@@ -56,7 +55,6 @@ const mobileMenuItems = [
   { label: 'Invoices', href: '/dashboard/invoices' },
   { label: 'Revenue', href: '/dashboard/revenue' },
   { label: 'Service schedule', href: '/dashboard/schedule' },
-  { label: 'QR codes', href: '/dashboard/qrcodes' },
   { label: 'Reports', href: '/dashboard/reports' },
 ]
 
@@ -407,7 +405,7 @@ export function Sidebar({ active }: { active: string }) {
               overflowX: 'hidden',
               overscrollBehavior: 'contain',
               WebkitOverflowScrolling: 'touch',
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             }}
           >
             <button
@@ -653,7 +651,7 @@ export function Sidebar({ active }: { active: string }) {
               boxShadow: 'none',
               overflow: 'hidden',
               overscrollBehavior: 'none',
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               transform: 'translateZ(0)',
               WebkitTransform: 'translateZ(0)',
             }}
@@ -792,7 +790,7 @@ export function Sidebar({ active }: { active: string }) {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             transition: 'width 0.2s ease',
           }}
         >
@@ -821,7 +819,7 @@ export function Sidebar({ active }: { active: string }) {
                   color: TEXT,
                   letterSpacing: '-0.035em',
                   lineHeight: 1,
-                  fontFamily: 'Inter, -apple-system, sans-serif',
+                  fontFamily: 'var(--font-sans), -apple-system, sans-serif',
                   marginLeft: -8,
                 }}
               >

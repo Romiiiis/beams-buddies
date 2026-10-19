@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { AppIcon } from '@/components/AppIcon'
+import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 
@@ -20,7 +21,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -181,7 +182,7 @@ function StatusPill({ status, isAutoOverdue = false }: { status: string; isAutoO
         alignItems: 'center',
         gap: '5px',
         padding: '6px 9px',
-        borderRadius: '999px',
+        borderRadius: '8px',
         background: st.bg,
         border: `1px solid ${st.border}`,
         fontSize: '10px',
@@ -523,14 +524,6 @@ export default function InvoicesPage() {
             >
               <IconRevenue size={14} /> View revenue
             </button>
-            <button
-              onClick={() => setShowForm(true)}
-              style={btnTeal}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >
-              <IconPlus size={13} /> New invoice
-            </button>
           </div>
         </div>
 
@@ -578,407 +571,91 @@ export default function InvoicesPage() {
             ))}
           </div>
 
-          <div>
-            <div style={card}>
-              <div
-                style={{
-                  padding: isMobile ? '16px' : '18px 20px',
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: 'flex',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: '14px',
-                  background: WHITE,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>Invoice list</span>
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>
-                      Track invoice status, due dates, payments, and customer records.
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ width: isMobile ? '100%' : '320px', maxWidth: '100%', position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: TEXT3, display: 'inline-flex', pointerEvents: 'none' }}>
-                    <IconSearch size={14} />
-                  </span>
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search invoices..."
-                    style={{
-                      width: '100%',
-                      height: '42px',
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      padding: '0 12px 0 38px',
-                      fontSize: '12px',
-                      background: '#F8FAFC',
-                      color: TEXT,
-                      fontFamily: FONT,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                      fontWeight: 600,
-                    }}
+          <DataList<Invoice>
+            title="Invoice list"
+            isMobile={isMobile}
+            rows={filtered}
+            rowKey={inv => inv.id}
+            loading={loading}
+            loadingText="Loading..."
+            emptyText={search ? `No results for "${search}"` : 'No invoices found. Create your first invoice to get started.'}
+            onRowClick={inv => setViewingInvoice(inv)}
+            rowActions={() => [{ label: 'Delete invoice', danger: true, onClick: inv => handleDeleteInvoice(inv.id) }]}
+            tabs={FILTER_TABS.map(t => ({ ...t, count: countByStatus(t.value) }))}
+            activeTab={filterStatus}
+            onTabChange={setFilterStatus}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search invoices..."
+            addLabel="New invoice"
+            onAdd={() => setShowForm(true)}
+            columns={[
+              {
+                key: 'customer',
+                label: 'Customer',
+                width: 'minmax(0,1.5fr)',
+                render: inv => (
+                  <PersonCell
+                    name={`${inv.customers?.first_name || ''} ${inv.customers?.last_name || ''}`.trim() || 'Unknown customer'}
+                    sub={[inv.customers?.suburb || 'No suburb', `${inv.line_items?.length || 0} item${inv.line_items?.length === 1 ? '' : 's'}`].join(' · ')}
                   />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', padding: '0 16px', WebkitOverflowScrolling: 'touch' as any, borderBottom: `1px solid ${BORDER}` }}>
-                {FILTER_TABS.map(tab => {
-                  const active = filterStatus === tab.value
-                  const count = countByStatus(tab.value)
+                ),
+              },
+              {
+                key: 'number',
+                label: 'Invoice',
+                width: '110px',
+                hideOnMobile: false,
+                render: inv => <TextCell strong>{inv.invoice_number}</TextCell>,
+              },
+              {
+                key: 'created',
+                label: 'Created',
+                width: '110px',
+                hideOnMobile: true,
+                render: inv => <TextCell>{new Date(inv.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</TextCell>,
+              },
+              {
+                key: 'due',
+                label: 'Due',
+                width: '110px',
+                mobileLabel: 'Due',
+                render: inv => {
+                  const late = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
                   return (
-                    <button
-                      key={tab.value}
-                      onClick={() => setFilterStatus(tab.value)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        height: '38px',
-                        padding: '0 12px',
-                        borderRadius: '0',
-                        border: 'none',
-                        borderBottom: active ? `2px solid ${TEAL}` : '2px solid transparent',
-                        background: 'transparent',
-                        color: active ? TEAL : TEXT3,
-                        fontSize: '12px',
-                        fontWeight: active ? 800 : 600,
-                        fontFamily: FONT,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap' as const,
-                        flexShrink: 0,
-                        transition: 'all 0.12s',
-                      }}
-                    >
-                      {tab.label}
-                      {count > 0 && (
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            padding: '1px 5px',
-                            borderRadius: '999px',
-                            background: active ? TEAL : '#E8EDF3',
-                            color: active ? WHITE : TEXT3,
-                            lineHeight: 1.4,
-                          }}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {!loading && filtered.length > 0 && !isMobile && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1fr) 110px 110px 120px 100px 44px',
-                    gap: '14px',
-                    alignItems: 'center',
-                    padding: '11px 20px',
-                    borderBottom: `1px solid ${BORDER}`,
-                    background: '#FCFCFD',
-                  }}
-                >
-                  {['Customer', 'Invoice', 'Created', 'Due', 'Status', 'Amount'].map(label => (
-                    <div key={label} style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase', textAlign: label === 'Amount' ? 'right' : 'left' }}>
-                      {label}
+                    <div style={{ fontSize: 13, fontWeight: 600, color: late ? RED : TEXT3, whiteSpace: 'nowrap' }}>
+                      {inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                     </div>
-                  ))}
-                  <div />
-                </div>
-              )}
-
-              {loading ? (
-                <div style={{ padding: '48px', textAlign: 'center', color: TEXT3, fontSize: '13px', fontWeight: 600 }}>Loading...</div>
-              ) : filtered.length === 0 ? (
-                <div style={{ padding: '56px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT2 }}>No invoices found</div>
-                  <div style={{ fontSize: '12px', color: TEXT3 }}>
-                    {search ? `No results for "${search}"` : 'Create your first invoice to get started.'}
-                  </div>
-                  {!search && (
-                    <button onClick={() => setShowForm(true)} style={{ marginTop: '4px', height: '36px', padding: '0 16px', background: TEAL, color: WHITE, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                      New invoice
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {filtered.map(inv => {
-                    const isAutoOverdue = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
-                    const statusKey = isAutoOverdue ? 'overdue' : inv.status
-                    const st = STATUS_STYLES[statusKey] || STATUS_STYLES.draft
-
-                    if (isMobile) {
-                      return (
-                        <div
-                          key={inv.id}
-                          onClick={() => setViewingInvoice(inv)}
-                          style={{
-                            display: 'block',
-                            margin: '6px 12px',
-                            padding: '14px 16px',
-                            border: `1px solid ${BORDER}`,
-                            borderRadius: '12px',
-                            background: WHITE,
-                            cursor: 'pointer',
-                            transition: 'background 0.12s',
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.background = TEAL_LIGHT
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.background = WHITE
-                          }}
-                        >
-                          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                            <div
-                              style={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: '12px',
-                                background: WHITE,
-                                border: `1px solid ${BORDER}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                                color: TEXT2,
-                              }}
-                            >
-                              <IconRevenue size={22} />
-                            </div>
-
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {inv.customers?.first_name} {inv.customers?.last_name}
-                                </div>
-                                <StatusPill status={inv.status} isAutoOverdue={!!isAutoOverdue} />
-                              </div>
-
-                              <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '2px' }}>
-                                {inv.invoice_number} · ${inv.total.toFixed(2)}
-                              </div>
-
-                              <div style={{ fontSize: '11px', color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
-                                {inv.customers?.suburb || 'No suburb'}
-                              </div>
-
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: isAutoOverdue ? RED : inv.due_date ? TEAL_DARK : TEXT3 }}>
-                                  {inv.due_date ? `Due: ${new Date(inv.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}` : 'No due date'}
-                                </span>
-
-                                <button
-                                  onClick={e => {
-                                    e.stopPropagation()
-                                    handleDeleteInvoice(inv.id)
-                                  }}
-                                  disabled={deletingInvoiceId === inv.id}
-                                  style={{
-                                    height: '30px',
-                                    padding: '0 10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #FECACA',
-                                    background: '#FEE2E2',
-                                    color: '#7F1D1D',
-                                    fontSize: '10px',
-                                    fontWeight: 800,
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                    opacity: deletingInvoiceId === inv.id ? 0.5 : 1,
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-
-                              <div style={{ marginTop: '8px' }} onClick={e => e.stopPropagation()}>
-                                <select
-                                  value={inv.status}
-                                  onChange={e => updateStatus(inv.id, e.target.value)}
-                                  style={{
-                                    width: '100%',
-                                    height: '34px',
-                                    padding: '0 10px',
-                                    borderRadius: '9px',
-                                    border: `1px solid ${BORDER}`,
-                                    background: '#F8FAFC',
-                                    color: TEXT2,
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    fontFamily: FONT,
-                                    outline: 'none',
-                                  }}
-                                >
-                                  {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                                    <option key={k} value={k}>{v.label}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-
-                            <div style={{ color: TEXT3, flexShrink: 0, marginTop: '12px' }}>
-                              <IconArrow size={12} />
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    }
-
-                    return (
-                      <div
-                        key={inv.id}
-                        onClick={() => setViewingInvoice(inv)}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1fr) 110px 110px 120px 100px 44px',
-                          gap: '14px',
-                          alignItems: 'center',
-                          margin: '10px 12px',
-                          padding: '14px 16px',
-                          border: `1px solid ${BORDER}`,
-                          borderRadius: '14px',
-                          background: WHITE,
-                          cursor: 'pointer',
-                          transition: 'background 0.12s, border-color 0.12s, box-shadow 0.12s',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.background = TEAL_LIGHT
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.background = WHITE
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-                          <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: st.accent, flexShrink: 0 }} />
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: '13px', fontWeight: 850, color: TEXT, lineHeight: 1.25, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {inv.customers?.first_name} {inv.customers?.last_name}
-                            </div>
-                            <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {inv.customers?.suburb || 'No suburb'}
-                              {inv.notes ? <span style={{ color: '#C4CCDA' }}> · {inv.notes}</span> : ''}
-                            </div>
-                            <div style={{ fontSize: '10px', fontWeight: 750, color: TEAL_DARK, marginTop: '5px' }}>
-                              {inv.line_items?.length || 0} item{inv.line_items?.length === 1 ? '' : 's'}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '12px', fontWeight: 800, color: TEXT2, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', whiteSpace: 'nowrap' }}>
-                            {inv.invoice_number}
-                          </div>
-                          <div style={{ fontSize: '11px', color: TEXT3, marginTop: '3px' }}>
-                            Invoice
-                          </div>
-                        </div>
-
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>
-                          {new Date(inv.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </div>
-
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: isAutoOverdue ? RED : TEXT2 }}>
-                          {inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
-                        </div>
-
-                        <div onClick={e => e.stopPropagation()}>
-                          <select
-                            value={inv.status}
-                            onChange={e => updateStatus(inv.id, e.target.value)}
-                            style={{
-                              width: '110px',
-                              height: '32px',
-                              padding: '0 8px',
-                              borderRadius: '999px',
-                              border: `1px solid ${st.border}`,
-                              background: st.bg,
-                              color: st.color,
-                              fontSize: '11px',
-                              fontWeight: 800,
-                              cursor: 'pointer',
-                              fontFamily: FONT,
-                              outline: 'none',
-                            }}
-                          >
-                            {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                              <option key={k} value={k}>{v.label}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div style={{ textAlign: 'right' as const }}>
-                          <div style={{ fontSize: '13px', fontWeight: 900, color: TEXT, letterSpacing: '-0.03em' }}>
-                            ${inv.total.toFixed(2)}
-                          </div>
-                          {inv.status === 'paid' && (
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: TEAL_DARK, marginTop: '2px' }}>Paid</div>
-                          )}
-                        </div>
-
-                        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', justifyContent: 'center' }}>
-                          <button
-                            onClick={() => handleDeleteInvoice(inv.id)}
-                            disabled={deletingInvoiceId === inv.id}
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '8px',
-                              border: `1px solid transparent`,
-                              background: 'transparent',
-                              color: '#CBD5E1',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              opacity: deletingInvoiceId === inv.id ? 0.5 : 1,
-                              transition: 'all 0.1s',
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = '#FEE2E2'
-                              e.currentTarget.style.color = RED
-                              e.currentTarget.style.borderColor = '#FECACA'
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = 'transparent'
-                              e.currentTarget.style.color = '#CBD5E1'
-                              e.currentTarget.style.borderColor = 'transparent'
-                            }}
-                          >
-                            <IconTrash size={13} />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-
-                  <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: TEXT3 }}>
-                      Showing {filtered.length} of {invoices.length} invoices
-                    </span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT2 }}>
-                      Total: <span style={{ color: TEXT, fontWeight: 900 }}>${filtered.reduce((s, i) => s + i.total, 0).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+                  )
+                },
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                width: '124px',
+                render: inv => {
+                  const late = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
+                  const st = STATUS_STYLES[late ? 'overdue' : inv.status] || STATUS_STYLES.draft
+                  return (
+                    <StatusSelect
+                      value={inv.status}
+                      options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
+                      onChange={v => updateStatus(inv.id, v)}
+                      colors={{ bg: st.bg, fg: st.color, border: st.border }}
+                      label="Invoice status"
+                    />
+                  )
+                },
+              },
+              {
+                key: 'amount',
+                label: 'Amount',
+                width: '100px',
+                align: 'right',
+                render: inv => <TextCell strong>${Number(inv.total || 0).toFixed(2)}</TextCell>,
+              },
+            ]}
+          />
         </div>
       </div>
 
@@ -987,7 +664,7 @@ export default function InvoicesPage() {
           <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
             <div style={{ padding: '20px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: 4, height: 44, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+                <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                 <div>
                   <div style={{ ...TYPE.section, color: TEAL_DARK, marginBottom: '2px' }}>Create</div>
                   <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New invoice</div>
@@ -1093,7 +770,7 @@ export default function InvoicesPage() {
                 <select
                   value={viewingInvoice.status}
                   onChange={e => updateStatus(viewingInvoice.id, e.target.value)}
-                  style={{ padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, border: 'none', background: STATUS_STYLES[viewingInvoice.status]?.bg, color: STATUS_STYLES[viewingInvoice.status]?.color, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
+                  style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, border: 'none', background: STATUS_STYLES[viewingInvoice.status]?.bg, color: STATUS_STYLES[viewingInvoice.status]?.color, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
                 >
                   {Object.entries(STATUS_STYLES).map(([k, v]) => (
                     <option key={k} value={k}>{v.label}</option>

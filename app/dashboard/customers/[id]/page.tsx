@@ -20,7 +20,7 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 const TYPE = {
   label: {
@@ -831,7 +831,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 color: s.color,
                                 border: `1px solid ${s.border}`,
                                 padding: '6px 9px',
-                                borderRadius: '999px',
+                                borderRadius: '8px',
                                 fontSize: '10px',
                                 fontWeight: 800,
                                 whiteSpace: 'nowrap',
