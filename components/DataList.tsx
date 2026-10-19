@@ -21,6 +21,10 @@ export type DataListColumn<T> = {
   /** Label shown next to the value in the stacked mobile layout. Omit to show the value alone. */
   mobileLabel?: string
   hideOnMobile?: boolean
+  /** Phone: show this column in the top row, beside the name (use for compact status pills). */
+  mobileHeader?: boolean
+  /** Phone: span the full width of the card, with no label. */
+  mobileFull?: boolean
   align?: 'right'
 }
 
@@ -359,7 +363,7 @@ export function DataList<T>({
           <div style={{ fontSize: 18, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>{title}</div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
           {hasSearch && showSearch && (
             <input
               autoFocus={searchOpen && !search}
@@ -503,7 +507,7 @@ export function DataList<T>({
       )}
 
       {/* Rows */}
-      <div style={{ padding: isMobile ? '6px 10px 14px' : '4px 14px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ padding: isMobile ? '6px 12px 16px' : '4px 14px 18px', display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 6 }}>
         {loading ? (
           <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: 13 }}>{loadingText}</div>
         ) : rows.length === 0 ? (
@@ -533,21 +537,38 @@ export function DataList<T>({
 
             if (isMobile) {
               const [first, ...rest] = desktopCols
+              const headerCols = rest.filter(c => c.mobileHeader)
+              const bodyCols = rest.filter(c => !c.mobileHeader)
               return (
-                <div key={k} onClick={() => onRowClick?.(row)} style={{ ...rowStyle, padding: '12px 12px', border: `1px solid ${BORDER}` }}>
+                <div key={k} onClick={() => onRowClick?.(row)} style={{ ...rowStyle, padding: '14px', border: `1px solid ${isSel ? '#BFE7E3' : BORDER}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Checkbox checked={isSel} onChange={() => toggleOne(k)} label="Select row" />
                     <div style={{ flex: 1, minWidth: 0 }}>{first.render(row)}</div>
-                    {actions && actions.length > 0 && <RowMenu row={row} actions={actions} />}
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 16px', marginTop: 10, paddingLeft: 30 }}>
-                    {rest.map(c => (
-                      <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, maxWidth: '100%' }}>
-                        {c.mobileLabel && <span style={{ fontSize: 11, fontWeight: 700, color: TEXT3 }}>{c.mobileLabel}</span>}
+                    {headerCols.map(c => (
+                      <div key={c.key} style={{ flexShrink: 0 }}>
                         {c.render(row)}
                       </div>
                     ))}
+                    {actions && actions.length > 0 && <RowMenu row={row} actions={actions} />}
                   </div>
+                  {bodyCols.length > 0 && (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                        gap: '12px 16px',
+                        marginTop: 12,
+                        paddingTop: 12,
+                        borderTop: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      {bodyCols.map(c => (
+                        <div key={c.key} style={{ minWidth: 0, gridColumn: c.mobileFull ? '1 / -1' : undefined }}>
+                          {!c.mobileFull && <div style={{ fontSize: 11, fontWeight: 600, color: TEXT3, marginBottom: 4 }}>{c.mobileLabel || c.label}</div>}
+                          {c.render(row)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             }

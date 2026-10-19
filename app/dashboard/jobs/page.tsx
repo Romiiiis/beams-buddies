@@ -1043,7 +1043,7 @@ export default function JobsPage() {
               borderRadius: '14px',
               overflow: 'hidden',
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
             }}
           >
             {statChips.map((chip, i) => (
@@ -1053,7 +1053,8 @@ export default function JobsPage() {
                 style={{
                   padding: isMobile ? '10px 10px' : '12px 18px',
                   cursor: 'pointer',
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  borderLeft: (isMobile ? i % 2 === 1 : i > 0) ? `1px solid ${BORDER}` : 'none',
+                  borderTop: isMobile && i >= 2 ? `1px solid ${BORDER}` : 'none',
                   transition: 'background 0.12s',
                 }}
                 onMouseEnter={e => {
@@ -1185,6 +1186,7 @@ export default function JobsPage() {
                 key: 'status',
                 label: 'Status',
                 width: '120px',
+                mobileHeader: true,
                 render: job => {
                   const m = serviceMeta(job)
                   return <StatusPill label={m.serviceLabel} tone={m.isOverdue ? 'danger' : m.isDueSoon ? 'warn' : m.next ? 'brand' : 'neutral'} />

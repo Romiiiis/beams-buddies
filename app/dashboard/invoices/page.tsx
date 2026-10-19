@@ -545,7 +545,7 @@ export default function InvoicesPage() {
               borderTop: `2px solid ${TEAL}`,
               borderRadius: '14px',
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
               overflow: 'hidden',
             }}
           >
@@ -556,7 +556,8 @@ export default function InvoicesPage() {
                 style={{
                   padding: isMobile ? '10px 10px' : '12px 18px',
                   cursor: 'pointer',
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  borderLeft: (isMobile ? i % 2 === 1 : i > 0) ? `1px solid ${BORDER}` : 'none',
+                  borderTop: isMobile && i >= 2 ? `1px solid ${BORDER}` : 'none',
                   transition: 'background 0.12s',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}

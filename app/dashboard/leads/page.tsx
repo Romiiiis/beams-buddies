@@ -901,7 +901,7 @@ export default function LeadsPage() {
               borderRadius: '14px',
               overflow: 'hidden',
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
             }}
           >
             {statChips.map((chip, i) => (
@@ -911,7 +911,8 @@ export default function LeadsPage() {
                 style={{
                   padding: isMobile ? '10px 10px' : '12px 18px',
                   cursor: 'pointer',
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
+                  borderLeft: (isMobile ? i % 2 === 1 : i > 0) ? `1px solid ${BORDER}` : 'none',
+                  borderTop: isMobile && i >= 2 ? `1px solid ${BORDER}` : 'none',
                   transition: 'background 0.12s',
                 }}
                 onMouseEnter={e => {
@@ -986,6 +987,7 @@ export default function LeadsPage() {
                 key: 'status',
                 label: 'Status',
                 width: '120px',
+                mobileHeader: true,
                 render: lead => <StatusPill label={STATUS_CONFIG[lead.status]?.label || lead.status} tone={LEAD_TONE[lead.status] || 'neutral'} />,
               },
             ]}

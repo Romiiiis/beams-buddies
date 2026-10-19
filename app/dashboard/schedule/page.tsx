@@ -550,6 +550,7 @@ export default function SchedulePage() {
                     key: 'status',
                     label: 'Status',
                     width: '110px',
+                    mobileHeader: true,
                     render: job => {
                       const u = job.next_service_date ? getUrgency(job.next_service_date) : null
                       if (!u) return <StatusPill label="No date" tone="neutral" />
@@ -561,7 +562,7 @@ export default function SchedulePage() {
                     label: 'Actions',
                     width: '160px',
                     align: 'right',
-                    hideOnMobile: true,
+                    mobileFull: true,
                     render: () => (
                       <div style={{ display: 'inline-flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
                         <button
