@@ -8,6 +8,8 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
+import { LeadPipeline, type PipelineStage } from './LeadPipeline'
+import { AddLeadModal } from './AddLeadModal'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -603,6 +605,22 @@ export default function LeadsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedLead, setSelectedLead] = useState<any | null>(null)
+  const [view, setView] = useState<'pipeline' | 'list'>('pipeline')
+  const [showAddLead, setShowAddLead] = useState(false)
+  const [movingId, setMovingId] = useState<string | null>(null)
+
+  // Remember the chosen view per device
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('jobyra_leads_view')
+      if (saved === 'list' || saved === 'pipeline') setView(saved)
+    } catch {}
+  }, [])
+
+  function changeView(next: 'pipeline' | 'list') {
+    setView(next)
+    try { localStorage.setItem('jobyra_leads_view', next) } catch {}
+  }
 
   useEffect(() => {
     async function load() {
@@ -665,6 +683,45 @@ export default function LeadsPage() {
     setLeads(prev => prev.map(l => (l.id === updated.id ? updated : l)))
     setSelectedLead(updated)
   }, [])
+
+  // Pipeline columns, in the order a lead normally moves through them
+  const pipelineStages: PipelineStage[] = [
+    { key: 'pending', hint: 'Need follow-up', ...STATUS_CONFIG.pending },
+    { key: 'booked', hint: 'Visit or quote booked', ...STATUS_CONFIG.booked },
+    { key: 'converted', hint: 'Customer and job created', ...STATUS_CONFIG.converted },
+    { key: 'incomplete', hint: 'Missing details', ...STATUS_CONFIG.incomplete },
+    { key: 'wrong_number', hint: 'Couldn’t reach them', ...STATUS_CONFIG.wrong_number },
+  ]
+
+  // Search applies to the pipeline too; status is shown by column instead of tabs
+  const pipelineLeads = useMemo(() => {
+    if (!search) return leads
+    const q = search.toLowerCase()
+    return leads.filter(l =>
+      `${l.customer_name || ''} ${l.phone_number || ''} ${l.suburb || ''} ${l.job_type || ''}`.toLowerCase().includes(q)
+    )
+  }, [leads, search])
+
+  async function moveLead(lead: any, status: string) {
+    if (status === lead.status) return
+
+    // Converting creates the customer and job, so confirm first
+    if (status === 'converted') {
+      if (!window.confirm(`Convert ${lead.customer_name || 'this lead'} into a customer and job?`)) return
+      await convertToJob(lead)
+      return
+    }
+
+    const previous = lead.status
+    setMovingId(lead.id)
+    setLeads(prev => prev.map(l => (l.id === lead.id ? { ...l, status } : l)))
+    const { error } = await supabase.from('leads').update({ status }).eq('id', lead.id)
+    if (error) {
+      setLeads(prev => prev.map(l => (l.id === lead.id ? { ...l, status: previous } : l)))
+      alert(`Couldn’t move the lead: ${error.message}`)
+    }
+    setMovingId(null)
+  }
 
   async function convertToJob(lead: any) {
     if (!businessId) return
@@ -806,25 +863,25 @@ export default function LeadsPage() {
       label: 'Leads',
       value: totalLeads,
       sub: `${leadsDelta >= 0 ? '+' : ''}${leadsDelta}% last 30 days`,
-      onClick: () => setFilterStatus('all'),
+      onClick: () => { changeView('list'); setFilterStatus('all') },
     },
     {
       label: 'Booked',
       value: bookedCount,
       sub: `${bookedDelta >= 0 ? '+' : ''}${bookedDelta}% last 30 days`,
-      onClick: () => setFilterStatus('booked'),
+      onClick: () => { changeView('list'); setFilterStatus('booked') },
     },
     {
       label: 'Pending',
       value: pendingCount,
       sub: 'Need follow-up',
-      onClick: () => setFilterStatus('pending'),
+      onClick: () => { changeView('list'); setFilterStatus('pending') },
     },
     {
       label: 'Converted',
       value: convertedCount,
       sub: `${convertedDelta >= 0 ? '+' : ''}${convertedDelta}% last 30 days`,
-      onClick: () => setFilterStatus('converted'),
+      onClick: () => { changeView('list'); setFilterStatus('converted') },
     },
   ]
 
@@ -875,7 +932,7 @@ export default function LeadsPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Leads</h1>
           <HeaderToolbar isMobile={isMobile} items={[
             { label: 'View customers', icon: <AppIcon name="customers" size={14} />, onClick: () => router.push('/dashboard/customers') },
-            { label: 'Convert to job', icon: <AppIcon name="jobs" size={14} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs') },
+            { label: 'Add lead', icon: <AppIcon name="add" size={14} />, tone: 'primary', onClick: () => setShowAddLead(true), disabled: !businessId },
           ]} />
         </div>
 
@@ -893,6 +950,65 @@ export default function LeadsPage() {
         >
           <StatStrip items={statChips} isMobile={isMobile} />
 
+          {/* View switch (+ search for the pipeline; the list has its own search) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div role="tablist" aria-label="Leads view" style={{ display: 'inline-flex', padding: 3, background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 12, flexShrink: 0 }}>
+              {(['pipeline', 'list'] as const).map(v => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={view === v}
+                  onClick={() => changeView(v)}
+                  style={{
+                    height: 32,
+                    padding: '0 14px',
+                    border: 'none',
+                    borderRadius: 9,
+                    background: view === v ? TEAL : 'transparent',
+                    color: view === v ? WHITE : TEXT2,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: FONT,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {v === 'pipeline' ? 'Pipeline' : 'List'}
+                </button>
+              ))}
+            </div>
+            {view === 'pipeline' && (
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name, phone, suburb..."
+                aria-label="Search leads"
+                style={{
+                  flex: '1 1 220px',
+                  maxWidth: isMobile ? '100%' : 320,
+                  height: 38,
+                  padding: '0 12px',
+                  borderRadius: 10,
+                  border: `1px solid ${BORDER}`,
+                  background: WHITE,
+                  color: TEXT,
+                  fontSize: isMobile ? 16 : 13,
+                  fontFamily: FONT,
+                  outline: 'none',
+                }}
+              />
+            )}
+          </div>
+
+          {view === 'pipeline' ? (
+            <LeadPipeline
+              leads={pipelineLeads}
+              stages={pipelineStages}
+              isMobile={isMobile}
+              movingId={movingId ?? converting}
+              onOpen={lead => setSelectedLead(lead)}
+              onMove={moveLead}
+            />
+          ) : (
           <DataList<any>
             title="Inbound calls"
             isMobile={isMobile}
@@ -954,8 +1070,21 @@ export default function LeadsPage() {
               },
             ]}
           />
+          )}
         </div>
       </div>
+
+      {showAddLead && businessId && (
+        <AddLeadModal
+          businessId={businessId}
+          isMobile={isMobile}
+          onClose={() => setShowAddLead(false)}
+          onCreated={lead => {
+            setLeads(prev => [lead, ...prev])
+            setShowAddLead(false)
+          }}
+        />
+      )}
 
       {selectedLead && (
         <LeadDrawer
