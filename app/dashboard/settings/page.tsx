@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
@@ -208,40 +209,18 @@ export default function SettingsPage() {
         .eq('id', session.user.id)
         .single()
 
-      // New user — auto-create a blank business and user row
+      // New user — create a fresh business + users row server-side. The database only allows
+      // this through bootstrap_my_business(), so nobody can attach themselves to another business.
       if (!userData) {
-        // Upsert on email so orphaned rows from previous attempts are reused
-        const { data: newBiz, error: bizErr } = await supabase
-          .from('businesses')
-          .upsert(
-            { name: '', email: session.user.email ?? '', industry: 'hvac' },
-            { onConflict: 'email' }
-          )
-          .select('id')
-          .single()
+        const { data: newBusinessId, error: setupErr } = await supabase.rpc('bootstrap_my_business')
 
-        if (bizErr || !newBiz) {
-          setSaveError(`Account setup failed: ${bizErr?.message || 'Could not create business record.'}`)
+        if (setupErr || !newBusinessId) {
+          setSaveError(`Account setup failed: ${setupErr?.message || 'Could not create business record.'}`)
           setLoading(false)
           return
         }
 
-        const { error: userInsertErr } = await supabase.from('users').insert({
-          id: session.user.id,
-          business_id: newBiz.id,
-          email: session.user.email ?? '',
-          full_name: '',
-          role_title: '',
-          role: 'owner',
-        })
-
-        if (userInsertErr) {
-          setSaveError(`Account setup failed: ${userInsertErr.message}`)
-          setLoading(false)
-          return
-        }
-
-        userData = { business_id: newBiz.id, full_name: '', role_title: '' }
+        userData = { business_id: newBusinessId as string, full_name: '', role_title: '' }
       }
 
       setBusinessId(userData.business_id)
@@ -362,27 +341,27 @@ export default function SettingsPage() {
     setUploadError('')
 
     const [bizRes, userRes, settingsRes] = await Promise.all([
+      // Plain updates: business and user rows are created once by bootstrap_my_business(),
+      // and the database no longer allows inserting them from the browser (which upsert needs).
       supabase
         .from('businesses')
-        .upsert({
-          id: businessId,
+        .update({
           name: business.name,
           logo_url: business.logo_url || null,
           phone: business.phone,
           email: business.email,
           industry: business.industry,
-        }, { onConflict: 'id' }),
+        })
+        .eq('id', businessId),
 
       supabase
         .from('users')
-        .upsert({
-          id: userId,
-          business_id: businessId,
+        .update({
           email: userEmail,
           full_name: userProfile.full_name,
           role_title: userProfile.role_title,
-          role: 'owner',
-        }, { onConflict: 'id' }),
+        })
+        .eq('id', userId),
 
       supabase.from('business_settings').upsert(
         {
@@ -645,17 +624,10 @@ export default function SettingsPage() {
                 Saved
               </span>
             )}
-            <button
-              form="settings-form"
-              type="submit"
-              disabled={saving || uploadingLogo}
-              style={btnTeal}
-              onMouseEnter={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82' }}
-              onMouseLeave={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1' }}
-            >
-              <AppIcon name="tick" size={12} />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <HeaderToolbar
+              isMobile={isMobile}
+              items={[{ label: saving ? 'Saving...' : 'Save Changes', icon: <AppIcon name="tick" size={14} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
+            />
           </div>
         </div>
 

@@ -46,11 +46,8 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*, customers(first_name, last_name, email, phone), businesses(id, name, phone, email, industry)')
-        .eq('qr_code_token', token)
-        .single()
+      // Token-scoped function: anonymous visitors can only ever see the one job behind this QR code.
+      const { data, error } = await supabase.rpc('get_job_by_qr_token', { p_token: token })
 
       if (error || !data) {
         setStep('error')
@@ -64,15 +61,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
         email: data.customers?.email || '',
         phone: data.customers?.phone || '',
       })
-
-      if (data.business_id) {
-        const { data: s } = await supabase
-          .from('business_settings')
-          .select('*')
-          .eq('business_id', data.business_id)
-          .single()
-        setSettings(s)
-      }
+      setSettings(data.settings)
 
       setStep('found')
     }
@@ -84,20 +73,13 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     e.preventDefault()
     setSubmitting(true)
 
-    await supabase
-      .from('customers')
-      .update({
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        phone: form.phone,
-      })
-      .eq('id', job.customer_id)
-
-    await supabase.from('app_registrations').insert({
-      job_id: job.id,
-      customer_id: job.customer_id,
-      device_type: /iPhone|iPad|Android/.test(navigator.userAgent)
+    await supabase.rpc('register_job_by_qr_token', {
+      p_token: token,
+      p_first_name: form.first_name,
+      p_last_name: form.last_name,
+      p_email: form.email,
+      p_phone: form.phone,
+      p_device_type: /iPhone|iPad|Android/.test(navigator.userAgent)
         ? /Android/.test(navigator.userAgent)
           ? 'android'
           : 'ios'
@@ -108,12 +90,9 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setStep('success')
   }
 
-  async function handleReviewClick(url: string) {
+  async function handleReviewClick(url: string, platform: string) {
     window.open(url, '_blank', 'noreferrer')
-    await supabase
-      .from('jobs')
-      .update({ review_link_clicked: true })
-      .eq('id', job.id)
+    await supabase.rpc('mark_review_clicked_by_qr_token', { p_token: token, p_platform: platform })
   }
 
   function set(field: string, value: string) {
@@ -259,7 +238,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
                 {reviewPlatforms.map(platform => (
                   <button
                     key={platform.id}
-                    onClick={() => handleReviewClick(platform.url)}
+                    onClick={() => handleReviewClick(platform.url, platform.id)}
                     style={{
                       height: '44px',
                       borderRadius: '10px',

@@ -47,20 +47,21 @@ function TrackReviewContent() {
       const jobId = searchParams.get('job')
       const platform = searchParams.get('platform')
       const url = searchParams.get('url')
-      const customerId = searchParams.get('customer')
-      const businessId = searchParams.get('business')
 
-      if (jobId && platform && customerId && businessId) {
-        await supabase.from('review_clicks').insert({
-          job_id: jobId,
-          customer_id: customerId,
-          business_id: businessId,
-          platform,
-        })
+      // The database looks up the customer and business from the job itself,
+      // so a crafted link can't record clicks against another business.
+      if (jobId && platform) {
+        await supabase.rpc('record_review_click', { p_job_id: jobId, p_platform: platform })
       }
 
+      // Only follow normal web links (blocks javascript: and other schemes).
       if (url) {
-        window.location.href = decodeURIComponent(url)
+        try {
+          const target = new URL(decodeURIComponent(url))
+          if (target.protocol === 'https:' || target.protocol === 'http:') {
+            window.location.href = target.toString()
+          }
+        } catch {}
       }
     }
 
