@@ -255,3 +255,8 @@ create policy "business members only" on public.customers for all to authenticat
   with check (business_id = (select u.business_id from users u where u.id = (select auth.uid())));
 
 commit;
+
+-- Follow-up (applied separately as revoke_trigger_helper_execute): trigger helpers
+-- are only meant to run from their triggers, never be called directly.
+revoke execute on function public.set_lead_business() from public, anon, authenticated;
+revoke execute on function public.prevent_business_change() from public, anon, authenticated;
