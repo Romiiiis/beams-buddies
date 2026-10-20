@@ -930,10 +930,15 @@ export default function LeadsPage() {
           }}
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Leads</h1>
-          <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'View customers', icon: <AppIcon name="customers" size={15} />, onClick: () => router.push('/dashboard/customers') },
-            { label: 'Add lead', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowAddLead(true), disabled: !businessId },
-          ]} />
+          <HeaderToolbar
+            isMobile={isMobile}
+            search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
+            items={[
+              // Phones keep just search + the main action so the panel fits beside the title
+              ...(!isMobile ? [{ label: 'View customers', icon: <AppIcon name="customers" size={15} />, onClick: () => router.push('/dashboard/customers') }] : []),
+              { label: 'Add lead', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => setShowAddLead(true), disabled: !businessId },
+            ]}
+          />
         </div>
 
         <div className="page-content"
@@ -950,7 +955,7 @@ export default function LeadsPage() {
         >
           <StatStrip items={statChips} isMobile={isMobile} />
 
-          {/* View switch (+ search for the pipeline; the list has its own search) */}
+          {/* View switch (search lives in the header toolbar and covers both views) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <div role="tablist" aria-label="Leads view" style={{ display: 'inline-flex', padding: 3, background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 12, flexShrink: 0 }}>
               {(['pipeline', 'list'] as const).map(v => (
@@ -976,27 +981,6 @@ export default function LeadsPage() {
                 </button>
               ))}
             </div>
-            {view === 'pipeline' && (
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name, phone, suburb..."
-                aria-label="Search leads"
-                style={{
-                  flex: '1 1 220px',
-                  maxWidth: isMobile ? '100%' : 320,
-                  height: 38,
-                  padding: '0 12px',
-                  borderRadius: 10,
-                  border: `1px solid ${BORDER}`,
-                  background: WHITE,
-                  color: TEXT,
-                  fontSize: isMobile ? 16 : 13,
-                  fontFamily: FONT,
-                  outline: 'none',
-                }}
-              />
-            )}
           </div>
 
           {view === 'pipeline' ? (
@@ -1020,9 +1004,6 @@ export default function LeadsPage() {
             tabs={statusTabs}
             activeTab={filterStatus}
             onTabChange={setFilterStatus}
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search by name, phone, suburb..."
             columns={[
               {
                 key: 'lead',

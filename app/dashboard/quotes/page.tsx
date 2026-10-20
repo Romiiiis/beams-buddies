@@ -541,9 +541,13 @@ export default function QuotesPage() {
           }}
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Quotes</h1>
-          <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'New quote', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowForm(true) },
-          ]} />
+          <HeaderToolbar
+            isMobile={isMobile}
+            search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
+            items={[
+              { label: 'New quote', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowForm(true) },
+            ]}
+          />
         </div>
 
         <div className="page-content"
@@ -578,11 +582,6 @@ export default function QuotesPage() {
               tabs={quoteTabs}
               activeTab={filterStatus}
               onTabChange={setFilterStatus}
-              search={search}
-              onSearchChange={setSearch}
-              searchPlaceholder="Search quotes..."
-              addLabel="New quote"
-              onAdd={() => setShowForm(true)}
               columns={[
                 {
                   key: 'customer',

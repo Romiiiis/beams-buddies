@@ -1024,10 +1024,14 @@ export default function JobsPage() {
             Jobs
           </h1>
           {/* Labels only: this page is kept icon-free */}
-          <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'QR codes', onClick: () => router.push('/dashboard/qrcodes') },
-            { label: 'Add job', tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
-          ]} />
+          <HeaderToolbar
+            isMobile={isMobile}
+            search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
+            items={[
+              { label: 'QR codes', onClick: () => router.push('/dashboard/qrcodes') },
+              { label: 'Add job', tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
+            ]}
+          />
         </div>
 
         <div className="page-content"
@@ -1057,9 +1061,6 @@ export default function JobsPage() {
             tabs={statusTabs}
             activeTab={statusTab}
             onTabChange={setStatusTab}
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search by name, brand, suburb..."
             filters={
               <select
                 value={filterType}
@@ -1085,8 +1086,6 @@ export default function JobsPage() {
                 ))}
               </select>
             }
-            addLabel="Add job"
-            onAdd={() => router.push('/dashboard/jobs/add')}
             columns={[
               {
                 key: 'customer',

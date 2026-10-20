@@ -107,9 +107,6 @@ function IconSms({ size = 14 }: { size?: number }) {
   return <AppIcon name="sms" size={size} />
 }
 
-function IconArrow({ size = 13 }: { size?: number }) {
-  return <AppIcon name="arrow-right" size={size} />
-}
 
 function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
   const st = URGENCY_STYLES[status]
@@ -416,26 +413,7 @@ export default function SchedulePage() {
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#991B1B', flex: 1 }}>
                     {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''}
                   </span>
-                  <button
-                    onClick={() => setFilter('overdue')}
-                    style={{
-                      height: '30px',
-                      padding: '0 12px',
-                      background: WHITE,
-                      border: `1px solid #FECACA`,
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: FONT,
-                      color: '#991B1B',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    View all <IconArrow size={10} />
-                  </button>
+                  <HeaderToolbar size="sm" items={[{ label: 'View all', tone: 'danger', onClick: () => setFilter('overdue') }]} />
                 </div>
 
               </div>

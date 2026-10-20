@@ -71,9 +71,6 @@ function IconPlus({ size = 13 }: { size?: number }) {
 function IconCalendar({ size = 13 }: { size?: number }) {
   return <AppIcon name="calendar" size={size} />
 }
-function IconArrow({ size = 11 }: { size?: number }) {
-  return <AppIcon name="arrow-right" size={size} />
-}
 function IconChevronLeft({ size = 13 }: { size?: number }) {
   return <AppIcon name="chevron-left" size={size} />
 }
@@ -619,9 +616,7 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayJobs.length} job{todayJobs.length !== 1 ? 's' : ''}</span>
-                    <button onClick={() => router.push('/dashboard/schedule')} style={{ fontSize: '11px', fontWeight: 700, color: TEAL, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT, padding: 0 }}>
-                      Full calendar →
-                    </button>
+                    <HeaderToolbar size="sm" items={[{ label: 'Full calendar', icon: <AppIcon name="calendar" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
                   </div>
                 </div>
 
@@ -631,9 +626,9 @@ export default function DashboardPage() {
                       <IconClipboard size={22} />
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>No jobs scheduled today</div>
-                    <button onClick={() => router.push('/dashboard/jobs')} style={{ marginTop: '8px', color: TEAL, fontWeight: 700, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: '11px' }}>
-                      + Add a job
-                    </button>
+                    <div style={{ marginTop: '10px' }}>
+                      <HeaderToolbar size="sm" items={[{ label: 'Add job', icon: <AppIcon name="add" size={14} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') }]} />
+                    </div>
                   </div>
                 ) : todayJobs.map((job, i) => {
                   const name     = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
@@ -682,9 +677,7 @@ export default function DashboardPage() {
               <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Bookings</span>
-                  <button onClick={() => router.push('/dashboard/schedule')} style={{ fontSize: '11px', fontWeight: 700, color: TEAL, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT, padding: 0 }}>
-                    View schedule →
-                  </button>
+                  <HeaderToolbar size="sm" items={[{ label: 'View schedule', icon: <AppIcon name="calendar-clock" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
                 </div>
                 <BookingsWidget
                   allJobs={allJobs}
@@ -703,9 +696,7 @@ export default function DashboardPage() {
                 <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Unpaid Invoices</span>
-                    <button onClick={() => router.push('/dashboard/invoices')} style={{ height: '28px', padding: '0 10px', background: TEAL, border: 'none', borderRadius: '8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: WHITE, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      View all <IconArrow size={9} />
-                    </button>
+                    <HeaderToolbar size="sm" items={[{ label: 'View all', icon: <AppIcon name="invoice" size={14} />, onClick: () => router.push('/dashboard/invoices') }]} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                     <span style={{ fontSize: '28px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#DC2626' : TEAL_DARK, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
