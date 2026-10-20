@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
@@ -386,22 +388,10 @@ export default function SchedulePage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Schedule
           </h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => router.push('/dashboard/customers')}
-              style={{ height: '34px', padding: '0 14px', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <AppIcon name="customers" size={13} /> Customers
-            </button>
-            <button
-              onClick={() => {}}
-              style={{ height: '34px', padding: '0 14px', background: TEAL, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >
-              <AppIcon name="bell" size={13} /> Send reminders
-            </button>
-          </div>
+          <HeaderToolbar isMobile={isMobile} items={[
+            { label: 'Customers', icon: <AppIcon name="customers" size={14} />, onClick: () => router.push('/dashboard/customers') },
+            { label: 'Send reminders', icon: <AppIcon name="bell" size={14} />, tone: 'primary' },
+          ]} />
         </div>
 
         <div className="page-content"
@@ -416,39 +406,7 @@ export default function SchedulePage() {
             background: BG,
           }}
         >
-          <div
-            style={{
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: '14px',
-              overflow: 'hidden',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-            }}
-          >
-            {statChips.map((chip, i) => (
-              <div
-                key={chip.label}
-                onClick={chip.onClick}
-                style={{
-                  padding: isMobile ? '10px 8px' : '14px 20px',
-                  cursor: 'pointer',
-                  textAlign: isMobile ? 'center' as const : undefined,
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = TEAL_LIGHT
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent'
-                }}
-              >
-                <div style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: isMobile ? 1.2 : undefined }}>{chip.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatStrip items={statChips} isMobile={isMobile} />
 
           <div style={{ padding: isMobile ? '0 12px' : 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {overdueJobs.length > 0 && (

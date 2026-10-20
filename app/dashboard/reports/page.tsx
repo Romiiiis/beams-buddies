@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 
 const TEAL = '#2AA198'
@@ -850,15 +852,10 @@ export default function ReportsPage() {
           }}
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => window.print()} style={btnOutline}>
-              <IconPrint size={14} />
-              Print
-            </button>
-            <button onClick={() => router.push('/dashboard/invoices')} style={btnPrimary}>
-              View invoices
-            </button>
-          </div>
+          <HeaderToolbar isMobile={isMobile} items={[
+            { label: 'Print', icon: <IconPrint size={14} />, onClick: () => window.print() },
+            { label: 'View invoices', icon: <AppIcon name="invoice" size={14} />, onClick: () => router.push('/dashboard/invoices') },
+          ]} />
         </div>
 
         <div className="page-content"
@@ -873,27 +870,7 @@ export default function ReportsPage() {
             background: BG,
           }}
         >
-          <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            {statChips.map((chip, i) => (
-              <div
-                key={chip.label}
-                onClick={chip.onClick}
-                style={{
-                  padding: isMobile ? '10px 8px' : '14px 20px',
-                  cursor: 'pointer',
-                  textAlign: isMobile ? 'center' : undefined,
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                  transition: 'background 0.12s',
-                  minWidth: 0,
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = TEAL_LIGHT }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-              >
-                <div style={{ fontSize: isMobile ? '17px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.value}</div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: 1.2 }}>{chip.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatStrip items={statChips} isMobile={isMobile} />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
             <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>

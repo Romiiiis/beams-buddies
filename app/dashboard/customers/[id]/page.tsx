@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
@@ -476,51 +478,19 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             </h1>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-            {!isMobile && (
-              <>
-                <button
-                  onClick={() => router.push('/dashboard/jobs')}
-                  style={btnOutline}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                >
-                  <IconPlus size={12} />
-                  Add job
-                </button>
-
-                <button
-                  onClick={() => setShowContact(true)}
-                  style={btnOutline}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                >
-                  <IconPhone size={12} />
-                  Contact
-                </button>
-
-                <button
-                  onClick={() => setEditingCustomer(true)}
-                  style={btnOutline}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = TEXT; e.currentTarget.style.color = TEXT }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TEXT2 }}
-                >
-                  <IconEdit size={12} />
-                  Edit customer
-                </button>
-              </>
-            )}
-
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              style={btnTeal}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.85' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >
-              <IconTrash size={12} />
-              {isMobile ? 'Delete' : 'Delete'}
-            </button>
-          </div>
+          <HeaderToolbar
+            isMobile={isMobile}
+            items={[
+              ...(!isMobile
+                ? [
+                    { label: 'Add job', icon: <IconPlus size={14} />, onClick: () => router.push('/dashboard/jobs') },
+                    { label: 'Contact', icon: <IconPhone size={14} />, onClick: () => setShowContact(true) },
+                    { label: 'Edit customer', icon: <IconEdit size={14} />, onClick: () => setEditingCustomer(true) },
+                  ]
+                : []),
+              { label: 'Delete', icon: <IconTrash size={14} />, tone: 'danger' as const, onClick: () => setShowDeleteConfirm(true) },
+            ]}
+          />
         </div>
 
         {/* Mobile action buttons row */}
@@ -552,39 +522,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           }}
         >
           {/* Connected stat chips bar */}
-          <div
-            style={{
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: '14px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              overflow: 'hidden',
-            }}
-          >
-            {statChips.map((chip, i) => (
-              <div
-                key={chip.label}
-                onClick={chip.onClick}
-                style={{
-                  padding: isMobile ? '11px 10px' : '14px 20px',
-                  cursor: 'pointer',
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => {
-                  ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
-                }}
-                onMouseLeave={e => {
-                  ;(e.currentTarget as HTMLElement).style.background = WHITE
-                }}
-              >
-                <div style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{chip.value}</div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatStrip items={statChips} isMobile={isMobile} />
 
           {saved && (
             <div

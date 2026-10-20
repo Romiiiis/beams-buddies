@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { StatStrip } from '@/components/StatStrip'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 
@@ -461,47 +462,7 @@ export default function CustomersPage() {
           }}
         >
           {/* Connected stat chips bar */}
-          <div
-            style={{
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderTop: `2px solid ${TEAL}`,
-              borderRadius: '14px',
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-              overflow: 'hidden',
-            }}
-          >
-            {statChips.map((chip, i) => (
-              <div
-                key={chip.label}
-                onClick={chip.onClick}
-                style={{
-                  padding: isMobile ? '10px 10px' : '12px 18px',
-                  cursor: 'pointer',
-                  borderLeft: (isMobile ? i % 2 === 1 : i > 0) ? `1px solid ${BORDER}` : 'none',
-                  borderTop: isMobile && i >= 2 ? `1px solid ${BORDER}` : 'none',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLElement).style.background = TEAL_LIGHT
-                }}
-                onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLElement).style.background = WHITE
-                }}
-              >
-                <div style={{ fontSize: isMobile ? '16px' : '20px', fontWeight: 800, color: TEXT2, letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                  {chip.value}
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT, marginTop: '3px', lineHeight: 1.2 }}>
-                  {chip.label}
-                </div>
-                {chip.sub && (
-                  <div style={{ fontSize: '10px', fontWeight: 500, color: TEXT3, marginTop: '2px', lineHeight: 1.2 }}>{chip.sub}</div>
-                )}
-              </div>
-            ))}
-          </div>
+          <StatStrip items={statChips} isMobile={isMobile} />
 
           {/* Customer directory card */}
           <DataList<any>

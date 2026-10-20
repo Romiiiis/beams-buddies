@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusiness } from '@/lib/useBusiness'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
@@ -546,11 +547,13 @@ export default function DashboardPage() {
               </div>
             </div>
             {!isMobile && (
-              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconPlus size={12} /> Add Job</button>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}><IconCalendar size={12} /> Schedule</button>
-                <button onClick={() => router.push('/dashboard/revenue')} style={btnDark}><AppIcon name="dollar" size={12} /> Revenue</button>
-              </div>
+              <HeaderToolbar
+                items={[
+                  { label: 'Add Job', icon: <IconPlus size={15} />, onClick: () => router.push('/dashboard/jobs') },
+                  { label: 'Schedule', icon: <IconCalendar size={15} />, onClick: () => router.push('/dashboard/jobs') },
+                  { label: 'Revenue', icon: <AppIcon name="dollar" size={15} />, onClick: () => router.push('/dashboard/revenue') },
+                ]}
+              />
             )}
             {isMobile && (
               <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnDark, flexShrink: 0 }}><IconPlus size={12} /> Add Job</button>
@@ -558,32 +561,29 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 1: Stat chips ── */}
-          <div style={{ padding: isMobile ? '10px 14px' : '12px 24px', background: BG }}>
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
-              {statChips.map((chip, i) => {
-                const isAlert = chip.danger && chip.value > 0
-                const accentColor = isAlert ? '#EF4444' : TEAL
-                return (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{ padding: isMobile ? '12px 10px' : '16px 20px', cursor: 'pointer', borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none', transition: 'background 0.12s' }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
-                    onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
-                  >
-                    <div style={{ color: accentColor, marginBottom: isMobile ? '5px' : '7px', display: 'flex' }}>
-                      {chip.icon}
-                    </div>
-                    <div style={{ fontSize: isMobile ? '20px' : '26px', fontWeight: 900, color: isAlert ? '#EF4444' : TEXT, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                      {chip.value}
-                    </div>
-                    <div style={{ fontSize: isMobile ? '10px' : '11px', fontWeight: 600, color: isAlert ? '#EF4444' : TEXT3, marginTop: '4px', lineHeight: 1.2 }}>
-                      {chip.label}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+          <div style={{ padding: isMobile ? '12px 14px 0' : '14px 24px 12px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px', background: BG }}>
+            {statChips.map(chip => {
+              const isAlert = chip.danger && chip.value > 0
+              return (
+                <div
+                  key={chip.label}
+                  onClick={chip.onClick}
+                  style={{
+                    background: WHITE,
+                    border: `1px solid ${BORDER}`,
+                    borderTop: `3px solid ${isAlert ? '#EF4444' : TEAL}`,
+                    borderRadius: '14px',
+                    padding: isMobile ? '9px 14px' : '10px 16px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                    cursor: 'pointer',
+                    minWidth: 0,
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chip.label}</div>
+                  <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: isAlert ? '#EF4444' : TEXT, letterSpacing: '-0.02em', lineHeight: 1.2, marginTop: '1px', fontVariantNumeric: 'tabular-nums' }}>{chip.value}</div>
+                </div>
+              )
+            })}
           </div>
 
           {/* ── Row 2: Metric cards ── */}

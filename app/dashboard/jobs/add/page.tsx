@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { createCustomer, createJob } from '@/lib/queries'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry } from '@/lib/industry-config'
@@ -367,24 +368,10 @@ export default function AddJobPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Add new job
           </h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => router.push('/dashboard/jobs')}
-              style={{ height: '34px', padding: '0 14px', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: TEXT2, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <IconArrowLeft size={13} /> Back
-            </button>
-            <button
-              form="job-form"
-              type="submit"
-              disabled={loading}
-              style={{ height: '34px', padding: '0 14px', background: TEAL, border: 'none', borderRadius: '9px', fontSize: '12px', fontWeight: 700, color: WHITE, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: loading ? 0.7 : 1 }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.82' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = loading ? '0.7' : '1' }}
-            >
-              <AppIcon name="tick" size={13} /> {loading ? 'Saving...' : 'Save job'}
-            </button>
-          </div>
+          <HeaderToolbar isMobile={isMobile} items={[
+            { label: 'Back', icon: <IconArrowLeft size={14} />, onClick: () => router.push('/dashboard/jobs') },
+            { label: loading ? 'Saving...' : 'Save job', icon: <AppIcon name="tick" size={14} />, tone: 'primary', submitFor: 'job-form', disabled: loading },
+          ]} />
         </div>
 
         <div className="page-content"

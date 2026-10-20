@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
@@ -623,17 +624,10 @@ export default function SettingsPage() {
                 Saved
               </span>
             )}
-            <button
-              form="settings-form"
-              type="submit"
-              disabled={saving || uploadingLogo}
-              style={btnTeal}
-              onMouseEnter={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '0.82' }}
-              onMouseLeave={e => { if (!saving && !uploadingLogo) e.currentTarget.style.opacity = '1' }}
-            >
-              <AppIcon name="tick" size={12} />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <HeaderToolbar
+              isMobile={isMobile}
+              items={[{ label: saving ? 'Saving...' : 'Save Changes', icon: <AppIcon name="tick" size={14} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
+            />
           </div>
         </div>
 

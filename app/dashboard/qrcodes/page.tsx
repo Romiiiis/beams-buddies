@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import QRCode from 'qrcode'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity } from '@/lib/industry-config'
@@ -335,9 +337,7 @@ export default function QRCodesPage() {
             }}
           >
             <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>QR codes</h1>
-            <button onClick={() => router.push('/dashboard/jobs')} style={btnOutline}>
-              ← Back to jobs
-            </button>
+            <HeaderToolbar items={[{ label: 'Back to jobs', icon: <AppIcon name="arrow-left" size={14} />, onClick: () => router.push('/dashboard/jobs') }]} />
           </div>
         )}
 
@@ -366,76 +366,11 @@ export default function QRCodesPage() {
                 </button>
               </div>
 
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '10px 8px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '20px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, color: TEXT3, marginTop: '3px', lineHeight: 1.2 }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
+              <StatStrip items={statChips} isMobile={isMobile} />
             </div>
           ) : (
             <div>
-              <div
-                style={{
-                  background: WHITE,
-                  border: `1px solid ${BORDER}`,
-                  borderTop: `2px solid ${TEAL}`,
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                }}
-              >
-                {statChips.map((chip, i) => (
-                  <div
-                    key={chip.label}
-                    onClick={chip.onClick}
-                    style={{
-                      padding: '14px 20px',
-                      cursor: 'pointer',
-                      borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = TEAL_LIGHT
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '4px' }}>{chip.label}</div>
-                  </div>
-                ))}
-              </div>
+              <StatStrip items={statChips} isMobile={isMobile} />
             </div>
           )}
 
