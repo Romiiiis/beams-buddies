@@ -626,7 +626,7 @@ export default function SettingsPage() {
             )}
             <HeaderToolbar
               isMobile={isMobile}
-              items={[{ label: saving ? 'Saving...' : 'Save Changes', icon: <AppIcon name="tick" size={14} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
+              items={[{ label: saving ? 'Saving...' : 'Save changes', icon: <AppIcon name="tick" size={15} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
             />
           </div>
         </div>

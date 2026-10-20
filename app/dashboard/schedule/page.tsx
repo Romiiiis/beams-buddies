@@ -389,8 +389,8 @@ export default function SchedulePage() {
             Schedule
           </h1>
           <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'Customers', icon: <AppIcon name="customers" size={14} />, onClick: () => router.push('/dashboard/customers') },
-            { label: 'Send reminders', icon: <AppIcon name="bell" size={14} />, tone: 'primary' },
+            { label: 'Customers', icon: <AppIcon name="customers" size={15} />, onClick: () => router.push('/dashboard/customers') },
+            { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
           ]} />
         </div>
 

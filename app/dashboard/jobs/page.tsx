@@ -6,6 +6,7 @@ import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { useBusinessData } from '@/lib/business-context'
@@ -1022,6 +1023,11 @@ export default function JobsPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Jobs
           </h1>
+          {/* Labels only: this page is kept icon-free */}
+          <HeaderToolbar isMobile={isMobile} items={[
+            { label: 'QR codes', onClick: () => router.push('/dashboard/qrcodes') },
+            { label: 'Add job', tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
+          ]} />
         </div>
 
         <div className="page-content"

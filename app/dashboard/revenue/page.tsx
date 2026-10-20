@@ -635,8 +635,8 @@ export default function RevenuePage() {
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Revenue</h1>
           <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'View customers', icon: <AppIcon name="customers" size={14} />, onClick: () => router.push('/dashboard/customers') },
-            { label: 'View invoices', icon: <AppIcon name="invoice" size={14} />, onClick: () => router.push('/dashboard/invoices') },
+            { label: 'View customers', icon: <AppIcon name="customers" size={15} />, onClick: () => router.push('/dashboard/customers') },
+            { label: 'View invoices', icon: <AppIcon name="invoice" size={15} />, onClick: () => router.push('/dashboard/invoices') },
           ]} />
         </div>
 

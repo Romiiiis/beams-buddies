@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { StatStrip } from '@/components/StatStrip'
+import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 
@@ -446,6 +447,9 @@ export default function CustomersPage() {
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
             Customers
           </h1>
+          <HeaderToolbar isMobile={isMobile} items={[
+            { label: 'New customer', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowAddCustomer(true) },
+          ]} />
         </div>
 
         {/* Scrollable content */}

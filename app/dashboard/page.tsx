@@ -501,15 +501,6 @@ export default function DashboardPage() {
     overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const btnOutline: React.CSSProperties = {
-    height: '34px', padding: '0 14px', border: `1px solid ${BORDER}`, borderRadius: '9px',
-    fontSize: '12px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer',
-    fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' as const,
-  }
-  const btnDark: React.CSSProperties = {
-    ...btnOutline, background: TEAL, border: 'none', color: WHITE,
-  }
-
   return (
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard" />
@@ -546,18 +537,19 @@ export default function DashboardPage() {
                 </h1>
               </div>
             </div>
-            {!isMobile && (
-              <HeaderToolbar
-                items={[
-                  { label: 'Add Job', icon: <IconPlus size={15} />, onClick: () => router.push('/dashboard/jobs') },
-                  { label: 'Schedule', icon: <IconCalendar size={15} />, onClick: () => router.push('/dashboard/jobs') },
-                  { label: 'Revenue', icon: <AppIcon name="dollar" size={15} />, onClick: () => router.push('/dashboard/revenue') },
-                ]}
-              />
-            )}
-            {isMobile && (
-              <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnDark, flexShrink: 0 }}><IconPlus size={12} /> Add Job</button>
-            )}
+            {/* Phones only have room for the main action next to the logo and greeting */}
+            <HeaderToolbar
+              isMobile={isMobile}
+              items={[
+                ...(!isMobile
+                  ? [
+                      { label: 'Schedule', icon: <AppIcon name="calendar-clock" size={15} />, onClick: () => router.push('/dashboard/schedule') },
+                      { label: 'Revenue', icon: <AppIcon name="dollar" size={15} />, onClick: () => router.push('/dashboard/revenue') },
+                    ]
+                  : []),
+                { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs/add') },
+              ]}
+            />
           </div>
 
           {/* ── Row 1: Stat chips ── */}

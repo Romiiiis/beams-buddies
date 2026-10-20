@@ -853,8 +853,8 @@ export default function ReportsPage() {
         >
           <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
           <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'Print', icon: <IconPrint size={14} />, onClick: () => window.print() },
-            { label: 'View invoices', icon: <AppIcon name="invoice" size={14} />, onClick: () => router.push('/dashboard/invoices') },
+            { label: 'Print', icon: <IconPrint size={15} />, onClick: () => window.print() },
+            { label: 'View invoices', icon: <AppIcon name="invoice" size={15} />, onClick: () => router.push('/dashboard/invoices') },
           ]} />
         </div>
 

@@ -337,7 +337,7 @@ export default function QRCodesPage() {
             }}
           >
             <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>QR codes</h1>
-            <HeaderToolbar items={[{ label: 'Back to jobs', icon: <AppIcon name="arrow-left" size={14} />, onClick: () => router.push('/dashboard/jobs') }]} />
+            <HeaderToolbar items={[{ label: 'Back to jobs', icon: <AppIcon name="arrow-left" size={15} />, onClick: () => router.push('/dashboard/jobs') }]} />
           </div>
         )}
 

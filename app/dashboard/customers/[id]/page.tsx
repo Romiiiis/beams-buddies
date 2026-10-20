@@ -481,14 +481,15 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           <HeaderToolbar
             isMobile={isMobile}
             items={[
+              // Phones show the secondary actions in the row below the header
               ...(!isMobile
                 ? [
-                    { label: 'Add job', icon: <IconPlus size={14} />, onClick: () => router.push('/dashboard/jobs') },
-                    { label: 'Contact', icon: <IconPhone size={14} />, onClick: () => setShowContact(true) },
-                    { label: 'Edit customer', icon: <IconEdit size={14} />, onClick: () => setEditingCustomer(true) },
+                    { label: 'Contact', icon: <IconPhone size={15} />, onClick: () => setShowContact(true) },
+                    { label: 'Edit customer', icon: <IconEdit size={15} />, onClick: () => setEditingCustomer(true) },
+                    { label: 'Delete', icon: <IconTrash size={15} />, tone: 'danger' as const, onClick: () => setShowDeleteConfirm(true) },
                   ]
                 : []),
-              { label: 'Delete', icon: <IconTrash size={14} />, tone: 'danger' as const, onClick: () => setShowDeleteConfirm(true) },
+              { label: 'Add job', icon: <IconPlus size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs') },
             ]}
           />
         </div>
@@ -496,14 +497,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         {/* Mobile action buttons row */}
         {isMobile && (
           <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', gap: '8px', background: BG }}>
-            <button onClick={() => router.push('/dashboard/jobs')} style={{ ...btnOutline, flex: 1 }}>
-              <IconPlus size={12} /> Add job
-            </button>
             <button onClick={() => setShowContact(true)} style={{ ...btnOutline, flex: 1 }}>
               <IconPhone size={12} /> Contact
             </button>
             <button onClick={() => setEditingCustomer(true)} style={{ ...btnOutline, flex: 1 }}>
               <IconEdit size={12} /> Edit
+            </button>
+            <button onClick={() => setShowDeleteConfirm(true)} style={{ ...btnOutline, flex: 1, color: RED }}>
+              <IconTrash size={12} /> Delete
             </button>
           </div>
         )}

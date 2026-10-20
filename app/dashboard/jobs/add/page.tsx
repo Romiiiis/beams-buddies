@@ -369,8 +369,8 @@ export default function AddJobPage() {
             Add new job
           </h1>
           <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'Back', icon: <IconArrowLeft size={14} />, onClick: () => router.push('/dashboard/jobs') },
-            { label: loading ? 'Saving...' : 'Save job', icon: <AppIcon name="tick" size={14} />, tone: 'primary', submitFor: 'job-form', disabled: loading },
+            { label: 'Back', icon: <IconArrowLeft size={15} />, onClick: () => router.push('/dashboard/jobs') },
+            { label: loading ? 'Saving...' : 'Save job', icon: <AppIcon name="tick" size={15} />, tone: 'primary', submitFor: 'job-form', disabled: loading },
           ]} />
         </div>
 
