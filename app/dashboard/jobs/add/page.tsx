@@ -471,9 +471,6 @@ export default function AddJobPage() {
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={stepIconWrap}>
-                        <IconUsers size={22} />
-                      </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 1</div>
                         <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Customer details</div>
@@ -516,9 +513,6 @@ export default function AddJobPage() {
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={stepIconWrap}>
-                        <IconJob size={22} />
-                      </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 2</div>
                         <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Job details</div>
@@ -583,9 +577,6 @@ export default function AddJobPage() {
                 <div style={stepCard}>
                   <div style={{ padding: isMobile ? '14px' : '16px', borderBottom: `1px solid ${BORDER}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={stepIconWrap}>
-                        <IconCalendar size={22} />
-                      </div>
                       <div>
                         <div style={{ ...TYPE.label, marginBottom: '4px' }}>Step 3</div>
                         <div style={{ fontSize: '14px', fontWeight: 850, color: TEXT }}>Service schedule</div>

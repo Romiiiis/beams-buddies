@@ -306,15 +306,7 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: 30, height: 30, borderRadius: '8px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconBarChart size={17} />
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1 }}>Analytics</div>
-            <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '3px' }}>Track your business performance</div>
-          </div>
-        </div>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1 }}>Analytics</div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <select value={metric} onChange={e => { setMetric(e.target.value as AnalyticsMetric); setHovered(null) }} style={selectStyle}>
             <option value="revenue">Revenue</option>
@@ -690,9 +682,6 @@ export default function DashboardPage() {
 
                 {todayItems.length === 0 ? (
                   <div style={{ padding: '28px', textAlign: 'center' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: TEXT2 }}>
-                      <IconClipboard size={22} />
-                    </div>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Nothing booked today</div>
                     <div style={{ marginTop: '10px' }}>
                       <HeaderToolbar size="sm" items={[{ label: 'Add job', icon: <AppIcon name="add" size={14} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') }]} />
@@ -777,9 +766,6 @@ export default function DashboardPage() {
                 </div>
                 {invoiceStats.allInvoices.length === 0 ? (
                   <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', color: TEXT2 }}>
-                      <IconInvoice size={20} />
-                    </div>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT2 }}>All clear</div>
                     <div style={{ fontSize: '11px', fontWeight: 500, color: TEXT3, marginTop: '2px' }}>No outstanding invoices</div>
                   </div>
@@ -825,29 +811,29 @@ export default function DashboardPage() {
               <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}` }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Quick Actions</span>
               </div>
-              {([
-                { label: 'New Job',       sub: 'Create a new job for a customer',  icon: <IconPlus size={20} />,     onClick: () => router.push('/dashboard/jobs/add') },
-                { label: 'New Invoice',   sub: 'Create and send an invoice',       icon: <IconInvoice size={20} />,  onClick: () => router.push('/dashboard/invoices') },
-                { label: 'Add Customer',  sub: 'Register a new customer',          icon: <IconUsers size={20} />,    onClick: () => router.push('/dashboard/customers') },
-                { label: 'View Schedule', sub: 'Open the full job calendar',       icon: <IconCalendar size={20} />, onClick: () => router.push('/dashboard/schedule') },
-              ] as { label: string; sub: string; icon: React.ReactNode; onClick: () => void }[]).map((action, i, arr) => (
-                <div
-                  key={action.label}
-                  onClick={action.onClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${BORDER}` : 'none', cursor: 'pointer', transition: 'background 0.12s' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = '#F8FAFC')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
-                >
-                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, color: TEXT2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxSizing: 'border-box' }}>
-                    {action.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{action.label}</div>
-                    <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '2px' }}>{action.sub}</div>
-                  </div>
-                  <div style={{ color: TEXT3, flexShrink: 0 }}><IconChevronRight size={14} /></div>
-                </div>
-              ))}
+              <div style={{ padding: isMobile ? '12px' : '16px 18px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: isMobile ? '10px' : '12px' }}>
+                {([
+                  { label: 'New Job',       sub: 'For a customer',        onClick: () => router.push('/dashboard/jobs/add') },
+                  { label: 'New Invoice',   sub: 'Create and send',       onClick: () => router.push('/dashboard/invoices') },
+                  { label: 'Add Customer',  sub: 'Register a new one',    onClick: () => router.push('/dashboard/customers') },
+                  { label: 'View Schedule', sub: 'See what is coming up', onClick: () => router.push('/dashboard/schedule') },
+                ] as { label: string; sub: string; onClick: () => void }[]).map(action => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={action.onClick}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: isMobile ? '14px' : '16px 18px', border: `1px solid ${BORDER}`, borderRadius: '12px', background: WHITE, cursor: 'pointer', fontFamily: FONT, textAlign: 'left', transition: 'background 0.12s, border-color 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.borderColor = TEAL }}
+                    onMouseLeave={e => { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER }}
+                  >
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{action.label}</span>
+                      <span style={{ display: 'block', fontSize: '12px', color: TEXT3, fontWeight: 500, marginTop: '3px' }}>{action.sub}</span>
+                    </span>
+                    <span style={{ color: TEAL, fontSize: '18px', fontWeight: 700, flexShrink: 0, lineHeight: 1 }}>→</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
