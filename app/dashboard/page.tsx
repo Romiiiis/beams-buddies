@@ -634,12 +634,22 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Row 2: Metric cards ── */}
-          <div style={{ padding: isMobile ? '12px 14px' : '0 24px 16px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
-            {metricCards.map(mc => (
+          <div
+            style={
+              isMobile
+                ? { margin: '12px 14px', background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }
+                : { padding: '0 24px 16px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }
+            }
+          >
+            {metricCards.map((mc, i) => (
               <div
                 key={mc.label}
                 onClick={mc.onClick}
-                style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: isMobile ? '14px 14px 12px' : '18px 18px 14px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderLeft: `3px solid ${TEAL}` }}
+                style={
+                  isMobile
+                    ? { padding: '14px', cursor: 'pointer', minWidth: 0, borderLeft: i % 2 === 1 ? `1px solid ${BORDER}` : 'none', borderTop: i >= 2 ? `1px solid ${BORDER}` : 'none' }
+                    : { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', padding: '18px 18px 14px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', borderLeft: `3px solid ${TEAL}` }
+                }
               >
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
                   {mc.label}

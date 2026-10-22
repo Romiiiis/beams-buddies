@@ -461,7 +461,7 @@ export default function CustomersPage() {
                     <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                     <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 2, marginRight: -40 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.address || c.suburb || 'No address saved'}</div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
