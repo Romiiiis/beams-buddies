@@ -605,22 +605,8 @@ export default function LeadsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedLead, setSelectedLead] = useState<any | null>(null)
-  const [view, setView] = useState<'pipeline' | 'list'>('pipeline')
   const [showAddLead, setShowAddLead] = useState(false)
   const [movingId, setMovingId] = useState<string | null>(null)
-
-  // Remember the chosen view per device
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('jobyra_leads_view')
-      if (saved === 'list' || saved === 'pipeline') setView(saved)
-    } catch {}
-  }, [])
-
-  function changeView(next: 'pipeline' | 'list') {
-    setView(next)
-    try { localStorage.setItem('jobyra_leads_view', next) } catch {}
-  }
 
   useEffect(() => {
     async function load() {
@@ -871,25 +857,21 @@ export default function LeadsPage() {
       label: 'Leads',
       value: totalLeads,
       sub: `${leadsDelta >= 0 ? '+' : ''}${leadsDelta}% last 30 days`,
-      onClick: () => { changeView('list'); setFilterStatus('all') },
     },
     {
       label: 'Booked',
       value: bookedCount,
       sub: `${bookedDelta >= 0 ? '+' : ''}${bookedDelta}% last 30 days`,
-      onClick: () => { changeView('list'); setFilterStatus('booked') },
     },
     {
       label: 'To call back',
       value: pendingCount,
       sub: 'Need follow-up',
-      onClick: () => { changeView('list'); setFilterStatus('pending') },
     },
     {
       label: 'Job created',
       value: convertedCount,
       sub: `${convertedDelta >= 0 ? '+' : ''}${convertedDelta}% last 30 days`,
-      onClick: () => { changeView('list'); setFilterStatus('converted') },
     },
   ]
 
@@ -963,104 +945,15 @@ export default function LeadsPage() {
         >
           <StatStrip items={statChips} isMobile={isMobile} />
 
-          {/* View switch (search lives in the header toolbar and covers both views) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div role="tablist" aria-label="Leads view" style={{ display: 'inline-flex', padding: 3, background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 12, flexShrink: 0 }}>
-              {(['pipeline', 'list'] as const).map(v => (
-                <button
-                  key={v}
-                  role="tab"
-                  aria-selected={view === v}
-                  onClick={() => changeView(v)}
-                  style={{
-                    height: 32,
-                    padding: '0 14px',
-                    border: 'none',
-                    borderRadius: 9,
-                    background: view === v ? TEAL : 'transparent',
-                    color: view === v ? WHITE : TEXT2,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: FONT,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {v === 'pipeline' ? 'Board' : 'List'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {view === 'pipeline' ? (
-            <LeadPipeline
-              leads={pipelineLeads}
-              stages={pipelineStages}
-              isMobile={isMobile}
-              movingId={movingId ?? converting}
-              statusLabels={statusLabels}
-              onOpen={lead => setSelectedLead(lead)}
-              onMove={moveLead}
-            />
-          ) : (
-          <DataList<any>
-            title="Inbound calls"
+          <LeadPipeline
+            leads={pipelineLeads}
+            stages={pipelineStages}
             isMobile={isMobile}
-            rows={filtered}
-            rowKey={lead => lead.id}
-            emptyText="No leads yet. Calls from Chloe will appear here."
-            onRowClick={lead => setSelectedLead(lead)}
-            rowActions={() => [{ label: 'View lead', onClick: lead => setSelectedLead(lead) }]}
-            tabs={statusTabs}
-            activeTab={filterStatus}
-            onTabChange={setFilterStatus}
-            columns={[
-              {
-                key: 'lead',
-                label: 'Lead',
-                width: 'minmax(0,1.3fr)',
-                render: lead => <PersonCell name={lead.customer_name || 'Unknown caller'} sub={lead.phone_number || 'No phone saved'} />,
-              },
-              {
-                key: 'type',
-                label: 'Job type',
-                width: '110px',
-                render: lead => (lead.job_type ? <JobTypeBadge type={lead.job_type} /> : <TextCell>—</TextCell>),
-              },
-              {
-                key: 'suburb',
-                label: 'Suburb',
-                width: 'minmax(0,1fr)',
-                hideOnMobile: true,
-                render: lead => <TitleCell title={lead.suburb || 'Not provided'} sub={lead.address || 'No address saved'} />,
-              },
-              {
-                key: 'booking',
-                label: 'Preferred booking',
-                width: 'minmax(0,1.1fr)',
-                mobileLabel: 'Booking',
-                render: lead => (
-                  <TextCell strong={!!lead.preferred_date}>
-                    {lead.preferred_date ? `${lead.preferred_date}${lead.preferred_start_time ? ` at ${lead.preferred_start_time}` : ''}` : 'Not set'}
-                  </TextCell>
-                ),
-              },
-              {
-                key: 'summary',
-                label: 'Call summary',
-                width: 'minmax(0,1.4fr)',
-                hideOnMobile: true,
-                render: lead => <TextCell>{lead.issue_summary || 'No summary recorded'}</TextCell>,
-              },
-              {
-                key: 'status',
-                label: 'Status',
-                width: '120px',
-                mobileHeader: true,
-                render: lead => <StatusPill label={STATUS_CONFIG[lead.status]?.label || lead.status} tone={LEAD_TONE[lead.status] || 'neutral'} />,
-              },
-            ]}
+            movingId={movingId ?? converting}
+            statusLabels={statusLabels}
+            onOpen={lead => setSelectedLead(lead)}
+            onMove={moveLead}
           />
-          )}
         </div>
       </div>
 

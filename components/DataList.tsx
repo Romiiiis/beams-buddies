@@ -294,6 +294,132 @@ export function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: 
   )
 }
 
+/** Phone filter: a tidy dropdown that lists each option with its count. */
+function FilterDropdown({ tabs, value, onChange }: { tabs: DataListTab[]; value?: string; onChange?: (value: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const current = tabs.find(t => t.value === value) || tabs[0]
+
+  useEffect(() => {
+    if (!open) return
+    function onDown(e: MouseEvent | TouchEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('touchstart', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('touchstart', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          height: 48,
+          padding: '0 14px',
+          borderRadius: 12,
+          border: `1px solid ${open ? TEAL : BORDER}`,
+          background: WHITE,
+          boxShadow: open ? `0 0 0 3px ${TEAL_LIGHT}` : '0 1px 2px rgba(15,23,42,0.04)',
+          fontFamily: FONT,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          cursor: 'pointer',
+          textAlign: 'left',
+          transition: 'border-color 0.12s, box-shadow 0.12s',
+        }}
+      >
+        <span style={{ fontSize: 12, fontWeight: 600, color: TEXT3 }}>Show</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: TEXT, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current.label}</span>
+        {typeof current.count === 'number' && (
+          <span style={{ minWidth: 26, height: 24, padding: '0 8px', borderRadius: 8, background: TEAL_LIGHT, color: TEAL_DARK, fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            {current.count}
+          </span>
+        )}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TEXT3} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 54,
+            zIndex: 30,
+            background: WHITE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 14,
+            boxShadow: '0 12px 32px rgba(15,23,42,0.14)',
+            padding: 6,
+            maxHeight: 320,
+            overflowY: 'auto',
+          }}
+        >
+          {tabs.map(t => {
+            const active = t.value === current.value
+            return (
+              <button
+                key={t.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange?.(t.value)
+                  setOpen(false)
+                }}
+                style={{
+                  width: '100%',
+                  height: 46,
+                  padding: '0 12px',
+                  border: 'none',
+                  borderRadius: 10,
+                  background: active ? TEAL_LIGHT : 'transparent',
+                  color: active ? TEAL_DARK : TEXT,
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: active ? 800 : 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 16, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
+                  {active && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  )}
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>{t.label}</span>
+                {typeof t.count === 'number' && <span style={{ fontSize: 13, fontWeight: 700, color: active ? TEAL_DARK : '#94A3B8' }}>{t.count}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function DataList<T>({
   renderMobile,
   title,
@@ -446,48 +572,7 @@ export function DataList<T>({
       {tabs && tabs.length > 0 && (
         <div style={{ padding: isMobile ? '6px 14px 8px' : '8px 24px 8px' }}>
           {isMobile ? (
-            <div style={{ position: 'relative' }}>
-              <select
-                value={activeTab}
-                onChange={e => onTabChange?.(e.target.value)}
-                aria-label="Filter"
-                style={{
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  width: '100%',
-                  height: 44,
-                  padding: '0 40px 0 14px',
-                  borderRadius: 12,
-                  border: `1px solid ${BORDER}`,
-                  background: '#F1F5F9',
-                  color: TEXT,
-                  fontFamily: FONT,
-                  fontSize: 15,
-                  fontWeight: 800,
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              >
-                {tabs.map(t => (
-                  <option key={t.value} value={t.value}>
-                    {typeof t.count === 'number' ? `${t.label} (${t.count})` : t.label}
-                  </option>
-                ))}
-              </select>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={TEXT3}
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </div>
+            <FilterDropdown tabs={tabs} value={activeTab} onChange={onTabChange} />
           ) : (
             <div style={{ display: 'inline-flex', gap: 2, padding: 4, background: '#F1F5F9', borderRadius: 12, maxWidth: '100%' }}>
               {tabs.map(t => {
