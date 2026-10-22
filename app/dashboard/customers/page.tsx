@@ -456,29 +456,31 @@ export default function CustomersPage() {
               const unit = first ? `${first.brand || ''} ${first.model || ''}`.trim() : ''
               const timingColor = label === 'Overdue' ? '#B91C1C' : label === 'Due soon' ? '#92400E' : TEAL_DARK
               return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.address || c.suburb || 'No address saved'}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
-                      {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
-                    </div>
-                    {t && (
-                      <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 2 }}>
-                        {t.headline}
-                        {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 32 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                     <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 2 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.address || c.suburb || 'No address saved'}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
+                        {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
+                      </div>
+                      {t && (
+                        <>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 2 }}>{t.headline}</div>
+                          {t.sub && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 1 }}>{t.sub}</div>}
+                        </>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={e => {
                         e.stopPropagation()
                         setContactCustomer(c)
                       }}
-                      style={{ height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: TEAL, color: WHITE, fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      style={{ height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: TEAL, color: WHITE, fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
                     >
                       <AppIcon name="call" size={14} /> Contact
                     </button>
