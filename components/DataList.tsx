@@ -442,40 +442,101 @@ export function DataList<T>({
         <div style={{ padding: isMobile ? '4px 14px 8px' : '4px 24px 8px', display: 'flex', gap: 10, flexWrap: 'wrap' }}>{filters}</div>
       )}
 
-      {/* Pill tabs */}
+      {/* Status filter: one grouped control on a computer, one dropdown on a phone */}
       {tabs && tabs.length > 0 && (
-        <div style={{ padding: isMobile ? '6px 14px' : '8px 24px 6px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {tabs.map(t => {
-            const active = t.value === activeTab
-            return (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => onTabChange?.(t.value)}
+        <div style={{ padding: isMobile ? '6px 14px 8px' : '8px 24px 8px' }}>
+          {isMobile ? (
+            <div style={{ position: 'relative' }}>
+              <select
+                value={activeTab}
+                onChange={e => onTabChange?.(e.target.value)}
+                aria-label="Filter"
                 style={{
-                  height: 34,
-                  padding: '0 16px',
-                  borderRadius: 10,
-                  border: `1.5px solid ${active ? TEAL : 'transparent'}`,
-                  background: active ? TEAL_LIGHT : 'transparent',
-                  color: active ? TEAL_DARK : TEXT2,
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  width: '100%',
+                  height: 44,
+                  padding: '0 40px 0 14px',
+                  borderRadius: 12,
+                  border: `1px solid ${BORDER}`,
+                  background: '#F1F5F9',
+                  color: TEXT,
                   fontFamily: FONT,
-                  fontSize: 13,
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  transition: 'background 0.12s, color 0.12s',
+                  fontSize: 15,
+                  fontWeight: 800,
+                  outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               >
-                {t.label}
-                {typeof t.count === 'number' && <span style={{ fontSize: 12, fontWeight: 900 }}>{t.count}</span>}
-              </button>
-            )
-          })}
+                {tabs.map(t => (
+                  <option key={t.value} value={t.value}>
+                    {typeof t.count === 'number' ? `${t.label} (${t.count})` : t.label}
+                  </option>
+                ))}
+              </select>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={TEXT3}
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          ) : (
+            <div style={{ display: 'inline-flex', gap: 2, padding: 4, background: '#F1F5F9', borderRadius: 12, maxWidth: '100%' }}>
+              {tabs.map(t => {
+                const active = t.value === activeTab
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => onTabChange?.(t.value)}
+                    style={{
+                      height: 32,
+                      padding: '0 14px',
+                      borderRadius: 9,
+                      border: 'none',
+                      background: active ? WHITE : 'transparent',
+                      boxShadow: active ? '0 1px 3px rgba(15,23,42,0.10)' : 'none',
+                      color: active ? TEXT : TEXT3,
+                      fontFamily: FONT,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      transition: 'background 0.12s, color 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.7)'
+                        e.currentTarget.style.color = TEXT
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = TEXT3
+                      }
+                    }}
+                  >
+                    {t.label}
+                    {typeof t.count === 'number' && (
+                      <span style={{ fontSize: 11, fontWeight: 800, color: active ? TEAL_DARK : '#94A3B8' }}>{t.count}</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
