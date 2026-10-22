@@ -32,6 +32,8 @@ export type DataListTab = { value: string; label: string; count?: number }
 export type DataListRowAction<T> = { label: string; onClick: (row: T) => void; danger?: boolean }
 
 type Props<T> = {
+  /** Custom phone card. Replaces the generic name-plus-fields layout. */
+  renderMobile?: (row: T) => React.ReactNode
   title: string
   isMobile: boolean
   rows: T[]
@@ -293,6 +295,7 @@ export function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: 
 }
 
 export function DataList<T>({
+  renderMobile,
   title,
   isMobile,
   rows,
@@ -536,6 +539,17 @@ export function DataList<T>({
             }
 
             if (isMobile) {
+              if (renderMobile) {
+                const rowActionsList = actions && actions.length > 0 ? actions : null
+                return (
+                  <div key={k} onClick={() => onRowClick?.(row)} style={{ ...rowStyle, padding: '14px', border: `1px solid ${isSel ? '#BFE7E3' : BORDER}` }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>{renderMobile(row)}</div>
+                      {rowActionsList && <RowMenu row={row} actions={rowActionsList} />}
+                    </div>
+                  </div>
+                )
+              }
               const [first, ...rest] = desktopCols
               const headerCols = rest.filter(c => c.mobileHeader)
               const bodyCols = rest.filter(c => !c.mobileHeader)

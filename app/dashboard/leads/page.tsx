@@ -116,11 +116,11 @@ function pctChange(current: number, previous: number) {
 }
 
 const STATUS_CONFIG: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  booked: { bg: '#DCFCE7', color: '#166534', border: '#BBF7D0', label: 'Booked' },
-  pending: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A', label: 'Pending' },
-  incomplete: { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: 'Incomplete' },
+  booked: { bg: '#DCFCE7', color: '#166534', border: '#BBF7D0', label: 'Booked in' },
+  pending: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A', label: 'To call back' },
+  incomplete: { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: 'Missing details' },
   wrong_number: { bg: '#FEE2E2', color: '#7F1D1D', border: '#FECACA', label: 'Wrong number' },
-  converted: { bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3', label: 'Converted' },
+  converted: { bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3', label: 'Job created' },
 }
 
 const LEAD_TONE: Record<string, 'success' | 'warn' | 'neutral' | 'danger' | 'brand'> = {
@@ -686,12 +686,20 @@ export default function LeadsPage() {
 
   // Pipeline columns, in the order a lead normally moves through them
   const pipelineStages: PipelineStage[] = [
-    { key: 'pending', hint: 'Need follow-up', ...STATUS_CONFIG.pending },
+    { key: 'pending', hint: 'Call them back', ...STATUS_CONFIG.pending },
     { key: 'booked', hint: 'Visit or quote booked', ...STATUS_CONFIG.booked },
-    { key: 'converted', hint: 'Customer and job created', ...STATUS_CONFIG.converted },
-    { key: 'incomplete', hint: 'Missing details', ...STATUS_CONFIG.incomplete },
-    { key: 'wrong_number', hint: 'Couldn’t reach them', ...STATUS_CONFIG.wrong_number },
+    { key: 'converted', hint: 'Now a customer', ...STATUS_CONFIG.converted },
+    {
+      key: 'incomplete',
+      alsoHolds: ['wrong_number'],
+      label: 'Didn’t go ahead',
+      hint: 'No answer or wrong number',
+      color: STATUS_CONFIG.wrong_number.color,
+      bg: STATUS_CONFIG.wrong_number.bg,
+      border: STATUS_CONFIG.wrong_number.border,
+    },
   ]
+  const statusLabels: Record<string, string> = Object.fromEntries(Object.entries(STATUS_CONFIG).map(([k, v]) => [k, v.label]))
 
   // Search applies to the pipeline too; status is shown by column instead of tabs
   const pipelineLeads = useMemo(() => {
@@ -872,13 +880,13 @@ export default function LeadsPage() {
       onClick: () => { changeView('list'); setFilterStatus('booked') },
     },
     {
-      label: 'Pending',
+      label: 'To call back',
       value: pendingCount,
       sub: 'Need follow-up',
       onClick: () => { changeView('list'); setFilterStatus('pending') },
     },
     {
-      label: 'Converted',
+      label: 'Job created',
       value: convertedCount,
       sub: `${convertedDelta >= 0 ? '+' : ''}${convertedDelta}% last 30 days`,
       onClick: () => { changeView('list'); setFilterStatus('converted') },
@@ -977,7 +985,7 @@ export default function LeadsPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  {v === 'pipeline' ? 'Pipeline' : 'List'}
+                  {v === 'pipeline' ? 'Board' : 'List'}
                 </button>
               ))}
             </div>
@@ -989,6 +997,7 @@ export default function LeadsPage() {
               stages={pipelineStages}
               isMobile={isMobile}
               movingId={movingId ?? converting}
+              statusLabels={statusLabels}
               onOpen={lead => setSelectedLead(lead)}
               onMove={moveLead}
             />

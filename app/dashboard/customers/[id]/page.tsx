@@ -291,7 +291,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     const days = getDays(nextServiceDate)
     if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' }
     if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: AMBER, border: '#FDE68A' }
-    return { label: 'Scheduled', bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3' }
+    return { label: 'On track', bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3' }
   }
 
   const totalServiceRecords = useMemo(() => {
@@ -303,7 +303,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const stats = useMemo(() => {
     const overdue = jobs.filter(j => statusPill(j.next_service_date).label === 'Overdue').length
     const dueSoon = jobs.filter(j => statusPill(j.next_service_date).label === 'Due soon').length
-    const scheduled = jobs.filter(j => statusPill(j.next_service_date).label === 'Scheduled').length
+    const scheduled = jobs.filter(j => statusPill(j.next_service_date).label === 'On track').length
     return {
       jobs: jobs.length,
       serviceRecords: totalServiceRecords,

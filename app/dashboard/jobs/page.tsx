@@ -11,6 +11,7 @@ import { ContactDrawer } from '@/components/ContactDrawer'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
+import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -787,7 +788,7 @@ export default function JobsPage() {
             .includes(search.toLowerCase())
         : true
       const matchType = filterType === 'all' ? true : j.equipment_type === filterType
-      const days = daysUntil(j.install_date, j.service_interval_months)
+      const days = daysUntilService(j)
       const matchStatus =
         statusTab === 'all'
           ? true
@@ -800,30 +801,17 @@ export default function JobsPage() {
     })
   }, [jobs, search, filterType, statusTab])
 
-  function daysUntil(installDate: string, intervalMonths: number) {
-    if (!installDate) return null
-    const d = new Date(installDate)
-    d.setMonth(d.getMonth() + intervalMonths)
-    return Math.ceil((d.getTime() - Date.now()) / 86400000)
-  }
-
-  function nextService(installDate: string, intervalMonths: number) {
-    if (!installDate) return null
-    const d = new Date(installDate)
-    d.setMonth(d.getMonth() + intervalMonths)
-    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-  }
-
   function serviceMeta(job: any) {
-    const days = daysUntil(job.install_date, job.service_interval_months)
-    const next = nextService(job.install_date, job.service_interval_months)
-    const isDueSoon = days !== null && days >= 0 && days <= 30
-    const isOverdue = days !== null && days < 0
+    const bucket = serviceBucket(job)
+    const days = daysUntilService(job)
+    const next = nextServiceDate(job) ? formatDate(nextServiceDate(job)) : null
+    const isDueSoon = bucket === 'due_soon'
+    const isOverdue = bucket === 'overdue'
     const serviceColor = isOverdue ? '#991B1B' : isDueSoon ? AMBER : TEAL_DARK
     const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : TEAL_LIGHT
     const serviceBorder = isOverdue ? '#FECACA' : isDueSoon ? '#FDE68A' : '#BFE7E3'
-    const serviceLabel = isOverdue ? `Overdue` : isDueSoon ? `Due soon` : next ? `Scheduled` : 'No date'
-    return { days, next, isDueSoon, isOverdue, serviceColor, serviceBg, serviceBorder, serviceLabel }
+    const serviceLabel = SERVICE_LABEL[bucket]
+    return { days, next, bucket, isDueSoon, isOverdue, serviceColor, serviceBg, serviceBorder, serviceLabel }
   }
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
@@ -845,17 +833,17 @@ export default function JobsPage() {
   }
 
   const overdueCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
+    const d = daysUntilService(j)
     return d !== null && d < 0
   }).length
 
   const dueSoonCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
+    const d = daysUntilService(j)
     return d !== null && d >= 0 && d <= 30
   }).length
 
   const upToDateCount = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
+    const d = daysUntilService(j)
     return d !== null && d > 30
   }).length
 
@@ -863,18 +851,18 @@ export default function JobsPage() {
     { value: 'all', label: 'All jobs', count: jobs.length },
     { value: 'overdue', label: 'Overdue', count: overdueCount },
     { value: 'due-soon', label: 'Due soon', count: dueSoonCount },
-    { value: 'scheduled', label: 'Scheduled', count: upToDateCount },
+    { value: 'scheduled', label: 'On track', count: upToDateCount },
   ]
 
   const currentJobs = jobs.filter(j => inRange(j.install_date, startCurrent30, now)).length
   const prevJobs = jobs.filter(j => inRange(j.install_date, startPrev30, startCurrent30)).length
 
   const currentDue = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
+    const d = daysUntilService(j)
     return d !== null && d >= 0 && d <= 30 && inRange(j.install_date, startCurrent30, now)
   }).length
   const prevDue = jobs.filter(j => {
-    const d = daysUntil(j.install_date, j.service_interval_months)
+    const d = daysUntilService(j)
     return d !== null && d >= 0 && d <= 30 && inRange(j.install_date, startPrev30, startCurrent30)
   }).length
 
@@ -1086,6 +1074,45 @@ export default function JobsPage() {
                 ))}
               </select>
             }
+            renderMobile={job => {
+              const c = job.customers
+              const name = (c ? `${c.first_name} ${c.last_name}`.trim() : '') || 'Unknown customer'
+              const m = serviceMeta(job)
+              const t = timingText(job)
+              const what = [`${job.brand || 'TBC'}${job.model ? ` ${job.model}` : ''}`, getEquipmentLabel(job.equipment_type) || ''].filter(Boolean).join(' · ')
+              const timingColor = m.isOverdue ? '#B91C1C' : m.isDueSoon ? AMBER : TEAL_DARK
+              return (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    <StatusPill label={m.serviceLabel} tone={m.isOverdue ? 'danger' : m.isDueSoon ? 'warn' : m.next ? 'success' : 'neutral'} />
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: TEXT2, marginTop: 6 }}>{what}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 2 }}>{[c?.suburb, job.install_location].filter(Boolean).join(' · ') || 'No location saved'}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 8 }}>
+                    {t.headline}
+                    {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10 }}>
+                    {c?.phone && (
+                      <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ fontSize: 13, fontWeight: 700, color: TEAL_DARK, textDecoration: 'none' }}>
+                        Call {c.phone}
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation()
+                        setQrJobId(job.id)
+                      }}
+                      style={{ border: 'none', background: 'transparent', padding: 0, fontFamily: FONT, fontSize: 13, fontWeight: 700, color: job.qr_code_token ? TEAL_DARK : TEXT3, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                    >
+                      {job.qr_code_token ? 'View QR' : 'Create QR'}
+                    </button>
+                  </div>
+                </div>
+              )
+            }}
             columns={[
               {
                 key: 'customer',
@@ -1159,7 +1186,7 @@ export default function JobsPage() {
                 mobileHeader: true,
                 render: job => {
                   const m = serviceMeta(job)
-                  return <StatusPill label={m.serviceLabel} tone={m.isOverdue ? 'danger' : m.isDueSoon ? 'warn' : m.next ? 'brand' : 'neutral'} />
+                  return <StatusPill label={m.serviceLabel} tone={m.isOverdue ? 'danger' : m.isDueSoon ? 'warn' : m.next ? 'success' : 'neutral'} />
                 },
               },
             ]}

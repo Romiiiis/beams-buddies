@@ -9,6 +9,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { nextServiceDate, daysUntilService, serviceBucket, timingText } from '@/lib/service'
 import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
 
 const TEAL = '#2AA198'
@@ -173,51 +174,18 @@ export default function SchedulePage() {
     load()
   }, [router])
 
-  function getDays(d: string) {
-    const target = new Date(d)
-    target.setHours(0, 0, 0, 0)
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    return Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  }
-
-  function getUrgency(d: string) {
-    const days = getDays(d)
-
-    if (days < 0) {
-      return {
-        status: 'overdue' as const,
-        ...URGENCY_STYLES.overdue,
-        sub: `${Math.abs(days)}d overdue`,
-        dateLabel: `Was due ${new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`,
-      }
-    }
-
-    if (days <= 30) {
-      return {
-        status: 'due_soon' as const,
-        ...URGENCY_STYLES.due_soon,
-        sub: `${days}d until due`,
-        dateLabel: `Due ${new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`,
-      }
-    }
-
-    return {
-      status: 'good' as const,
-      ...URGENCY_STYLES.good,
-      sub: `${days}d until due`,
-      dateLabel: `Due ${new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`,
-    }
+  function getUrgency(job: any) {
+    const t = timingText(job)
+    const key = t.bucket === 'overdue' ? 'overdue' : t.bucket === 'due_soon' ? 'due_soon' : 'good'
+    return { status: key as 'overdue' | 'due_soon' | 'good', ...URGENCY_STYLES[key], sub: t.headline, dateLabel: t.sub }
   }
 
   const counts = useMemo(
     () => ({
       all: jobs.length,
-      overdue: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0).length,
-      due_soon: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30).length,
-      good: jobs.filter(j => j.next_service_date && getDays(j.next_service_date) > 30).length,
+      overdue: jobs.filter(j => serviceBucket(j) === 'overdue').length,
+      due_soon: jobs.filter(j => serviceBucket(j) === 'due_soon').length,
+      good: jobs.filter(j => serviceBucket(j) === 'on_track').length,
     }),
     [jobs]
   )
@@ -226,14 +194,14 @@ export default function SchedulePage() {
     () =>
       jobs.filter(j => {
         if (filter === 'all') return true
-        if (!j.next_service_date) return false
-        return getUrgency(j.next_service_date).status === filter
+        if (!nextServiceDate(j)) return false
+        return getUrgency(j).status === filter
       }),
     [jobs, filter]
   )
 
-  const overdueJobs = useMemo(() => jobs.filter(j => j.next_service_date && getDays(j.next_service_date) < 0), [jobs])
-  const dueSoonJobs = useMemo(() => jobs.filter(j => j.next_service_date && getDays(j.next_service_date) >= 0 && getDays(j.next_service_date) <= 30), [jobs])
+  const overdueJobs = useMemo(() => jobs.filter(j => serviceBucket(j) === 'overdue'), [jobs])
+  const dueSoonJobs = useMemo(() => jobs.filter(j => serviceBucket(j) === 'due_soon'), [jobs])
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
@@ -443,6 +411,31 @@ export default function SchedulePage() {
                 }))}
                 activeTab={filter}
                 onTabChange={setFilter}
+                renderMobile={job => {
+                  const u = nextServiceDate(job) ? getUrgency(job) : null
+                  const name = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Unknown customer'
+                  const what = [job.brand ? `${job.brand} ${formatCapacity(job.capacity_kw, business?.industry)}`.trim() : '', job.equipment_type ? getEquipmentLabel(job.equipment_type) : ''].filter(Boolean).join(' · ')
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[what, job.customers?.suburb].filter(Boolean).join(' · ') || '—'}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: u?.valColor || TEXT3, marginTop: 6 }}>{u?.sub || 'No date set'}</div>
+                        {u?.dateLabel && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 1 }}>{u.dateLabel}</div>}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                        <button style={{ height: 34, width: 86, borderRadius: 8, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <IconMail size={13} /> Email
+                        </button>
+                        <button style={{ height: 34, width: 86, borderRadius: 8, border: 'none', background: TEAL, color: WHITE, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <IconSms size={13} /> SMS
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }}
                 columns={[
                   {
                     key: 'customer',
@@ -473,7 +466,7 @@ export default function SchedulePage() {
                     width: 'minmax(0,1fr)',
                     mobileLabel: 'Timing',
                     render: job => {
-                      const u = job.next_service_date ? getUrgency(job.next_service_date) : null
+                      const u = nextServiceDate(job) ? getUrgency(job) : null
                       return (
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 800, color: u?.valColor || TEXT3, whiteSpace: 'nowrap' }}>{u?.sub || 'No date set'}</div>
@@ -488,7 +481,7 @@ export default function SchedulePage() {
                     width: '110px',
                     mobileHeader: true,
                     render: job => {
-                      const u = job.next_service_date ? getUrgency(job.next_service_date) : null
+                      const u = nextServiceDate(job) ? getUrgency(job) : null
                       if (!u) return <StatusPill label="No date" tone="neutral" />
                       return <StatusPill label={u.status === 'overdue' ? 'Overdue' : u.status === 'due_soon' ? 'Due soon' : 'On track'} tone={u.status === 'overdue' ? 'danger' : u.status === 'due_soon' ? 'warn' : 'success'} />
                     },

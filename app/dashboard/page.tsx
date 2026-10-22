@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusiness } from '@/lib/useBusiness'
 import { getEquipmentLabel } from '@/lib/industry-config'
@@ -111,8 +112,25 @@ const DAY_LABELS_SHORT = ['S','M','T','W','T','F','S']
 
 // ── Job Day Popup ──────────────────────────────────────────────────────────
 
+type CalItem = {
+  id: string
+  kind: 'service' | 'booking'
+  dateKey: string
+  name: string
+  label: string
+  suburb?: string | null
+  phone?: string | null
+  time?: string | null
+  href: string
+}
+
+const KIND_STYLE = {
+  service: { label: 'Service due', bg: TEAL_LIGHT, fg: TEAL_DARK },
+  booking: { label: 'Booked', bg: '#EFF6FF', fg: '#1D4ED8' },
+}
+
 function JobDayPopup({ date, jobs, onClose, onJobClick }: {
-  date: Date; jobs: any[]; onClose: () => void; onJobClick: (job: any) => void
+  date: Date; jobs: CalItem[]; onClose: () => void; onJobClick: (item: CalItem) => void
 }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return (
@@ -120,27 +138,24 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
       <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Scheduled Jobs</div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{jobs.length === 0 ? 'Nothing booked' : `${jobs.length} thing${jobs.length !== 1 ? 's' : ''} on`}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ padding: '4px 10px', borderRadius: '20px', background: TEAL_LIGHT, color: TEAL_DARK, fontSize: '11px', fontWeight: 800 }}>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
         <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
-          {jobs.map(job => {
-            const name     = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-            const initials = (job.customers?.first_name?.[0] || '') + (job.customers?.last_name?.[0] || '')
-            const jobLabel = job.job_type ? job.job_type.replace(/_/g, ' ') : getEquipmentLabel(job.equipment_type) || 'Job'
+          {jobs.length === 0 && <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: '13px', color: TEXT3 }}>Nothing booked for this day.</div>}
+          {jobs.map(item => {
+            const k = KIND_STYLE[item.kind]
+            const initials = item.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
             return (
-              <div key={job.id} onClick={() => onJobClick(job)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: TEAL_LIGHT, color: TEAL_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
+              <div key={item.id} onClick={() => onJobClick(item)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+                <div style={{ width: 36, height: 36, borderRadius: '10px', background: k.bg, color: k.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{jobLabel}{job.customers?.suburb ? ` · ${job.customers.suburb}` : ''}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{item.name}</div>
+                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{[item.time, item.label, item.suburb].filter(Boolean).join(' · ')}</div>
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: TEAL_DARK, display: 'flex', alignItems: 'center', gap: '3px' }}>View <IconChevronRight size={11} /></span>
+                <span style={{ padding: '3px 8px', borderRadius: '6px', background: k.bg, color: k.fg, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{k.label}</span>
               </div>
             )
           })}
@@ -155,10 +170,10 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
 
 // ── Bookings Widget (week strip + month calendar) ──────────────────────────
 
-function BookingsWidget({ allJobs, isMobile, onDateClick }: {
-  allJobs: any[]
+function BookingsWidget({ items, isMobile, onDateClick }: {
+  items: CalItem[]
   isMobile: boolean
-  onDateClick: (date: Date, jobs: any[]) => void
+  onDateClick: (date: Date, items: CalItem[]) => void
 }) {
   const todayDate  = useMemo(() => startOfDay(new Date()), [])
   const todayKey   = useMemo(() => toYMD(todayDate), [todayDate])
@@ -166,16 +181,13 @@ function BookingsWidget({ allJobs, isMobile, onDateClick }: {
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth())
 
   const jobsByDate = useMemo(() => {
-    const map: Record<string, any[]> = {}
-    allJobs.forEach(job => {
-      const d = parseDateLocal(job.next_service_date)
-      if (!d) return
-      const key = toYMD(d)
-      if (!map[key]) map[key] = []
-      map[key].push(job)
+    const map: Record<string, CalItem[]> = {}
+    items.forEach(item => {
+      if (!map[item.dateKey]) map[item.dateKey] = []
+      map[item.dateKey].push(item)
     })
     return map
-  }, [allJobs])
+  }, [items])
 
   function prevMonth() { viewMonth === 0 ? (setViewYear(y => y - 1), setViewMonth(11)) : setViewMonth(m => m - 1) }
   function nextMonth() { viewMonth === 11 ? (setViewYear(y => y + 1), setViewMonth(0)) : setViewMonth(m => m + 1) }
@@ -382,7 +394,8 @@ export default function DashboardPage() {
   const logoUrl   = business?.logo_url ?? null
   const [loading,      setLoading]      = useState(true)
   const [popupDate,    setPopupDate]    = useState<Date | null>(null)
-  const [popupJobs,    setPopupJobs]    = useState<any[]>([])
+  const [popupJobs,    setPopupJobs]    = useState<CalItem[]>([])
+  const [allLeads,     setAllLeads]     = useState<any[]>([])
   const [stats,        setStats]        = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0, jobsToday: 0 })
   const [invoiceStats, setInvoiceStats] = useState({ outstanding: 0, overdueCount: 0, allInvoices: [] as any[] })
   const [allJobs,      setAllJobs]      = useState<any[]>([])
@@ -417,8 +430,16 @@ export default function DashboardPage() {
       const jobs: any[]     = jobsRes.data || []
       const invoices: any[] = invoicesRes.data || []
 
-      const overdue       = jobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() < todayMs })
-      const jobsToday     = jobs.filter(j => String(j.next_service_date || '').slice(0, 10) === todayKey).length
+      // Booked visits from the Leads pipeline also belong on the calendar
+      const leadsRes = await supabase
+        .from('leads')
+        .select('id, customer_name, phone_number, suburb, job_type, status, preferred_date, preferred_start_time')
+        .eq('status', 'booked')
+        .not('preferred_date', 'is', null)
+      setAllLeads(leadsRes.data || [])
+
+      const overdue       = jobs.filter(j => serviceBucket(j) === 'overdue')
+      const jobsToday     = 0 // worked out from the calendar items below
       const jobsThisMonth = jobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear }).length
 
       setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
@@ -462,13 +483,50 @@ export default function DashboardPage() {
   const currConv = currWin.length > 0 ? Math.round((currWin.filter(i => i.status === 'paid').length / currWin.length) * 100) : 0
   const prevConv = prevWin.length > 0 ? Math.round((prevWin.filter(i => i.status === 'paid').length / prevWin.length) * 100) : 0
 
-  const scheduledCount = useMemo(() => {
-    const todayMs = startOfDay(new Date()).getTime()
-    return allJobs.filter(j => { const d = parseDateLocal(j.next_service_date); return d && startOfDay(d).getTime() >= todayMs }).length
-  }, [allJobs])
+  const scheduledCount = useMemo(() => allJobs.filter(j => { const d = daysUntilService(j); return d !== null && d >= 0 }).length, [allJobs])
 
-  const todayKey  = toYMD(startOfDay(new Date()))
-  const todayJobs = useMemo(() => allJobs.filter(j => String(j.next_service_date || '').slice(0, 10) === todayKey), [allJobs, todayKey])
+  const todayKey = toYMD(startOfDay(new Date()))
+
+  // Everything that is booked: services falling due plus booked visits from Leads
+  const calendarItems = useMemo<CalItem[]>(() => {
+    const out: CalItem[] = []
+    allJobs.forEach(job => {
+      const d = nextServiceDate(job)
+      if (!d) return
+      out.push({
+        id: `job-${job.id}`,
+        kind: 'service',
+        dateKey: toYMD(d),
+        name: `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer',
+        label: job.job_type ? String(job.job_type).replace(/_/g, ' ') : getEquipmentLabel(job.equipment_type) || 'Service',
+        suburb: job.customers?.suburb,
+        phone: job.customers?.phone,
+        time: null,
+        href: `/dashboard/customers/${job.customer_id}`,
+      })
+    })
+    allLeads.forEach(l => {
+      const d = parseDateLocal(l.preferred_date)
+      if (!d) return
+      out.push({
+        id: `lead-${l.id}`,
+        kind: 'booking',
+        dateKey: toYMD(d),
+        name: l.customer_name || 'Caller',
+        label: l.job_type ? String(l.job_type).replace(/_/g, ' ') : 'Visit',
+        suburb: l.suburb,
+        phone: l.phone_number,
+        time: l.preferred_start_time ? String(l.preferred_start_time).slice(0, 5) : null,
+        href: '/dashboard/leads',
+      })
+    })
+    return out
+  }, [allJobs, allLeads])
+
+  const todayItems = useMemo(
+    () => calendarItems.filter(i => i.dateKey === todayKey).sort((a, b) => (a.time || '99').localeCompare(b.time || '99')),
+    [calendarItems, todayKey]
+  )
 
   if (loading) return (
     <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
@@ -481,7 +539,7 @@ export default function DashboardPage() {
   const statChips = [
     { label: 'Total Customers', value: stats.customers,  danger: false,              icon: <IconUsers size={13} />,       onClick: () => router.push('/dashboard/customers') },
     { label: 'Upcoming Jobs',   value: scheduledCount,   danger: false,              icon: <IconCalendar size={13} />,    onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Jobs Today',      value: stats.jobsToday,  danger: false,              icon: <IconClock size={13} />,       onClick: () => router.push('/dashboard/schedule') },
+    { label: 'Jobs Today',      value: todayItems.length,  danger: false,              icon: <IconClock size={13} />,       onClick: () => router.push('/dashboard/schedule') },
     { label: 'Overdue Jobs',    value: stats.overdue,    danger: stats.overdue > 0,  icon: <IconAlertCircle size={13} />, onClick: () => router.push('/dashboard/jobs') },
   ]
 
@@ -506,7 +564,7 @@ export default function DashboardPage() {
         <JobDayPopup
           date={popupDate} jobs={popupJobs}
           onClose={() => { setPopupDate(null); setPopupJobs([]) }}
-          onJobClick={job => { setPopupDate(null); setPopupJobs([]); router.push(`/dashboard/customers/${job.customer_id}`) }}
+          onJobClick={item => { setPopupDate(null); setPopupJobs([]); router.push(item.href) }}
         />
       )}
 
@@ -615,39 +673,37 @@ export default function DashboardPage() {
                     <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Today&apos;s schedule</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayJobs.length} job{todayJobs.length !== 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayItems.length} booked</span>
                     <HeaderToolbar size="sm" items={[{ label: 'Full calendar', icon: <AppIcon name="calendar" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
                   </div>
                 </div>
 
-                {todayJobs.length === 0 ? (
+                {todayItems.length === 0 ? (
                   <div style={{ padding: '28px', textAlign: 'center' }}>
                     <div style={{ width: 40, height: 40, borderRadius: '10px', background: WHITE, border: `1px solid ${BORDER}`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: TEXT2 }}>
                       <IconClipboard size={22} />
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>No jobs scheduled today</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT2 }}>Nothing booked today</div>
                     <div style={{ marginTop: '10px' }}>
                       <HeaderToolbar size="sm" items={[{ label: 'Add job', icon: <AppIcon name="add" size={14} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') }]} />
                     </div>
                   </div>
-                ) : todayJobs.map((job, i) => {
-                  const name     = `${job.customers?.first_name || ''} ${job.customers?.last_name || ''}`.trim() || 'Customer'
-                  const jobLabel = job.job_type ? job.job_type.replace(/_/g, ' ') : getEquipmentLabel(job.equipment_type) || 'Job'
-                  const timeStr  = job.start_time || job.time || null
+                ) : todayItems.map((item, i) => {
+                  const timeStr  = item.time || null
                   const isFirst  = i === 0
-                  const isLast   = i === todayJobs.length - 1
+                  const isLast   = i === todayItems.length - 1
+                  const k        = KIND_STYLE[item.kind]
                   return (
                     <div
-                      key={job.id}
-                      onClick={() => router.push(`/dashboard/customers/${job.customer_id}`)}
+                      key={item.id}
+                      onClick={() => router.push(item.href)}
                       style={{ display: 'grid', gridTemplateColumns: timeStr ? '64px 18px 1fr auto' : '18px 1fr auto', alignItems: 'stretch', padding: '0 18px', cursor: 'pointer', minHeight: '64px', borderBottom: isLast ? 'none' : `1px solid ${BORDER}`, transition: 'background 0.1s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                       onMouseLeave={e => (e.currentTarget.style.background = WHITE)}
                     >
                       {timeStr && (
                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'right', padding: '12px 8px 12px 0' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{timeStr.split(' ')[0]}</div>
-                          <div style={{ fontSize: '9px', fontWeight: 700, color: TEXT3, marginTop: '2px', letterSpacing: '0.04em' }}>{timeStr.split(' ')[1] || ''}</div>
+                          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{timeStr}</div>
                         </div>
                       )}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 18 }}>
@@ -656,16 +712,16 @@ export default function DashboardPage() {
                         <div style={{ width: 2, flex: 1, background: isLast ? 'transparent' : BORDER }} />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '12px 0 12px 12px', minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
                         <div style={{ fontSize: '11px', color: TEXT3, fontWeight: 500, marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          <span style={{ textTransform: 'capitalize' }}>{jobLabel}</span>
-                          {job.customers?.suburb && <><span style={{ color: BORDER }}>·</span><span>{job.customers.suburb}</span></>}
-                          {job.customers?.phone  && <><span style={{ color: BORDER }}>·</span><span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px' }}>{job.customers.phone}</span></>}
+                          <span style={{ textTransform: 'capitalize' }}>{item.label}</span>
+                          {item.suburb && <><span style={{ color: BORDER }}>·</span><span>{item.suburb}</span></>}
+                          {item.phone  && <><span style={{ color: BORDER }}>·</span><span>{item.phone}</span></>}
                         </div>
                       </div>
                       <div style={{ alignSelf: 'center' }}>
-                        <span style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap', background: isFirst ? TEAL_LIGHT : BORDER, color: isFirst ? TEAL_DARK : TEXT3 }}>
-                          {isFirst ? 'Next up' : 'Scheduled'}
+                        <span style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap', background: k.bg, color: k.fg }}>
+                          {k.label}
                         </span>
                       </div>
                     </div>
@@ -680,9 +736,9 @@ export default function DashboardPage() {
                   <HeaderToolbar size="sm" items={[{ label: 'View schedule', icon: <AppIcon name="calendar-clock" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
                 </div>
                 <BookingsWidget
-                  allJobs={allJobs}
+                  items={calendarItems}
                   isMobile={isMobile}
-                  onDateClick={(date, jobs) => { setPopupDate(date); setPopupJobs(jobs) }}
+                  onDateClick={(date, items) => { setPopupDate(date); setPopupJobs(items) }}
                 />
               </div>
 

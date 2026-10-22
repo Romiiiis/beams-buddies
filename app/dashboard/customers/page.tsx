@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
@@ -194,64 +195,21 @@ export default function CustomersPage() {
     load()
   }, [router])
 
-  function getDays(d?: string | null) {
-    const today = startOfDay(new Date()).getTime()
-    const target = parseDateLocal(d || '')
-
-    if (!target) return 0
-
-    return Math.floor((startOfDay(target).getTime() - today) / (1000 * 60 * 60 * 24))
-  }
-
   function statusPill(jobs: any[]) {
-    if (!jobs?.length) {
-      return { label: 'No jobs', bg: '#F1F5F9', color: TEXT3, border: BORDER }
-    }
-
-    const datedJobs = [...jobs]
-      .filter((j) => j?.next_service_date)
-      .sort((a, b) => {
-        const ad = parseDateLocal(a.next_service_date)?.getTime() || 0
-        const bd = parseDateLocal(b.next_service_date)?.getTime() || 0
-        return ad - bd
-      })
-
-    const next = datedJobs[0]?.next_service_date || jobs[0]?.next_service_date
-
-    if (!next) {
-      return { label: 'No date', bg: '#F1F5F9', color: TEXT3, border: BORDER }
-    }
-
-    const days = getDays(next)
-
-    if (days < 0) {
-      return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' }
-    }
-
-    if (days <= 30) {
-      return { label: 'Due soon', bg: '#FEF3C7', color: '#92400E', border: '#FDE68A' }
-    }
-
-    if (days <= 90) {
-      return { label: 'Scheduled', bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3' }
-    }
-
-    return { label: 'Good', bg: '#F1F5F9', color: TEXT3, border: BORDER }
+    if (!jobs?.length) return { label: 'No jobs' }
+    return { label: SERVICE_LABEL[worstBucket(jobs)] }
   }
 
   const STATUS_TONE: Record<string, 'danger' | 'warn' | 'brand' | 'success' | 'neutral'> = {
     Overdue: 'danger',
     'Due soon': 'warn',
-    Scheduled: 'brand',
-    Good: 'success',
+    'On track': 'success',
   }
 
   function nextServiceLabel(jobs: any[]) {
-    const next = [...(jobs || [])]
-      .filter((j: any) => j?.next_service_date)
-      .sort((a: any, b: any) => (parseDateLocal(a.next_service_date)?.getTime() || 0) - (parseDateLocal(b.next_service_date)?.getTime() || 0))[0]
-    if (!next) return 'Not set'
-    return parseDateLocal(next.next_service_date)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) || 'Not set'
+    const next = soonestJob(jobs)
+    const d = next ? nextServiceDate(next) : null
+    return d ? formatDate(d, false) : 'Not set'
   }
 
   const filtered = useMemo(() => {
@@ -264,7 +222,7 @@ export default function CustomersPage() {
     })
   }, [customers, search, statusTab])
 
-  const statusTabs = ['Overdue', 'Due soon', 'Scheduled', 'Good'].reduce(
+  const statusTabs = ['Overdue', 'Due soon', 'On track'].reduce(
     (tabs, label) => [...tabs, { value: label, label, count: customers.filter((c) => statusPill(c.jobs).label === label).length }],
     [{ value: 'all', label: 'All customers', count: customers.length }] as { value: string; label: string; count: number }[]
   )
@@ -486,6 +444,40 @@ export default function CustomersPage() {
             tabs={statusTabs}
             activeTab={statusTab}
             onTabChange={setStatusTab}
+            renderMobile={c => {
+              const name = `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unnamed customer'
+              const label = statusPill(c.jobs).label
+              const jobsList = c.jobs || []
+              const soon = soonestJob(jobsList)
+              const t = soon ? timingText(soon) : null
+              const first = jobsList[0]
+              const unit = first ? `${first.brand || ''} ${first.model || ''}`.trim() : ''
+              const timingColor = label === 'Overdue' ? '#B91C1C' : label === 'Due soon' ? '#92400E' : TEAL_DARK
+              return (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: TEXT2, marginTop: 6 }}>{c.phone || c.email || 'No contact saved'}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 2 }}>{c.address || c.suburb || 'No address saved'}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
+                    {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
+                  </div>
+                  {t && (
+                    <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 2 }}>
+                      {t.headline}
+                      {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
+                    </div>
+                  )}
+                  {c.phone && (
+                    <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ display: 'inline-block', marginTop: 10, fontSize: 13, fontWeight: 700, color: TEAL_DARK, textDecoration: 'none' }}>
+                      Call {c.phone}
+                    </a>
+                  )}
+                </div>
+              )
+            }}
             columns={[
               {
                 key: 'customer',
