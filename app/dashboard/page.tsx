@@ -813,22 +813,22 @@ export default function DashboardPage() {
               </div>
               <div style={{ padding: isMobile ? '12px' : '16px 18px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: isMobile ? '10px' : '12px' }}>
                 {([
-                  { label: 'New Job',       sub: 'For a customer',        onClick: () => router.push('/dashboard/jobs/add') },
-                  { label: 'New Invoice',   sub: 'Create and send',       onClick: () => router.push('/dashboard/invoices') },
-                  { label: 'Add Customer',  sub: 'Register a new one',    onClick: () => router.push('/dashboard/customers') },
-                  { label: 'View Schedule', sub: 'See what is coming up', onClick: () => router.push('/dashboard/schedule') },
+                  { label: 'New Job',       sub: 'Add a job for a customer',    onClick: () => router.push('/dashboard/jobs/add') },
+                  { label: 'New Invoice',   sub: 'Create and send an invoice',  onClick: () => router.push('/dashboard/invoices') },
+                  { label: 'Add Customer',  sub: 'Register a new customer',     onClick: () => router.push('/dashboard/customers') },
+                  { label: 'View Schedule', sub: 'Open the service calendar',   onClick: () => router.push('/dashboard/schedule') },
                 ] as { label: string; sub: string; onClick: () => void }[]).map(action => (
                   <button
                     key={action.label}
                     type="button"
                     onClick={action.onClick}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: isMobile ? '14px' : '16px 18px', border: `1px solid ${BORDER}`, borderRadius: '12px', background: WHITE, cursor: 'pointer', fontFamily: FONT, textAlign: 'left', transition: 'background 0.12s, border-color 0.12s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.borderColor = TEAL }}
-                    onMouseLeave={e => { e.currentTarget.style.background = WHITE; e.currentTarget.style.borderColor = BORDER }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', height: isMobile ? '88px' : '78px', padding: isMobile ? '0 14px' : '0 18px', border: `1px solid #E1E8EE`, borderRadius: '12px', background: '#F4F7F9', cursor: 'pointer', fontFamily: FONT, textAlign: 'left', boxSizing: 'border-box', transition: 'background 0.12s, border-color 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = TEAL_LIGHT; e.currentTarget.style.borderColor = TEAL }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#F4F7F9'; e.currentTarget.style.borderColor = '#E1E8EE' }}
                   >
                     <span style={{ minWidth: 0 }}>
                       <span style={{ display: 'block', fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{action.label}</span>
-                      <span style={{ display: 'block', fontSize: '12px', color: TEXT3, fontWeight: 500, marginTop: '3px' }}>{action.sub}</span>
+                      <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '12px', color: TEXT3, fontWeight: 500, marginTop: '3px', lineHeight: 1.35 }}>{action.sub}</span>
                     </span>
                     <span style={{ color: TEAL, fontSize: '18px', fontWeight: 700, flexShrink: 0, lineHeight: 1 }}>→</span>
                   </button>
