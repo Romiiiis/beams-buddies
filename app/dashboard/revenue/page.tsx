@@ -685,6 +685,7 @@ export default function RevenuePage() {
                 </div>
 
                 <div
+                  className="scroll-x scroll-x-tight"
                   style={{
                     display: 'flex',
                     gap: '4px',
@@ -693,7 +694,6 @@ export default function RevenuePage() {
                     padding: '3px',
                     width: isMobile ? '100%' : 'fit-content',
                     maxWidth: '100%',
-                    overflowX: 'auto',
                   }}
                 >
                   {(['invoiced', 'collected', 'outstanding', 'overdue'] as MetricMode[]).map(mode => {

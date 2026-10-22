@@ -444,7 +444,7 @@ export function DataList<T>({
 
       {/* Pill tabs */}
       {tabs && tabs.length > 0 && (
-        <div style={{ padding: isMobile ? '6px 14px 6px' : '8px 24px 6px', display: 'flex', gap: 6, overflowX: 'auto' }}>
+        <div style={{ padding: isMobile ? '6px 14px' : '8px 24px 6px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {tabs.map(t => {
             const active = t.value === activeTab
             return (

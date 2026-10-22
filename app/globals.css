@@ -62,3 +62,45 @@ select,
 textarea {
   font-family: inherit;
 }
+
+/* Thin, quiet scrollbars everywhere */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Sideways swipe rows (tabs, chips): no visible bar, smooth on touch, and a little room after the
+   last item so it is never cut off by the screen edge. */
+.scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+.scroll-x > * {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+.scroll-x::after {
+  content: '';
+  flex: 0 0 14px;
+}
+.scroll-x-tight::after {
+  flex-basis: 0;
+}

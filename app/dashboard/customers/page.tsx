@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { ContactDrawer } from '@/components/ContactDrawer'
 import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -115,6 +116,7 @@ export default function CustomersPage() {
   const [totalPlatforms, setTotalPlatforms] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [contactCustomer, setContactCustomer] = useState<any | null>(null)
   const [statusTab, setStatusTab] = useState('all')
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [showAddCustomer, setShowAddCustomer] = useState(false)
@@ -454,27 +456,33 @@ export default function CustomersPage() {
               const unit = first ? `${first.brand || ''} ${first.model || ''}`.trim() : ''
               const timingColor = label === 'Overdue' ? '#B91C1C' : label === 'Due soon' ? '#92400E' : TEAL_DARK
               return (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                    <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: TEXT2, marginTop: 6 }}>{c.phone || c.email || 'No contact saved'}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 2 }}>{c.address || c.suburb || 'No address saved'}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
-                    {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
-                  </div>
-                  {t && (
-                    <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 2 }}>
-                      {t.headline}
-                      {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.address || c.suburb || 'No address saved'}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
+                      {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
                     </div>
-                  )}
-                  {c.phone && (
-                    <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ display: 'inline-block', marginTop: 10, fontSize: 13, fontWeight: 700, color: TEAL_DARK, textDecoration: 'none' }}>
-                      Call {c.phone}
-                    </a>
-                  )}
+                    {t && (
+                      <div style={{ fontSize: 14, fontWeight: 800, color: timingColor, marginTop: 2 }}>
+                        {t.headline}
+                        {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+                    <StatusPill label={label} tone={STATUS_TONE[label] || 'neutral'} />
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation()
+                        setContactCustomer(c)
+                      }}
+                      style={{ height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: TEAL, color: WHITE, fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <AppIcon name="call" size={14} /> Contact
+                    </button>
+                  </div>
                 </div>
               )
             }}
@@ -535,6 +543,14 @@ export default function CustomersPage() {
         </div>
       </div>
     </div>
+
+      <ContactDrawer
+        customer={contactCustomer || {}}
+        jobType={contactCustomer?.jobs?.[0]?.equipment_type || contactCustomer?.jobs?.[0]?.brand}
+        isOpen={!!contactCustomer}
+        onClose={() => setContactCustomer(null)}
+        isMobile={isMobile}
+      />
 
       {showAddCustomer && (
         <div

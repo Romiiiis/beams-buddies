@@ -198,7 +198,7 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
     const items = byStage(stage.key)
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -12px', padding: '0 12px 2px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
           {stages.map(s => {
             const active = s.key === stage.key
             return (
@@ -206,9 +206,9 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
                 key={s.key}
                 onClick={() => setActiveStage(s.key)}
                 style={{
-                  flexShrink: 0,
-                  height: 38,
-                  padding: '0 14px',
+                  minWidth: 0,
+                  height: 42,
+                  padding: '0 12px',
                   borderRadius: 10,
                   border: `1.5px solid ${active ? TEAL : BORDER}`,
                   background: active ? TEAL_LIGHT : WHITE,
@@ -219,11 +219,12 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'space-between',
                   gap: 6,
                   whiteSpace: 'nowrap',
                 }}
               >
-                {s.label}
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
                 <span style={{ fontWeight: 900 }}>{byStage(s.key).length}</span>
               </button>
             )
