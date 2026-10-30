@@ -9,7 +9,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
-import { nextServiceDate, daysUntilService, serviceBucket, timingText } from '@/lib/service'
+import { nextServiceDate, daysUntilService, serviceBucket, timingText, formatDate } from '@/lib/service'
 import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
 
 const TEAL = '#2AA198'
@@ -132,6 +132,64 @@ function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: st.dot, display: 'inline-block', flexShrink: 0 }} />
       {st.label}
     </span>
+  )
+}
+
+/** Email / SMS buttons that open the customer's mail or messages app with a ready-written service reminder. */
+function ReminderButtons({ job, businessName, compact }: { job: any; businessName?: string | null; compact?: boolean }) {
+  const first = job.customers?.first_name || 'there'
+  const what = [job.brand, job.model].filter(Boolean).join(' ') || 'equipment'
+  const next = nextServiceDate(job)
+  const overdue = timingText(job).bucket === 'overdue'
+  const when = next ? formatDate(next) : 'soon'
+  const body = `Hi ${first}, it's ${businessName || 'us'}. Your ${what} service ${overdue ? 'was due on' : 'is due on'} ${when}. Reply to this message and we'll book a time that suits you.`
+  const email = job.customers?.email
+  const phone = job.customers?.phone
+  const emailHref = email ? `mailto:${email}?subject=${encodeURIComponent(`Time for your ${what} service`)}&body=${encodeURIComponent(body)}` : null
+  const smsHref = phone ? `sms:${String(phone).replace(/\s+/g, '')}?&body=${encodeURIComponent(body)}` : null
+
+  const base: React.CSSProperties = {
+    height: compact ? 30 : 34,
+    width: compact ? undefined : 86,
+    padding: compact ? '0 10px' : 0,
+    borderRadius: 8,
+    fontSize: compact ? 11 : 12,
+    fontWeight: 700,
+    fontFamily: FONT,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: compact ? 5 : 6,
+    textDecoration: 'none',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+  }
+  const emailStyle: React.CSSProperties = { ...base, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2 }
+  const smsStyle: React.CSSProperties = { ...base, border: 'none', background: TEAL, color: WHITE }
+  const off: React.CSSProperties = { opacity: 0.4, cursor: 'not-allowed' }
+  const size = compact ? 12 : 13
+
+  return (
+    <>
+      {emailHref ? (
+        <a href={emailHref} style={emailStyle} onClick={e => e.stopPropagation()}>
+          <IconMail size={size} /> Email
+        </a>
+      ) : (
+        <span style={{ ...emailStyle, ...off }} title="No email saved for this customer">
+          <IconMail size={size} /> Email
+        </span>
+      )}
+      {smsHref ? (
+        <a href={smsHref} style={smsStyle} onClick={e => e.stopPropagation()}>
+          <IconSms size={size} /> SMS
+        </a>
+      ) : (
+        <span style={{ ...smsStyle, ...off }} title="No phone number saved for this customer">
+          <IconSms size={size} /> SMS
+        </span>
+      )}
+    </>
   )
 }
 
@@ -426,12 +484,7 @@ export default function SchedulePage() {
                         {u?.dateLabel && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 1 }}>{u.dateLabel}</div>}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                        <button style={{ height: 34, width: 86, borderRadius: 8, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                          <IconMail size={13} /> Email
-                        </button>
-                        <button style={{ height: 34, width: 86, borderRadius: 8, border: 'none', background: TEAL, color: WHITE, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                          <IconSms size={13} /> SMS
-                        </button>
+                        <ReminderButtons job={job} businessName={business?.name} />
                       </div>
                     </div>
                   )
@@ -492,18 +545,9 @@ export default function SchedulePage() {
                     width: '160px',
                     align: 'right',
                     mobileFull: true,
-                    render: () => (
+                    render: job => (
                       <div style={{ display: 'inline-flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                        <button
-                          style={{ height: '30px', padding: '0 10px', borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                        >
-                          <IconMail size={12} /> Email
-                        </button>
-                        <button
-                          style={{ height: '30px', padding: '0 10px', borderRadius: '8px', border: 'none', background: TEAL, color: WHITE, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                        >
-                          <IconSms size={12} /> SMS
-                        </button>
+                        <ReminderButtons job={job} businessName={business?.name} compact />
                       </div>
                     ),
                   },
