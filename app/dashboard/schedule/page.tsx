@@ -137,17 +137,66 @@ function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
 }
 
 /** Email / SMS buttons that open the customer's mail or messages app with a ready-written service reminder. */
-function ReminderButtons({ job, businessName, compact }: { job: any; businessName?: string | null; compact?: boolean }) {
-  const first = job.customers?.first_name || 'there'
-  const what = [job.brand, job.model].filter(Boolean).join(' ') || 'equipment'
+type ReminderSender = { name: string; phone: string; email: string }
+
+// Reminder drafts open in the user's own mail / SMS app. Links can only carry plain text,
+// so the email is laid out with line breaks: greeting, short paragraphs, a details block
+// and a signature. \r\n line endings keep Outlook and Windows Mail from joining lines.
+function buildReminder(job: any, sender: ReminderSender) {
+  const rawFirst = String(job.customers?.first_name || '').trim()
+  const first = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : 'there'
+  const business = sender.name.trim() || 'our team'
+  const what = [job.brand, job.model].map(v => String(v || '').trim()).filter(Boolean).join(' ')
+    || getEquipmentLabel(job.equipment_type) || 'system'
   const next = nextServiceDate(job)
   const overdue = timingText(job).bucket === 'overdue'
-  const when = next ? formatDate(next) : 'soon'
-  const body = `Hi ${first}, it's ${businessName || 'us'}. Your ${what} service ${overdue ? 'was due on' : 'is due on'} ${when}. Reply to this message and we'll book a time that suits you.`
-  const email = job.customers?.email
-  const phone = job.customers?.phone
-  const emailHref = email ? `mailto:${email}?subject=${encodeURIComponent(`Time for your ${what} service`)}&body=${encodeURIComponent(body)}` : null
-  const smsHref = phone ? `sms:${String(phone).replace(/\s+/g, '')}?&body=${encodeURIComponent(body)}` : null
+  const when = next ? formatDate(next) : null
+  const address = [job.customers?.address, job.customers?.suburb].map(v => String(v || '').trim()).filter(Boolean).join(', ')
+  const phone = sender.phone.trim()
+
+  const NL = '\r\n'
+  const lines = [
+    `Hi ${first},`,
+    '',
+    overdue
+      ? `This is a friendly reminder from ${business} that your ${what} is now overdue for its regular service${when ? ` (it was due on ${when})` : ''}.`
+      : `This is a friendly reminder from ${business} that your ${what} is due for its regular service${when ? ` on ${when}` : ' soon'}.`,
+    '',
+    'Service details',
+    `- Equipment: ${what}`,
+    ...(address ? [`- Address: ${address}`] : []),
+    ...(job.install_location ? [`- Location: ${String(job.install_location).trim()}`] : []),
+    ...(when ? [`- Service due: ${when}${overdue ? ' (overdue)' : ''}`] : []),
+    '',
+    'Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns.',
+    '',
+    phone
+      ? `To book a time, simply reply to this email or call us on ${phone}.`
+      : 'To book a time, simply reply to this email and we will find a time that suits you.',
+    '',
+    'Kind regards,',
+    '',
+    business,
+    ...(phone ? [phone] : []),
+    ...(sender.email.trim() ? [sender.email.trim()] : []),
+  ]
+
+  const subject = overdue
+    ? `Service reminder: your ${what} is overdue | ${business}`
+    : `Service reminder: your ${what}${when ? ` is due ${when}` : ''} | ${business}`
+
+  // SMS stays short: one friendly message with a way to book
+  const sms = `Hi ${first}, it's ${business}. Your ${what} service ${overdue ? 'was due on' : 'is due on'} ${when || 'soon'}. Reply here${phone ? ` or call ${phone}` : ''} to book a time. Thanks!`
+
+  return { subject, email: lines.join(NL), sms }
+}
+
+function ReminderButtons({ job, sender, compact }: { job: any; sender: ReminderSender; compact?: boolean }) {
+  const { subject, email: emailBody, sms } = buildReminder(job, sender)
+  const email = String(job.customers?.email || '').trim()
+  const phone = String(job.customers?.phone || '').replace(/[^\d+]/g, '')
+  const emailHref = email ? `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}` : null
+  const smsHref = phone ? `sms:${phone}?&body=${encodeURIComponent(sms)}` : null
 
   const base: React.CSSProperties = {
     height: compact ? 30 : 34,
@@ -201,6 +250,7 @@ export default function SchedulePage() {
   const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [sender, setSender] = useState<ReminderSender>({ name: '', phone: '', email: '' })
 
   useEffect(() => {
     async function load() {
@@ -220,13 +270,18 @@ export default function SchedulePage() {
         return
       }
 
-      const { data } = await supabase
-        .from('jobs')
-        .select('*, customers(first_name, last_name, email, phone, suburb)')
-        .eq('business_id', userData.business_id)
-        .order('next_service_date', { ascending: true })
+      const [{ data }, { data: biz }] = await Promise.all([
+        supabase
+          .from('jobs')
+          .select('*, customers(first_name, last_name, email, phone, address, suburb)')
+          .eq('business_id', userData.business_id)
+          .order('next_service_date', { ascending: true }),
+        // Business contact details for the reminder signature
+        supabase.from('businesses').select('name, phone, email').eq('id', userData.business_id).single(),
+      ])
 
       setJobs(data || [])
+      if (biz) setSender({ name: biz.name || '', phone: biz.phone || '', email: biz.email || '' })
       setLoading(false)
     }
 
@@ -483,7 +538,7 @@ export default function SchedulePage() {
                         {u?.dateLabel && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 1 }}>{u.dateLabel}</div>}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                        <ReminderButtons job={job} businessName={business?.name} />
+                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} />
                       </div>
                     </div>
                   )
@@ -546,7 +601,7 @@ export default function SchedulePage() {
                     mobileFull: true,
                     render: job => (
                       <div style={{ display: 'inline-flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                        <ReminderButtons job={job} businessName={business?.name} compact />
+                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} compact />
                       </div>
                     ),
                   },

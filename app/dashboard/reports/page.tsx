@@ -67,6 +67,14 @@ const TYPE = {
   },
 }
 
+// Rank badges on the "Top ..." cards: 1st solid teal, 2nd soft teal, 3rd soft grey, the rest plain
+const RANK_STYLES: Record<number | 'rest', React.CSSProperties> = {
+  0: { background: TEAL, color: '#FFFFFF' },
+  1: { background: TEAL_LIGHT, color: TEAL_DARK, boxShadow: 'inset 0 0 0 1px #BFE7E3' },
+  2: { background: '#F1F4F7', color: TEXT2, boxShadow: `inset 0 0 0 1px ${BORDER}` },
+  rest: { background: 'transparent', color: TEXT3 },
+}
+
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -753,19 +761,21 @@ export default function ReportsPage() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '9px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        {/* Rank badge: podium tints for the top three, a plain number after that */}
                         <div
+                          aria-label={`Rank ${index + 1}`}
                           style={{
-                            width: 30,
-                            height: 30,
-                            borderRadius: '10px',
-                            background: index === 0 ? TEAL_LIGHT : '#F8FAFC',
-                            border: `1px solid ${index === 0 ? '#BFE7E3' : BORDER}`,
-                            color: index === 0 ? TEAL_DARK : TEXT3,
+                            width: 28,
+                            height: 28,
+                            borderRadius: '999px',
+                            ...(RANK_STYLES[index] || RANK_STYLES.rest),
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '12px',
-                            fontWeight: 900,
+                            fontSize: '13px',
+                            fontWeight: 800,
+                            fontVariantNumeric: 'tabular-nums',
+                            letterSpacing: '-0.02em',
                             flexShrink: 0,
                           }}
                         >
