@@ -12,6 +12,8 @@ import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { nextServiceDate, daysUntilService, serviceBucket, timingText, formatDate } from '@/lib/service'
 import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
+import { type ReminderSender, reminderSms } from '@/lib/reminder-email'
+import { SendReminderModal } from './SendReminderModal'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -136,67 +138,23 @@ function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
   )
 }
 
-/** Email / SMS buttons that open the customer's mail or messages app with a ready-written service reminder. */
-type ReminderSender = { name: string; phone: string; email: string }
-
-// Reminder drafts open in the user's own mail / SMS app. Links can only carry plain text,
-// so the email is laid out with line breaks: greeting, short paragraphs, a details block
-// and a signature. \r\n line endings keep Outlook and Windows Mail from joining lines.
-function buildReminder(job: any, sender: ReminderSender) {
-  const rawFirst = String(job.customers?.first_name || '').trim()
-  const first = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : 'there'
-  const business = sender.name.trim() || 'our team'
-  const what = [job.brand, job.model].map(v => String(v || '').trim()).filter(Boolean).join(' ')
-    || getEquipmentLabel(job.equipment_type) || 'system'
-  const next = nextServiceDate(job)
-  const overdue = timingText(job).bucket === 'overdue'
-  const when = next ? formatDate(next) : null
-  const address = [job.customers?.address, job.customers?.suburb].map(v => String(v || '').trim()).filter(Boolean).join(', ')
-  const phone = sender.phone.trim()
-
-  const NL = '\r\n'
-  const lines = [
-    `Hi ${first},`,
-    '',
-    overdue
-      ? `This is a friendly reminder from ${business} that your ${what} is now overdue for its regular service${when ? ` (it was due on ${when})` : ''}.`
-      : `This is a friendly reminder from ${business} that your ${what} is due for its regular service${when ? ` on ${when}` : ' soon'}.`,
-    '',
-    'Service details',
-    `- Equipment: ${what}`,
-    ...(address ? [`- Address: ${address}`] : []),
-    ...(job.install_location ? [`- Location: ${String(job.install_location).trim()}`] : []),
-    ...(when ? [`- Service due: ${when}${overdue ? ' (overdue)' : ''}`] : []),
-    '',
-    'Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns.',
-    '',
-    phone
-      ? `To book a time, simply reply to this email or call us on ${phone}.`
-      : 'To book a time, simply reply to this email and we will find a time that suits you.',
-    '',
-    'Kind regards,',
-    '',
-    business,
-    ...(phone ? [phone] : []),
-    ...(sender.email.trim() ? [sender.email.trim()] : []),
-  ]
-
-  const subject = overdue
-    ? `Service reminder: your ${what} is overdue | ${business}`
-    : `Service reminder: your ${what}${when ? ` is due ${when}` : ''} | ${business}`
-
-  // SMS stays short: one friendly message with a way to book
-  const sms = `Hi ${first}, it's ${business}. Your ${what} service ${overdue ? 'was due on' : 'is due on'} ${when || 'soon'}. Reply here${phone ? ` or call ${phone}` : ''} to book a time. Thanks!`
-
-  return { subject, email: lines.join(NL), sms }
-}
-
-function ReminderButtons({ job, sender, compact }: { job: any; sender: ReminderSender; compact?: boolean }) {
-  const { subject, email: emailBody, sms } = buildReminder(job, sender)
+/**
+ * Email / SMS buttons for a service reminder.
+ * Email opens a preview of the formatted reminder (design C) that Jobyra sends itself (Resend),
+ * so it's ready to send on any device. SMS opens the phone's messages app with a short text.
+ */
+function ReminderButtons({ job, sender, compact, onEmail }: { job: any; sender: ReminderSender; compact?: boolean; onEmail: (job: any) => void }) {
+  const sms = reminderSms(job, sender)
   const email = String(job.customers?.email || '').trim()
   const phone = String(job.customers?.phone || '').replace(/[^\d+]/g, '')
-  const emailHref = email ? `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}` : null
+  const emailHref = email ? `mailto:${email}` : null
   const smsHref = phone ? `sms:${phone}?&body=${encodeURIComponent(sms)}` : null
+
+  function openEmail(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (emailHref) onEmail(job)
+  }
 
   const base: React.CSSProperties = {
     height: compact ? 30 : 34,
@@ -222,7 +180,7 @@ function ReminderButtons({ job, sender, compact }: { job: any; sender: ReminderS
   return (
     <>
       {emailHref ? (
-        <a href={emailHref} style={emailStyle} onClick={e => e.stopPropagation()}>
+        <a href={emailHref} style={emailStyle} onClick={openEmail}>
           <IconMail size={size} /> Email
         </a>
       ) : (
@@ -251,6 +209,21 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [sender, setSender] = useState<ReminderSender>({ name: '', phone: '', email: '' })
+  const [notice, setNotice] = useState<string | null>(null)
+  const [emailJob, setEmailJob] = useState<any | null>(null)
+
+  // After Jobyra sends a reminder: remember when, and confirm it to the user
+  function handleReminderSent(jobId: string, sentAt: string, to: string) {
+    setJobs(prev => prev.map(j => (j.id === jobId ? { ...j, last_reminder_at: sentAt } : j)))
+    setEmailJob(null)
+    showNotice(`Reminder sent to ${to}`)
+  }
+
+  // Brief "reminder copied, paste it" message after the Email button
+  function showNotice(msg: string) {
+    setNotice(msg)
+    window.setTimeout(() => setNotice(current => (current === msg ? null : current)), 9000)
+  }
 
   useEffect(() => {
     async function load() {
@@ -538,7 +511,7 @@ export default function SchedulePage() {
                         {u?.dateLabel && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 1 }}>{u.dateLabel}</div>}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} />
+                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} onEmail={setEmailJob} />
                       </div>
                     </div>
                   )
@@ -601,7 +574,7 @@ export default function SchedulePage() {
                     mobileFull: true,
                     render: job => (
                       <div style={{ display: 'inline-flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} compact />
+                        <ReminderButtons job={job} sender={{ ...sender, name: sender.name || business?.name || "" }} compact onEmail={setEmailJob} />
                       </div>
                     ),
                   },
@@ -612,6 +585,54 @@ export default function SchedulePage() {
           </div>
         </div>
       </div>
+      {emailJob && (
+        <SendReminderModal
+          job={emailJob}
+          sender={{ ...sender, name: sender.name || business?.name || "" }}
+          isMobile={isMobile}
+          onClose={() => setEmailJob(null)}
+          onSent={handleReminderSent}
+          onNotice={showNotice}
+        />
+      )}
+
+      {notice && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: isMobile ? "calc(96px + env(safe-area-inset-bottom))" : "28px",
+            zIndex: 400,
+            width: "max-content",
+            maxWidth: "calc(100vw - 32px)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "12px 12px 12px 16px",
+            background: TEXT,
+            color: WHITE,
+            borderRadius: 12,
+            boxShadow: "0 8px 24px rgba(15,23,42,0.18)",
+            fontFamily: FONT,
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 1.4,
+          }}
+        >
+          <span>{notice}</span>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label="Dismiss"
+            style={{ flexShrink: 0, width: 26, height: 26, border: "none", borderRadius: 7, background: "rgba(255,255,255,0.12)", color: WHITE, fontSize: 15, lineHeight: 1, cursor: "pointer" }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   )
 }
