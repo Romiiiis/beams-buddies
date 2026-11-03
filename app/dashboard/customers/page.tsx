@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { PageSkeleton } from '@/components/Skeleton'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
 import { StatStrip } from '@/components/StatStrip'
@@ -368,19 +369,7 @@ export default function CustomersPage() {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard/customers" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: TEXT3,
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Loading customers...
-        </div>
+        <PageSkeleton variant="list" label="Loading customers" />
       </div>
     )
   }

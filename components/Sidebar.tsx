@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
+import { SkeletonBox } from '@/components/Skeleton'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -498,7 +499,7 @@ export function Sidebar({ active }: { active: string }) {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {loading ? 'Loading...' : business?.full_name || 'Owner'}
+                  {loading ? <SkeletonBox w={110} h={12} /> : business?.full_name || 'Owner'}
                 </div>
 
                 <div
@@ -980,7 +981,7 @@ export function Sidebar({ active }: { active: string }) {
                         MozOsxFontSmoothing: 'grayscale',
                       }}
                     >
-                      {loading ? 'Loading...' : business?.name || 'My Business'}
+                      {loading ? <SkeletonBox w={120} h={12} /> : business?.name || 'My Business'}
                     </div>
                     <div
                       style={{

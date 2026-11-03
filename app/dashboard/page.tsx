@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { PageSkeleton } from '@/components/Skeleton'
 import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusiness } from '@/lib/useBusiness'
@@ -523,7 +524,7 @@ export default function DashboardPage() {
   if (loading) return (
     <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
       <Sidebar active="/dashboard" />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT3, fontSize: '14px', fontWeight: 600 }}>Loading dashboard...</div>
+      <PageSkeleton variant="dashboard" label="Loading dashboard" />
     </div>
   )
 

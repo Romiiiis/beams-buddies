@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { PageSkeleton } from '@/components/Skeleton'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
@@ -581,19 +582,7 @@ export default function SettingsPage() {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard/settings" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: TEXT3,
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Loading settings...
-        </div>
+        <PageSkeleton variant="form" label="Loading settings" />
       </div>
     )
   }

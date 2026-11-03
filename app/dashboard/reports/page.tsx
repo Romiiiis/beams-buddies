@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
@@ -818,19 +819,7 @@ export default function ReportsPage() {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: BG, fontFamily: FONT }}>
         <Sidebar active="/dashboard/reports" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: TEXT3,
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Loading reports...
-        </div>
+        <PageSkeleton variant="report" label="Loading reports" />
       </div>
     )
   }

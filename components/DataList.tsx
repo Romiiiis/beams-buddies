@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import { SkeletonRows } from './Skeleton'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -658,7 +659,7 @@ export function DataList<T>({
       {/* Rows */}
       <div style={{ padding: isMobile ? '6px 12px 16px' : '4px 14px 18px', display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 6 }}>
         {loading ? (
-          <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: 13 }}>{loadingText}</div>
+          <SkeletonRows count={isMobile ? 4 : 6} />
         ) : rows.length === 0 ? (
           <div style={{ padding: '32px 18px', textAlign: 'center', color: TEXT3, fontSize: 13 }}>{emptyText}</div>
         ) : (
