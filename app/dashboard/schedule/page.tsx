@@ -211,6 +211,7 @@ export default function SchedulePage() {
   const [sender, setSender] = useState<ReminderSender>({ name: '', phone: '', email: '' })
   const [notice, setNotice] = useState<string | null>(null)
   const [emailJob, setEmailJob] = useState<any | null>(null)
+  const [fromDomain, setFromDomain] = useState('mail.jobyra.app')
 
   // After Jobyra sends a reminder: remember when, and confirm it to the user
   function handleReminderSent(jobId: string, sentAt: string, to: string) {
@@ -250,11 +251,12 @@ export default function SchedulePage() {
           .eq('business_id', userData.business_id)
           .order('next_service_date', { ascending: true }),
         // Business contact details for the reminder signature
-        supabase.from('businesses').select('name, phone, email').eq('id', userData.business_id).single(),
+        supabase.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', userData.business_id).single(),
       ])
 
       setJobs(data || [])
       if (biz) setSender({ name: biz.name || '', phone: biz.phone || '', email: biz.email || '' })
+      if (biz) setFromDomain(biz.email_domain_verified && biz.email_domain ? String(biz.email_domain).toLowerCase() : 'mail.jobyra.app')
       setLoading(false)
     }
 
@@ -593,6 +595,7 @@ export default function SchedulePage() {
           onClose={() => setEmailJob(null)}
           onSent={handleReminderSent}
           onNotice={showNotice}
+          fromAddress={`reminders@${fromDomain}`}
         />
       )}
 

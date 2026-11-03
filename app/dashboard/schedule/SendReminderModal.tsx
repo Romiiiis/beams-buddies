@@ -20,6 +20,8 @@ type Props = {
   onClose: () => void
   onSent: (jobId: string, sentAt: string, to: string) => void
   onNotice: (msg: string) => void
+  /** Address the email is sent from, e.g. reminders@avalancheair.com.au */
+  fromAddress: string
 }
 
 function formatSent(iso?: string | null) {
@@ -30,7 +32,7 @@ function formatSent(iso?: string | null) {
 }
 
 /** Preview of the reminder email (exactly what the customer receives) with a one-tap Send. */
-export function SendReminderModal({ job, sender, isMobile, onClose, onSent, onNotice }: Props) {
+export function SendReminderModal({ job, sender, isMobile, onClose, onSent, onNotice, fromAddress }: Props) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const to = String(job.customers?.email || '').trim()
@@ -128,6 +130,10 @@ export function SendReminderModal({ job, sender, isMobile, onClose, onSent, onNo
         </div>
 
         <div style={{ padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: TEXT2, display: 'grid', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 10, minWidth: 0 }}>
+            <span style={{ color: TEXT3, width: 58, flexShrink: 0 }}>From</span>
+            <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sender.name ? `${sender.name} <${fromAddress}>` : fromAddress}</span>
+          </div>
           <div style={{ display: 'flex', gap: 10, minWidth: 0 }}>
             <span style={{ color: TEXT3, width: 58, flexShrink: 0 }}>To</span>
             <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{to}</span>

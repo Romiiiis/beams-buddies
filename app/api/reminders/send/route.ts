@@ -8,7 +8,8 @@ import { reminderHtml, reminderSubject, reminderText, type ReminderSender } from
 // as that user under the normal business-scoped rules. A user can only send reminders for jobs
 // that belong to their own business. No service-role key is used.
 
-const SEND_DOMAIN = 'mail.jobyra.app'
+const DEFAULT_SEND_DOMAIN = 'mail.jobyra.app'
+const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
 const DAILY_LIMIT = 50 // per business, keeps well inside Resend's free daily allowance
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
       .eq('id', jobId)
       .eq('business_id', businessId)
       .single(),
-    supabase.from('businesses').select('name, phone, email').eq('id', businessId).single(),
+    supabase.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', businessId).single(),
   ])
   if (!job) return json({ error: 'not_found', message: 'Job not found.' }, 404)
 
@@ -81,11 +82,15 @@ export async function POST(request: Request) {
   const subject = reminderSubject(job, sender)
   const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
 
+  // A business sends from its own domain once Jobyra has verified it in Resend (owner-only setting)
+  const ownDomain = String((business as any)?.email_domain || '').trim().toLowerCase()
+  const sendDomain = (business as any)?.email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
+
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: `${safeDisplayName(sender.name)} <reminders@${SEND_DOMAIN}>`,
+      from: `${safeDisplayName(sender.name)} <reminders@${sendDomain}>`,
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
       subject,
