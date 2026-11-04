@@ -38,6 +38,7 @@ const navFinance = [
 
 const navManage = [
   { label: 'Service schedule', href: '/dashboard/schedule' },
+  { label: 'Marketing', href: '/dashboard/marketing' },
   { label: 'Reports', href: '/dashboard/reports' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
@@ -56,6 +57,7 @@ const mobileMenuItems = [
   { label: 'Invoices', href: '/dashboard/invoices' },
   { label: 'Revenue', href: '/dashboard/revenue' },
   { label: 'Service schedule', href: '/dashboard/schedule' },
+  { label: 'Marketing', href: '/dashboard/marketing' },
   { label: 'Reports', href: '/dashboard/reports' },
 ]
 
@@ -116,6 +118,7 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/invoices': <InvoicesIcon />,
   '/dashboard/revenue': <RevenueIcon />,
   '/dashboard/schedule': <ScheduleIcon />,
+  '/dashboard/marketing': <AppIcon name="message" size={20} />,
   '/dashboard/qrcodes': <QrCodesIcon />,
   '/dashboard/reports': <ReportsIcon />,
   '/dashboard/settings': <SettingsIcon />,
@@ -214,6 +217,7 @@ export function Sidebar({ active }: { active: string }) {
       '/dashboard/invoices',
       '/dashboard/revenue',
       '/dashboard/schedule',
+      '/dashboard/marketing',
       '/dashboard/qrcodes',
       '/dashboard/reports',
     ]
