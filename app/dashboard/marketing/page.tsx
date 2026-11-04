@@ -8,8 +8,8 @@ import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
-import { reminderHtml, reminderSms, reminderSubject, type ReminderSender } from '@/lib/reminder-email'
-import { invoiceHtml, invoiceSms, invoiceSubject } from '@/lib/invoice-email'
+import { reminderHtml, reminderSubject, type ReminderSender } from '@/lib/reminder-email'
+import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
 import { serviceBucket, soonestJob } from '@/lib/service'
 
 const TEAL = '#2AA198'
@@ -45,18 +45,11 @@ type Automation = {
 }
 
 const AUTOMATIONS: Automation[] = [
-  { id: 'service', name: 'Service reminder', channels: 'Email and text', blurb: 'Tell customers their service is coming up or overdue', live: true, href: '/dashboard/schedule', action: 'Open service schedule' },
-  { id: 'invoice', name: 'Invoice', channels: 'Email and text', blurb: 'Send a finished invoice with your bank details', live: true, href: '/dashboard/invoices', action: 'Open invoices' },
-  { id: 'overdue', name: 'Overdue invoice nudge', channels: 'Email and text', blurb: 'A polite reminder when an invoice passes its due date', live: false },
-  { id: 'quote', name: 'Quote follow-up', channels: 'Email and text', blurb: 'Check in a few days after a quote is sent', live: false },
-  { id: 'review', name: 'Review request', channels: 'Text', blurb: 'Ask for a review after a completed job', live: false },
+  { id: 'service', name: 'Service reminder', channels: 'Email', blurb: 'Emails customers when their service is due within their reminder window, or up to 30 days overdue', live: true, href: '/dashboard/schedule', action: 'Open service schedule' },
+  { id: 'overdue', name: 'Overdue invoice nudge', channels: 'Email', blurb: 'Emails the invoice again once it is a day or more past due', live: true, href: '/dashboard/invoices', action: 'Open invoices' },
+  { id: 'quote', name: 'Quote follow-up', channels: 'Email', blurb: 'Checks in 3 days after a quote is sent without an answer', live: true, href: '/dashboard/quotes', action: 'Open quotes' },
+  { id: 'review', name: 'Review request', channels: 'Email', blurb: 'Asks for a Google review 2 days after an install. Needs your review link in Settings', live: true, href: '/dashboard/settings', action: 'Open settings' },
 ]
-
-const SAMPLE_TEXT: Record<string, string> = {
-  overdue: 'Hi Sophie, it’s your team at {biz}. Invoice INV-0012 for $242.00 was due on 3 Nov. Pay to the details on your invoice, or reply here if you need anything. Thanks!',
-  quote: 'Hi Sophie, it’s {biz}. Just checking in on the quote we sent. Happy to answer any questions or lock in a time that suits you.',
-  review: 'Hi Sophie, thanks for choosing {biz}. If you were happy with the work, a quick Google review would mean a lot to us. Thank you!',
-}
 
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }
 const cardTitle: React.CSSProperties = { fontSize: 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }
@@ -82,6 +75,10 @@ export default function MarketingPage() {
   const [business, setBusiness] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [sel, setSel] = useState('service')
+  const [enabled, setEnabled] = useState<Record<string, boolean>>({})
+  const [bizId, setBizId] = useState('')
+  const [autoLog, setAutoLog] = useState<any[]>([])
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -90,15 +87,20 @@ export default function MarketingPage() {
       const { data: u } = await getUserRow(session.user.id)
       if (!u?.business_id) { setLoading(false); return }
       const bid = u.business_id
+      setBizId(bid)
       const since = new Date(Date.now() - 30 * 86400000).toISOString()
-      const [j, i, c, r, b, s] = await Promise.all([
+      const [j, i, c, r, b, s, st, lg] = await Promise.all([
         supabase.from('jobs').select('*, customers(first_name, last_name, email, phone, address, suburb)').eq('business_id', bid),
         supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', bid).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, email, phone').eq('business_id', bid),
         supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
         supabase.from('businesses').select('name, phone, email').eq('id', bid).single(),
         supabase.from('business_settings').select('*').eq('business_id', bid).single(),
+        supabase.from('automation_settings').select('kind, enabled').eq('business_id', bid),
+        supabase.from('automation_log').select('id, kind, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
       ])
+      setEnabled(Object.fromEntries((st.data || []).map((x: any) => [x.kind, !!x.enabled])))
+      setAutoLog(lg.data || [])
       setJobs(j.data || [])
       setInvoices(i.data || [])
       setCustomers(c.data || [])
@@ -122,27 +124,51 @@ export default function MarketingPage() {
   const sampleInvoice = invoices.find(i => i.customers?.first_name) || null
   const cur = AUTOMATIONS.find(a => a.id === sel) || AUTOMATIONS[0]
 
-  let smsText = ''
   let emailDoc = ''
   let emailSubject = ''
   if (cur.id === 'service' && sampleJob) {
-    smsText = reminderSms(sampleJob, sender)
     emailSubject = reminderSubject(sampleJob, sender)
     emailDoc = reminderHtml(sampleJob, sender)
-  } else if (cur.id === 'invoice' && sampleInvoice) {
-    smsText = invoiceSms(sampleInvoice, sender, settings)
-    emailSubject = invoiceSubject(sampleInvoice, sender)
-    emailDoc = invoiceHtml(sampleInvoice, sender, settings)
-  } else if (SAMPLE_TEXT[cur.id]) {
-    smsText = SAMPLE_TEXT[cur.id].replace('{biz}', sender.name || 'your business')
+  } else if (cur.id === 'overdue' && sampleInvoice) {
+    const m = overdueInvoiceEmail(sampleInvoice, sender, settings)
+    emailSubject = m.subject
+    emailDoc = m.html
+  } else if (cur.id === 'quote') {
+    const m = quoteFollowUpEmail({ quote_number: 'Q-0001', total: 1250, customers: { first_name: sampleJob?.customers?.first_name || 'Sophie' } }, sender)
+    emailSubject = m.subject
+    emailDoc = m.html
+  } else if (cur.id === 'review') {
+    const m = reviewRequestEmail({ customers: { first_name: sampleJob?.customers?.first_name || 'Sophie' } }, sender, settings?.google_review_url || 'https://g.page/r/your-review-link')
+    emailSubject = m.subject
+    emailDoc = m.html
   }
   const hasEmail = !!emailDoc
   const frame = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:18px 16px;background:#FFFFFF;">${emailDoc}</body></html>`
 
+  async function toggle(kind: string) {
+    if (!bizId) return
+    const next = !enabled[kind]
+    setSaveError('')
+    setEnabled(prev => ({ ...prev, [kind]: next }))
+    const { error } = await supabase.from('automation_settings').upsert({ business_id: bizId, kind, enabled: next, updated_at: new Date().toISOString() }, { onConflict: 'business_id,kind' })
+    if (error) {
+      setEnabled(prev => ({ ...prev, [kind]: !next }))
+      setSaveError('Could not save that change. The automations database setup may not be finished yet.')
+    }
+  }
+
+  const allSent = useMemo(
+    () => [...sent.map(m => ({ ...m, kind: 'service' })), ...autoLog].sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1)),
+    [sent, autoLog]
+  )
+  const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
+  const KIND_LABEL: Record<string, string> = { service: 'Service reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
+
   function metricFor(a: Automation) {
-    if (a.id === 'service') return `${dueJobs.length} due or overdue · ${sent.length} sent in 30 days`
-    if (a.id === 'invoice') return `${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length} awaiting payment`
-    return ''
+    const n = sentCount(a.id)
+    if (a.id === 'service') return `${dueJobs.length} due or overdue · ${n} sent in 30 days`
+    if (a.id === 'overdue') return `${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length} awaiting payment · ${n} sent in 30 days`
+    return `${n} sent in 30 days`
   }
 
   if (loading) {
@@ -176,7 +202,7 @@ export default function MarketingPage() {
           <StatStrip
             isMobile={isMobile}
             items={[
-              { label: 'Reminders sent', value: sent.length, sub: 'last 30 days' },
+              { label: 'Emails sent', value: allSent.length, sub: 'last 30 days' },
               { label: 'Services overdue', value: overdueJobs.length, sub: `${dueJobs.length} due or overdue` },
               { label: 'Outstanding', value: `$${outstanding.toLocaleString('en-AU', { maximumFractionDigits: 0 })}`, sub: 'unpaid invoices' },
               { label: 'Customers reachable', value: reachable, sub: `of ${customers.length} customers` },
@@ -189,11 +215,10 @@ export default function MarketingPage() {
                 <div style={cardTitle}>Automations</div>
               </div>
               {AUTOMATIONS.map((a, idx) => (
-                <button
+                <div
                   key={a.id}
-                  type="button"
                   onClick={() => setSel(a.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '14px 18px', border: 'none', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? TEAL_LIGHT : WHITE, cursor: 'pointer', fontFamily: FONT }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '14px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? TEAL_LIGHT : WHITE, cursor: 'pointer', fontFamily: FONT, boxSizing: 'border-box' }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -201,11 +226,21 @@ export default function MarketingPage() {
                       <Pill tone="chan">{a.channels}</Pill>
                     </div>
                     <div style={{ fontSize: 12, color: TEXT3, marginTop: 3 }}>{a.blurb}</div>
-                    {metricFor(a) && <div style={{ fontSize: 12, color: TEXT2, fontWeight: 600, marginTop: 3 }}>{metricFor(a)}</div>}
+                    <div style={{ fontSize: 12, color: TEXT2, fontWeight: 600, marginTop: 3 }}>{metricFor(a)}</div>
                   </div>
-                  <Pill tone={a.live ? 'live' : 'soon'}>{a.live ? 'Live' : 'Coming soon'}</Pill>
-                </button>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={!!enabled[a.id]}
+                    aria-label={`${a.name} automation`}
+                    onClick={e => { e.stopPropagation(); toggle(a.id) }}
+                    style={{ width: 44, height: 26, borderRadius: 13, border: 'none', padding: 3, background: enabled[a.id] ? TEAL : '#CBD5E1', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: enabled[a.id] ? 'flex-end' : 'flex-start' }}
+                  >
+                    <span style={{ width: 20, height: 20, borderRadius: 10, background: WHITE, display: 'block' }} />
+                  </button>
+                </div>
               ))}
+              {saveError && <div style={{ padding: '12px 18px', fontSize: 12, fontWeight: 600, color: '#B91C1C', background: '#FEF2F2', borderTop: `1px solid ${BORDER}` }}>{saveError}</div>}
             </div>
 
             <div style={card}>
@@ -213,17 +248,6 @@ export default function MarketingPage() {
                 <div style={cardTitle}>Preview: {cur.name}</div>
               </div>
               <div style={{ padding: 18, display: 'grid', gap: 16 }}>
-                {smsText ? (
-                  <div style={{ maxWidth: 300, width: '100%', margin: '0 auto', border: `1px solid ${BORDER}`, borderRadius: 24, padding: '10px 14px 16px', background: '#F8FAFC' }}>
-                    <div style={{ width: 44, height: 4, borderRadius: 2, background: BORDER, margin: '0 auto 10px' }} />
-                    <div style={{ textAlign: 'center', fontSize: 11, color: TEXT3, marginBottom: 10 }}>{sender.name || 'Your business'}<br />Text message</div>
-                    <div style={{ background: TEAL_LIGHT, color: TEXT, fontSize: 13, lineHeight: 1.5, padding: '10px 12px', borderRadius: '14px 14px 14px 4px' }}>{smsText}</div>
-                    <div style={{ fontSize: 11, color: TEXT3, marginTop: 8 }}>Delivered</div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 13, color: TEXT3, textAlign: 'center', padding: '20px 0' }}>Add a job or an invoice to see a live preview.</div>
-                )}
-
                 {hasEmail && (
                   <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
                     <div style={{ padding: '8px 12px', fontSize: 12, color: TEXT2, borderBottom: `1px solid ${BORDER}`, overflowWrap: 'anywhere' }}><span style={{ color: TEXT3 }}>Subject </span><b>{emailSubject}</b></div>
@@ -244,14 +268,14 @@ export default function MarketingPage() {
             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}` }}>
               <div style={cardTitle}>Recent messages</div>
             </div>
-            {sent.length === 0 ? (
-              <div style={{ padding: '22px 18px', fontSize: 13, color: TEXT3 }}>No reminders sent in the last 30 days. Send one from the service schedule.</div>
+            {allSent.length === 0 ? (
+              <div style={{ padding: '22px 18px', fontSize: 13, color: TEXT3 }}>Nothing sent in the last 30 days. Switch an automation on, or send a reminder from the service schedule.</div>
             ) : (
-              sent.slice(0, 8).map((m, idx) => (
+              allSent.slice(0, 8).map((m, idx) => (
                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}` }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, overflowWrap: 'anywhere' }}>{m.subject}</div>
-                    <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflowWrap: 'anywhere' }}>{m.to_email}</div>
+                    <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflowWrap: 'anywhere' }}>{KIND_LABEL[m.kind] || 'Email'} · {m.to_email}</div>
                   </div>
                   <div style={{ fontSize: 12, color: TEXT3, whiteSpace: 'nowrap' }}>{fmtDate(m.sent_at)}</div>
                 </div>

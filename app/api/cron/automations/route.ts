@@ -1,0 +1,169 @@
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+import { reminderHtml, reminderSubject, reminderText, type ReminderSender } from '@/lib/reminder-email'
+import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
+import { daysUntilService, nextServiceDate, parseDateLocal, startOfDay, toYMD } from '@/lib/service'
+
+// Runs once a day (see vercel.json). For every business with an automation switched on, sends the
+// matching customer emails through Resend, at most once per job / invoice / quote.
+//
+// Security: only callable with the CRON_SECRET (Vercel sends it as a Bearer token). It uses the
+// service-role key because no user is signed in, so every query below is filtered by business_id.
+
+export const maxDuration = 60
+
+const DEFAULT_SEND_DOMAIN = 'mail.jobyra.app'
+const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
+const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/
+const PER_BUSINESS_LIMIT = 30
+const DAY = 86400000
+
+type Kind = 'service' | 'overdue' | 'quote' | 'review'
+
+function safeDisplayName(name: string) {
+  return name.replace(/[\r\n<>"\\]/g, '').trim().slice(0, 80) || 'Jobyra'
+}
+
+function daysSince(iso?: string | null) {
+  const d = parseDateLocal(iso)
+  return d ? Math.round((startOfDay(new Date()).getTime() - d.getTime()) / DAY) : null
+}
+
+export async function GET(request: Request) {
+  const secret = process.env.CRON_SECRET
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const apiKey = process.env.RESEND_API_KEY
+  if (!secret || !serviceKey || !apiKey) {
+    return NextResponse.json({ error: 'not_configured', message: 'Automations need CRON_SECRET, SUPABASE_SERVICE_ROLE_KEY and RESEND_API_KEY.' }, { status: 503 })
+  }
+  if (request.headers.get('authorization') !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
+
+  const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind').eq('enabled', true)
+  const byBusiness = new Map<string, Set<Kind>>()
+  for (const r of enabledRows || []) {
+    if (!byBusiness.has(r.business_id)) byBusiness.set(r.business_id, new Set())
+    byBusiness.get(r.business_id)!.add(r.kind as Kind)
+  }
+
+  const summary: Record<string, number> = { service: 0, overdue: 0, quote: 0, review: 0, failed: 0 }
+
+  for (const [businessId, kinds] of byBusiness) {
+    const [{ data: business }, { data: settings }] = await Promise.all([
+      db.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', businessId).single(),
+      db.from('business_settings').select('*').eq('business_id', businessId).single(),
+    ])
+    if (!business) continue
+    const sender: ReminderSender = { name: business.name || '', phone: business.phone || '', email: business.email || '' }
+    const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
+    const ownDomain = String((business as any).email_domain || '').trim().toLowerCase()
+    const sendDomain = (business as any).email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
+    let budget = PER_BUSINESS_LIMIT
+
+    // Claims the right to send (unique key stops duplicates), sends, and releases the claim if sending fails
+    async function deliver(kind: Kind, refId: string, cycle: string, to: string, mail: { subject: string; html: string; text: string }) {
+      if (budget <= 0 || !EMAIL.test(to)) return false
+      const { data: claim, error } = await db
+        .from('automation_log')
+        .insert({ business_id: businessId, kind, ref_id: refId, cycle, to_email: to, subject: mail.subject })
+        .select('id')
+        .single()
+      if (error || !claim) return false // already sent (or could not record), so do not send
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: `${safeDisplayName(sender.name)} <reminders@${sendDomain}>`,
+          to: [to],
+          ...(replyTo ? { reply_to: replyTo } : {}),
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+        }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        console.error('Automation send failed:', kind, res.status, result)
+        await db.from('automation_log').delete().eq('id', claim.id)
+        summary.failed++
+        return false
+      }
+      await db.from('automation_log').update({ provider_id: (result as any)?.id ?? null }).eq('id', claim.id)
+      budget--
+      summary[kind]++
+      return true
+    }
+
+    const emailOf = (c: any) => String(c?.email || '').trim()
+
+    if (kinds.has('service') || kinds.has('review')) {
+      const { data: jobs } = await db
+        .from('jobs')
+        .select('*, customers(first_name, last_name, email, phone, address, suburb)')
+        .eq('business_id', businessId)
+
+      for (const job of jobs || []) {
+        const to = emailOf(job.customers)
+        if (!to) continue
+
+        if (kinds.has('service')) {
+          const days = daysUntilService(job)
+          const lead = Number(job.reminder_lead_days) > 0 ? Number(job.reminder_lead_days) : 14
+          // Due within the lead time, or overdue by up to 30 days (older ones are left for you to chase by hand)
+          if (days !== null && days <= lead && days >= -30) {
+            const next = nextServiceDate(job)
+            await deliver('service', job.id, next ? toYMD(next) : '', to, {
+              subject: reminderSubject(job, sender),
+              html: reminderHtml(job, sender),
+              text: reminderText(job, sender),
+            })
+          }
+        }
+
+        if (kinds.has('review')) {
+          const url = String(settings?.google_review_url || '').trim()
+          const since = daysSince(job.install_date)
+          if (/^https:\/\//i.test(url) && since !== null && since >= 2 && since <= 14) {
+            await deliver('review', job.id, '', to, reviewRequestEmail(job, sender, url))
+          }
+        }
+      }
+    }
+
+    if (kinds.has('overdue')) {
+      const { data: invoices } = await db
+        .from('invoices')
+        .select('*, customers(first_name, last_name, suburb, phone, email, address)')
+        .eq('business_id', businessId)
+        .in('status', ['sent', 'overdue'])
+      for (const inv of invoices || []) {
+        const to = emailOf(inv.customers)
+        const late = daysSince(inv.due_date)
+        const owing = Number(inv.total || 0) - Number(inv.amount_paid || 0)
+        if (to && owing > 0 && late !== null && late >= 1 && late <= 30) {
+          await deliver('overdue', inv.id, '', to, overdueInvoiceEmail(inv, sender, settings))
+        }
+      }
+    }
+
+    if (kinds.has('quote')) {
+      const { data: quotes } = await db
+        .from('quotes')
+        .select('*, customers(first_name, last_name, email)')
+        .eq('business_id', businessId)
+        .eq('status', 'sent')
+      for (const q of quotes || []) {
+        const to = emailOf(q.customers)
+        const age = daysSince(q.created_at)
+        if (to && age !== null && age >= 3 && age <= 14) {
+          await deliver('quote', q.id, '', to, quoteFollowUpEmail(q, sender))
+        }
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, businesses: byBusiness.size, sent: summary })
+}
