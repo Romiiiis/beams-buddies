@@ -36,9 +36,11 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   isMobile: boolean
+  /** Optional prefilled message (e.g. an invoice) and the channel to open on */
+  preset?: { channel?: 'call' | 'text' | 'email'; subject?: string; body?: string }
 }
 
-export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile }: Props) {
+export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, preset }: Props) {
   const [channel, setChannel] = useState<'call' | 'text' | 'email'>('call')
   const [template, setTemplate] = useState('custom')
   const [message, setMessage] = useState('')
@@ -46,11 +48,12 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile }: 
 
   useEffect(() => {
     if (isOpen) {
-      setChannel('call')
+      setChannel(preset?.channel || 'call')
       setTemplate('custom')
-      setMessage('')
-      setSubject('')
+      setMessage(preset?.body || '')
+      setSubject(preset?.subject || '')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   const templates = useMemo(() => {

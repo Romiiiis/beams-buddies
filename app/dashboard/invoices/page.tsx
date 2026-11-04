@@ -226,6 +226,18 @@ export default function InvoicesPage() {
   const [saving, setSaving] = useState(false)
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null)
   const [showContact, setShowContact] = useState(false)
+  const [contactPreset, setContactPreset] = useState<any>(undefined)
+
+  function invoicePreset(inv: any) {
+    const first = inv.customers?.first_name || 'there'
+    const owing = Number(inv.total || 0) - Number(inv.amount_paid || 0)
+    const due = inv.due_date ? new Date(inv.due_date + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+    const bank = businessSettings
+    const pay = [bank?.bank_name && `Bank: ${bank.bank_name}`, bank?.account_name && `Account name: ${bank.account_name}`, bank?.bsb && `BSB: ${bank.bsb}`, bank?.account_number && `Account: ${bank.account_number}`].filter(Boolean).join('\n')
+    const name = businessInfo?.name || ''
+    const body = `Hi ${first},\n\nHere is invoice ${inv.invoice_number} from ${name || 'us'} for $${owing.toFixed(2)}${due ? `, due ${due}` : ''}.\n${pay ? `\nPayment details:\n${pay}\nReference: ${inv.invoice_number}\n` : ''}\nThanks,\n${name}`
+    return { channel: 'email' as const, subject: `Invoice ${inv.invoice_number} from ${name || 'us'}`, body }
+  }
   const [businessId, setBusinessId] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [businessSettings, setBusinessSettings] = useState<any>(null)
@@ -757,7 +769,12 @@ export default function InvoicesPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 {viewingInvoice.customers && (
-                  <button onClick={() => setShowContact(true)} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                  <button onClick={() => { setContactPreset(invoicePreset(viewingInvoice)); setShowContact(true) }} style={{ height: '34px', padding: '0 14px', borderRadius: '10px', border: 'none', background: '#2AA198', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Send
+                  </button>
+                )}
+                {viewingInvoice.customers && (
+                  <button onClick={() => { setContactPreset(undefined); setShowContact(true) }} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
                     Contact
                   </button>
                 )}
@@ -887,6 +904,7 @@ export default function InvoicesPage() {
           isOpen={showContact}
           onClose={() => setShowContact(false)}
           isMobile={isMobile}
+          preset={contactPreset}
         />
       )}
     </div>
