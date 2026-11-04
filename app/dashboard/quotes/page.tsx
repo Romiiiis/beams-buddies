@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
@@ -208,7 +209,7 @@ export default function QuotesPage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
 
       if (!userData) {
         setLoading(false)
@@ -758,76 +759,42 @@ export default function QuotesPage() {
                     </div>
                   ) : null}
 
-                  {form.line_items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : '1fr 70px 110px 40px',
-                        gap: isMobile ? '8px' : '0',
-                        padding: '10px 12px',
-                        borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`,
-                        alignItems: 'center',
-                      }}
-                    >
-                      <input
+                  {form.line_items.map((item, idx) => {
+                    const cell: React.CSSProperties = { ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }
+                    const mini: React.CSSProperties = { display: isMobile ? 'block' : 'none', fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }
+                    return (
+                      <div
+                        key={idx}
                         style={{
-                          ...inp,
-                          height: '34px',
-                          border: isMobile ? `1px solid ${BORDER}` : 'none',
-                          background: isMobile ? '#F8FAFC' : 'transparent',
-                          padding: '0 8px',
-                        }}
-                        value={item.description}
-                        onChange={e => setLine(idx, 'description', e.target.value)}
-                        placeholder={lineItemPlaceholder}
-                      />
-
-                      <input
-                        type="number"
-                        style={{
-                          ...inp,
-                          height: '34px',
-                          border: isMobile ? `1px solid ${BORDER}` : 'none',
-                          background: isMobile ? '#F8FAFC' : 'transparent',
-                          padding: '0 8px',
-                        }}
-                        value={item.qty}
-                        onChange={e => setLine(idx, 'qty', e.target.value)}
-                        min="1"
-                        placeholder={isMobile ? 'Qty' : ''}
-                      />
-
-                      <input
-                        type="number"
-                        style={{
-                          ...inp,
-                          height: '34px',
-                          border: isMobile ? `1px solid ${BORDER}` : 'none',
-                          background: isMobile ? '#F8FAFC' : 'transparent',
-                          padding: '0 8px',
-                        }}
-                        value={item.unit_price}
-                        onChange={e => setLine(idx, 'unit_price', e.target.value)}
-                        placeholder={isMobile ? 'Unit price' : '0.00'}
-                      />
-
-                      <button
-                        onClick={() => removeLine(idx)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: RED,
-                          fontSize: '18px',
-                          lineHeight: 1,
-                          height: '34px',
+                          display: 'grid',
+                          gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 70px 110px 40px',
+                          gap: isMobile ? '10px' : '0',
+                          padding: isMobile ? '12px' : '10px 12px',
+                          borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`,
+                          alignItems: isMobile ? 'end' : 'center',
                         }}
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                        <div style={{ gridColumn: isMobile ? '1 / -1' : undefined, minWidth: 0 }}>
+                          <input style={cell} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder={lineItemPlaceholder} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Qty</label>
+                          <input type="number" style={cell} value={item.qty} onChange={e => setLine(idx, 'qty', e.target.value)} min="1" placeholder="Qty" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Unit price ($)</label>
+                          <input type="number" style={cell} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
+                        </div>
+                        <button
+                          onClick={() => removeLine(idx)}
+                          aria-label="Remove line"
+                          style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '8px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '13px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: '34px', gridColumn: isMobile ? '1 / -1' : undefined }}
+                        >
+                          {isMobile ? 'Remove this line' : '×'}
+                        </button>
+                      </div>
+                    )
+                  })}
 
                   <div
                     style={{

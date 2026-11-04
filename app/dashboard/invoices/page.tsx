@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -248,7 +249,7 @@ export default function InvoicesPage() {
         router.push('/login')
         return
       }
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
       if (!userData) return
       setBusinessId(userData.business_id)
       const [invoicesRes, customersRes, settingsRes, businessRes] = await Promise.all([
@@ -663,19 +664,33 @@ export default function InvoicesPage() {
               <div>
                 <label style={lbl}>Line items</label>
                 <div style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 60px 90px 32px', background: '#F8FAFC', padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: isMobile ? 'none' : 'grid', gridTemplateColumns: '1fr 60px 90px 32px', background: '#F8FAFC', padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
                     {['Description', 'Qty', 'Unit $', ''].map(h => (
                       <div key={h} style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', display: isMobile && h !== 'Description' ? 'none' : 'block' }}>{h}</div>
                     ))}
                   </div>
-                  {form.line_items.map((item, idx) => (
-                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 60px 90px 32px', gap: isMobile ? '8px' : '0', padding: '8px 12px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
-                      <input style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder={lineItemPlaceholder} />
-                      <input type="number" style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.qty} onChange={e => setLine(idx, 'qty', e.target.value)} min="1" placeholder="Qty" />
-                      <input type="number" style={{ ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
-                      <button onClick={() => removeLine(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: RED, fontSize: '18px', lineHeight: 1, height: '34px' }}>×</button>
-                    </div>
-                  ))}
+                  {form.line_items.map((item, idx) => {
+                    const cell: React.CSSProperties = { ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }
+                    const mini: React.CSSProperties = { display: isMobile ? 'block' : 'none', fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }
+                    return (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 60px 90px 32px', gap: isMobile ? '10px' : '0', padding: isMobile ? '12px' : '8px 12px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: isMobile ? 'end' : 'center' }}>
+                        <div style={{ gridColumn: isMobile ? '1 / -1' : undefined, minWidth: 0 }}>
+                          <input style={cell} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder={lineItemPlaceholder} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Qty</label>
+                          <input type="number" style={cell} value={item.qty} onChange={e => setLine(idx, 'qty', e.target.value)} min="1" placeholder="Qty" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Unit price ($)</label>
+                          <input type="number" style={cell} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
+                        </div>
+                        <button onClick={() => removeLine(idx)} aria-label="Remove line" style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '8px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '13px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: '34px', gridColumn: isMobile ? '1 / -1' : undefined }}>
+                          {isMobile ? 'Remove this line' : '×'}
+                        </button>
+                      </div>
+                    )
+                  })}
                   <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}`, background: WHITE }}>
                     <button onClick={addLine} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEAL, fontSize: '13px', fontFamily: FONT, fontWeight: 700 }}>
                       + Add line
@@ -724,9 +739,9 @@ export default function InvoicesPage() {
       )}
 
       {viewingInvoice && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '720px', maxHeight: '92vh', overflow: 'auto', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
-            <div style={{ padding: '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '10px' : '20px' }}>
+          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '720px', maxHeight: isMobile ? '94vh' : '92vh', overflow: 'auto', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
+            <div style={{ padding: isMobile ? '14px 16px' : '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</div>
                 <select
@@ -740,7 +755,7 @@ export default function InvoicesPage() {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 {viewingInvoice.customers && (
                   <button onClick={() => setShowContact(true)} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
                     Contact
@@ -749,17 +764,19 @@ export default function InvoicesPage() {
                 <button onClick={e => { e.stopPropagation(); handleDeleteInvoice(viewingInvoice.id) }} disabled={deletingInvoiceId === viewingInvoice.id} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: RED, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', opacity: deletingInvoiceId === viewingInvoice.id ? 0.6 : 1 }}>
                   <IconTrash size={14} /> Delete
                 </button>
+                {!isMobile && (
                 <button onClick={() => window.print()} style={{ height: '34px', padding: '0 14px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
                   Print
                 </button>
+                )}
                 <button onClick={() => setViewingInvoice(null)} style={{ background: '#F3F4F6', border: 'none', borderRadius: '8px', width: '32px', height: '32px', fontSize: '18px', cursor: 'pointer', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   ×
                 </button>
               </div>
             </div>
 
-            <div style={{ padding: '32px 36px' }} id="invoice-print">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '36px', gap: '24px', flexWrap: 'wrap' }}>
+            <div style={{ padding: isMobile ? '20px 16px' : '32px 36px' }} id="invoice-print">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isMobile ? '24px' : '36px', gap: isMobile ? '16px' : '24px', flexWrap: 'wrap' }}>
                 <div>
                   {businessInfo?.logo_url && (
                     <img src={businessInfo.logo_url} alt="Logo" style={{ width: '52px', height: '52px', borderRadius: '10px', objectFit: 'contain', marginBottom: '10px', border: `1px solid ${BORDER}` }} />
@@ -786,24 +803,38 @@ export default function InvoicesPage() {
               </div>
 
               <div style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 100px', background: '#F8FAFC', padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                  {['Description', 'Qty', 'Unit price', 'Total'].map(h => (
-                    <div key={h} style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', textAlign: h !== 'Description' ? 'right' : 'left' }}>{h}</div>
-                  ))}
-                </div>
+                {isMobile ? (
+                  viewingInvoice.line_items?.map((item, idx) => (
+                    <div key={idx} style={{ padding: '12px 14px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}` }}>
+                      <div style={{ fontSize: '14px', color: TEXT, fontWeight: 600, overflowWrap: 'anywhere' }}>{item.description}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', marginTop: '4px' }}>
+                        <span style={{ fontSize: '13px', color: TEXT3 }}>{item.qty} × ${item.unit_price.toFixed(2)}</span>
+                        <span style={{ fontSize: '14px', color: TEXT, fontWeight: 800 }}>${(item.qty * item.unit_price).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 80px 100px 110px', columnGap: '10px', background: '#F8FAFC', padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
+                      {['Description', 'Qty', 'Unit price', 'Total'].map(h => (
+                        <div key={h} style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', textAlign: h !== 'Description' ? 'right' : 'left' }}>{h}</div>
+                      ))}
+                    </div>
 
-                {viewingInvoice.line_items?.map((item, idx) => (
-                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 100px', padding: '12px 16px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
-                    <div style={{ fontSize: '14px', color: TEXT, fontWeight: 500 }}>{item.description}</div>
-                    <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{item.qty}</div>
-                    <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>${item.unit_price.toFixed(2)}</div>
-                    <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>${(item.qty * item.unit_price).toFixed(2)}</div>
-                  </div>
-                ))}
+                    {viewingInvoice.line_items?.map((item, idx) => (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 80px 100px 110px', columnGap: '10px', padding: '12px 16px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
+                        <div style={{ fontSize: '14px', color: TEXT, fontWeight: 500, overflowWrap: 'anywhere' }}>{item.description}</div>
+                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{item.qty}</div>
+                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>${item.unit_price.toFixed(2)}</div>
+                        <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>${(item.qty * item.unit_price).toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '28px' }}>
-                <div style={{ width: '260px' }}>
+                <div style={{ width: isMobile ? '100%' : '260px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                     <span style={{ fontSize: '13px', color: TEXT3 }}>Subtotal</span>
                     <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${viewingInvoice.subtotal?.toFixed(2)}</span>

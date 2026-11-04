@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
@@ -121,7 +122,7 @@ export default function QRCodesPage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
 
       if (!userData) {
         setLoading(false)
@@ -323,20 +324,20 @@ export default function QRCodesPage() {
       <Sidebar active="/dashboard/jobs" />
 
       <div style={{ flex: 1, minWidth: 0, background: BG }}>
-        {!isMobile && (
+        {(
           <div
             style={{
               background: BG,
               borderBottom: `1px solid ${BORDER}`,
-              padding: '16px 24px',
+              padding: isMobile ? '14px 14px 12px' : '16px 24px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '12px',
             }}
           >
-            <h1 style={{ fontSize: '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>QR codes</h1>
-            <HeaderToolbar items={[{ label: 'Back to jobs', icon: <AppIcon name="arrow-left" size={15} />, onClick: () => router.push('/dashboard/jobs') }]} />
+            <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>QR codes</h1>
+            <HeaderToolbar isMobile={isMobile} items={[{ label: 'Back to jobs', icon: <AppIcon name="arrow-left" size={15} />, onClick: () => router.push('/dashboard/jobs') }]} />
           </div>
         )}
 
@@ -351,20 +352,7 @@ export default function QRCodesPage() {
           }}
         >
           {isMobile ? (
-            <div style={{ padding: '20px 12px 4px' }}>
-              <div style={{ marginBottom: '12px' }}>
-                <h1 style={{ fontSize: '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>QR Codes</h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => router.push('/dashboard/jobs')} style={btnMobileTeal}>
-                  ← Back to jobs
-                </button>
-                <button onClick={() => router.push('/dashboard/customers')} style={btnMobileSm}>
-                  Customers
-                </button>
-              </div>
-
+            <div style={{ padding: '12px 12px 4px' }}>
               <StatStrip items={statChips} isMobile={isMobile} />
             </div>
           ) : (

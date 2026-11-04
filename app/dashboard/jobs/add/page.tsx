@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { createCustomer, createJob } from '@/lib/queries'
@@ -154,7 +155,7 @@ export default function AddJobPage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
       if (!userData) throw new Error('User profile not found.')
 
       const customer = await createCustomer({

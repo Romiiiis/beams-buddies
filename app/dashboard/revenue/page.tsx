@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
@@ -169,10 +170,13 @@ function AreaChart({
     ? `${linePath} L ${points[n - 1].x} ${PAD_T + chartH} L ${points[0].x} ${PAD_T + chartH} Z`
     : ''
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => ({
-    y: PAD_T + chartH - f * chartH,
-    val: Math.round(maxVal * f),
-  }))
+  // Skip repeated labels (an empty chart would otherwise read $0, $0, $1, $1, $1)
+  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map(f => ({
+      y: PAD_T + chartH - f * chartH,
+      val: Math.round(maxVal * f),
+    }))
+    .filter((t, i, arr) => arr.findIndex(x => x.val === t.val) === i)
 
   const gradId = 'areaGradRevenue'
 
@@ -369,7 +373,7 @@ export default function RevenuePage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
 
       if (!userData) {
         setLoading(false)
@@ -747,7 +751,8 @@ export default function RevenuePage() {
                       padding: isMobile ? '12px 10px' : '14px 20px',
                       borderLeft: !isMobile && i > 0 ? `1px solid ${BORDER}` : 'none',
                       borderTop: isMobile && i > 1 ? `1px solid ${BORDER}` : 'none',
-                      borderRight: isMobile && i % 2 === 0 ? `1px solid ${BORDER}` : 'none',
+                      borderRight: isMobile && i % 2 === 0 && !(i === statsItems.length - 1) ? `1px solid ${BORDER}` : 'none',
+                      gridColumn: isMobile && i === statsItems.length - 1 && statsItems.length % 2 === 1 ? '1 / -1' : undefined,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '4px',

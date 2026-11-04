@@ -158,7 +158,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <img src="/jobyra-logo.png" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
+            <img src="/jobyra-logo.jpg" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em' }}>Jobyra</span>
           </div>
           <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
@@ -197,7 +197,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
       <div style={shell}>
         <div style={{ background: TEAL, padding: '20px 24px 22px', borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <img src="/jobyra-logo.png" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
+            <img src="/jobyra-logo.jpg" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em' }}>
               {job?.businesses?.name || 'Jobyra'}
             </span>
@@ -274,7 +274,7 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
       {/* Teal header */}
       <div style={{ background: TEAL, padding: '20px 24px 22px', borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <img src="/jobyra-logo.png" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
+          <img src="/jobyra-logo.jpg" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em' }}>
             {job?.businesses?.name || 'Jobyra'}
           </span>

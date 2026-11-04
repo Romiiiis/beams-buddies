@@ -3,11 +3,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
-import { useBusiness } from '@/lib/useBusiness'
+import { useBusinessData } from '@/lib/business-context'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 
@@ -347,7 +348,7 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
                 </span>
               </div>
             ))}
-            <div style={{ position: 'absolute', left: 40, right: 0, bottom: 28, height: 174, display: 'grid', gridTemplateColumns: `repeat(${data.length}, 1fr)`, gap: data.length > 6 ? '8px' : '18px', alignItems: 'end' }}>
+            <div style={{ position: 'absolute', left: 40, right: 0, bottom: 28, height: 174, display: 'grid', gridTemplateColumns: `repeat(${data.length}, 1fr)`, gap: data.length > 6 ? (isMobile ? '3px' : '8px') : '18px', alignItems: 'end' }}>
               {data.map((item, i) => {
                 const barH   = Math.max(6, (item.total / maxValue) * 174)
                 const active = i === activeIndex
@@ -364,10 +365,10 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
                 )
               })}
             </div>
-            <div style={{ position: 'absolute', left: 40, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: `repeat(${data.length}, 1fr)`, gap: data.length > 6 ? '8px' : '18px' }}>
+            <div style={{ position: 'absolute', left: 40, right: 0, bottom: 0, display: 'grid', gridTemplateColumns: `repeat(${data.length}, 1fr)`, gap: data.length > 6 ? (isMobile ? '3px' : '8px') : '18px' }}>
               {data.map((item, i) => (
                 <div key={`${item.label}-label-${i}`} style={{ textAlign: 'center', fontSize: '10px', fontWeight: i === activeIndex ? 800 : 600, color: i === activeIndex ? TEAL_DARK : TEXT3 }}>
-                  {item.label}
+                  {isMobile && data.length > 6 ? item.label.slice(0, 1) : item.label}
                 </div>
               ))}
             </div>
@@ -383,7 +384,7 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
 export default function DashboardPage() {
   const router    = useRouter()
   const isMobile  = useIsMobile()
-  const business  = useBusiness()
+  const { business, loading: businessLoading } = useBusinessData()
   const logoUrl   = business?.logo_url ?? null
   const [loading,      setLoading]      = useState(true)
   const [popupDate,    setPopupDate]    = useState<Date | null>(null)
@@ -400,7 +401,7 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
 
-      const { data: userData } = await supabase.from('users').select('business_id, full_name').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
       // First sign-in: Settings creates the business record, so send new logins there.
       if (!userData) { router.push('/dashboard/settings'); return }
 
@@ -414,21 +415,17 @@ export default function DashboardPage() {
       const nowMonth   = todayLocal.getMonth()
       const nowYear    = todayLocal.getFullYear()
 
-      const [customersRes, jobsRes, invoicesRes] = await Promise.all([
+      const [customersRes, jobsRes, invoicesRes, leadsRes] = await Promise.all([
         supabase.from('customers').select('id').eq('business_id', bid),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
         supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
+        // Booked visits from the Leads board also belong on the calendar
+        supabase.from('leads').select('id, customer_name, phone_number, suburb, job_type, status, preferred_date, preferred_start_time').eq('status', 'booked').not('preferred_date', 'is', null),
       ])
 
       const jobs: any[]     = jobsRes.data || []
       const invoices: any[] = invoicesRes.data || []
 
-      // Booked visits from the Leads pipeline also belong on the calendar
-      const leadsRes = await supabase
-        .from('leads')
-        .select('id, customer_name, phone_number, suburb, job_type, status, preferred_date, preferred_start_time')
-        .eq('status', 'booked')
-        .not('preferred_date', 'is', null)
       setAllLeads(leadsRes.data || [])
 
       const overdue       = jobs.filter(j => serviceBucket(j) === 'overdue')
@@ -569,12 +566,10 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
               {logoUrl ? (
                 <img src={logoUrl} alt="Business logo" style={{ width: isMobile ? 72 : 84, height: isMobile ? 72 : 84, objectFit: 'contain', flexShrink: 0 }} />
+              ) : businessLoading && !business ? (
+                <div style={{ width: isMobile ? 72 : 84, height: isMobile ? 72 : 84, flexShrink: 0 }} />
               ) : (
-                <div style={{ width: isMobile ? 42 : 48, height: isMobile ? 42 : 48, borderRadius: '13px', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 900, color: WHITE, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                    {userName ? userName[0].toUpperCase() : '?'}
-                  </span>
-                </div>
+                <img src="/jobyra-logo.jpg" alt="Jobyra" width={isMobile ? 64 : 72} height={isMobile ? 64 : 72} style={{ width: isMobile ? 64 : 72, height: isMobile ? 64 : 72, objectFit: 'contain', flexShrink: 0, mixBlendMode: 'multiply' }} />
               )}
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>

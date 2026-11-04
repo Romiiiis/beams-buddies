@@ -808,7 +808,7 @@ export function Sidebar({ active }: { active: string }) {
             }}
           >
             <img
-              src="/jobyra-logo.png"
+              src="/jobyra-logo.jpg"
               alt="Jobyra"
               style={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0, mixBlendMode: 'multiply' }}
             />

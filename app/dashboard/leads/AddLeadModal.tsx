@@ -133,7 +133,7 @@ export function AddLeadModal({ businessId, isMobile, onClose, onCreated }: Props
         <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
             <div id="add-lead-title" style={{ fontSize: 17, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>Add lead</div>
-            <div style={{ fontSize: 12, fontWeight: 500, color: TEXT3, marginTop: 2 }}>It starts in Pending on the pipeline.</div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: TEXT3, marginTop: 2 }}>It starts in To call back on the board.</div>
           </div>
           <button
             type="button"

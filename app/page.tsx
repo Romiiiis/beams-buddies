@@ -71,7 +71,7 @@ export default function Home() {
         <div>
           <div className="home-logo">
             <div className="home-logo-mark">
-              <img src="/jobyra-logo.png" alt="Jobyra" />
+              <img src="/jobyra-logo.jpg" alt="Jobyra" />
             </div>
             <span className="home-logo-word">obyra</span>
           </div>

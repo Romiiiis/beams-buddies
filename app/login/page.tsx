@@ -70,7 +70,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 32 }}>
           <img
-            src="/jobyra-logo.png"
+            src="/jobyra-logo.jpg"
             alt="Jobyra"
             style={{ width: 38, height: 38, objectFit: 'contain', mixBlendMode: 'multiply' }}
           />

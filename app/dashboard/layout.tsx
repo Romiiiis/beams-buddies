@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { BusinessContext } from '@/lib/business-context'
 
 const CACHE_KEY = 'jobyra_business'
@@ -39,11 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       } catch {}
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('business_id, full_name, role_title')
-        .eq('id', userId)
-        .single()
+      const { data: userData } = await getUserRow(userId)
 
       if (!userData) { setLoading(false); return }
 

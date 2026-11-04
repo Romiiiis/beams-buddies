@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
@@ -221,10 +222,13 @@ function AreaChart({
     ? `${linePath} L ${points[n - 1].x} ${PAD_T + chartH} L ${points[0].x} ${PAD_T + chartH} Z`
     : ''
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => ({
-    y: PAD_T + chartH - f * chartH,
-    val: Math.round(maxVal * f),
-  }))
+  // Skip repeated labels (an empty chart would otherwise read $0, $0, $1, $1, $1)
+  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map(f => ({
+      y: PAD_T + chartH - f * chartH,
+      val: Math.round(maxVal * f),
+    }))
+    .filter((t, i, arr) => arr.findIndex(x => x.val === t.val) === i)
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -378,7 +382,7 @@ export default function ReportsPage() {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('business_id').eq('id', session.user.id).single()
+      const { data: userData } = await getUserRow(session.user.id)
 
       if (!userData) {
         setLoading(false)
@@ -946,21 +950,23 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: isMobile ? '-16px' : '-24px', marginRight: isMobile ? '-16px' : '-24px' }}>
-                  {trendConfig.widgets.slice(0, 5).map((item, i) => (
+                <div style={isMobile ? { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', borderTop: `1px solid ${BORDER}`, marginLeft: '-16px', marginRight: '-16px' } : { display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: '-24px', marginRight: '-24px' }}>
+                  {trendConfig.widgets.slice(0, 5).map((item, i, arr) => (
                     <div
                       key={item.label}
                       style={{
                         flex: 1,
-                        padding: isMobile ? '12px 10px' : '14px 20px',
-                        borderRight: i < trendConfig.widgets.slice(0, 5).length - 1 ? `1px solid ${BORDER}` : 'none',
+                        padding: isMobile ? '12px 14px' : '14px 20px',
+                        borderRight: isMobile ? (i % 2 === 0 && i !== arr.length - 1 ? `1px solid ${BORDER}` : 'none') : i < arr.length - 1 ? `1px solid ${BORDER}` : 'none',
+                        borderTop: isMobile && i > 1 ? `1px solid ${BORDER}` : 'none',
+                        gridColumn: isMobile && i === arr.length - 1 && arr.length % 2 === 1 ? '1 / -1' : undefined,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '4px',
                         minWidth: 0,
                       }}
                     >
-                      <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: isMobile ? '10px' : '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: TEXT3, whiteSpace: isMobile ? 'normal' : 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.label}
                       </div>
                       <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
