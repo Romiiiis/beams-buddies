@@ -742,9 +742,9 @@ export default function InvoicesPage() {
       )}
 
       {viewingInvoice && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '10px' : '20px' }}>
-          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '720px', maxHeight: isMobile ? '94vh' : '92vh', overflow: 'auto', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
-            <div style={{ padding: isMobile ? '14px 16px' : '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px) 10px calc(env(safe-area-inset-bottom, 0px) + 16px)' : '20px' }}>
+          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '720px', maxHeight: isMobile ? 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 28px)' : '92vh', overflow: 'auto', overscrollBehavior: 'contain', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
+            <div style={{ position: 'sticky', top: 0, zIndex: 5, background: WHITE, padding: isMobile ? '12px 14px' : '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</div>
                 <select
@@ -758,7 +758,7 @@ export default function InvoicesPage() {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', ...(isMobile ? { width: '100%' } : {}) }}>
                 {viewingInvoice.customers && (
                   <button onClick={() => { setShowSend(true) }} style={{ height: '34px', padding: '0 14px', borderRadius: '10px', border: 'none', background: '#2AA198', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                     Send
