@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { reminderHtml, reminderSubject, reminderText, type ReminderSender } from '@/lib/reminder-email'
-import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
+import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent } from '@/lib/automation-email'
 import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue } from '@/lib/automation-rules'
 
@@ -50,12 +49,12 @@ export async function GET(request: Request) {
 
   for (const [businessId, kinds] of byBusiness) {
     const [{ data: business }, { data: settings }] = await Promise.all([
-      db.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', businessId).single(),
+      db.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', businessId).single(),
       db.from('business_settings').select('*').eq('business_id', businessId).single(),
     ])
     if (!business) continue
-    const sender: ReminderSender = { name: business.name || '', phone: business.phone || '', email: business.email || '' }
-    const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
+    const sender = senderFrom(business)
+    const replyTo = sender.email && EMAIL.test(sender.email) ? sender.email : undefined
     const ownDomain = String((business as any).email_domain || '').trim().toLowerCase()
     const sendDomain = (business as any).email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
     let budget = PER_BUSINESS_LIMIT
@@ -110,18 +109,14 @@ export async function GET(request: Request) {
         if (kinds.has('service')) {
           if (serviceDue(job, days('service'))) {
             const next = nextServiceDate(job)
-            await deliver('service', job.id, next ? toYMD(next) : '', to, {
-              subject: reminderSubject(job, sender),
-              html: reminderHtml(job, sender),
-              text: reminderText(job, sender),
-            })
+            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(serviceContent(job, sender), sender))
           }
         }
 
         if (kinds.has('review')) {
           const url = String(settings?.google_review_url || '').trim()
           if (/^https:\/\//i.test(url) && reviewDue(job, days('review'))) {
-            await deliver('review', job.id, '', to, reviewRequestEmail(job, sender, url))
+            await deliver('review', job.id, '', to, renderAutomation(reviewContent(job, sender, url), sender))
           }
         }
       }
@@ -136,7 +131,7 @@ export async function GET(request: Request) {
       for (const inv of invoices || []) {
         const to = emailOf(inv.customers)
         if (to && overdueDue(inv, days('overdue'))) {
-          await deliver('overdue', inv.id, '', to, overdueInvoiceEmail(inv, sender, settings))
+          await deliver('overdue', inv.id, '', to, renderAutomation(overdueContent(inv, sender, settings), sender))
         }
       }
     }
@@ -150,7 +145,7 @@ export async function GET(request: Request) {
       for (const q of quotes || []) {
         const to = emailOf(q.customers)
         if (to && quoteDue(q, days('quote'))) {
-          await deliver('quote', q.id, '', to, quoteFollowUpEmail(q, sender))
+          await deliver('quote', q.id, '', to, renderAutomation(quoteContent(q, sender), sender))
         }
       }
     }

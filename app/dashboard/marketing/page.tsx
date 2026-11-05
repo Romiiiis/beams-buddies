@@ -8,9 +8,9 @@ import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
-import { reminderHtml, reminderSubject, type ReminderSender } from '@/lib/reminder-email'
-import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
-import { nextServiceDate, serviceBucket, soonestJob, toYMD } from '@/lib/service'
+import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
+import { renderEmail, sampleContent, type EmailKind } from '@/lib/email-theme'
+import { nextServiceDate, serviceBucket, toYMD } from '@/lib/service'
 import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, type AutomationKind } from '@/lib/automation-rules'
 
 const TEAL = '#2AA198'
@@ -97,11 +97,11 @@ export default function MarketingPage() {
         supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', bid).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, email, phone').eq('business_id', bid),
         supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
-        supabase.from('businesses').select('name, phone, email').eq('id', bid).single(),
+        supabase.from('businesses').select('name, phone, email, logo_url').eq('id', bid).single(),
         supabase.from('business_settings').select('*').eq('business_id', bid).single(),
         supabase.from('automation_settings').select('kind, enabled, days').eq('business_id', bid),
-        supabase.from('automation_log').select('id, kind, ref_id, cycle, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
-        supabase.from('quotes').select('id, status, created_at, customers(email)').eq('business_id', bid),
+        supabase.from('automation_log').select('id, kind, ref_id, cycle, to_email, subject, sent_at').eq('business_id', bid).order('sent_at', { ascending: false }).limit(1000),
+        supabase.from('quotes').select('*, customers(first_name, last_name, email)').eq('business_id', bid).order('created_at', { ascending: false }),
       ])
       setQuotes(qs.data || [])
       setDaysSel(Object.fromEntries((st.data || []).filter((x: any) => x.days).map((x: any) => [x.kind, x.days])))
@@ -118,38 +118,18 @@ export default function MarketingPage() {
     load()
   }, [router])
 
-  const sender: ReminderSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
+  const sender = useMemo(() => senderFrom(business), [business])
 
   const dueJobs = useMemo(() => jobs.filter(j => ['overdue', 'due_soon'].includes(serviceBucket(j))), [jobs])
   const overdueJobs = useMemo(() => jobs.filter(j => serviceBucket(j) === 'overdue'), [jobs])
   const outstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (Number(i.total) - Number(i.amount_paid || 0)), 0)
   const reachable = customers.filter(c => (c.email || '').trim() || (c.phone || '').trim()).length
 
-  // Sample data for the previews: a real job and invoice when there is one, so it looks like the real thing
-  const sampleJob = useMemo(() => soonestJob(jobs.filter(j => j.customers?.first_name)) || null, [jobs])
-  const sampleInvoice = invoices.find(i => i.customers?.first_name) || null
+  // The preview uses an example customer with your real business name, logo and contact details
   const cur = AUTOMATIONS.find(a => a.id === sel) || AUTOMATIONS[0]
-
-  let emailDoc = ''
-  let emailSubject = ''
-  if (cur.id === 'service' && sampleJob) {
-    emailSubject = reminderSubject(sampleJob, sender)
-    emailDoc = reminderHtml(sampleJob, sender)
-  } else if (cur.id === 'overdue' && sampleInvoice) {
-    const m = overdueInvoiceEmail(sampleInvoice, sender, settings)
-    emailSubject = m.subject
-    emailDoc = m.html
-  } else if (cur.id === 'quote') {
-    const m = quoteFollowUpEmail({ quote_number: 'Q-0001', total: 1250, customers: { first_name: sampleJob?.customers?.first_name || 'Sophie' } }, sender)
-    emailSubject = m.subject
-    emailDoc = m.html
-  } else if (cur.id === 'review') {
-    const m = reviewRequestEmail({ customers: { first_name: sampleJob?.customers?.first_name || 'Sophie' } }, sender, settings?.google_review_url || 'https://g.page/r/your-review-link')
-    emailSubject = m.subject
-    emailDoc = m.html
-  }
-  const hasEmail = !!emailDoc
-  const frame = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:18px 16px;background:#FFFFFF;">${emailDoc}</body></html>`
+  const content = useMemo(() => sampleContent(cur.id as EmailKind, sender), [cur.id, sender])
+  const emailDoc = useMemo(() => renderEmail(EMAIL_STYLE, content, sender), [content, sender])
+  const emailSubject = content.subject
 
   const daysOf = (kind: string) => daysSel[kind] ?? AUTOMATION_DEFAULT_DAYS[kind as AutomationKind]
 
@@ -188,10 +168,10 @@ export default function MarketingPage() {
     return jobs.filter(j => hasEmail(j.customers) && reviewDue(j, d) && !alreadySent.has(`review:${j.id}:`)).length
   }
 
-  const allSent = useMemo(
-    () => [...sent.map(m => ({ ...m, kind: 'service' })), ...autoLog].sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1)),
-    [sent, autoLog]
-  )
+  const allSent = useMemo(() => {
+    const since = new Date(Date.now() - 30 * 86400000).toISOString()
+    return [...sent.map(m => ({ ...m, kind: 'service' })), ...autoLog.filter(l => l.sent_at >= since)].sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1))
+  }, [sent, autoLog])
   const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
   const KIND_LABEL: Record<string, string> = { service: 'Service reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
 
@@ -297,12 +277,10 @@ export default function MarketingPage() {
                 <div style={cardTitle}>Preview: {cur.name}</div>
               </div>
               <div style={{ padding: 18, display: 'grid', gap: 16 }}>
-                {hasEmail && (
-                  <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
-                    <div style={{ padding: '8px 12px', fontSize: 12, color: TEXT2, borderBottom: `1px solid ${BORDER}`, overflowWrap: 'anywhere' }}><span style={{ color: TEXT3 }}>Subject </span><b>{emailSubject}</b></div>
-                    <iframe title="Email preview" srcDoc={frame} sandbox="" style={{ width: '100%', height: isMobile ? 360 : 420, border: 'none', display: 'block', background: '#fff' }} />
-                  </div>
-                )}
+                <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ padding: '8px 12px', fontSize: 12, color: TEXT2, borderBottom: `1px solid ${BORDER}`, overflowWrap: 'anywhere' }}><span style={{ color: TEXT3 }}>Subject </span><b>{emailSubject}</b></div>
+                  <iframe title="Email preview" srcDoc={emailDoc} sandbox="" style={{ width: '100%', height: isMobile ? 480 : 640, border: 'none', display: 'block', background: '#F4F6F8' }} />
+                </div>
 
                 {cur.href && (
                   <button type="button" onClick={() => router.push(cur.href!)} style={{ height: 40, borderRadius: 10, border: 'none', background: TEAL, color: WHITE, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
