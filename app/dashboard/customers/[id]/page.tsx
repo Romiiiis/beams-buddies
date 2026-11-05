@@ -11,6 +11,7 @@ import { ContactDrawer } from '@/components/ContactDrawer'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -912,14 +913,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                               )}
                               <div>
                                 <label style={labelStyle}>Type</label>
-                                <select style={inputStyle} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
+                                <Select style={inputStyle} value={f.equipment_type || ''} onChange={e => setJobField(job.id, 'equipment_type', e.target.value)}>
                                   {industryConfig.equipmentTypes.map(opt => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                   ))}
                                   {f.equipment_type && !industryConfig.equipmentTypes.some(opt => opt.value === f.equipment_type) && (
                                     <option value={f.equipment_type}>{getEquipmentLabel(f.equipment_type)}</option>
                                   )}
-                                </select>
+                                </Select>
                               </div>
                               <div>
                                 <label style={labelStyle}>Serial number</label>
@@ -939,21 +940,21 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                               </div>
                               <div>
                                 <label style={labelStyle}>Service interval</label>
-                                <select style={inputStyle} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
+                                <Select style={inputStyle} value={f.service_interval_months || 12} onChange={e => setJobField(job.id, 'service_interval_months', e.target.value)}>
                                   <option value="6">Every 6 months</option>
                                   <option value="12">Every 12 months</option>
                                   <option value="18">Every 18 months</option>
                                   <option value="24">Every 24 months</option>
-                                </select>
+                                </Select>
                               </div>
                               <div>
                                 <label style={labelStyle}>Reminder</label>
-                                <select style={inputStyle} value={f.reminder_lead_days || 14} onChange={e => setJobField(job.id, 'reminder_lead_days', e.target.value)}>
+                                <Select style={inputStyle} value={f.reminder_lead_days || 14} onChange={e => setJobField(job.id, 'reminder_lead_days', e.target.value)}>
                                   <option value="14">2 weeks before</option>
                                   <option value="28">4 weeks before</option>
                                   <option value="42">6 weeks before</option>
                                   <option value="56">8 weeks before</option>
-                                </select>
+                                </Select>
                               </div>
                             </div>
 

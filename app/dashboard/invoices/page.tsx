@@ -13,6 +13,7 @@ import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -643,14 +644,14 @@ export default function InvoicesPage() {
             <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={lbl}>Customer *</label>
-                <select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
+                <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
                   <option value="">Select customer...</option>
                   {customers.map(c => (
                     <option key={c.id} value={c.id}>
                       {c.first_name} {c.last_name}{c.suburb ? ` - ${c.suburb}` : ''}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
@@ -747,15 +748,13 @@ export default function InvoicesPage() {
             <div style={{ position: 'sticky', top: 0, zIndex: 5, background: WHITE, padding: isMobile ? '12px 14px' : '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</div>
-                <select
+                <StatusSelect
                   value={viewingInvoice.status}
-                  onChange={e => updateStatus(viewingInvoice.id, e.target.value)}
-                  style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, border: 'none', background: STATUS_STYLES[viewingInvoice.status]?.bg, color: STATUS_STYLES[viewingInvoice.status]?.color, cursor: 'pointer', fontFamily: FONT, outline: 'none' }}
-                >
-                  {Object.entries(STATUS_STYLES).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label}</option>
-                  ))}
-                </select>
+                  onChange={v => updateStatus(viewingInvoice.id, v)}
+                  options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
+                  colors={{ bg: STATUS_STYLES[viewingInvoice.status]?.bg, fg: STATUS_STYLES[viewingInvoice.status]?.color, border: STATUS_STYLES[viewingInvoice.status]?.border }}
+                  label="Invoice status"
+                />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', ...(isMobile ? { width: '100%' } : {}) }}>

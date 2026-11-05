@@ -10,6 +10,7 @@ import { createCustomer, createJob } from '@/lib/queries'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -524,11 +525,11 @@ export default function AddJobPage() {
                   <div style={{ padding: isMobile ? '14px' : '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={labelStyle}>Type *</label>
-                      <select required style={inputStyle} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
+                      <Select required style={inputStyle} value={form.equipment_type} onChange={e => set('equipment_type', e.target.value)}>
                         {industryConfig.equipmentTypes.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
 
                     <div>
@@ -588,22 +589,22 @@ export default function AddJobPage() {
                   <div style={{ padding: isMobile ? '14px' : '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={labelStyle}>Service interval</label>
-                      <select style={inputStyle} value={form.service_interval_months} onChange={e => set('service_interval_months', e.target.value)}>
+                      <Select style={inputStyle} value={form.service_interval_months} onChange={e => set('service_interval_months', e.target.value)}>
                         <option value="6">Every 6 months</option>
                         <option value="12">Every 12 months</option>
                         <option value="18">Every 18 months</option>
                         <option value="24">Every 24 months</option>
-                      </select>
+                      </Select>
                     </div>
 
                     <div>
                       <label style={labelStyle}>Reminder lead time</label>
-                      <select style={inputStyle} value={form.reminder_lead_days} onChange={e => set('reminder_lead_days', e.target.value)}>
+                      <Select style={inputStyle} value={form.reminder_lead_days} onChange={e => set('reminder_lead_days', e.target.value)}>
                         <option value="14">2 weeks before</option>
                         <option value="28">4 weeks before</option>
                         <option value="42">6 weeks before</option>
                         <option value="56">8 weeks before</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 </div>

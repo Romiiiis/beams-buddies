@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEXT = '#0B1220'
@@ -156,10 +157,10 @@ export function AddLeadModal({ businessId, isMobile, onClose, onCreated }: Props
           </div>
           <div>
             <label style={label} htmlFor="lead-type">Job type</label>
-            <select id="lead-type" style={{ ...input, appearance: 'none' }} value={form.job_type} onChange={e => set('job_type', e.target.value)}>
+            <Select id="lead-type" style={{ ...input, appearance: 'none' }} value={form.job_type} onChange={e => set('job_type', e.target.value)}>
               <option value="">Not sure yet</option>
               {JOB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
+            </Select>
           </div>
           <div>
             <label style={label} htmlFor="lead-address">Address</label>

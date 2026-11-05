@@ -13,6 +13,7 @@ import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/compone
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -400,14 +401,14 @@ function JobDrawer({
                   )}
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Type</div>
-                    <select style={inputStyle} value={form.equipment_type} onChange={e => setForm(p => ({ ...p, equipment_type: e.target.value }))}>
+                    <Select style={inputStyle} value={form.equipment_type} onChange={e => setForm(p => ({ ...p, equipment_type: e.target.value }))}>
                       {industryConfig.equipmentTypes.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                       {form.equipment_type && !industryConfig.equipmentTypes.some(opt => opt.value === form.equipment_type) && (
                         <option value={form.equipment_type}>{getEquipmentLabel(form.equipment_type)}</option>
                       )}
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Serial number</div>
@@ -427,21 +428,21 @@ function JobDrawer({
                   </div>
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Service interval</div>
-                    <select style={inputStyle} value={form.service_interval_months} onChange={e => setForm(p => ({ ...p, service_interval_months: e.target.value }))}>
+                    <Select style={inputStyle} value={form.service_interval_months} onChange={e => setForm(p => ({ ...p, service_interval_months: e.target.value }))}>
                       <option value="6">Every 6 months</option>
                       <option value="12">Every 12 months</option>
                       <option value="18">Every 18 months</option>
                       <option value="24">Every 24 months</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Reminder lead</div>
-                    <select style={inputStyle} value={form.reminder_lead_days} onChange={e => setForm(p => ({ ...p, reminder_lead_days: e.target.value }))}>
+                    <Select style={inputStyle} value={form.reminder_lead_days} onChange={e => setForm(p => ({ ...p, reminder_lead_days: e.target.value }))}>
                       <option value="14">14 days before</option>
                       <option value="28">28 days before</option>
                       <option value="42">42 days before</option>
                       <option value="56">56 days before</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -1051,7 +1052,7 @@ export default function JobsPage() {
             activeTab={statusTab}
             onTabChange={setStatusTab}
             filters={
-              <select
+              <Select
                 value={filterType}
                 onChange={e => setFilterType(e.target.value)}
                 style={{
@@ -1073,7 +1074,7 @@ export default function JobsPage() {
                     {t === 'all' ? 'All types' : getEquipmentLabel(t)}
                   </option>
                 ))}
-              </select>
+              </Select>
             }
             renderMobile={job => {
               const c = job.customers

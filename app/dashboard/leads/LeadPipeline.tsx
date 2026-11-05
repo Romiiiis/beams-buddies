@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Select } from '@/components/Select'
 
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -166,7 +167,7 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
             style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${BORDER}` }}
           >
             <span style={{ fontSize: 12, fontWeight: 700, color: TEXT3 }}>Move to</span>
-            <select
+            <Select
               value={stageOf(lead.status)}
               disabled={moving}
               onChange={e => onMove(lead, e.target.value)}
@@ -185,7 +186,7 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
               {stages.map(s => (
                 <option key={s.key} value={s.key}>{s.label}</option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
       </article>

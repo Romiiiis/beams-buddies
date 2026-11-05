@@ -12,6 +12,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -692,7 +693,7 @@ export default function QuotesPage() {
             <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={lbl}>Customer *</label>
-                <select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
+                <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
                   <option value="">Select customer...</option>
                   {customers.map(c => (
                     <option key={c.id} value={c.id}>
@@ -700,7 +701,7 @@ export default function QuotesPage() {
                       {c.suburb ? ` - ${c.suburb}` : ''}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div

@@ -10,6 +10,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -697,11 +698,11 @@ export default function SettingsPage() {
 
                   <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
                     <label style={label}>Industry</label>
-                    <select style={selectStyle} value={business.industry} onChange={e => setBiz('industry', e.target.value)}>
+                    <Select style={selectStyle} value={business.industry} onChange={e => setBiz('industry', e.target.value)}>
                       {INDUSTRIES.map(ind => (
                         <option key={ind.id} value={ind.id}>{ind.label}</option>
                       ))}
-                    </select>
+                    </Select>
                     <p style={hint}>Controls the equipment types and field labels throughout the app</p>
                   </div>
                 </div>
@@ -846,12 +847,12 @@ export default function SettingsPage() {
 
                   <div>
                     <label style={label}>Payment terms</label>
-                    <select style={selectStyle} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
+                    <Select style={selectStyle} value={bankDetails.payment_terms} onChange={e => setBank('payment_terms', e.target.value)}>
                       <option value="7">7 days</option>
                       <option value="14">14 days</option>
                       <option value="21">21 days</option>
                       <option value="30">30 days</option>
-                    </select>
+                    </Select>
                     <p style={hint}>Shown on invoice as due within X days</p>
                   </div>
 

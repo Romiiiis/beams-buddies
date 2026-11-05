@@ -11,6 +11,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 
 const TEAL       = '#2AA198'
 const TEAL_DARK  = '#1F857C'
@@ -310,14 +311,14 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1 }}>Analytics</div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <select value={metric} onChange={e => { setMetric(e.target.value as AnalyticsMetric); setHovered(null) }} style={selectStyle}>
+          <Select value={metric} onChange={e => { setMetric(e.target.value as AnalyticsMetric); setHovered(null) }} style={selectStyle}>
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
             <option value="outstanding">Outstanding</option>
-          </select>
-          <select value={range} onChange={e => { setRange(e.target.value as AnalyticsRange); setHovered(null) }} style={selectStyle}>
+          </Select>
+          <Select value={range} onChange={e => { setRange(e.target.value as AnalyticsRange); setHovered(null) }} style={selectStyle}>
             {(['This Year', 'Last Year', 'Last 6 Months', 'Last 3 Months'] as AnalyticsRange[]).map(o => <option key={o}>{o}</option>)}
-          </select>
+          </Select>
         </div>
       </div>
 

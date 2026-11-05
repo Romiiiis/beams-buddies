@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEXT = '#0B1220'
@@ -203,7 +204,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
           <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <div style={labelStyle}>Template</div>
-              <select
+              <Select
                 value={template}
                 onChange={e => {
                   const key = e.target.value
@@ -222,7 +223,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                 {Object.entries(templates).map(([key, tpl]) => (
                   <option key={key} value={key}>{tpl.label}</option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             {channel === 'email' && (

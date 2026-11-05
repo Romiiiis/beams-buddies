@@ -12,6 +12,7 @@ import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
 import { renderEmail, sampleContent, type EmailKind } from '@/lib/email-theme'
 import { nextServiceDate, serviceBucket, toYMD } from '@/lib/service'
 import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, type AutomationKind } from '@/lib/automation-rules'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -252,14 +253,14 @@ export default function MarketingPage() {
                   <div onClick={e => e.stopPropagation()} style={{ marginTop: 14, border: `1px solid ${BORDER}`, borderRadius: 12, background: WHITE, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '11px 14px', fontSize: 13, color: TEXT2 }}>
                       <span style={{ width: 44, color: TEXT3, fontWeight: 600 }}>Send</span>
-                      <select
+                      <Select
                         value={daysOf(a.id)}
                         onChange={e => changeDays(a.id, Number(e.target.value))}
                         aria-label={`${a.name}: days`}
                         style={{ height: 34, padding: '0 28px 0 10px', borderRadius: 10, border: `1px solid ${BORDER}`, background: '#F8FAFC', color: TEXT, fontSize: 13, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}
                       >
                         {Array.from(new Set([...AUTOMATION_DAY_OPTIONS[a.id as AutomationKind], daysOf(a.id)])).sort((x, y) => x - y).map(n => <option key={n} value={n}>{dayWord(n)}</option>)}
-                      </select>
+                      </Select>
                       <span>{AUTOMATION_WHEN[a.id as AutomationKind].after.replace(/^days /, '')}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px', borderTop: `1px solid ${BORDER}`, fontSize: 13, background: '#FBFCFD' }}>

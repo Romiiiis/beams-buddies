@@ -9,6 +9,7 @@ import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -888,7 +889,7 @@ export default function ReportsPage() {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
-                    <select
+                    <Select
                       value={reportView}
                       onChange={e => setReportView(e.target.value as ReportView)}
                       style={{
@@ -914,7 +915,7 @@ export default function ReportsPage() {
                       <option value="jobs">Jobs</option>
                       <option value="quotes">Quotes</option>
                       <option value="services">Services</option>
-                    </select>
+                    </Select>
 
                     <div
                       style={{
