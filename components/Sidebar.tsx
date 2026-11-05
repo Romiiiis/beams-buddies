@@ -51,14 +51,11 @@ const mobilePrimaryTabs = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
-const mobileMenuItems = [
-  { label: 'Leads', href: '/dashboard/leads' },
-  { label: 'Quotes', href: '/dashboard/quotes' },
-  { label: 'Invoices', href: '/dashboard/invoices' },
-  { label: 'Revenue', href: '/dashboard/revenue' },
-  { label: 'Service schedule', href: '/dashboard/schedule' },
-  { label: 'Marketing', href: '/dashboard/marketing' },
-  { label: 'Reports', href: '/dashboard/reports' },
+// Same groups as the desktop sidebar. Home, Jobs, Customers and Settings live in the bottom tab bar.
+const mobileMenuGroups: { label?: string; items: { label: string; href: string }[] }[] = [
+  { items: [{ label: 'Leads', href: '/dashboard/leads' }] },
+  { label: 'Finance', items: navFinance },
+  { label: 'Manage', items: navManage.filter(i => i.href !== '/dashboard/settings') },
 ]
 
 function DashboardIcon() {
@@ -530,7 +527,24 @@ export function Sidebar({ active }: { active: string }) {
                 gap: 7,
               }}
             >
-              {mobileMenuItems.map(item => {
+              {mobileMenuGroups.map((group, gi) => (
+                <React.Fragment key={group.label || 'main'}>
+                  {group.label && (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.10em',
+                        textTransform: 'uppercase',
+                        color: TEXT3,
+                        padding: '14px 12px 4px',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {group.label}
+                    </div>
+                  )}
+              {group.items.map(item => {
                 const isActive = item.href === active
 
                 return (
@@ -581,6 +595,8 @@ export function Sidebar({ active }: { active: string }) {
                   </button>
                 )
               })}
+                </React.Fragment>
+              ))}
             </div>
 
             <div
