@@ -26,12 +26,20 @@ function isZero(value: React.ReactNode) {
   return !isNaN(n) && n === 0
 }
 
-/** Pill colours: green for good news, red for bad, grey when nothing changed. Up is bad for overdue and unpaid. */
+/**
+ * Pill colours. Money and performance numbers go green when they rise and red when they fall; overdue and
+ * unpaid go the other way. Plain counts (jobs, customers, quotes) only ever go green or stay grey, because
+ * fewer new records is not bad news.
+ */
 function deltaTone(delta: string, up: boolean | undefined, label: string) {
   if (/^[+-]?0+(\.0+)?\s*%?$/.test(delta.trim())) return { bg: '#F1F5F9', fg: TEXT3 }
   const rising = up !== undefined ? up : !delta.trim().startsWith('-')
-  const goodWhenRising = !/overdue|outstanding|unpaid/i.test(label)
-  return rising === goodWhenRising ? { bg: TEAL_LIGHT, fg: TEAL_DARK } : { bg: '#FEE2E2', fg: RED }
+  const good = { bg: TEAL_LIGHT, fg: TEAL_DARK }
+  const bad = { bg: '#FEE2E2', fg: RED }
+  const neutral = { bg: '#F1F5F9', fg: TEXT3 }
+  if (/overdue|outstanding|unpaid/i.test(label)) return rising ? bad : good
+  if (/revenue|paid|income|sales|accepted|booked/i.test(label)) return rising ? good : bad
+  return rising ? good : neutral
 }
 
 /**

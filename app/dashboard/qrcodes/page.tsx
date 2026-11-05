@@ -524,12 +524,12 @@ export default function QRCodesPage() {
 
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '8px 10px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Job</div>
+                                    <div style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Job</div>
                                     <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>{job.brand || '—'} {formatCapacity(job.capacity_kw, business?.industry)}</div>
                                   </div>
 
                                   <div style={{ flex: 1, background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '8px 10px' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Completed</div>
+                                    <div style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Completed</div>
                                     <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT }}>{formatDate(job.install_date)}</div>
                                   </div>
                                 </div>
@@ -692,7 +692,7 @@ export default function QRCodesPage() {
                       <div style={{ borderRadius: '12px', border: `1px solid ${BORDER}`, background: WHITE, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
                           <div>
-                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>Customer</div>
+                            <div style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '4px' }}>Customer</div>
                             <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, lineHeight: 1.2 }}>
                               {`${selectedJob.customers?.first_name || ''} ${selectedJob.customers?.last_name || ''}`.trim() || 'Customer'}
                             </div>
@@ -721,13 +721,13 @@ export default function QRCodesPage() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                           <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Job</div>
+                            <div style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Job</div>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{selectedJob.brand || '—'} {formatCapacity(selectedJob.capacity_kw, business?.industry)}</div>
                             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{selectedJob.model || '—'}</div>
                           </div>
 
                           <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '9px 11px' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Completed</div>
+                            <div style={{ fontSize: '10px', fontWeight: 800, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>Completed</div>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT }}>{formatDate(selectedJob.install_date)}</div>
                             <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>Job linked</div>
                           </div>

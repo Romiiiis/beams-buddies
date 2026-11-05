@@ -12,6 +12,7 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
+import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -541,51 +542,16 @@ export default function CustomersPage() {
       />
 
       {showAddCustomer && (
-        <div
-          onClick={() => setShowAddCustomer(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden' }}
-          >
-            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>New Customer</span>
-              <button onClick={() => setShowAddCustomer(false)} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            </div>
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {(['First name *', 'Last name'] as const).map((label) => {
-                  const key = label === 'First name *' ? 'firstName' : 'lastName'
-                  return (
-                    <div key={key}>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '6px' }}>{label}</div>
-                      <input
-                        value={addForm[key as keyof typeof addForm]}
-                        onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
-                        placeholder={label.replace(' *', '')}
-                        style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-              {(['phone', 'email'] as const).map((key) => (
-                <div key={key}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '6px' }}>{key.charAt(0).toUpperCase() + key.slice(1)}</div>
-                  <input
-                    type={key}
-                    value={addForm[key]}
-                    onChange={e => setAddForm(f => ({ ...f, [key]: e.target.value }))}
-                    placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                    style={{ width: '100%', height: '38px', border: `1px solid ${BORDER}`, borderRadius: '9px', padding: '0 12px', fontSize: '13px', color: TEXT, background: WHITE, outline: 'none', boxSizing: 'border-box' as const }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '14px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowAddCustomer(false)} style={{ height: '36px', padding: '0 16px', border: `1px solid ${BORDER}`, borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: TEXT2, background: WHITE, cursor: 'pointer' }}>Cancel</button>
+        <Modal
+          title="New customer"
+          size="sm"
+          busy={addSaving}
+          onClose={() => setShowAddCustomer(false)}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowAddCustomer(false)} style={BTN.secondary}>Cancel</button>
               <button
+                type="button"
                 disabled={!addForm.firstName.trim() || addSaving}
                 onClick={async () => {
                   if (!businessId || !addForm.firstName.trim()) return
@@ -602,13 +568,34 @@ export default function CustomersPage() {
                   setAddForm({ firstName: '', lastName: '', phone: '', email: '' })
                   if (data?.id) router.push(`/dashboard/customers/${data.id}`)
                 }}
-                style={{ height: '36px', padding: '0 20px', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 700, color: WHITE, background: addForm.firstName.trim() ? TEAL : '#A0AEC0', cursor: addForm.firstName.trim() ? 'pointer' : 'not-allowed' }}
+                style={{ ...BTN.primary, ...(!addForm.firstName.trim() || addSaving ? BTN.disabled : {}) }}
               >
-                {addSaving ? 'Saving...' : 'Create Customer'}
+                {addSaving ? 'Saving...' : 'Create customer'}
               </button>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={LABEL}>First name *</label>
+                <input value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} placeholder="First name" style={FIELD} autoFocus />
+              </div>
+              <div>
+                <label style={LABEL}>Last name</label>
+                <input value={addForm.lastName} onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Last name" style={FIELD} />
+              </div>
+            </div>
+            <div>
+              <label style={LABEL}>Phone</label>
+              <input type="tel" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="Phone" style={FIELD} />
+            </div>
+            <div>
+              <label style={LABEL}>Email</label>
+              <input type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" style={FIELD} />
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   )

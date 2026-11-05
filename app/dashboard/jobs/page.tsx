@@ -1095,9 +1095,9 @@ export default function JobsPage() {
                     {t.headline}
                     {t.sub && <span style={{ fontWeight: 600, color: TEXT3 }}> · {t.sub}</span>}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 4 }}>
                     {c?.phone && (
-                      <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ fontSize: 13, fontWeight: 700, color: TEAL_DARK, textDecoration: 'none' }}>
+                      <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ fontSize: 13, fontWeight: 700, color: TEAL_DARK, textDecoration: 'none', minHeight: 36, display: 'inline-flex', alignItems: 'center' }}>
                         Call {c.phone}
                       </a>
                     )}
@@ -1107,7 +1107,7 @@ export default function JobsPage() {
                         e.stopPropagation()
                         setQrJobId(job.id)
                       }}
-                      style={{ border: 'none', background: 'transparent', padding: 0, fontFamily: FONT, fontSize: 13, fontWeight: 700, color: job.qr_code_token ? TEAL_DARK : TEXT3, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                      style={{ border: 'none', background: 'transparent', padding: 0, minHeight: 36, display: 'inline-flex', alignItems: 'center', fontFamily: FONT, fontSize: 13, fontWeight: 700, color: job.qr_code_token ? TEAL_DARK : TEXT3, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
                     >
                       {job.qr_code_token ? 'View QR' : 'Create QR'}
                     </button>

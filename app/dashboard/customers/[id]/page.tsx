@@ -12,6 +12,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
+import { ConfirmDialog } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -753,7 +754,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             background: WHITE,
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                             <div style={{ width: 4, alignSelf: 'stretch', minHeight: 46, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                             <div style={{ minWidth: 0 }}>
                               <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 850, color: TEXT }}>
@@ -769,9 +770,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 background: s.bg,
                                 color: s.color,
                                 border: `1px solid ${s.border}`,
-                                padding: '6px 9px',
+                                padding: '6px 10px',
                                 borderRadius: '8px',
-                                fontSize: '10px',
+                                fontSize: '11px',
                                 fontWeight: 800,
                                 whiteSpace: 'nowrap',
                               }}
@@ -1106,115 +1107,27 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       </div>
 
       {showDeleteConfirm && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(10,10,10,0.45)',
-            zIndex: 200,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: WHITE,
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '420px',
-              border: `1px solid ${BORDER}`,
-              overflow: 'hidden',
-              fontFamily: FONT,
-            }}
-          >
-            <div style={{ height: '4px', background: '#EF4444' }} />
-
-            <div style={{ padding: '24px 24px 20px' }}>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#EF4444',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.8px',
-                  marginBottom: '6px',
-                }}
-              >
-                Danger zone
-              </div>
-
-              <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, marginBottom: '10px' }}>
-                Delete {customer.first_name} {customer.last_name}?
-              </div>
-
-              <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
-                This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This cannot be undone.
-              </div>
-
+        <ConfirmDialog
+          title={`Delete ${customer.first_name} ${customer.last_name}?`}
+          message={
+            <>
+              This will permanently delete this customer and all {jobs.length} associated job{jobs.length !== 1 ? 's' : ''}. This cannot be undone.
               {deleteError && (
-                <div
-                  style={{
-                    marginTop: '14px',
-                    padding: '12px 14px',
-                    background: '#FEF2F2',
-                    border: '1px solid #FECACA',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    color: '#B91C1C',
-                    fontWeight: 500,
-                  }}
-                >
+                <div style={{ marginTop: 14, padding: '12px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: 13, color: '#B91C1C', fontWeight: 500 }}>
                   {deleteError}
                 </div>
               )}
-            </div>
-
-            <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false)
-                  setDeleteError('')
-                }}
-                style={{
-                  flex: 1,
-                  height: '42px',
-                  borderRadius: '9px',
-                  border: `1px solid ${BORDER}`,
-                  background: WHITE,
-                  color: TEXT2,
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                }}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={deleteCustomer}
-                disabled={deleting}
-                style={{
-                  flex: 1,
-                  height: '42px',
-                  borderRadius: '9px',
-                  border: 'none',
-                  background: '#EF4444',
-                  color: WHITE,
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                  fontFamily: FONT,
-                  opacity: deleting ? 0.7 : 1,
-                }}
-              >
-                {deleting ? 'Deleting...' : 'Yes, delete'}
-              </button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+          confirmLabel="Yes, delete"
+          busy={deleting}
+          busyLabel="Deleting..."
+          onCancel={() => {
+            setShowDeleteConfirm(false)
+            setDeleteError('')
+          }}
+          onConfirm={deleteCustomer}
+        />
       )}
 
       <ContactDrawer

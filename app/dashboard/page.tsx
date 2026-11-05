@@ -12,6 +12,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
+import { money, moneyWhole } from '@/lib/format'
 
 const TEAL       = '#2AA198'
 const TEAL_DARK  = '#1F857C'
@@ -295,22 +296,21 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
   const peak        = data.reduce((best, d) => d.total > best.total ? d : best, data[0] || { label: '—', total: 0 })
   const avg         = data.length ? Math.round(periodTotal / data.length) : 0
   const isCurrency  = metric !== 'jobs'
-  function fmt(n: number) { return isCurrency ? `$${Math.round(n).toLocaleString('en-AU')}` : String(Math.round(n)) }
+  function fmt(n: number) { return isCurrency ? moneyWhole(n) : String(Math.round(n)) }
 
   const maxValue    = Math.max(...data.map(d => d.total), 1)
   const activeIndex = hovered !== null ? hovered : data.findIndex(d => d.label === peak.label && d.total === peak.total)
 
   const selectStyle: React.CSSProperties = {
-    height: '32px', padding: '0 10px', border: `1px solid ${BORDER}`, borderRadius: '8px',
-    fontSize: '11px', fontWeight: 700, color: TEXT2, background: WHITE, outline: 'none',
-    cursor: 'pointer', fontFamily: FONT,
+    height: '34px', fontSize: '13px',
+    ...(isMobile ? { flex: 1, minWidth: 0 } : { width: '150px' }),
   }
 
   return (
     <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-      <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
+      <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', borderBottom: `1px solid ${BORDER}`, gap: '12px 14px' }}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1 }}>Analytics</div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', ...(isMobile ? { width: '100%' } : {}) }}>
           <Select value={metric} onChange={e => { setMetric(e.target.value as AnalyticsMetric); setHovered(null) }} style={selectStyle}>
             <option value="revenue">Revenue</option>
             <option value="jobs">Jobs</option>
@@ -536,8 +536,8 @@ export default function DashboardPage() {
 
   // Metric cards (row 2)
   const metricCards = [
-    { label: 'Outstanding',       value: `$${outCurr.toLocaleString('en-AU')}`,  delta: pctChange(outCurr, outPrev),         up: pctChange(outCurr, outPrev) >= 0,         hasDelta: outPrev > 0,          sub: `${invoiceStats.overdueCount} overdue`,      accent: '#EF4444', onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Revenue (30d)',      value: `$${revCurr.toLocaleString('en-AU')}`,  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                           accent: TEAL,      onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Outstanding',       value: moneyWhole(outCurr),  delta: pctChange(outCurr, outPrev),         up: pctChange(outCurr, outPrev) >= 0,         hasDelta: outPrev > 0,          sub: `${invoiceStats.overdueCount} overdue`,      accent: '#EF4444', onClick: () => router.push('/dashboard/invoices') },
+    { label: 'Revenue (30d)',      value: moneyWhole(revCurr),  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                           accent: TEAL,      onClick: () => router.push('/dashboard/revenue') },
     { label: 'Jobs This Month',    value: `${jobsCurrMonth}`,                     delta: pctChange(jobsCurrMonth, jobsPrevMonth), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, hasDelta: jobsPrevMonth > 0, sub: 'vs last month',                           accent: '#6366F1', onClick: () => router.push('/dashboard/jobs') },
     { label: 'Invoice Paid Rate',  value: `${convRate}%`,                         delta: currConv - prevConv,                  up: currConv >= prevConv,                     hasDelta: prevWin.length > 0,   sub: `${paidInv} of ${totalInv} invoices`,        accent: '#10B981', onClick: () => router.push('/dashboard/invoices') },
   ]
@@ -752,7 +752,7 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                     <span style={{ fontSize: '28px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#DC2626' : TEAL_DARK, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
-                      ${invoiceStats.outstanding.toLocaleString('en-AU')}
+                      {money(invoiceStats.outstanding)}
                     </span>
                     {invoiceStats.overdueCount > 0 && (
                       <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px', background: '#FEE2E2', color: '#991B1B' }}>
@@ -784,8 +784,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div style={{ padding: '10px 14px 10px 0', textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT, fontVariantNumeric: 'tabular-nums' }}>${amt.toLocaleString('en-AU')}</div>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E', textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT, fontVariantNumeric: 'tabular-nums' }}>{money(amt)}</div>
+                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E', textAlign: 'center' }}>
                           {isOverdue ? 'Overdue' : 'Sent'}
                         </span>
                       </div>

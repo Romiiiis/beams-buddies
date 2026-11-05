@@ -14,6 +14,9 @@ import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataL
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
+import { money, moneyWhole } from '@/lib/format'
+import { BTN, BTN_SM, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
+import { printElement } from '@/lib/print'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -227,6 +230,7 @@ export default function InvoicesPage() {
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null)
   const [saving, setSaving] = useState(false)
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null)
+  const [deleteInvoiceId, setDeleteInvoiceId] = useState<string | null>(null)
   const [showContact, setShowContact] = useState(false)
   const [showSend, setShowSend] = useState(false)
   const [notice, setNotice] = useState('')
@@ -334,9 +338,8 @@ export default function InvoicesPage() {
     if (viewingInvoice?.id === id) setViewingInvoice(prev => prev ? { ...prev, ...update } : prev)
   }
 
-  async function handleDeleteInvoice(id: string) {
-    const confirmed = window.confirm('Delete this invoice? This cannot be undone.')
-    if (!confirmed) return
+  // Asks first (see the Delete dialog below), then removes the invoice
+  async function reallyDeleteInvoice(id: string) {
     setDeletingInvoiceId(id)
     const { error } = await supabase.from('invoices').delete().eq('id', id)
     if (!error) {
@@ -344,6 +347,11 @@ export default function InvoicesPage() {
       if (viewingInvoice?.id === id) setViewingInvoice(null)
     }
     setDeletingInvoiceId(null)
+    setDeleteInvoiceId(null)
+  }
+
+  function handleDeleteInvoice(id: string) {
+    setDeleteInvoiceId(id)
   }
 
   const searched = invoices.filter(inv => {
@@ -397,13 +405,13 @@ export default function InvoicesPage() {
     },
     {
       label: 'Revenue',
-      value: `$${totalRevenue.toFixed(0)}`,
+      value: moneyWhole(totalRevenue),
       sub: `${revenueDelta >= 0 ? '+' : ''}${revenueDelta}% last 30 days`,
       onClick: () => setFilterStatus('paid'),
     },
     {
       label: 'Outstanding',
-      value: `$${totalOutstanding.toFixed(0)}`,
+      value: moneyWhole(totalOutstanding),
       sub: `${outstandingDelta >= 0 ? '+' : ''}${outstandingDelta}% last 30 days`,
       onClick: () => setFilterStatus('sent'),
     },
@@ -481,26 +489,9 @@ export default function InvoicesPage() {
     color: WHITE,
   }
 
-  const inp: React.CSSProperties = {
-    width: '100%',
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '12px',
-    border: `1px solid ${BORDER}`,
-    background: '#F8FAFC',
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontWeight: 600,
-  }
+  const inp: React.CSSProperties = FIELD
 
-  const lbl: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const lbl: React.CSSProperties = LABEL
 
   const countByStatus = (status: string) => status === 'all' ? invoices.length : invoices.filter(i => i.status === status).length
 
@@ -619,7 +610,7 @@ export default function InvoicesPage() {
                 label: 'Amount',
                 width: '100px',
                 align: 'right',
-                render: inv => <TextCell strong>${Number(inv.total || 0).toFixed(2)}</TextCell>,
+                render: inv => <TextCell strong>{money(Number(inv.total || 0))}</TextCell>,
               },
             ]}
           />
@@ -627,21 +618,22 @@ export default function InvoicesPage() {
       </div>
 
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflow: 'auto', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                <div>
-                  <div style={{ ...TYPE.section, color: TEAL_DARK, marginBottom: '2px' }}>Create</div>
-                  <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New invoice</div>
-                  <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', fontWeight: 600 }}>Create a draft invoice and save it to your records.</div>
-                </div>
-              </div>
-              <button onClick={() => setShowForm(false)} style={{ background: '#F3F4F6', border: 'none', borderRadius: '8px', width: '32px', height: '32px', fontSize: '18px', cursor: 'pointer', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            </div>
+        <Modal
+          title="New invoice"
+          size="lg"
+          busy={saving}
+          onClose={() => setShowForm(false)}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowForm(false)} style={BTN.secondary}>Cancel</button>
+              <button type="button" onClick={handleSave} disabled={saving || !form.customer_id} style={{ ...BTN.primary, ...(saving || !form.customer_id ? BTN.disabled : {}) }}>
+                {saving ? 'Saving...' : 'Create invoice'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={lbl}>Customer *</label>
                 <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
@@ -674,7 +666,7 @@ export default function InvoicesPage() {
                     ))}
                   </div>
                   {form.line_items.map((item, idx) => {
-                    const cell: React.CSSProperties = { ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }
+                    const cell: React.CSSProperties = { ...inp, height: isMobile ? '42px' : '34px', border: isMobile ? `1px solid ${FIELD_LINE}` : 'none', background: isMobile ? WHITE : 'transparent', padding: isMobile ? '0 14px' : '0 8px' }
                     const mini: React.CSSProperties = { display: isMobile ? 'block' : 'none', fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }
                     return (
                       <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 60px 90px 32px', gap: isMobile ? '10px' : '0', padding: isMobile ? '12px' : '8px 12px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: isMobile ? 'end' : 'center' }}>
@@ -689,7 +681,7 @@ export default function InvoicesPage() {
                           <label style={mini}>Unit price ($)</label>
                           <input type="number" style={cell} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
                         </div>
-                        <button onClick={() => removeLine(idx)} aria-label="Remove line" style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '8px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '13px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: '34px', gridColumn: isMobile ? '1 / -1' : undefined }}>
+                        <button onClick={() => removeLine(idx)} aria-label="Remove line" style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '10px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '14px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: isMobile ? '40px' : '34px', gridColumn: isMobile ? '1 / -1' : undefined }}>
                           {isMobile ? 'Remove this line' : '×'}
                         </button>
                       </div>
@@ -710,15 +702,15 @@ export default function InvoicesPage() {
                   <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 18px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>Subtotal</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${subtotal.toFixed(2)}</span>
+                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(subtotal)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                       <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>GST ({taxRate}%)</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${tax_amount.toFixed(2)}</span>
+                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(tax_amount)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${BORDER}`, paddingTop: '10px' }}>
                       <span style={{ fontSize: '15px', fontWeight: 700, color: TEXT }}>Total</span>
-                      <span style={{ fontSize: '15px', fontWeight: 800, color: TEAL_DARK }}>${total.toFixed(2)}</span>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: TEAL_DARK }}>{money(total)}</span>
                     </div>
                   </div>
                 )
@@ -729,60 +721,50 @@ export default function InvoicesPage() {
                 <textarea style={{ ...inp, height: '76px', padding: '10px 12px', resize: 'none' as const }} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Payment terms, bank details, etc." />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => setShowForm(false)} style={{ flex: 1, height: '42px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '14px', cursor: 'pointer', fontFamily: FONT, fontWeight: 600 }}>
-                  Cancel
-                </button>
-                <button onClick={handleSave} disabled={saving || !form.customer_id} style={{ flex: 2, height: '42px', borderRadius: '10px', border: 'none', background: TEAL, color: WHITE, fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: !form.customer_id ? 0.5 : 1 }}>
-                  {saving ? 'Saving...' : 'Create invoice'}
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {viewingInvoice && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,10,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px) 10px calc(env(safe-area-inset-bottom, 0px) + 16px)' : '20px' }}>
-          <div style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '720px', maxHeight: isMobile ? 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 28px)' : '92vh', overflow: 'auto', overscrollBehavior: 'contain', border: `1px solid ${BORDER}`, fontFamily: FONT }}>
-            <div style={{ position: 'sticky', top: 0, zIndex: 5, background: WHITE, padding: isMobile ? '12px 14px' : '18px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</div>
-                <StatusSelect
-                  value={viewingInvoice.status}
-                  onChange={v => updateStatus(viewingInvoice.id, v)}
-                  options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
-                  colors={{ bg: STATUS_STYLES[viewingInvoice.status]?.bg, fg: STATUS_STYLES[viewingInvoice.status]?.color, border: STATUS_STYLES[viewingInvoice.status]?.border }}
-                  label="Invoice status"
-                />
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', ...(isMobile ? { width: '100%' } : {}) }}>
-                {viewingInvoice.customers && (
-                  <button onClick={() => { setShowSend(true) }} style={{ height: '34px', padding: '0 14px', borderRadius: '10px', border: 'none', background: '#2AA198', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Send
-                  </button>
-                )}
-                {viewingInvoice.customers && (
-                  <button onClick={() => { setShowContact(true) }} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                    Contact
-                  </button>
-                )}
-                <button onClick={e => { e.stopPropagation(); handleDeleteInvoice(viewingInvoice.id) }} disabled={deletingInvoiceId === viewingInvoice.id} style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: RED, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '7px', opacity: deletingInvoiceId === viewingInvoice.id ? 0.6 : 1 }}>
-                  <IconTrash size={14} /> Delete
-                </button>
-                {!isMobile && (
-                <button onClick={() => window.print()} style={{ height: '34px', padding: '0 14px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                  Print
-                </button>
-                )}
-                <button onClick={() => setViewingInvoice(null)} style={{ background: '#F3F4F6', border: 'none', borderRadius: '8px', width: '32px', height: '32px', fontSize: '18px', cursor: 'pointer', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  ×
-                </button>
-              </div>
-            </div>
-
-            <div style={{ padding: isMobile ? '20px 16px' : '32px 36px' }} id="invoice-print">
+        <Modal
+          size="xl"
+          flush
+          onClose={() => setViewingInvoice(null)}
+          title={
+            <>
+              <span style={{ fontSize: 15, fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</span>
+              <StatusSelect
+                value={viewingInvoice.status}
+                onChange={v => updateStatus(viewingInvoice.id, v)}
+                options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
+                colors={{ bg: STATUS_STYLES[viewingInvoice.status]?.bg, fg: STATUS_STYLES[viewingInvoice.status]?.color, border: STATUS_STYLES[viewingInvoice.status]?.border }}
+                label="Invoice status"
+              />
+            </>
+          }
+          headerExtra={
+            <>
+              {viewingInvoice.customers && (
+                <button type="button" onClick={() => setShowSend(true)} style={{ ...BTN.primary, ...BTN_SM }}>Send</button>
+              )}
+              {viewingInvoice.customers && (
+                <button type="button" onClick={() => setShowContact(true)} style={{ ...BTN.secondary, ...BTN_SM }}>Contact</button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleDeleteInvoice(viewingInvoice.id)}
+                disabled={deletingInvoiceId === viewingInvoice.id}
+                style={{ ...BTN.danger, ...BTN_SM, ...(deletingInvoiceId === viewingInvoice.id ? BTN.disabled : {}) }}
+              >
+                <IconTrash size={14} /> Delete
+              </button>
+              {!isMobile && (
+                <button type="button" onClick={() => printElement('invoice-print', viewingInvoice.invoice_number)} style={{ ...BTN.secondary, ...BTN_SM }}>Print</button>
+              )}
+            </>
+          }
+        >
+          <div style={{ padding: isMobile ? '20px 16px' : '32px 36px' }} id="invoice-print">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isMobile ? '24px' : '36px', gap: isMobile ? '16px' : '24px', flexWrap: 'wrap' }}>
                 <div>
                   {businessInfo?.logo_url && (
@@ -815,8 +797,8 @@ export default function InvoicesPage() {
                     <div key={idx} style={{ padding: '12px 14px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}` }}>
                       <div style={{ fontSize: '14px', color: TEXT, fontWeight: 600, overflowWrap: 'anywhere' }}>{item.description}</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '13px', color: TEXT3 }}>{item.qty} × ${item.unit_price.toFixed(2)}</span>
-                        <span style={{ fontSize: '14px', color: TEXT, fontWeight: 800 }}>${(item.qty * item.unit_price).toFixed(2)}</span>
+                        <span style={{ fontSize: '13px', color: TEXT3 }}>{item.qty} × {money(item.unit_price)}</span>
+                        <span style={{ fontSize: '14px', color: TEXT, fontWeight: 800 }}>{money((item.qty * item.unit_price))}</span>
                       </div>
                     </div>
                   ))
@@ -832,8 +814,8 @@ export default function InvoicesPage() {
                       <div key={idx} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 80px 100px 110px', columnGap: '10px', padding: '12px 16px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
                         <div style={{ fontSize: '14px', color: TEXT, fontWeight: 500, overflowWrap: 'anywhere' }}>{item.description}</div>
                         <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{item.qty}</div>
-                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>${item.unit_price.toFixed(2)}</div>
-                        <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>${(item.qty * item.unit_price).toFixed(2)}</div>
+                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{money(item.unit_price)}</div>
+                        <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>{money((item.qty * item.unit_price))}</div>
                       </div>
                     ))}
                   </>
@@ -844,15 +826,15 @@ export default function InvoicesPage() {
                 <div style={{ width: isMobile ? '100%' : '260px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                     <span style={{ fontSize: '13px', color: TEXT3 }}>Subtotal</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${viewingInvoice.subtotal?.toFixed(2)}</span>
+                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(viewingInvoice.subtotal)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${BORDER}`, marginBottom: '8px' }}>
                     <span style={{ fontSize: '13px', color: TEXT3 }}>GST ({viewingInvoice.tax_rate}%)</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>${viewingInvoice.tax_amount?.toFixed(2)}</span>
+                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(viewingInvoice.tax_amount)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', background: TEAL, borderRadius: '8px' }}>
                     <span style={{ fontSize: '15px', fontWeight: 700, color: WHITE }}>Total</span>
-                    <span style={{ fontSize: '15px', fontWeight: 800, color: WHITE }}>${viewingInvoice.total?.toFixed(2)}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: WHITE }}>{money(viewingInvoice.total)}</span>
                   </div>
                   {viewingInvoice.status === 'paid' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', marginTop: '6px' }}>
@@ -884,8 +866,18 @@ export default function InvoicesPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+        </Modal>
+      )}
+
+      {deleteInvoiceId && (
+        <ConfirmDialog
+          title={`Delete ${invoices.find(i => i.id === deleteInvoiceId)?.invoice_number || 'this invoice'}?`}
+          message="This will permanently delete the invoice. This cannot be undone."
+          busy={deletingInvoiceId === deleteInvoiceId}
+          busyLabel="Deleting..."
+          onCancel={() => setDeleteInvoiceId(null)}
+          onConfirm={() => reallyDeleteInvoice(deleteInvoiceId)}
+        />
       )}
 
       {viewingInvoice && showSend && (
@@ -905,9 +897,7 @@ export default function InvoicesPage() {
         />
       )}
 
-      {notice && (
-        <div role="status" onClick={() => setNotice('')} style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 500, background: TEXT, color: '#fff', fontSize: 13, fontWeight: 600, padding: '10px 16px', borderRadius: 10, maxWidth: '90vw' }}>{notice}</div>
-      )}
+      {notice && <Toast message={notice} onClose={() => setNotice('')} />}
 
       {viewingInvoice && (
         <ContactDrawer

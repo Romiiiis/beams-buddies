@@ -12,6 +12,7 @@ import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { LeadPipeline, type PipelineStage } from './LeadPipeline'
 import { AddLeadModal } from './AddLeadModal'
+import { ConfirmDialog, Toast } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -609,6 +610,8 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<any | null>(null)
   const [showAddLead, setShowAddLead] = useState(false)
   const [movingId, setMovingId] = useState<string | null>(null)
+  const [convertTarget, setConvertTarget] = useState<any>(null)
+  const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -699,8 +702,7 @@ export default function LeadsPage() {
 
     // Converting creates the customer and job, so confirm first
     if (status === 'converted') {
-      if (!window.confirm(`Convert ${lead.customer_name || 'this lead'} into a customer and job?`)) return
-      await convertToJob(lead)
+      setConvertTarget(lead)
       return
     }
 
@@ -710,7 +712,7 @@ export default function LeadsPage() {
     const { error } = await supabase.from('leads').update({ status }).eq('id', lead.id)
     if (error) {
       setLeads(prev => prev.map(l => (l.id === lead.id ? { ...l, status: previous } : l)))
-      alert(`Couldn’t move the lead: ${error.message}`)
+      setToast({ text: `Couldn’t move the lead: ${error.message}`, error: true })
     }
     setMovingId(null)
   }
@@ -757,7 +759,7 @@ export default function LeadsPage() {
       setSelectedLead(updated)
     } catch (err) {
       console.error('Convert error:', err)
-      alert('Failed to convert lead. Check console.')
+      setToast({ text: 'Failed to convert the lead. Please try again.', error: true })
     }
 
     setConverting(null)
@@ -965,6 +967,23 @@ export default function LeadsPage() {
           isMobile={isMobile}
         />
       )}
+      {convertTarget && (
+        <ConfirmDialog
+          title={`Convert ${convertTarget.customer_name || 'this lead'}?`}
+          message="This creates a customer and a job from this lead."
+          confirmLabel="Convert"
+          busyLabel="Converting..."
+          tone="primary"
+          busy={converting === convertTarget.id}
+          onCancel={() => setConvertTarget(null)}
+          onConfirm={async () => {
+            const lead = convertTarget
+            await convertToJob(lead)
+            setConvertTarget(null)
+          }}
+        />
+      )}
+      {toast && <Toast message={toast.text} tone={toast.error ? 'error' : 'dark'} onClose={() => setToast(null)} />}
     </div>
   )
 }

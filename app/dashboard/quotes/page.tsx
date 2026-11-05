@@ -13,6 +13,8 @@ import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
 import { Select } from '@/components/Select'
+import { money, moneyWhole } from '@/lib/format'
+import { BTN, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -443,26 +445,9 @@ export default function QuotesPage() {
     alignItems: 'center',
   }
 
-  const inp: React.CSSProperties = {
-    width: '100%',
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '12px',
-    border: `1px solid ${BORDER}`,
-    background: '#F8FAFC',
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontWeight: 600,
-  }
+  const inp: React.CSSProperties = FIELD
 
-  const lbl: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const lbl: React.CSSProperties = LABEL
 
   const btnOutline: React.CSSProperties = {
     height: '34px',
@@ -590,7 +575,7 @@ export default function QuotesPage() {
                   label: 'Total',
                   width: '100px',
                   mobileLabel: 'Total',
-                  render: q => <TextCell strong>${Number(q.total || 0).toFixed(2)}</TextCell>,
+                  render: q => <TextCell strong>{money(Number(q.total || 0))}</TextCell>,
                 },
                 {
                   key: 'valid',
@@ -627,70 +612,22 @@ export default function QuotesPage() {
       </div>
 
       {showForm && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(10,10,10,0.4)',
-            zIndex: 200,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: WHITE,
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '820px',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              border: `1px solid ${BORDER}`,
-              fontFamily: FONT,
-            }}
-          >
-            <div
-              style={{
-                padding: '20px 24px',
-                borderBottom: `1px solid ${BORDER}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '12px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                <div>
-                  <div style={{ ...TYPE.label, color: TEAL_DARK, marginBottom: '4px' }}>Create</div>
-                  <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>New quote</div>
-                  <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', fontWeight: 600 }}>Create a draft quote and save it to your records.</div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowForm(false)}
-                style={{
-                  background: '#F3F4F6',
-                  border: 'none',
-                  borderRadius: '8px',
-                  width: '32px',
-                  height: '32px',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                  color: TEXT3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                ×
+        <Modal
+          title="New quote"
+          size="lg"
+          busy={saving}
+          onClose={() => setShowForm(false)}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowForm(false)} style={BTN.secondary}>Cancel</button>
+              <button type="button" onClick={handleSave} disabled={saving || !form.customer_id} style={{ ...BTN.primary, ...(saving || !form.customer_id ? BTN.disabled : {}) }}>
+                {saving ? 'Saving...' : 'Create quote'}
               </button>
-            </div>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={lbl}>Customer *</label>
                 <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
@@ -761,7 +698,7 @@ export default function QuotesPage() {
                   ) : null}
 
                   {form.line_items.map((item, idx) => {
-                    const cell: React.CSSProperties = { ...inp, height: '34px', border: isMobile ? `1px solid ${BORDER}` : 'none', background: isMobile ? '#F8FAFC' : 'transparent', padding: '0 8px' }
+                    const cell: React.CSSProperties = { ...inp, height: isMobile ? '42px' : '34px', border: isMobile ? `1px solid ${FIELD_LINE}` : 'none', background: isMobile ? WHITE : 'transparent', padding: isMobile ? '0 14px' : '0 8px' }
                     const mini: React.CSSProperties = { display: isMobile ? 'block' : 'none', fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }
                     return (
                       <div
@@ -789,7 +726,7 @@ export default function QuotesPage() {
                         <button
                           onClick={() => removeLine(idx)}
                           aria-label="Remove line"
-                          style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '8px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '13px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: '34px', gridColumn: isMobile ? '1 / -1' : undefined }}
+                          style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '10px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '14px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: isMobile ? '40px' : '34px', gridColumn: isMobile ? '1 / -1' : undefined }}
                         >
                           {isMobile ? 'Remove this line' : '×'}
                         </button>
@@ -832,12 +769,12 @@ export default function QuotesPage() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>Subtotal</span>
-                  <span style={{ fontSize: '13px', color: TEXT, fontWeight: 800 }}>${previewTotals.subtotal.toFixed(2)}</span>
+                  <span style={{ fontSize: '13px', color: TEXT, fontWeight: 800 }}>{money(previewTotals.subtotal)}</span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>GST ({taxRatePreview}%)</span>
-                  <span style={{ fontSize: '13px', color: TEXT, fontWeight: 800 }}>${previewTotals.tax_amount.toFixed(2)}</span>
+                  <span style={{ fontSize: '13px', color: TEXT, fontWeight: 800 }}>{money(previewTotals.tax_amount)}</span>
                 </div>
 
                 <div
@@ -849,7 +786,7 @@ export default function QuotesPage() {
                   }}
                 >
                   <span style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>Total</span>
-                  <span style={{ fontSize: '15px', fontWeight: 900, color: TEAL_DARK }}>${previewTotals.total.toFixed(2)}</span>
+                  <span style={{ fontSize: '15px', fontWeight: 900, color: TEAL_DARK }}>{money(previewTotals.total)}</span>
                 </div>
               </div>
 
@@ -869,140 +806,19 @@ export default function QuotesPage() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={() => setShowForm(false)}
-                  style={{
-                    flex: 1,
-                    height: '42px',
-                    borderRadius: '9px',
-                    border: `1px solid ${BORDER}`,
-                    background: WHITE,
-                    color: TEXT2,
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                  }}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !form.customer_id}
-                  style={{
-                    flex: 2,
-                    height: '42px',
-                    borderRadius: '9px',
-                    border: 'none',
-                    background: TEAL,
-                    color: WHITE,
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: FONT,
-                    opacity: !form.customer_id ? 0.5 : 1,
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Create quote'}
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {deleteTarget && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(10,10,10,0.4)',
-            zIndex: 220,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: WHITE,
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '420px',
-              border: `1px solid ${BORDER}`,
-              overflow: 'hidden',
-              fontFamily: FONT,
-            }}
-          >
-            <div style={{ height: '4px', background: '#EF4444' }} />
-
-            <div style={{ padding: '24px 24px 20px' }}>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#EF4444',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.8px',
-                  marginBottom: '6px',
-                }}
-              >
-                Delete quote
-              </div>
-
-              <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, marginBottom: '10px' }}>
-                Delete {deleteTarget.quote_number}?
-              </div>
-
-              <div style={{ fontSize: '14px', color: TEXT3, lineHeight: 1.6 }}>
-                This will permanently delete the quote for {deleteTarget.customers?.first_name} {deleteTarget.customers?.last_name}. This cannot be undone.
-              </div>
-            </div>
-
-            <div style={{ padding: '0 24px 24px', display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => setDeleteTarget(null)}
-                style={{
-                  flex: 1,
-                  height: '42px',
-                  borderRadius: '9px',
-                  border: `1px solid ${BORDER}`,
-                  background: WHITE,
-                  color: TEXT2,
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: FONT,
-                }}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => deleteQuote(deleteTarget.id)}
-                disabled={deleting}
-                style={{
-                  flex: 1,
-                  height: '42px',
-                  borderRadius: '9px',
-                  border: 'none',
-                  background: '#EF4444',
-                  color: WHITE,
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                  fontFamily: FONT,
-                  opacity: deleting ? 0.7 : 1,
-                }}
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title={`Delete ${deleteTarget.quote_number}?`}
+          message={<>This will permanently delete the quote for {deleteTarget.customers?.first_name} {deleteTarget.customers?.last_name}. This cannot be undone.</>}
+          busy={deleting}
+          busyLabel="Deleting..."
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => deleteQuote(deleteTarget.id)}
+        />
       )}
     </div>
   )

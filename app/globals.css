@@ -63,6 +63,27 @@ textarea {
   font-family: inherit;
 }
 
+/* iPhones zoom the whole page when a text field under 16px is tapped, so fields are 16px on phones */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]),
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* One focus look for every text box, matching an open dropdown: a teal outline */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+textarea:focus {
+  border-color: #2AA198 !important;
+  box-shadow: 0 0 0 1px #2AA198 !important;
+  outline: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #94A3B8;
+  opacity: 1;
+}
+
 /* Thin, quiet scrollbars everywhere */
 * {
   scrollbar-width: thin;
