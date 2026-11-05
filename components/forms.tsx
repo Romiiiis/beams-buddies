@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 // Shared building blocks for forms and pop-ups, so every page looks the same:
 // one input size, one label style, one set of buttons and one Modal shell.
@@ -96,6 +96,23 @@ export function useIsPhone() {
 
 const SIZES = { sm: 440, md: 560, lg: 680, xl: 760 }
 
+// The page behind a pop-up must not scroll. Pop-ups can open on top of each other and close in any
+// order, so the lock is counted: the page is released only when the last one has closed.
+const modalStack: object[] = []
+let scrollLocks = 0
+let savedOverflow = ''
+function lockPageScroll() {
+  if (scrollLocks === 0) {
+    savedOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  scrollLocks += 1
+}
+function unlockPageScroll() {
+  scrollLocks = Math.max(0, scrollLocks - 1)
+  if (scrollLocks === 0) document.body.style.overflow = savedOverflow
+}
+
 /**
  * Pop-up shell: a centred card on a computer, a sheet that rises from the bottom on a phone.
  * Title and close button stay at the top, the body scrolls, the footer (buttons) stays at the bottom.
@@ -132,18 +149,28 @@ export function Modal({
   const phone = useIsPhone()
   const Card = (onSubmit ? 'form' : 'div') as React.ElementType
 
+  // Registered once when the pop-up opens, so the stacking order is the order they were opened in
+  const token = useRef({})
+  const closeRef = useRef(onClose)
+  const busyRef = useRef(busy)
+  closeRef.current = onClose
+  busyRef.current = busy
   useEffect(() => {
+    const me = token.current
+    modalStack.push(me)
+    // Escape closes only the pop-up on top, not the one underneath it
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !busy) onClose()
+      if (e.key === 'Escape' && !busyRef.current && modalStack[modalStack.length - 1] === me) closeRef.current()
     }
     document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    lockPageScroll()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
+      const i = modalStack.indexOf(me)
+      if (i >= 0) modalStack.splice(i, 1)
+      unlockPageScroll()
     }
-  }, [busy, onClose])
+  }, [])
 
   return (
     <div

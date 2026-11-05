@@ -652,7 +652,7 @@ export default function QRCodesPage() {
                       </div>
                     </div>
 
-                    <button onClick={() => router.push('/dashboard/jobs')} style={cardArrowBtn}>
+                    <button onClick={() => router.push('/dashboard/jobs')} aria-label="Open jobs" style={cardArrowBtn}>
                       <IconExternalLink size={14} />
                     </button>
                   </div>

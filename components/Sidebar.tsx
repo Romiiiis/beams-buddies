@@ -137,6 +137,13 @@ export function Sidebar({ active }: { active: string }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  // Browser tab and history show which page you are on, e.g. "Invoices · Jobyra"
+  useEffect(() => {
+    const all = [...navMain, ...navFinance, ...navManage]
+    const label = all.find(i => i.href === active)?.label
+    document.title = label ? `${label} · Jobyra` : 'Jobyra'
+  }, [active])
+
   useEffect(() => {
     function check() {
       const mobile = window.innerWidth < 768
@@ -685,6 +692,8 @@ export function Sidebar({ active }: { active: string }) {
                 <button
                   key={tab.href}
                   type="button"
+                  aria-label={isMenuTab ? 'Menu' : undefined}
+                  aria-expanded={isMenuTab ? isMobileMenuOpen : undefined}
                   onClick={() => {
                     if (isMenuTab) {
                       setIsMobileMenuOpen(prev => !prev)

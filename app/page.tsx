@@ -80,7 +80,7 @@ export default function Home() {
           <div className="home-tagline">Manage customers, jobs, and service reminders in one place.</div>
         </div>
 
-        <div className="home-copyright">© 2025 Jobyra</div>
+        <div className="home-copyright">© {new Date().getFullYear()} Jobyra</div>
       </div>
 
       <div className="home-panel">
@@ -117,7 +117,7 @@ export default function Home() {
             <a href="https://mail.google.com/mail/?view=cm&to=hello@beamsmarketing.com.au" target="_blank" rel="noreferrer" style={{ color: TEAL, fontWeight: 600, textDecoration: 'none' }}>Contact us to get started</a>
           </div>
 
-          <div className="home-copyright-mobile">© 2025 Jobyra</div>
+          <div className="home-copyright-mobile">© {new Date().getFullYear()} Jobyra</div>
         </div>
       </div>
     </div>

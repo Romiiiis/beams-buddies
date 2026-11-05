@@ -203,10 +203,10 @@ function BookingsWidget({ items, isMobile, onDateClick }: {
             {MONTH_NAMES_FULL[viewMonth]} {viewYear}
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button onClick={prevMonth} style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={prevMonth} aria-label="Previous month" style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <IconChevronLeft size={12} />
             </button>
-            <button onClick={nextMonth} style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={nextMonth} aria-label="Next month" style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <IconChevronRight size={12} />
             </button>
           </div>

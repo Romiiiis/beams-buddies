@@ -732,7 +732,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <button onClick={() => router.push(route)} style={cardArrowBtn}>
+          <button onClick={() => router.push(route)} aria-label={`Open ${title}`} style={cardArrowBtn}>
             <IconExternalLink size={14} />
           </button>
         </div>
