@@ -46,10 +46,10 @@ type Automation = {
 }
 
 const AUTOMATIONS: Automation[] = [
-  { id: 'service', name: 'Service reminder', channels: 'Email', blurb: 'Emails customers when their service is due within their reminder window, or up to 30 days overdue', live: true, href: '/dashboard/schedule', action: 'Open service schedule' },
-  { id: 'overdue', name: 'Overdue invoice nudge', channels: 'Email', blurb: 'Emails the invoice again once it is a day or more past due', live: true, href: '/dashboard/invoices', action: 'Open invoices' },
-  { id: 'quote', name: 'Quote follow-up', channels: 'Email', blurb: 'Checks in 3 days after a quote is sent without an answer', live: true, href: '/dashboard/quotes', action: 'Open quotes' },
-  { id: 'review', name: 'Review request', channels: 'Email', blurb: 'Asks for a Google review 2 days after an install. Needs your review link in Settings', live: true, href: '/dashboard/settings', action: 'Open settings' },
+  { id: 'service', name: 'Service reminder', channels: 'Email', blurb: 'Emails customers before their service is due, so they can book in.', live: true, href: '/dashboard/schedule', action: 'Open service schedule' },
+  { id: 'overdue', name: 'Overdue invoice nudge', channels: 'Email', blurb: 'Emails the invoice again when it is late and still unpaid.', live: true, href: '/dashboard/invoices', action: 'Open invoices' },
+  { id: 'quote', name: 'Quote follow-up', channels: 'Email', blurb: 'Checks in on quotes that have not had a reply.', live: true, href: '/dashboard/quotes', action: 'Open quotes' },
+  { id: 'review', name: 'Review request', channels: 'Email', blurb: 'Asks customers for a Google review after an install.', live: true, href: '/dashboard/settings', action: 'Open settings' },
 ]
 
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }
@@ -195,12 +195,12 @@ export default function MarketingPage() {
   const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
   const KIND_LABEL: Record<string, string> = { service: 'Service reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
 
-  function statusLine(a: Automation) {
+  function nextLine(a: Automation) {
     const k = a.id as AutomationKind
+    if (k === 'review' && !/^https:\/\//i.test(String(settings?.google_review_url || '').trim())) return { text: 'Add your Google review link in Settings first', tone: 'warn' as const }
+    if (!enabled[a.id]) return { text: 'Off, nothing will be sent', tone: 'off' as const }
     const n = eligibleCount(k)
-    if (k === 'review' && !/^https:\/\//i.test(String(settings?.google_review_url || '').trim())) return 'Add your Google review link in Settings to use this'
-    const who = `${n} customer${n === 1 ? '' : 's'}`
-    return enabled[a.id] ? `Checked daily. Next send: tomorrow around 8am · ${who} would get an email` : `Off · checked daily around 8am · ${who} would get an email if switched on`
+    return { text: n > 0 ? `Tomorrow around 8am to ${n} customer${n === 1 ? '' : 's'}` : 'Tomorrow around 8am, no one is due right now', tone: 'on' as const }
   }
 
   if (loading) {
@@ -250,10 +250,13 @@ export default function MarketingPage() {
                 <div
                   key={a.id}
                   onClick={() => setSel(a.id)}
-                  style={{ padding: '16px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? TEAL_LIGHT : WHITE, cursor: 'pointer', fontFamily: FONT }}
+                  style={{ padding: '18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? '#F7FCFB' : WHITE, boxShadow: sel === a.id ? `inset 3px 0 0 ${TEAL}` : 'none', cursor: 'pointer', fontFamily: FONT }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{a.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{a.name}</div>
+                      <div style={{ fontSize: 13, color: TEXT3, marginTop: 3, lineHeight: 1.45 }}>{a.blurb}</div>
+                    </div>
                     <button
                       type="button"
                       role="switch"
@@ -265,19 +268,25 @@ export default function MarketingPage() {
                       <span style={{ width: 20, height: 20, borderRadius: 10, background: WHITE, display: 'block' }} />
                     </button>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10, fontSize: 13, color: TEXT2 }} onClick={e => e.stopPropagation()}>
-                    <span>Sends</span>
-                    <select
-                      value={daysOf(a.id)}
-                      onChange={e => changeDays(a.id, Number(e.target.value))}
-                      aria-label={`${a.name}: days`}
-                      style={{ height: 32, padding: '0 28px 0 10px', borderRadius: 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT, fontSize: 13, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}
-                    >
-                      {Array.from(new Set([...AUTOMATION_DAY_OPTIONS[a.id as AutomationKind], daysOf(a.id)])).sort((x, y) => x - y).map(n => <option key={n} value={n}>{dayWord(n)}</option>)}
-                    </select>
-                    <span>{AUTOMATION_WHEN[a.id as AutomationKind].after.replace(/^days /, '')}</span>
+
+                  <div onClick={e => e.stopPropagation()} style={{ marginTop: 14, border: `1px solid ${BORDER}`, borderRadius: 12, background: WHITE, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '11px 14px', fontSize: 13, color: TEXT2 }}>
+                      <span style={{ width: 44, color: TEXT3, fontWeight: 600 }}>Send</span>
+                      <select
+                        value={daysOf(a.id)}
+                        onChange={e => changeDays(a.id, Number(e.target.value))}
+                        aria-label={`${a.name}: days`}
+                        style={{ height: 34, padding: '0 28px 0 10px', borderRadius: 10, border: `1px solid ${BORDER}`, background: '#F8FAFC', color: TEXT, fontSize: 13, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}
+                      >
+                        {Array.from(new Set([...AUTOMATION_DAY_OPTIONS[a.id as AutomationKind], daysOf(a.id)])).sort((x, y) => x - y).map(n => <option key={n} value={n}>{dayWord(n)}</option>)}
+                      </select>
+                      <span>{AUTOMATION_WHEN[a.id as AutomationKind].after.replace(/^days /, '')}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px', borderTop: `1px solid ${BORDER}`, fontSize: 13, background: '#FBFCFD' }}>
+                      <span style={{ width: 44, color: TEXT3, fontWeight: 600, flexShrink: 0 }}>Next</span>
+                      <span style={{ fontWeight: 700, color: nextLine(a).tone === 'on' ? TEAL_DARK : nextLine(a).tone === 'warn' ? '#92400E' : TEXT3 }}>{nextLine(a).text}</span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: TEXT3, marginTop: 8 }}>{statusLine(a)}</div>
                 </div>
               ))}
               {saveError && <div style={{ padding: '12px 18px', fontSize: 12, fontWeight: 600, color: '#B91C1C', background: '#FEF2F2', borderTop: `1px solid ${BORDER}` }}>{saveError}</div>}
