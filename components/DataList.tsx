@@ -409,7 +409,7 @@ export function DataList<T>({
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>{title}</div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>{title}</div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>

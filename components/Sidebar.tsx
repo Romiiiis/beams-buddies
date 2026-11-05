@@ -785,7 +785,7 @@ export function Sidebar({ active }: { active: string }) {
         }
       `}</style>
 
-      <div
+      <div className="no-print"
         style={{
           width: shellWidth,
           minWidth: shellWidth,

@@ -21,6 +21,11 @@ export type StatItem = {
   onClick?: () => void
 }
 
+/** Words (a name, a date, "Not added") read better a little smaller than figures; "Not ..." is quieter still. */
+function isTextValue(value: React.ReactNode) {
+  return typeof value === 'string' && /[A-Za-z]{2,}/.test(value) && !/^[\s$+\-]*[\d,.]+\s*[%kKmM]?$/.test(value)
+}
+
 function isZero(value: React.ReactNode) {
   const n = typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value.replace(/[^0-9.\-]/g, '')) : NaN
   return !isNaN(n) && n === 0
@@ -61,6 +66,8 @@ export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: bo
     >
       {items.map((item, i) => {
         const danger = /overdue/i.test(item.label) && !isZero(item.value)
+        const text = isTextValue(item.value)
+        const empty = text && /^not /i.test(String(item.value))
         const showLeft = i % cols !== 0
         const showTop = i >= cols
         // Pages may pass "+8% last 30 days" as one string: split it into the pill and the grey note
@@ -87,9 +94,9 @@ export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: bo
             <div
               style={{
                 marginTop: 2,
-                fontSize: isMobile ? 23 : 27,
-                fontWeight: 650,
-                color: danger ? RED : TEXT,
+                fontSize: text ? (isMobile ? 17 : 20) : isMobile ? 23 : 27,
+                fontWeight: text ? 600 : 650,
+                color: danger ? RED : empty ? TEXT3 : TEXT,
                 letterSpacing: '-0.032em',
                 lineHeight: 1.15,
                 fontVariantNumeric: 'tabular-nums',

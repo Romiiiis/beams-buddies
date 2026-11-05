@@ -11,6 +11,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
+import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -107,8 +108,11 @@ async function getCroppedImg(
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas context not available')
 
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
+  // Logos are shown small everywhere (and in emails), so keep the saved image to 512px at most
+  const scale = Math.min(1, 512 / Math.max(pixelCrop.width, pixelCrop.height))
+  canvas.width = Math.max(1, Math.round(pixelCrop.width * scale))
+  canvas.height = Math.max(1, Math.round(pixelCrop.height * scale))
+  ctx.imageSmoothingQuality = 'high'
 
   ctx.drawImage(
     image,
@@ -118,8 +122,8 @@ async function getCroppedImg(
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    canvas.width,
+    canvas.height
   )
 
   return new Promise((resolve, reject) => {
@@ -436,20 +440,7 @@ export default function SettingsPage() {
   })
 
 
-  const input: React.CSSProperties = {
-    width: '100%',
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '12px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    fontWeight: 600,
-    outline: 'none',
-    boxSizing: 'border-box',
-  }
+  const input: React.CSSProperties = FIELD
 
   const textArea: React.CSSProperties = {
     ...input,
@@ -459,16 +450,9 @@ export default function SettingsPage() {
     lineHeight: 1.45,
   }
 
-  const selectStyle: React.CSSProperties = {
-    ...input,
-    appearance: 'none',
-  }
+  const selectStyle: React.CSSProperties = FIELD
 
-  const label: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const label: React.CSSProperties = LABEL
 
   const hint: React.CSSProperties = {
     ...TYPE.bodySm,
@@ -1062,109 +1046,71 @@ export default function SettingsPage() {
       </div>
 
       {showCropper && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.55)',
-            zIndex: 2000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
+        <Modal
+          title="Adjust logo"
+          size="sm"
+          busy={uploadingLogo}
+          onClose={() => {
+            setShowCropper(false)
+            setSelectedImage('')
+            setSelectedFileName('logo.png')
+            setCrop({ x: 0, y: 0 })
+            setZoom(1)
+            setCroppedAreaPixels(null)
           }}
+          footer={
+            <>
+              <button
+                type="button"
+                disabled={uploadingLogo}
+                onClick={() => {
+                  setShowCropper(false)
+                  setSelectedImage('')
+                  setSelectedFileName('logo.png')
+                  setCrop({ x: 0, y: 0 })
+                  setZoom(1)
+                  setCroppedAreaPixels(null)
+                }}
+                style={BTN.secondary}
+              >
+                Cancel
+              </button>
+              <button type="button" onClick={handleCropAndUpload} disabled={uploadingLogo} style={{ ...BTN.primary, ...(uploadingLogo ? BTN.disabled : {}) }}>
+                {uploadingLogo ? 'Saving...' : 'Save image'}
+              </button>
+            </>
+          }
         >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '520px',
-              background: WHITE,
-              borderRadius: '18px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-              border: `1px solid ${BORDER}`,
-            }}
-          >
-            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ ...TYPE.label, color: TEAL, marginBottom: '4px' }}>Upload</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: TEXT }}>Adjust logo</div>
-              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', fontWeight: 600 }}>{selectedFileName}</div>
-            </div>
-
-            <div style={{ padding: '18px' }}>
-              <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111', borderRadius: '14px', overflow: 'hidden' }}>
-                <Cropper
-                  image={selectedImage}
-                  crop={crop}
-                  zoom={zoom}
-                  minZoom={0.1}
-                  maxZoom={6}
-                  aspect={1}
-                  cropShape="round"
-                  showGrid={false}
-                  restrictPosition={false}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
-                />
-              </div>
-
-              <div style={{ marginTop: '16px' }}>
-                <label style={{ ...label, marginBottom: '8px' }}>Zoom</label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="6"
-                  step="0.01"
-                  value={zoom}
-                  onChange={e => setZoom(Number(e.target.value))}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCropper(false)
-                    setSelectedImage('')
-                    setSelectedFileName('logo.png')
-                    setCrop({ x: 0, y: 0 })
-                    setZoom(1)
-                    setCroppedAreaPixels(null)
-                  }}
-                  style={btnOutline}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCropAndUpload}
-                  disabled={uploadingLogo}
-                  style={{
-                    height: '38px',
-                    padding: '0 18px',
-                    borderRadius: '9px',
-                    border: 'none',
-                    background: TEAL,
-                    color: WHITE,
-                    cursor: uploadingLogo ? 'not-allowed' : 'pointer',
-                    opacity: uploadingLogo ? 0.7 : 1,
-                    fontFamily: FONT,
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                  }}
-                >
-                  {uploadingLogo ? 'Saving...' : 'Save image'}
-                  {!uploadingLogo && <AppIcon name="upload" size={13} />}
-                </button>
-              </div>
-            </div>
+          <div style={{ fontSize: 12, color: TEXT3, fontWeight: 600, marginBottom: 12, overflowWrap: 'anywhere' }}>{selectedFileName}</div>
+          <div style={{ position: 'relative', width: '100%', height: 300, background: '#111', borderRadius: 14, overflow: 'hidden' }}>
+            <Cropper
+              image={selectedImage}
+              crop={crop}
+              zoom={zoom}
+              minZoom={0.1}
+              maxZoom={6}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              restrictPosition={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+            />
           </div>
-        </div>
+          <div style={{ marginTop: 16 }}>
+            <label style={{ ...LABEL, marginBottom: 8 }}>Zoom</label>
+            <input
+              type="range"
+              min="0.1"
+              max="6"
+              step="0.01"
+              value={zoom}
+              onChange={e => setZoom(Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#2AA198' }}
+            />
+          </div>
+        </Modal>
       )}
     </div>
   )

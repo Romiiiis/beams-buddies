@@ -54,7 +54,7 @@ const AUTOMATIONS: Automation[] = [
 ]
 
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }
-const cardTitle: React.CSSProperties = { fontSize: 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }
+const cardTitle: React.CSSProperties = { fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }
 
 function Pill({ children, tone }: { children: React.ReactNode; tone: 'live' | 'soon' | 'chan' }) {
   const t = tone === 'live' ? { bg: TEAL_LIGHT, fg: TEAL_DARK } : tone === 'soon' ? { bg: '#F1F5F9', fg: '#64748B' } : { bg: '#F3F4F6', fg: TEXT2 }

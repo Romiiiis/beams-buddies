@@ -149,3 +149,25 @@ textarea::placeholder {
 @media (prefers-reduced-motion: reduce) {
   .sk::after { animation: none; }
 }
+
+/* Printing a page (Reports, QR codes) leaves out the menus and prints everything, not just what is on screen */
+@media print {
+  aside,
+  nav,
+  .htb,
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+  .page-content {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    padding-bottom: 0 !important;
+  }
+}

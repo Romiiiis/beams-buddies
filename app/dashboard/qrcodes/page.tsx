@@ -216,8 +216,12 @@ export default function QRCodesPage() {
     cursor: 'pointer',
     color: TEXT3,
     padding: 0,
+    width: 36,
+    height: 36,
+    margin: '-8px -8px -8px 0',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
   }
 
   const btnOutline: React.CSSProperties = {

@@ -13,6 +13,7 @@ import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-c
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
 import { ConfirmDialog } from '@/components/forms'
+import { FIELD, FIELD_TEXTAREA, LABEL } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -334,31 +335,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    height: '40px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-  }
+  const inputStyle: React.CSSProperties = FIELD
 
-  const textareaStyle: React.CSSProperties = {
-    ...inputStyle,
-    height: '88px',
-    padding: '10px 12px',
-    resize: 'none',
-  }
+  const textareaStyle: React.CSSProperties = FIELD_TEXTAREA
 
-  const labelStyle: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const labelStyle: React.CSSProperties = LABEL
 
   const btnOutline: React.CSSProperties = {
     height: '34px',
@@ -464,11 +445,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 fontFamily: FONT,
-                marginBottom: '4px',
+                minHeight: isMobile ? 36 : 24,
+                marginBottom: isMobile ? '-4px' : '2px',
               }}
             >
               <IconArrowLeft size={12} />

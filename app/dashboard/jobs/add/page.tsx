@@ -8,9 +8,12 @@ import { Sidebar } from '@/components/Sidebar'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { createCustomer, createJob } from '@/lib/queries'
 import { useBusinessData } from '@/lib/business-context'
-import { getIndustry } from '@/lib/industry-config'
+import { getEquipmentLabel, getIndustry } from '@/lib/industry-config'
+import { formatDate, parseDateLocal } from '@/lib/service'
+import { StatStrip } from '@/components/StatStrip'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
+import { FIELD, LABEL } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -278,26 +281,9 @@ export default function AddJobPage() {
     color: WHITE,
   }
 
-  const labelStyle: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const labelStyle: React.CSSProperties = LABEL
 
-  const inputStyle: React.CSSProperties = {
-    height: '42px',
-    padding: '0 12px',
-    borderRadius: '12px',
-    border: `1px solid ${BORDER}`,
-    background: '#F8FAFC',
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-    fontWeight: 600,
-  }
+  const inputStyle: React.CSSProperties = FIELD
 
   const textareaStyle: React.CSSProperties = {
     minHeight: '96px',
@@ -337,11 +323,12 @@ export default function AddJobPage() {
     flexShrink: 0,
   }
 
-  const statChips = [
-    { label: 'Customer', value: form.first_name || form.last_name ? '1' : '0' },
-    { label: 'Type', value: form.equipment_type ? '1' : '0' },
-    { label: industryConfig.fields.brand.label, value: form.brand ? '1' : '0' },
-    { label: 'Schedule', value: form.install_date ? '1' : '0' },
+  // A live summary of what has been filled in so far
+  const summaryChips = [
+    { label: 'Customer', value: `${form.first_name} ${form.last_name}`.trim() || 'Not added', sub: form.phone || form.email || 'Name, phone, email' },
+    { label: 'Equipment', value: form.equipment_type ? getEquipmentLabel(form.equipment_type) : 'Not chosen', sub: form.model || 'Type and model' },
+    { label: industryConfig.fields.brand.label, value: form.brand || 'Not added', sub: form.serial_number ? `Serial ${form.serial_number}` : 'Brand and serial' },
+    { label: 'Install date', value: form.install_date ? formatDate(parseDateLocal(form.install_date)) : 'Not set', sub: `Service every ${form.service_interval_months || 12} months` },
   ]
 
   return (
@@ -388,30 +375,7 @@ export default function AddJobPage() {
             background: BG,
           }}
         >
-          <div
-            style={{
-              background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: '14px',
-              overflow: 'hidden',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-            }}
-          >
-            {statChips.map((chip, i) => (
-              <div
-                key={chip.label}
-                style={{
-                  padding: isMobile ? '10px 8px' : '14px 20px',
-                  textAlign: isMobile ? 'center' as const : undefined,
-                  borderLeft: i > 0 ? `1px solid ${BORDER}` : 'none',
-                }}
-              >
-                <div style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>{chip.value}</div>
-                <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: 600, color: TEXT3, marginTop: isMobile ? '3px' : '4px', lineHeight: isMobile ? 1.2 : undefined }}>{chip.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatStrip items={summaryChips} isMobile={isMobile} />
 
           {error && (
             <div
@@ -451,22 +415,6 @@ export default function AddJobPage() {
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    height: '22px',
-                    padding: '0 8px',
-                    borderRadius: '8px',
-                    border: `1px solid #BFE7E3`,
-                    background: TEAL_LIGHT,
-                    color: TEAL_DARK,
-                    fontSize: '10px',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  Live form
-                </div>
               </div>
 
               <form id="job-form" onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>

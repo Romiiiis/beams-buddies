@@ -14,6 +14,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
 import { Select } from '@/components/Select'
+import { BTN, FIELD, FIELD_TEXTAREA, LABEL, Modal } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -112,26 +113,9 @@ function JobDrawer({
     notes: job.notes || '',
   })
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    height: '40px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontFamily: FONT,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  }
+  const inputStyle: React.CSSProperties = FIELD
 
-  const textareaStyle: React.CSSProperties = {
-    ...inputStyle,
-    height: '100px',
-    padding: '10px 12px',
-    resize: 'none',
-  }
+  const textareaStyle: React.CSSProperties = FIELD_TEXTAREA
 
   const fieldBox: React.CSSProperties = {
     background: WHITE,
@@ -624,14 +608,6 @@ function QrModal({
     }
   }, [registerUrl])
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   async function createQr() {
     setCreating(true)
     setError('')
@@ -666,78 +642,44 @@ function QrModal({
     setTimeout(() => w.print(), 400)
   }
 
-  const modalBtn: React.CSSProperties = {
-    flex: 1,
-    height: '40px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT2,
-    fontFamily: FONT,
-    fontSize: '12px',
-    fontWeight: 800,
-    cursor: 'pointer',
-  }
-
   return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(11,18,32,0.45)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{ background: WHITE, borderRadius: '16px', width: '100%', maxWidth: '380px', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: FONT }}
-      >
-        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '15px', fontWeight: 900, color: TEXT, letterSpacing: '-0.02em' }}>QR code</div>
-            <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {name} · {jobLine}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontSize: '16px', color: TEXT3, flexShrink: 0 }}
-          >
-            ×
+    <Modal
+      title="QR code"
+      size="sm"
+      busy={creating}
+      onClose={onClose}
+      footer={
+        job.qr_code_token ? (
+          <>
+            <button type="button" onClick={saveQr} disabled={!dataUrl} style={{ ...BTN.secondary, ...(!dataUrl ? BTN.disabled : {}) }}>Save</button>
+            <button type="button" onClick={printQr} disabled={!dataUrl} style={{ ...BTN.primary, ...(!dataUrl ? BTN.disabled : {}) }}>Print</button>
+          </>
+        ) : (
+          <button type="button" onClick={createQr} disabled={creating} style={{ ...BTN.primary, ...(creating ? BTN.disabled : {}) }}>
+            {creating ? 'Creating...' : 'Create QR code'}
           </button>
-        </div>
-
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-          {job.qr_code_token ? (
-            <>
-              <div style={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, borderRadius: '14px', background: WHITE }}>
-                {dataUrl ? <img src={dataUrl} alt={`QR code for ${name}`} style={{ width: 240, height: 240 }} /> : <span style={{ fontSize: '12px', color: TEXT3 }}>Generating...</span>}
-              </div>
-              <div style={{ fontSize: '11px', color: TEXT3, textAlign: 'center' }}>Customers scan this to register their equipment.</div>
-              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                <button onClick={saveQr} disabled={!dataUrl} style={modalBtn}>
-                  Save
-                </button>
-                <button onClick={printQr} disabled={!dataUrl} style={{ ...modalBtn, background: TEAL, borderColor: TEAL, color: WHITE }}>
-                  Print
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ width: 260, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', border: `1px dashed ${BORDER}`, borderRadius: '14px', color: TEXT3, fontSize: '13px', fontWeight: 600, padding: '0 24px' }}>
-                This job doesn’t have a QR code yet.
-              </div>
-              <button
-                onClick={createQr}
-                disabled={creating}
-                style={{ width: '100%', height: '42px', borderRadius: '10px', border: 'none', background: TEAL, color: WHITE, fontFamily: FONT, fontSize: '13px', fontWeight: 800, cursor: creating ? 'default' : 'pointer', opacity: creating ? 0.7 : 1 }}
-              >
-                {creating ? 'Creating...' : 'Create QR code'}
-              </button>
-              {error && <div style={{ fontSize: '12px', color: RED, fontWeight: 600 }}>{error}</div>}
-            </>
-          )}
-        </div>
+        )
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: TEXT2, textAlign: 'center', overflowWrap: 'anywhere' }}>{name} · {jobLine}</div>
+        {job.qr_code_token ? (
+          <>
+            <div style={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${BORDER}`, borderRadius: 14, background: WHITE }}>
+              {dataUrl ? <img src={dataUrl} alt={`QR code for ${name}`} style={{ width: 240, height: 240 }} /> : <span style={{ fontSize: 12, color: TEXT3 }}>Generating...</span>}
+            </div>
+            <div style={{ fontSize: 12, color: TEXT3, textAlign: 'center' }}>Customers scan this to register their equipment.</div>
+          </>
+        ) : (
+          <>
+            <div style={{ width: 260, maxWidth: '100%', height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', border: `1px dashed ${BORDER}`, borderRadius: 14, color: TEXT3, fontSize: 13, fontWeight: 600, padding: '0 24px' }}>
+              This job doesn’t have a QR code yet.
+            </div>
+            {error && <div style={{ fontSize: 12, color: RED, fontWeight: 600 }}>{error}</div>}
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   )
 }
 

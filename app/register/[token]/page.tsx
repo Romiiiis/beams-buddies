@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
+import { FIELD, LABEL } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_LIGHT = '#EBFAF7'
@@ -99,25 +100,9 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const input: React.CSSProperties = {
-    width: '100%',
-    height: '44px',
-    padding: '0 12px',
-    borderRadius: '10px',
-    border: `1px solid ${BORDER}`,
-    background: WHITE,
-    color: TEXT,
-    fontSize: '14px',
-    outline: 'none',
-    fontFamily: FONT,
-    boxSizing: 'border-box',
-  }
+  const input: React.CSSProperties = FIELD
 
-  const label: React.CSSProperties = {
-    ...TYPE.label,
-    marginBottom: '6px',
-    display: 'block',
-  }
+  const label: React.CSSProperties = LABEL
 
   const card: React.CSSProperties = {
     background: WHITE,
@@ -197,7 +182,6 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
       <div style={shell}>
         <div style={{ background: TEAL, padding: '20px 24px 22px', borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <img src="/jobyra-logo.jpg" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em' }}>
               {job?.businesses?.name || 'Jobyra'}
             </span>
@@ -274,13 +258,9 @@ export default function RegisterPage({ params }: { params: Promise<{ token: stri
       {/* Teal header */}
       <div style={{ background: TEAL, padding: '20px 24px 22px', borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <img src="/jobyra-logo.jpg" alt="Jobyra" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.9 }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em' }}>
             {job?.businesses?.name || 'Jobyra'}
           </span>
-        </div>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-          Service registration
         </div>
         <div style={{ fontSize: '28px', lineHeight: 1, letterSpacing: '-0.04em', fontWeight: 900, color: WHITE, marginBottom: 6 }}>
           Service registration

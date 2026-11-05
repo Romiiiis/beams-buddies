@@ -620,8 +620,12 @@ export default function ReportsPage() {
     cursor: 'pointer',
     color: TEXT3,
     padding: 0,
+    width: 36,
+    height: 36,
+    margin: '-8px -8px -8px 0',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
   }
 
   const btnOutline: React.CSSProperties = {
@@ -705,7 +709,7 @@ export default function ReportsPage() {
     const totalCount = data.reduce((sum, item) => sum + item[1], 0)
 
     return (
-      <div style={{ ...card, borderRadius: '18px', border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+      <div style={{ ...card, borderRadius: '14px', border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
         <div
           style={{
             padding: isMobile ? '16px' : '18px 20px',
@@ -877,12 +881,12 @@ export default function ReportsPage() {
           <StatStrip items={statChips} isMobile={isMobile} />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '18px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                     <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em', lineHeight: 1.2 }}>
                       {trendConfig.title}
                     </div>
                   </div>

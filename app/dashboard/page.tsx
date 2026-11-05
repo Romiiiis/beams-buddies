@@ -13,6 +13,7 @@ import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
+import { Modal } from '@/components/forms'
 
 const TEAL       = '#2AA198'
 const TEAL_DARK  = '#1F857C'
@@ -138,37 +139,26 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
 }) {
   const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: WHITE, borderRadius: '18px', width: '100%', maxWidth: '420px', margin: '16px', boxShadow: '0 24px 64px rgba(0,0,0,0.22)', overflow: 'hidden', fontFamily: FONT }}>
-        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: TEXT }}>{dayLabel}</div>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, marginTop: '2px' }}>{jobs.length === 0 ? 'Nothing booked' : `${jobs.length} thing${jobs.length !== 1 ? 's' : ''} on`}</div>
-          </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '8px', border: `1px solid ${BORDER}`, background: '#F8FAFC', cursor: 'pointer', fontFamily: FONT, fontSize: '16px', color: TEXT3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-        </div>
-        <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
-          {jobs.length === 0 && <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: '13px', color: TEXT3 }}>Nothing booked for this day.</div>}
-          {jobs.map(item => {
-            const k = KIND_STYLE[item.kind]
-            const initials = item.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
-            return (
-              <div key={item.id} onClick={() => onJobClick(item)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: k.bg, color: k.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT }}>{item.name}</div>
-                  <div style={{ fontSize: '11px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{[item.time, item.label, item.suburb].filter(Boolean).join(' · ')}</div>
-                </div>
-                <span style={{ padding: '3px 8px', borderRadius: '6px', background: k.bg, color: k.fg, fontSize: '10px', fontWeight: 800, whiteSpace: 'nowrap' }}>{k.label}</span>
-              </div>
-            )
-          })}
-        </div>
-        <div style={{ padding: '12px 20px' }}>
-          <button onClick={onClose} style={{ width: '100%', height: '36px', background: TEXT, color: WHITE, border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Close</button>
-        </div>
+    <Modal title={dayLabel} size="sm" flush layer={1000} onClose={onClose}>
+      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${BORDER}`, fontSize: 12, fontWeight: 600, color: TEXT3 }}>
+        {jobs.length === 0 ? 'Nothing booked' : `${jobs.length} thing${jobs.length !== 1 ? 's' : ''} on`}
       </div>
-    </div>
+      {jobs.length === 0 && <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: '13px', color: TEXT3 }}>Nothing booked for this day.</div>}
+      {jobs.map((item, idx) => {
+        const k = KIND_STYLE[item.kind]
+        const initials = item.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
+        return (
+          <div key={item.id} onClick={() => onJobClick(item)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: idx === jobs.length - 1 ? 'none' : `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
+            <div style={{ width: 36, height: 36, borderRadius: '10px', background: k.bg, color: k.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT }}>{item.name}</div>
+              <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{[item.time, item.label, item.suburb].filter(Boolean).join(' · ')}</div>
+            </div>
+            <span style={{ padding: '3px 8px', borderRadius: '6px', background: k.bg, color: k.fg, fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap' }}>{k.label}</span>
+          </div>
+        )
+      })}
+    </Modal>
   )
 }
 
@@ -213,10 +203,10 @@ function BookingsWidget({ items, isMobile, onDateClick }: {
             {MONTH_NAMES_FULL[viewMonth]} {viewYear}
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={prevMonth} style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <IconChevronLeft size={12} />
             </button>
-            <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: '7px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={nextMonth} style={{ width: isMobile ? 36 : 28, height: isMobile ? 36 : 28, borderRadius: '8px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <IconChevronRight size={12} />
             </button>
           </div>
