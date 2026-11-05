@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { reminderHtml, reminderSubject, reminderText, type ReminderSender } from '@/lib/reminder-email'
 import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
-import { daysUntilService, nextServiceDate, parseDateLocal, startOfDay, toYMD } from '@/lib/service'
+import { nextServiceDate, toYMD } from '@/lib/service'
+import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue } from '@/lib/automation-rules'
 
 // Runs once a day (see vercel.json). For every business with an automation switched on, sends the
 // matching customer emails through Resend, at most once per job / invoice / quote.
@@ -16,17 +17,11 @@ const DEFAULT_SEND_DOMAIN = 'mail.jobyra.app'
 const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
 const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/
 const PER_BUSINESS_LIMIT = 30
-const DAY = 86400000
 
 type Kind = 'service' | 'overdue' | 'quote' | 'review'
 
 function safeDisplayName(name: string) {
   return name.replace(/[\r\n<>"\\]/g, '').trim().slice(0, 80) || 'Jobyra'
-}
-
-function daysSince(iso?: string | null) {
-  const d = parseDateLocal(iso)
-  return d ? Math.round((startOfDay(new Date()).getTime() - d.getTime()) / DAY) : null
 }
 
 export async function GET(request: Request) {
@@ -42,11 +37,13 @@ export async function GET(request: Request) {
 
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
-  const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind').eq('enabled', true)
+  const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind, days').eq('enabled', true)
   const byBusiness = new Map<string, Set<Kind>>()
+  const daysFor = new Map<string, number>()
   for (const r of enabledRows || []) {
     if (!byBusiness.has(r.business_id)) byBusiness.set(r.business_id, new Set())
     byBusiness.get(r.business_id)!.add(r.kind as Kind)
+    daysFor.set(`${r.business_id}:${r.kind}`, Number(r.days) > 0 ? Number(r.days) : AUTOMATION_DEFAULT_DAYS[r.kind as Kind])
   }
 
   const summary: Record<string, number> = { service: 0, overdue: 0, quote: 0, review: 0, failed: 0 }
@@ -62,6 +59,7 @@ export async function GET(request: Request) {
     const ownDomain = String((business as any).email_domain || '').trim().toLowerCase()
     const sendDomain = (business as any).email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
     let budget = PER_BUSINESS_LIMIT
+    const days = (k: Kind) => daysFor.get(`${businessId}:${k}`) ?? AUTOMATION_DEFAULT_DAYS[k]
 
     // Claims the right to send (unique key stops duplicates), sends, and releases the claim if sending fails
     async function deliver(kind: Kind, refId: string, cycle: string, to: string, mail: { subject: string; html: string; text: string }) {
@@ -110,10 +108,7 @@ export async function GET(request: Request) {
         if (!to) continue
 
         if (kinds.has('service')) {
-          const days = daysUntilService(job)
-          const lead = Number(job.reminder_lead_days) > 0 ? Number(job.reminder_lead_days) : 14
-          // Due within the lead time, or overdue by up to 30 days (older ones are left for you to chase by hand)
-          if (days !== null && days <= lead && days >= -30) {
+          if (serviceDue(job, days('service'))) {
             const next = nextServiceDate(job)
             await deliver('service', job.id, next ? toYMD(next) : '', to, {
               subject: reminderSubject(job, sender),
@@ -125,8 +120,7 @@ export async function GET(request: Request) {
 
         if (kinds.has('review')) {
           const url = String(settings?.google_review_url || '').trim()
-          const since = daysSince(job.install_date)
-          if (/^https:\/\//i.test(url) && since !== null && since >= 2 && since <= 14) {
+          if (/^https:\/\//i.test(url) && reviewDue(job, days('review'))) {
             await deliver('review', job.id, '', to, reviewRequestEmail(job, sender, url))
           }
         }
@@ -141,9 +135,7 @@ export async function GET(request: Request) {
         .in('status', ['sent', 'overdue'])
       for (const inv of invoices || []) {
         const to = emailOf(inv.customers)
-        const late = daysSince(inv.due_date)
-        const owing = Number(inv.total || 0) - Number(inv.amount_paid || 0)
-        if (to && owing > 0 && late !== null && late >= 1 && late <= 30) {
+        if (to && overdueDue(inv, days('overdue'))) {
           await deliver('overdue', inv.id, '', to, overdueInvoiceEmail(inv, sender, settings))
         }
       }
@@ -157,8 +149,7 @@ export async function GET(request: Request) {
         .eq('status', 'sent')
       for (const q of quotes || []) {
         const to = emailOf(q.customers)
-        const age = daysSince(q.created_at)
-        if (to && age !== null && age >= 3 && age <= 14) {
+        if (to && quoteDue(q, days('quote'))) {
           await deliver('quote', q.id, '', to, quoteFollowUpEmail(q, sender))
         }
       }

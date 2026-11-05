@@ -8,6 +8,7 @@ create table if not exists public.automation_settings (
   business_id uuid not null references public.businesses(id) on delete cascade,
   kind text not null check (kind in ('service', 'overdue', 'quote', 'review')),
   enabled boolean not null default false,
+  days integer check (days between 1 and 90),
   updated_at timestamptz not null default now(),
   primary key (business_id, kind)
 );

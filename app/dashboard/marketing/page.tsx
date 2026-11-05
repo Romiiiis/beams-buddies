@@ -10,7 +10,8 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { reminderHtml, reminderSubject, type ReminderSender } from '@/lib/reminder-email'
 import { overdueInvoiceEmail, quoteFollowUpEmail, reviewRequestEmail } from '@/lib/automation-email'
-import { serviceBucket, soonestJob } from '@/lib/service'
+import { nextServiceDate, serviceBucket, soonestJob, toYMD } from '@/lib/service'
+import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, type AutomationKind } from '@/lib/automation-rules'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -76,7 +77,9 @@ export default function MarketingPage() {
   const [settings, setSettings] = useState<any>(null)
   const [sel, setSel] = useState('service')
   const [enabled, setEnabled] = useState<Record<string, boolean>>({})
+  const [daysSel, setDaysSel] = useState<Record<string, number>>({})
   const [bizId, setBizId] = useState('')
+  const [quotes, setQuotes] = useState<any[]>([])
   const [autoLog, setAutoLog] = useState<any[]>([])
   const [saveError, setSaveError] = useState('')
 
@@ -89,16 +92,19 @@ export default function MarketingPage() {
       const bid = u.business_id
       setBizId(bid)
       const since = new Date(Date.now() - 30 * 86400000).toISOString()
-      const [j, i, c, r, b, s, st, lg] = await Promise.all([
+      const [j, i, c, r, b, s, st, lg, qs] = await Promise.all([
         supabase.from('jobs').select('*, customers(first_name, last_name, email, phone, address, suburb)').eq('business_id', bid),
         supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', bid).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, email, phone').eq('business_id', bid),
         supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
         supabase.from('businesses').select('name, phone, email').eq('id', bid).single(),
         supabase.from('business_settings').select('*').eq('business_id', bid).single(),
-        supabase.from('automation_settings').select('kind, enabled').eq('business_id', bid),
-        supabase.from('automation_log').select('id, kind, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
+        supabase.from('automation_settings').select('kind, enabled, days').eq('business_id', bid),
+        supabase.from('automation_log').select('id, kind, ref_id, cycle, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
+        supabase.from('quotes').select('id, status, created_at, customers(email)').eq('business_id', bid),
       ])
+      setQuotes(qs.data || [])
+      setDaysSel(Object.fromEntries((st.data || []).filter((x: any) => x.days).map((x: any) => [x.kind, x.days])))
       setEnabled(Object.fromEntries((st.data || []).map((x: any) => [x.kind, !!x.enabled])))
       setAutoLog(lg.data || [])
       setJobs(j.data || [])
@@ -145,16 +151,41 @@ export default function MarketingPage() {
   const hasEmail = !!emailDoc
   const frame = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:18px 16px;background:#FFFFFF;">${emailDoc}</body></html>`
 
-  async function toggle(kind: string) {
+  const daysOf = (kind: string) => daysSel[kind] ?? AUTOMATION_DEFAULT_DAYS[kind as AutomationKind]
+
+  async function save(kind: string, on: boolean, days: number, undo: () => void) {
     if (!bizId) return
-    const next = !enabled[kind]
     setSaveError('')
-    setEnabled(prev => ({ ...prev, [kind]: next }))
-    const { error } = await supabase.from('automation_settings').upsert({ business_id: bizId, kind, enabled: next, updated_at: new Date().toISOString() }, { onConflict: 'business_id,kind' })
+    const { error } = await supabase.from('automation_settings').upsert({ business_id: bizId, kind, enabled: on, days, updated_at: new Date().toISOString() }, { onConflict: 'business_id,kind' })
     if (error) {
-      setEnabled(prev => ({ ...prev, [kind]: !next }))
-      setSaveError('Could not save that change. The automations database setup may not be finished yet.')
+      undo()
+      setSaveError(`Could not save that change: ${error.message}`)
     }
+  }
+
+  function toggle(kind: string) {
+    const next = !enabled[kind]
+    setEnabled(prev => ({ ...prev, [kind]: next }))
+    save(kind, next, daysOf(kind), () => setEnabled(prev => ({ ...prev, [kind]: !next })))
+  }
+
+  function changeDays(kind: string, n: number) {
+    const before = daysOf(kind)
+    setDaysSel(prev => ({ ...prev, [kind]: n }))
+    save(kind, !!enabled[kind], n, () => setDaysSel(prev => ({ ...prev, [kind]: before })))
+  }
+
+  // Customers who would get this email on the next run (has an email, not already sent)
+  const alreadySent = useMemo(() => new Set(autoLog.map(l => `${l.kind}:${l.ref_id}:${l.cycle || ''}`)), [autoLog])
+  function eligibleCount(kind: AutomationKind) {
+    const d = daysOf(kind)
+    const hasEmail = (c: any) => !!String(c?.email || '').trim()
+    if (kind === 'service') return jobs.filter(j => hasEmail(j.customers) && serviceDue(j, d) && !alreadySent.has(`service:${j.id}:${nextServiceDate(j) ? toYMD(nextServiceDate(j)!) : ''}`)).length
+    if (kind === 'overdue') return invoices.filter(i => hasEmail(i.customers) && overdueDue(i, d) && !alreadySent.has(`overdue:${i.id}:`)).length
+    if (kind === 'quote') return quotes.filter(q => hasEmail(q.customers) && quoteDue(q, d) && !alreadySent.has(`quote:${q.id}:`)).length
+    const url = String(settings?.google_review_url || '').trim()
+    if (!/^https:\/\//i.test(url)) return 0
+    return jobs.filter(j => hasEmail(j.customers) && reviewDue(j, d) && !alreadySent.has(`review:${j.id}:`)).length
   }
 
   const allSent = useMemo(
@@ -164,11 +195,12 @@ export default function MarketingPage() {
   const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
   const KIND_LABEL: Record<string, string> = { service: 'Service reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
 
-  function metricFor(a: Automation) {
-    const n = sentCount(a.id)
-    if (a.id === 'service') return `${dueJobs.length} due or overdue · ${n} sent in 30 days`
-    if (a.id === 'overdue') return `${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length} awaiting payment · ${n} sent in 30 days`
-    return `${n} sent in 30 days`
+  function statusLine(a: Automation) {
+    const k = a.id as AutomationKind
+    const n = eligibleCount(k)
+    if (k === 'review' && !/^https:\/\//i.test(String(settings?.google_review_url || '').trim())) return 'Add your Google review link in Settings to use this'
+    const who = `${n} customer${n === 1 ? '' : 's'}`
+    return enabled[a.id] ? `Checked daily. Next send: tomorrow around 8am · ${who} would get an email` : `Off · checked daily around 8am · ${who} would get an email if switched on`
   }
 
   if (loading) {
@@ -218,26 +250,34 @@ export default function MarketingPage() {
                 <div
                   key={a.id}
                   onClick={() => setSel(a.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '14px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? TEAL_LIGHT : WHITE, cursor: 'pointer', fontFamily: FONT, boxSizing: 'border-box' }}
+                  style={{ padding: '16px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? TEAL_LIGHT : WHITE, cursor: 'pointer', fontFamily: FONT }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: TEXT }}>{a.name}</span>
-                      <Pill tone="chan">{a.channels}</Pill>
-                    </div>
-                    <div style={{ fontSize: 12, color: TEXT3, marginTop: 3 }}>{a.blurb}</div>
-                    <div style={{ fontSize: 12, color: TEXT2, fontWeight: 600, marginTop: 3 }}>{metricFor(a)}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, color: TEXT, letterSpacing: '-0.01em' }}>{a.name}</div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={!!enabled[a.id]}
+                      aria-label={`${a.name} automation`}
+                      onClick={e => { e.stopPropagation(); toggle(a.id) }}
+                      style={{ width: 44, height: 26, borderRadius: 13, border: 'none', padding: 3, background: enabled[a.id] ? TEAL : '#CBD5E1', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: enabled[a.id] ? 'flex-end' : 'flex-start' }}
+                    >
+                      <span style={{ width: 20, height: 20, borderRadius: 10, background: WHITE, display: 'block' }} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={!!enabled[a.id]}
-                    aria-label={`${a.name} automation`}
-                    onClick={e => { e.stopPropagation(); toggle(a.id) }}
-                    style={{ width: 44, height: 26, borderRadius: 13, border: 'none', padding: 3, background: enabled[a.id] ? TEAL : '#CBD5E1', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: enabled[a.id] ? 'flex-end' : 'flex-start' }}
-                  >
-                    <span style={{ width: 20, height: 20, borderRadius: 10, background: WHITE, display: 'block' }} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10, fontSize: 13, color: TEXT2 }} onClick={e => e.stopPropagation()}>
+                    <span>Sends</span>
+                    <select
+                      value={daysOf(a.id)}
+                      onChange={e => changeDays(a.id, Number(e.target.value))}
+                      aria-label={`${a.name}: days`}
+                      style={{ height: 32, padding: '0 28px 0 10px', borderRadius: 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT, fontSize: 13, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}
+                    >
+                      {Array.from(new Set([...AUTOMATION_DAY_OPTIONS[a.id as AutomationKind], daysOf(a.id)])).sort((x, y) => x - y).map(n => <option key={n} value={n}>{dayWord(n)}</option>)}
+                    </select>
+                    <span>{AUTOMATION_WHEN[a.id as AutomationKind].after.replace(/^days /, '')}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: TEXT3, marginTop: 8 }}>{statusLine(a)}</div>
                 </div>
               ))}
               {saveError && <div style={{ padding: '12px 18px', fontSize: 12, fontWeight: 600, color: '#B91C1C', background: '#FEF2F2', borderTop: `1px solid ${BORDER}` }}>{saveError}</div>}
