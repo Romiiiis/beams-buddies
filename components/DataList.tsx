@@ -160,13 +160,13 @@ function RowMenu<T>({ row, actions }: { row: T; actions: DataListRowAction<T>[] 
           style={{
             position: 'absolute',
             right: 0,
-            top: 36,
-            zIndex: 20,
-            minWidth: 150,
+            top: 38,
+            zIndex: 30,
+            minWidth: 170,
             background: WHITE,
-            border: `1px solid ${BORDER}`,
-            borderRadius: 12,
-            boxShadow: '0 10px 28px rgba(15,23,42,0.12)',
+            border: '1px solid #E3E8EE',
+            borderRadius: 14,
+            boxShadow: '0 12px 32px rgba(15,23,42,0.16)',
             padding: 6,
           }}
         >
@@ -182,17 +182,18 @@ function RowMenu<T>({ row, actions }: { row: T; actions: DataListRowAction<T>[] 
                 display: 'block',
                 width: '100%',
                 textAlign: 'left',
-                padding: '9px 10px',
+                minHeight: 40,
+                padding: '0 12px',
                 border: 'none',
-                borderRadius: 8,
+                borderRadius: 10,
                 background: 'transparent',
                 fontFamily: FONT,
-                fontSize: 12,
-                fontWeight: 700,
-                color: a.danger ? '#B91C1C' : TEXT2,
+                fontSize: 14,
+                fontWeight: 600,
+                color: a.danger ? '#B91C1C' : TEXT,
                 cursor: 'pointer',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+              onMouseEnter={e => (e.currentTarget.style.background = a.danger ? '#FEF2F2' : '#EEF8F6')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               {a.label}
