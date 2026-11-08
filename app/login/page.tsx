@@ -1,214 +1,90 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { AuthShell, AuthField, MailIcon, LockIcon } from './AuthShell'
 
-const TEAL = '#2AA198'
-const TEAL_DARK = '#1F857C'
-const TEXT = '#0B1220'
-const TEXT3 = '#64748B'
-const BORDER = '#E2E8F0'
-const BG = '#FAFAFA'
-const WHITE = '#FFFFFF'
-const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const CONTACT = 'https://mail.google.com/mail/?view=cm&to=hello@beamsmarketing.com.au'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<'login' | 'forgot'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [sent, setSent] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) {
-      setError(error.message)
+      setError(error.message === 'Invalid login credentials' ? 'That email and password don’t match. Please try again.' : error.message)
       setLoading(false)
       return
     }
-
     router.push('/dashboard')
   }
 
-  return (
-    <div
-      className="login-page"
-      style={{
-        background: BG,
-        fontFamily: FONT,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      {/* Sizing lives in CSS so phones get the right layout on the first paint.
-          100svh is the visible screen height on iOS (100vh is taller than the screen there). */}
-      <style>{`
-        .login-page {
-          min-height: 100vh;
-          min-height: 100svh;
-          padding: calc(env(safe-area-inset-top) + 24px) 24px calc(env(safe-area-inset-bottom) + 24px);
-        }
-        .login-card { padding: 36px; }
-        @media (max-width: 767px) {
-          .login-page { padding-left: 16px; padding-right: 16px; }
-          .login-card { padding: 24px 20px; }
-        }
-      `}</style>
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '440px',
-        }}
-      >
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 32 }}>
-          <img
-            src="/jobyra-logo.jpg"
-            alt="Jobyra"
-            style={{ width: 38, height: 38, objectFit: 'contain', mixBlendMode: 'multiply' }}
-          />
-          <span style={{ fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', marginLeft: -9 }}>
-            obyra
-          </span>
-        </div>
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setLoading(false)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    // Same message whether or not the email has an account, so accounts can't be probed
+    setSent(true)
+  }
 
-        {/* Card */}
-        <div
-          className="login-card"
-          style={{
-            background: WHITE,
-            border: `1px solid ${BORDER}`,
-            borderRadius: '20px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{ marginBottom: '28px' }}>
-            <div
-              style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                color: TEXT,
-                letterSpacing: '-0.03em',
-                marginBottom: '6px',
-              }}
-            >
-              Sign in
+  if (mode === 'forgot') {
+    return (
+      <AuthShell title="Reset your password" subtitle="Enter your email and we’ll send you a link to choose a new password.">
+        {sent ? (
+          <div className="auth-form">
+            <div className="auth-msg ok" role="status">
+              If <b>{email.trim()}</b> has a Jobyra account, a reset link is on its way. Check your inbox (and spam folder).
             </div>
-            <div style={{ fontSize: '13px', color: TEXT3, fontWeight: 500 }}>
-              Access your Jobyra dashboard
-            </div>
-          </div>
-
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: TEXT, letterSpacing: '0.01em' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                style={{
-                  width: '100%',
-                  height: '46px',
-                  padding: '0 14px',
-                  borderRadius: '10px',
-                  border: `1.5px solid ${BORDER}`,
-                  background: WHITE,
-                  fontSize: '16px',
-                  outline: 'none',
-                  color: TEXT,
-                  fontFamily: FONT,
-                  boxSizing: 'border-box',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={e => (e.target.style.borderColor = TEAL)}
-                onBlur={e => (e.target.style.borderColor = BORDER)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: TEXT, letterSpacing: '0.01em' }}>
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={{
-                  width: '100%',
-                  height: '46px',
-                  padding: '0 14px',
-                  borderRadius: '10px',
-                  border: `1.5px solid ${BORDER}`,
-                  background: WHITE,
-                  fontSize: '16px',
-                  outline: 'none',
-                  color: TEXT,
-                  fontFamily: FONT,
-                  boxSizing: 'border-box',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={e => (e.target.style.borderColor = TEAL)}
-                onBlur={e => (e.target.style.borderColor = BORDER)}
-              />
-            </div>
-
-            {error && (
-              <div
-                style={{
-                  fontSize: '13px',
-                  color: '#991B1B',
-                  background: '#FEF2F2',
-                  border: '1px solid #FECACA',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  lineHeight: 1.5,
-                  fontWeight: 500,
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                height: '44px',
-                marginTop: '4px',
-                background: loading ? TEAL_DARK : TEAL,
-                color: WHITE,
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: FONT,
-                opacity: loading ? 0.75 : 1,
-                letterSpacing: '0.01em',
-                transition: 'opacity 0.15s, background 0.15s',
-                boxSizing: 'border-box',
-              }}
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
+            <button type="button" className="auth-btn" onClick={() => { setMode('login'); setSent(false) }}>
+              Back to log in
             </button>
+          </div>
+        ) : (
+          <form className="auth-form" onSubmit={handleReset}>
+            <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email address" autoComplete="email" label="Email address" />
+            {error && <div className="auth-msg err" role="alert">{error}</div>}
+            <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Sending…' : 'Send reset link'}</button>
+            <div className="auth-note">
+              Remembered it? <button type="button" onClick={() => { setMode('login'); setError('') }}>Back to log in</button>
+            </div>
           </form>
+        )}
+      </AuthShell>
+    )
+  }
+
+  return (
+    <AuthShell title="Welcome back" subtitle="Log in with your email to manage your customers, jobs and service reminders.">
+      <form className="auth-form" onSubmit={handleLogin}>
+        <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email address" autoComplete="email" label="Email address" />
+        <AuthField icon={<LockIcon />} type="password" value={password} onChange={setPassword} placeholder="Password" autoComplete="current-password" label="Password" />
+        <div className="auth-row">
+          <button type="button" className="auth-link" onClick={() => { setMode('forgot'); setError('') }}>Forgot password?</button>
         </div>
-      </div>
-    </div>
+        {error && <div className="auth-msg err" role="alert">{error}</div>}
+        <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Logging in…' : 'Log in'}</button>
+        <div className="auth-note">
+          Need an account? <a href={CONTACT} target="_blank" rel="noreferrer">Contact us</a>
+        </div>
+      </form>
+    </AuthShell>
   )
 }
