@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 
-// Shared look for the sign-in and password pages: soft tinted backdrop, centred column,
-// rounded white fields with icons, and a full-width rounded button. Flat colours, no glow.
+// Shared look for the sign-in and password pages (chosen design: option 10, Geist font):
+// centred form, original Jobyra logo, rounded fields with icons, dark navy button. No glow.
 
 export const AUTH = {
   TEAL: '#2AA198',
@@ -14,6 +14,8 @@ export const AUTH = {
   RED: '#B91C1C',
 }
 
+// Chosen design: option 10 (Geist) - plain light background, original Jobyra logo,
+// thin-bordered rounded fields, teal links, dark navy button. Flat, no glow.
 const css = `
   .auth-page {
     min-height: 100vh;
@@ -21,40 +23,38 @@ const css = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: calc(env(safe-area-inset-top) + 40px) 20px calc(env(safe-area-inset-bottom) + 24px);
-    background:
-      radial-gradient(1100px 520px at 100% -10%, #DDF5F2 0%, rgba(221,245,242,0) 60%),
-      radial-gradient(900px 480px at -10% 110%, #F4F6EA 0%, rgba(244,246,234,0) 60%),
-      #F7F8F8;
-    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: calc(env(safe-area-inset-top) + 32px) 20px calc(env(safe-area-inset-bottom) + 20px);
+    background: #F6F7F7;
+    font-family: var(--font-auth), var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: ${AUTH.TEXT};
   }
-  .auth-col { width: 100%; max-width: 400px; margin: auto 0; }
-  .auth-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
-  .auth-brand img { height: 40px; width: auto; mix-blend-mode: multiply; }
-  .auth-word { font-size: 23px; font-weight: 900; letter-spacing: -0.04em; color: ${AUTH.TEXT}; margin-left: -9px; }
-  .auth-title { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; text-align: center; margin: 0 0 8px; }
-  .auth-sub { font-size: 14.5px; line-height: 1.55; color: ${AUTH.TEXT3}; text-align: center; margin: 0 auto 28px; max-width: 320px; }
+  .auth-col { width: 100%; max-width: 380px; flex: 1; display: flex; flex-direction: column; }
+  .auth-main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  /* Original Jobyra logo, unchanged: 38px J mark + "obyra" in the app font (Inter 900) */
+  .auth-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .auth-brand img { width: 38px; height: 38px; object-fit: contain; mix-blend-mode: multiply; }
+  .auth-word { font-family: var(--font-sans), -apple-system, sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: ${AUTH.TEXT}; margin-left: -9px; }
+  .auth-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; text-align: center; margin: 0 0 8px; }
+  .auth-sub { font-size: 14px; line-height: 1.55; color: ${AUTH.TEXT3}; text-align: center; margin: 0 auto 26px; max-width: 300px; }
   .auth-form { display: flex; flex-direction: column; gap: 12px; }
   .auth-field { position: relative; }
   .auth-field input {
-    width: 100%; height: 54px; box-sizing: border-box;
-    padding: 0 48px 0 46px;
-    border-radius: 16px;
-    border: 1px solid #E6EAEE;
+    width: 100%; height: 50px; box-sizing: border-box;
+    padding: 0 48px 0 44px;
+    border-radius: 12px;
+    border: 1px solid #E3E8EC;
     background: #FFFFFF;
     font-size: 15px; color: ${AUTH.TEXT};
     font-family: inherit;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     transition: border-color 0.15s;
   }
-  .auth-field input::placeholder { color: #94A3B8; }
+  .auth-field input::placeholder { color: #8A94A6; }
   .auth-field input:focus { outline: none; border-color: ${AUTH.TEAL} !important; box-shadow: 0 0 0 1px ${AUTH.TEAL} !important; }
-  .auth-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748B; display: inline-flex; pointer-events: none; }
+  .auth-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #475569; display: inline-flex; pointer-events: none; }
   .auth-eye {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    width: 38px; height: 38px; border: none; border-radius: 12px; background: transparent;
-    color: #64748B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; border: none; border-radius: 10px; background: transparent;
+    color: #475569; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
   }
   .auth-eye:hover { background: #F1F5F9; }
   .auth-eye:focus-visible, .auth-link:focus-visible, .auth-btn:focus-visible { outline: 2px solid ${AUTH.TEAL}; outline-offset: 2px; }
@@ -62,24 +62,24 @@ const css = `
   .auth-link { background: none; border: none; padding: 4px 2px; font: inherit; font-size: 13px; font-weight: 600; color: ${AUTH.TEAL_DARK}; cursor: pointer; text-decoration: none; }
   .auth-link:hover { text-decoration: underline; }
   .auth-btn {
-    width: 100%; height: 54px; margin-top: 8px;
-    border: none; border-radius: 16px;
-    background: ${AUTH.TEAL}; color: #FFFFFF;
-    font: inherit; font-size: 15px; font-weight: 700;
+    width: 100%; height: 50px; margin-top: 6px;
+    border: none; border-radius: 12px;
+    background: #0B1220; color: #FFFFFF;
+    font: inherit; font-size: 15px; font-weight: 600;
     cursor: pointer; transition: background 0.15s, opacity 0.15s;
   }
-  .auth-btn:hover:not(:disabled) { background: ${AUTH.TEAL_DARK}; }
+  .auth-btn:hover:not(:disabled) { background: #1F2937; }
   .auth-btn:disabled { opacity: 0.7; cursor: default; }
-  .auth-note { margin-top: 18px; text-align: center; font-size: 13.5px; color: ${AUTH.TEXT3}; }
-  .auth-note a, .auth-note button { color: ${AUTH.TEXT}; font-weight: 700; text-decoration: none; background: none; border: none; font: inherit; cursor: pointer; padding: 0; }
+  .auth-note { margin-top: 16px; text-align: center; font-size: 13.5px; color: ${AUTH.TEXT3}; }
+  .auth-note a, .auth-note button { color: ${AUTH.TEXT}; font-weight: 600; text-decoration: none; background: none; border: none; font: inherit; cursor: pointer; padding: 0; }
   .auth-note a:hover, .auth-note button:hover { text-decoration: underline; }
   .auth-msg { font-size: 13.5px; line-height: 1.5; border-radius: 12px; padding: 11px 14px; }
   .auth-msg.err { color: #991B1B; background: #FEF2F2; border: 1px solid #FECACA; }
   .auth-msg.ok { color: #14532D; background: #F0FDF4; border: 1px solid #BBF7D0; }
-  .auth-foot { margin-top: 28px; text-align: center; font-size: 12px; line-height: 1.6; color: #94A3B8; }
+  .auth-foot { margin-top: 28px; text-align: center; font-size: 12px; line-height: 1.6; color: ${AUTH.TEXT3}; }
+  .auth-foot b { color: ${AUTH.TEXT}; font-weight: 600; }
   @media (max-width: 767px) {
-    .auth-page { padding-top: calc(env(safe-area-inset-top) + 28px); }
-    .auth-title { font-size: 26px; }
+    .auth-title { font-size: 24px; }
   }
 `
 
@@ -148,14 +148,24 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
     <div className="auth-page">
       <style>{css}</style>
       <div className="auth-col">
-        <div className="auth-brand" aria-label="Jobyra">
-          <img src="/jobyra-logo.jpg" alt="" />
-          <span className="auth-word">obyra</span>
+        <div className="auth-main">
+          <div className="auth-brand" aria-label="Jobyra">
+            <img src="/jobyra-logo.jpg" alt="" />
+            <span className="auth-word">obyra</span>
+          </div>
+          <h1 className="auth-title">{title}</h1>
+          <p className="auth-sub">{subtitle}</p>
+          {children}
         </div>
-        <h1 className="auth-title">{title}</h1>
-        <p className="auth-sub">{subtitle}</p>
-        {children}
-        <div className="auth-foot">{footer ?? `© ${new Date().getFullYear()} Jobyra · Job and customer management for trades`}</div>
+        <div className="auth-foot">
+          {footer ?? (
+            <>
+              By continuing to use Jobyra, you agree to our
+              <br />
+              <b>Terms of Service</b> and <b>Privacy Policy</b>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

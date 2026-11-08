@@ -59,7 +59,7 @@ export default function LoginPage() {
           </div>
         ) : (
           <form className="auth-form" onSubmit={handleReset}>
-            <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email address" autoComplete="email" label="Email address" />
+            <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email Address" autoComplete="email" label="Email address" />
             {error && <div className="auth-msg err" role="alert">{error}</div>}
             <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Sending…' : 'Send reset link'}</button>
             <div className="auth-note">
@@ -72,15 +72,15 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Log in with your email to manage your customers, jobs and service reminders.">
+    <AuthShell title="Welcome Back" subtitle="Log in with your email to manage your customers, jobs and service reminders.">
       <form className="auth-form" onSubmit={handleLogin}>
-        <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email address" autoComplete="email" label="Email address" />
+        <AuthField icon={<MailIcon />} type="email" value={email} onChange={setEmail} placeholder="Email Address" autoComplete="email" label="Email address" />
         <AuthField icon={<LockIcon />} type="password" value={password} onChange={setPassword} placeholder="Password" autoComplete="current-password" label="Password" />
         <div className="auth-row">
-          <button type="button" className="auth-link" onClick={() => { setMode('forgot'); setError('') }}>Forgot password?</button>
+          <button type="button" className="auth-link" onClick={() => { setMode('forgot'); setError('') }}>Forgot Password</button>
         </div>
         {error && <div className="auth-msg err" role="alert">{error}</div>}
-        <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Logging in…' : 'Log in'}</button>
+        <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Logging in…' : 'Log In'}</button>
         <div className="auth-note">
           Need an account? <a href={CONTACT} target="_blank" rel="noreferrer">Contact us</a>
         </div>
