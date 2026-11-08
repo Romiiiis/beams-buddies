@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Cropper from 'react-easy-crop'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
@@ -12,6 +11,7 @@ import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
 import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
+import { LogoEditor, renderLogo, type PixelCrop } from '@/components/LogoEditor'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -89,53 +89,6 @@ function useIsMobile() {
   return isMobile
 }
 
-async function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.addEventListener('load', () => resolve(image))
-    image.addEventListener('error', error => reject(error))
-    image.setAttribute('crossOrigin', 'anonymous')
-    image.src = url
-  })
-}
-
-async function getCroppedImg(
-  imageSrc: string,
-  pixelCrop: { x: number; y: number; width: number; height: number }
-): Promise<Blob> {
-  const image = await createImage(imageSrc)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Canvas context not available')
-
-  // Logos are shown small everywhere (and in emails), so keep the saved image to 512px at most
-  const scale = Math.min(1, 512 / Math.max(pixelCrop.width, pixelCrop.height))
-  canvas.width = Math.max(1, Math.round(pixelCrop.width * scale))
-  canvas.height = Math.max(1, Math.round(pixelCrop.height * scale))
-  ctx.imageSmoothingQuality = 'high'
-
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  )
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
-      if (!blob) {
-        reject(new Error('Canvas is empty'))
-        return
-      }
-      resolve(blob)
-    }, 'image/png')
-  })
-}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -186,14 +139,8 @@ export default function SettingsPage() {
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedFileName, setSelectedFileName] = useState('logo.png')
   const [showCropper, setShowCropper] = useState(false)
-  const [crop, setCrop] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number
-    y: number
-    width: number
-    height: number
-  } | null>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null)
+  const [logoRound, setLogoRound] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -284,7 +231,9 @@ export default function SettingsPage() {
       setUploadingLogo(true)
       setUploadError('')
 
-      const croppedBlob = await getCroppedImg(selectedImage, croppedAreaPixels)
+      // Whatever was framed in the editor, including any clear space around the logo
+      const canvas = await renderLogo(selectedImage, croppedAreaPixels, 800, logoRound)
+      const croppedBlob: Blob = await new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Could not create image'))), 'image/png'))
       const filePath = `${businessId}/logo-${Date.now()}.png`
 
       const { error: uploadErr } = await supabase.storage
@@ -319,8 +268,6 @@ export default function SettingsPage() {
       setShowCropper(false)
       setSelectedImage('')
       setSelectedFileName('logo.png')
-      setCrop({ x: 0, y: 0 })
-      setZoom(1)
       setCroppedAreaPixels(null)
       setUploadingLogo(false)
       refresh()
@@ -756,8 +703,6 @@ export default function SettingsPage() {
                         const reader = new FileReader()
                         reader.onload = () => {
                           setSelectedImage(reader.result as string)
-                          setCrop({ x: 0, y: 0 })
-                          setZoom(1)
                           setShowCropper(true)
                         }
                         reader.readAsDataURL(file)
@@ -1048,14 +993,12 @@ export default function SettingsPage() {
       {showCropper && (
         <Modal
           title="Adjust logo"
-          size="sm"
+          size="xl"
           busy={uploadingLogo}
           onClose={() => {
             setShowCropper(false)
             setSelectedImage('')
             setSelectedFileName('logo.png')
-            setCrop({ x: 0, y: 0 })
-            setZoom(1)
             setCroppedAreaPixels(null)
           }}
           footer={
@@ -1067,8 +1010,6 @@ export default function SettingsPage() {
                   setShowCropper(false)
                   setSelectedImage('')
                   setSelectedFileName('logo.png')
-                  setCrop({ x: 0, y: 0 })
-                  setZoom(1)
                   setCroppedAreaPixels(null)
                 }}
                 style={BTN.secondary}
@@ -1082,34 +1023,15 @@ export default function SettingsPage() {
           }
         >
           <div style={{ fontSize: 12, color: TEXT3, fontWeight: 600, marginBottom: 12, overflowWrap: 'anywhere' }}>{selectedFileName}</div>
-          <div style={{ position: 'relative', width: '100%', height: 300, background: '#111', borderRadius: 14, overflow: 'hidden' }}>
-            <Cropper
-              image={selectedImage}
-              crop={crop}
-              zoom={zoom}
-              minZoom={0.1}
-              maxZoom={6}
-              aspect={1}
-              cropShape="round"
-              showGrid={false}
-              restrictPosition={false}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
-            />
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <label style={{ ...LABEL, marginBottom: 8 }}>Zoom</label>
-            <input
-              type="range"
-              min="0.1"
-              max="6"
-              step="0.01"
-              value={zoom}
-              onChange={e => setZoom(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#2AA198' }}
-            />
-          </div>
+          <LogoEditor
+            image={selectedImage}
+            businessName={business.name}
+            personName={userProfile.full_name}
+            onChange={(area, round) => {
+              setCroppedAreaPixels(area)
+              setLogoRound(round)
+            }}
+          />
         </Modal>
       )}
     </div>

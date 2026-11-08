@@ -37,9 +37,14 @@ export async function GET(request: Request) {
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
   const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind, days').eq('enabled', true)
+  // Owner-level pause: businesses with auto_reminders_enabled = false are manual only, whatever
+  // they have switched on in Marketing (e.g. Avalanche Air / info@avalancheair.com.au for now)
+  const { data: pausedRows } = await db.from('businesses').select('id').eq('auto_reminders_enabled', false)
+  const paused = new Set((pausedRows || []).map(b => b.id as string))
   const byBusiness = new Map<string, Set<Kind>>()
   const daysFor = new Map<string, number>()
   for (const r of enabledRows || []) {
+    if (paused.has(r.business_id)) continue
     if (!byBusiness.has(r.business_id)) byBusiness.set(r.business_id, new Set())
     byBusiness.get(r.business_id)!.add(r.kind as Kind)
     daysFor.set(`${r.business_id}:${r.kind}`, Number(r.days) > 0 ? Number(r.days) : AUTOMATION_DEFAULT_DAYS[r.kind as Kind])

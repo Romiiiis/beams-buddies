@@ -440,6 +440,31 @@ export function Sidebar({ active }: { active: string }) {
               <CloseIcon />
             </button>
 
+            {/* With a company logo, the logo leads the menu (top left) and the person sits under it */}
+            {!loading && business?.logo_url ? (
+              <div style={{ padding: '6px 42px 22px 2px' }}>
+                <img
+                  src={business.logo_url}
+                  alt={business?.name || 'Company logo'}
+                  style={{
+                    display: 'block',
+                    height: 52,
+                    width: 'auto',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                    objectPosition: 'left center',
+                  }}
+                />
+                <div style={{ marginTop: 12, fontSize: 14, fontWeight: 800, color: TEXT, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {business?.full_name || business?.name || 'Owner'}
+                </div>
+                {business?.role_title && (
+                  <div style={{ marginTop: 2, fontSize: 12, fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {business.role_title}
+                  </div>
+                )}
+              </div>
+            ) : (
             <div
               style={{
                 display: 'flex',
@@ -455,20 +480,6 @@ export function Sidebar({ active }: { active: string }) {
                     height: 56,
                     borderRadius: '50%',
                     background: BG,
-                    border: `1px solid ${BORDER}`,
-                    flexShrink: 0,
-                  }}
-                />
-              ) : business?.logo_url ? (
-                <img
-                  src={business.logo_url}
-                  alt="Logo"
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '50%',
-                    objectFit: 'contain',
-                    background: WHITE,
                     border: `1px solid ${BORDER}`,
                     flexShrink: 0,
                   }}
@@ -526,6 +537,7 @@ export function Sidebar({ active }: { active: string }) {
                 </div>
               </div>
             </div>
+            )}
 
             <div
               style={{
