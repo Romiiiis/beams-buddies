@@ -4,8 +4,8 @@
   "description": "Job and customer management for trades",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#2AA198",
+  "background_color": "#F6F7F7",
+  "theme_color": "#F6F7F7",
   "orientation": "portrait",
   "icons": [
     {
