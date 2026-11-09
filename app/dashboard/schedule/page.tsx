@@ -608,7 +608,7 @@ export default function SchedulePage() {
             position: "fixed",
             left: "50%",
             transform: "translateX(-50%)",
-            bottom: isMobile ? "calc(96px + env(safe-area-inset-bottom))" : "28px",
+            bottom: isMobile ? "calc(var(--tabbar-h) + 18px)" : "28px",
             zIndex: 400,
             width: "max-content",
             maxWidth: "calc(100vw - 32px)",

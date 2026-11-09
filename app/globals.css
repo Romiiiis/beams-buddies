@@ -3,6 +3,10 @@
 :root {
   --background: #FAFAFA;
   --foreground: #0F172A;
+  /* Height of the phone tab bar. It tucks into the home-indicator area instead of sitting on top of
+     it, so the gap under the labels is about the same on phones with and without a home bar. */
+  --tabbar-bottom: max(8px, env(safe-area-inset-bottom) - 12px);
+  --tabbar-h: calc(56px + var(--tabbar-bottom));
 }
 
 *, *::before, *::after {
@@ -37,15 +41,14 @@ body {
 }
 
 /* One bottom-spacing rule for every dashboard page, so the gap under the last
-   section is identical everywhere. On phones the fixed bottom tab bar is
-   78px + the home-indicator inset tall, so content must clear that plus a 24px gap. */
+   section is identical everywhere. On phones content must clear the fixed tab bar plus a 24px gap. */
 .page-content {
   padding-bottom: 48px !important;
 }
 
 @media (max-width: 767px) {
   .page-content {
-    padding-bottom: calc(78px + 24px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(var(--tabbar-h) + 24px) !important;
     /* Pages scroll as one document on phones. A scroll box inside the page competes with it for the swipe. */
     overflow: visible !important;
     overflow-x: clip !important;

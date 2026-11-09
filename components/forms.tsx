@@ -342,7 +342,7 @@ export function Toast({ message, onClose, tone = 'dark' }: { message: string; on
         position: 'fixed',
         left: '50%',
         transform: 'translateX(-50%)',
-        bottom: phone ? 'calc(96px + env(safe-area-inset-bottom))' : 24,
+        bottom: phone ? 'calc(var(--tabbar-h) + 18px)' : 24,
         zIndex: 1100,
         background: tone === 'error' ? RED : TEXT,
         color: WHITE,

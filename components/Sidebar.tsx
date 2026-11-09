@@ -174,41 +174,6 @@ export function Sidebar({ active }: { active: string }) {
   }, [isMobileMenuOpen])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const html = document.documentElement
-    const body = document.body
-
-    const prevHtmlOverscroll = html.style.overscrollBehaviorY
-    const prevHtmlOverflowX = html.style.overflowX
-    const prevBodyOverscroll = body.style.overscrollBehaviorY
-    const prevBodyOverflowX = body.style.overflowX
-    const prevBodyMinHeight = body.style.minHeight
-    const prevBodyPosition = body.style.position
-    const prevBodyWidth = body.style.width
-
-    if (isMobile) {
-      html.style.overscrollBehaviorY = 'none'
-      html.style.overflowX = 'hidden'
-      body.style.overscrollBehaviorY = 'none'
-      body.style.overflowX = 'hidden'
-      body.style.minHeight = '100svh'
-      body.style.position = 'relative'
-      body.style.width = '100%'
-    }
-
-    return () => {
-      html.style.overscrollBehaviorY = prevHtmlOverscroll
-      html.style.overflowX = prevHtmlOverflowX
-      body.style.overscrollBehaviorY = prevBodyOverscroll
-      body.style.overflowX = prevBodyOverflowX
-      body.style.minHeight = prevBodyMinHeight
-      body.style.position = prevBodyPosition
-      body.style.width = prevBodyWidth
-    }
-  }, [isMobile])
-
-  useEffect(() => {
     if (!isMobile) return
 
     const routes = [
@@ -338,16 +303,6 @@ export function Sidebar({ active }: { active: string }) {
     return (
       <>
         <style>{`
-          html, body {
-            overscroll-behavior-y: none;
-            overflow-x: hidden;
-          }
-
-          body {
-            min-height: 100svh;
-            padding-bottom: calc(88px + env(safe-area-inset-bottom));
-          }
-
           .mobile-tab-icon {
             width: 22px;
             height: 22px;
@@ -371,12 +326,6 @@ export function Sidebar({ active }: { active: string }) {
 
           .mobile-menu-scroll::-webkit-scrollbar {
             display: none;
-          }
-
-          @media (display-mode: standalone) {
-            body {
-              padding-bottom: calc(96px + env(safe-area-inset-bottom));
-            }
           }
         `}</style>
 
@@ -670,7 +619,7 @@ export function Sidebar({ active }: { active: string }) {
               right: 0,
               bottom: 0,
               zIndex: 100,
-              height: 'calc(78px + env(safe-area-inset-bottom))',
+              height: 'var(--tabbar-h)',
               background: WHITE,
               borderTop: `1px solid ${BORDER}`,
               borderLeft: 'none',
@@ -680,7 +629,7 @@ export function Sidebar({ active }: { active: string }) {
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
               alignItems: 'center',
-              padding: '8px 12px calc(8px + env(safe-area-inset-bottom))',
+              padding: '6px 12px var(--tabbar-bottom)',
               boxShadow: 'none',
               overflow: 'hidden',
               overscrollBehavior: 'none',
@@ -727,8 +676,8 @@ export function Sidebar({ active }: { active: string }) {
                   <span
                     className="mobile-tab-icon"
                     style={{
-                      width: isMenuTab ? 46 : 22,
-                      height: isMenuTab ? 46 : 22,
+                      width: isMenuTab ? 44 : 22,
+                      height: isMenuTab ? 44 : 22,
                       borderRadius: isMenuTab ? 16 : 0,
                       background: isMenuTab ? TEAL : 'transparent',
                       color: isMenuTab ? WHITE : isActive ? TEAL : TEXT3,

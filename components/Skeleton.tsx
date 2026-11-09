@@ -38,7 +38,7 @@ const css = `
 
   @media (max-width: 767px) {
     .sk-head { padding: 14px 14px 12px; }
-    .sk-body { padding: 12px 12px calc(102px + env(safe-area-inset-bottom)); }
+    .sk-body { padding: 12px 12px calc(var(--tabbar-h) + 24px); }
     .sk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .sk-stat { padding: 12px 14px; }
     .sk-stat:nth-child(odd) { border-left: none; }
