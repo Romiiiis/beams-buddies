@@ -135,6 +135,9 @@ export default function SettingsPage() {
 
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [openingLogo, setOpeningLogo] = useState(false)
+  const [logoOriginalUrl, setLogoOriginalUrl] = useState('')
+  const [pendingOriginal, setPendingOriginal] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState('')
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedFileName, setSelectedFileName] = useState('logo.png')
@@ -195,6 +198,7 @@ export default function SettingsPage() {
           logo_url: businessRes.data.logo_url || '',
           industry: businessRes.data.industry || 'hvac',
         })
+        setLogoOriginalUrl(businessRes.data.logo_original_url || '')
       }
 
       if (settingsRes.data) {
@@ -258,13 +262,28 @@ export default function SettingsPage() {
         return
       }
 
+      // A new upload also keeps the untouched file, so the logo can be re-adjusted later without
+      // losing anything this crop cut off. Re-adjusting a saved logo keeps the existing original.
+      let originalUrl = logoOriginalUrl
+      if (pendingOriginal) {
+        originalUrl = ''
+        const ext = (pendingOriginal.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png'
+        const originalPath = `${businessId}/original-${Date.now()}.${ext}`
+        const { error: originalErr } = await supabase.storage
+          .from(LOGO_BUCKET)
+          .upload(originalPath, pendingOriginal, { cacheControl: '3600', upsert: true, contentType: pendingOriginal.type || undefined })
+        if (!originalErr) originalUrl = supabase.storage.from(LOGO_BUCKET).getPublicUrl(originalPath).data.publicUrl
+      }
+
       // Save logo_url to DB immediately
       await supabase
         .from('businesses')
-        .update({ logo_url: publicData.publicUrl })
+        .update({ logo_url: publicData.publicUrl, logo_original_url: originalUrl || null })
         .eq('id', businessId)
 
       setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
+      setLogoOriginalUrl(originalUrl)
+      setPendingOriginal(null)
       setShowCropper(false)
       setSelectedImage('')
       setSelectedFileName('logo.png')
@@ -279,7 +298,33 @@ export default function SettingsPage() {
 
   function removeLogo() {
     setBusiness(prev => ({ ...prev, logo_url: '' }))
+    setLogoOriginalUrl('')
     setUploadError('')
+  }
+
+  // Reopen the saved logo in the editor, starting from the original file when there is one
+  async function adjustLogo() {
+    setUploadError('')
+    setOpeningLogo(true)
+    try {
+      let res = logoOriginalUrl ? await fetch(logoOriginalUrl, { cache: 'no-store' }).catch(() => null) : null
+      if (!res?.ok) res = await fetch(business.logo_url, { cache: 'no-store' })
+      if (!res.ok) throw new Error('fetch failed')
+      const blob = await res.blob()
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error('read failed'))
+        reader.readAsDataURL(blob)
+      })
+      setPendingOriginal(null)
+      setSelectedFileName('Current logo')
+      setSelectedImage(dataUrl)
+      setShowCropper(true)
+    } catch {
+      setUploadError('Could not open your current logo. Try uploading it again.')
+    }
+    setOpeningLogo(false)
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -301,6 +346,7 @@ export default function SettingsPage() {
         .update({
           name: business.name,
           logo_url: business.logo_url || null,
+          logo_original_url: business.logo_url ? logoOriginalUrl || null : null,
           phone: business.phone,
           email: business.email,
           industry: business.industry,
@@ -666,7 +712,7 @@ export default function SettingsPage() {
                     }}
                   >
                     {business.logo_url ? (
-                      <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={business.logo_url} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     ) : (
                       <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>No logo</span>
                     )}
@@ -700,6 +746,7 @@ export default function SettingsPage() {
                         if (!file) return
                         setUploadError('')
                         setSelectedFileName(file.name)
+                        setPendingOriginal(file)
                         const reader = new FileReader()
                         reader.onload = () => {
                           setSelectedImage(reader.result as string)
@@ -709,6 +756,17 @@ export default function SettingsPage() {
                         e.currentTarget.value = ''
                       }}
                     />
+
+                    {business.logo_url && (
+                      <button
+                        type="button"
+                        onClick={adjustLogo}
+                        disabled={openingLogo || uploadingLogo}
+                        style={{ ...btnOutline, opacity: openingLogo ? 0.7 : 1 }}
+                      >
+                        {openingLogo ? 'Opening...' : 'Adjust'}
+                      </button>
+                    )}
 
                     {business.logo_url && (
                       <button
@@ -725,7 +783,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can crop before saving.</p>}
+                {uploadError ? <p style={{ ...hint, color: RED }}>{uploadError}</p> : <p style={hint}>PNG, JPG, WEBP, or SVG. You can adjust the size and position before saving, and any time after.</p>}
               </div>
             </div>
 

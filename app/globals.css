@@ -13,9 +13,17 @@
 
 html,
 body {
-  height: 100%;
   width: 100%;
   background: #FAFAFA;
+}
+
+/* The body grows with its content (min-height, not height), so phones scroll the page itself
+   with their normal momentum rather than treating the body as a box scrolled inside the screen */
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
 }
 
 body {
@@ -38,12 +46,17 @@ body {
 @media (max-width: 767px) {
   .page-content {
     padding-bottom: calc(78px + 24px + env(safe-area-inset-bottom)) !important;
+    /* Pages scroll as one document on phones. A scroll box inside the page competes with it for the swipe. */
+    overflow: visible !important;
+    overflow-x: clip !important;
   }
 }
 
-/* Slide-out drawers sit above the tab bar, so they only need to clear the home indicator */
+/* Slide-out drawers sit above the tab bar, so they only need to clear the home indicator.
+   Reaching the end of a drawer stops there rather than dragging the page behind it. */
 .drawer-content {
   padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  overscroll-behavior: contain;
 }
 
 /* Bottom padding alone is dropped by some browsers (notably iOS Safari) when a
@@ -84,24 +97,26 @@ textarea::placeholder {
   opacity: 1;
 }
 
-/* Thin, quiet scrollbars everywhere */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 transparent;
-}
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-*::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+/* Thin, quiet scrollbars for mouse users. Touch screens keep their own, which are cheaper to draw while scrolling. */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
 }
 
-/* Sideways swipe rows (tabs, chips): no visible bar, smooth on touch, and a little room after the
-   last item so it is never cut off by the screen edge. */
+/* Sideways swipe rows (tabs, chips): no visible bar, free-flowing on touch, and a little room after
+   the last item so it is never cut off by the screen edge. */
 .scroll-x {
   overflow-x: auto;
   overflow-y: hidden;
@@ -109,14 +124,12 @@ textarea::placeholder {
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
 }
 .scroll-x::-webkit-scrollbar {
   display: none;
 }
 .scroll-x > * {
   flex-shrink: 0;
-  scroll-snap-align: start;
 }
 .scroll-x::after {
   content: '';

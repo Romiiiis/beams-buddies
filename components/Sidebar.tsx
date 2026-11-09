@@ -403,10 +403,10 @@ export function Sidebar({ active }: { active: string }) {
               bottom: 0,
               width: 'min(78vw, 318px)',
               zIndex: 110,
-              background: WHITE,
+              background: BG,
               borderRight: `1px solid ${BORDER}`,
               boxShadow: 'none',
-              padding: 'calc(env(safe-area-inset-top) + 22px) 18px calc(106px + env(safe-area-inset-bottom))',
+              padding: 'calc(env(safe-area-inset-top) + 22px) 18px calc(16px + env(safe-area-inset-bottom))',
               transition: 'left 0.24s ease',
               display: 'flex',
               flexDirection: 'column',
@@ -440,31 +440,7 @@ export function Sidebar({ active }: { active: string }) {
               <CloseIcon />
             </button>
 
-            {/* With a company logo, the logo leads the menu (top left) and the person sits under it */}
-            {!loading && business?.logo_url ? (
-              <div style={{ padding: '6px 42px 22px 2px' }}>
-                <img
-                  src={business.logo_url}
-                  alt={business?.name || 'Company logo'}
-                  style={{
-                    display: 'block',
-                    height: 52,
-                    width: 'auto',
-                    maxWidth: '100%',
-                    objectFit: 'contain',
-                    objectPosition: 'left center',
-                  }}
-                />
-                <div style={{ marginTop: 12, fontSize: 14, fontWeight: 800, color: TEXT, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {business?.full_name || business?.name || 'Owner'}
-                </div>
-                {business?.role_title && (
-                  <div style={{ marginTop: 2, fontSize: 12, fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {business.role_title}
-                  </div>
-                )}
-              </div>
-            ) : (
+            {/* The logo sits in a fixed slot beside the name, so any logo shape leaves the name and title in place */}
             <div
               style={{
                 display: 'flex',
@@ -473,7 +449,20 @@ export function Sidebar({ active }: { active: string }) {
                 padding: '8px 42px 22px 2px',
               }}
             >
-              {loading ? (
+              {!loading && business?.logo_url ? (
+                <img
+                  src={business.logo_url}
+                  alt={business?.name || 'Company logo'}
+                  style={{
+                    display: 'block',
+                    width: 76,
+                    height: 56,
+                    objectFit: 'contain',
+                    objectPosition: 'left center',
+                    flexShrink: 0,
+                  }}
+                />
+              ) : loading ? (
                 <div
                   style={{
                     width: 56,
@@ -513,9 +502,11 @@ export function Sidebar({ active }: { active: string }) {
                     color: TEXT,
                     letterSpacing: '-0.02em',
                     lineHeight: 1.15,
-                    whiteSpace: 'nowrap',
+                    overflowWrap: 'anywhere',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
                 >
                   {loading ? <SkeletonBox w={110} h={12} /> : business?.full_name || 'Owner'}
@@ -528,22 +519,24 @@ export function Sidebar({ active }: { active: string }) {
                     color: TEXT3,
                     marginTop: 4,
                     lineHeight: 1.2,
-                    whiteSpace: 'nowrap',
+                    overflowWrap: 'anywhere',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
                 >
                   {loading ? '' : business?.role_title || business?.name || 'Jobyra workspace'}
                 </div>
               </div>
             </div>
-            )}
 
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 7,
+                marginBottom: 18,
               }}
             >
               {mobileMenuGroups.map((group, gi) => (
@@ -620,8 +613,8 @@ export function Sidebar({ active }: { active: string }) {
 
             <div
               style={{
-                marginTop: 18,
-                paddingTop: 18,
+                marginTop: 'auto',
+                paddingTop: 12,
                 borderTop: `1px solid ${BORDER}`,
               }}
             >
