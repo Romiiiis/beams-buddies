@@ -228,6 +228,15 @@ export default function SettingsPage() {
     load()
   }, [router])
 
+  function closeLogoEditor() {
+    setShowCropper(false)
+    setSelectedImage('')
+    setSelectedFileName('logo.png')
+    setCroppedAreaPixels(null)
+    setPendingOriginal(null)
+    setUploadError('')
+  }
+
   async function handleCropAndUpload() {
     if (!selectedImage || !croppedAreaPixels || !businessId) return
 
@@ -244,7 +253,6 @@ export default function SettingsPage() {
         .from(LOGO_BUCKET)
         .upload(filePath, croppedBlob, {
           cacheControl: '3600',
-          upsert: true,
           contentType: 'image/png',
         })
 
@@ -271,23 +279,25 @@ export default function SettingsPage() {
         const originalPath = `${businessId}/original-${Date.now()}.${ext}`
         const { error: originalErr } = await supabase.storage
           .from(LOGO_BUCKET)
-          .upload(originalPath, pendingOriginal, { cacheControl: '3600', upsert: true, contentType: pendingOriginal.type || undefined })
+          .upload(originalPath, pendingOriginal, { cacheControl: '3600', contentType: pendingOriginal.type || undefined })
         if (!originalErr) originalUrl = supabase.storage.from(LOGO_BUCKET).getPublicUrl(originalPath).data.publicUrl
       }
 
       // Save logo_url to DB immediately
-      await supabase
+      const { error: saveErr } = await supabase
         .from('businesses')
         .update({ logo_url: publicData.publicUrl, logo_original_url: originalUrl || null })
         .eq('id', businessId)
 
+      if (saveErr) {
+        setUploadError(saveErr.message || 'Your logo could not be saved. Please try again.')
+        setUploadingLogo(false)
+        return
+      }
+
       setBusiness(prev => ({ ...prev, logo_url: publicData.publicUrl }))
       setLogoOriginalUrl(originalUrl)
-      setPendingOriginal(null)
-      setShowCropper(false)
-      setSelectedImage('')
-      setSelectedFileName('logo.png')
-      setCroppedAreaPixels(null)
+      closeLogoEditor()
       setUploadingLogo(false)
       refresh()
     } catch (err: any) {
@@ -1053,34 +1063,33 @@ export default function SettingsPage() {
           title="Adjust logo"
           size="xl"
           busy={uploadingLogo}
-          onClose={() => {
-            setShowCropper(false)
-            setSelectedImage('')
-            setSelectedFileName('logo.png')
-            setCroppedAreaPixels(null)
-          }}
+          onClose={closeLogoEditor}
           footer={
             <>
-              <button
-                type="button"
-                disabled={uploadingLogo}
-                onClick={() => {
-                  setShowCropper(false)
-                  setSelectedImage('')
-                  setSelectedFileName('logo.png')
-                  setCroppedAreaPixels(null)
-                }}
-                style={BTN.secondary}
-              >
+              {uploadError && (
+                <div role="alert" style={{ flexBasis: '100%', fontSize: 13, fontWeight: 600, color: RED, lineHeight: 1.4, overflowWrap: 'anywhere' }}>
+                  {uploadError}
+                </div>
+              )}
+              <button type="button" disabled={uploadingLogo} onClick={closeLogoEditor} style={{ ...BTN.secondary, ...(uploadingLogo ? BTN.disabled : {}) }}>
                 Cancel
               </button>
-              <button type="button" onClick={handleCropAndUpload} disabled={uploadingLogo} style={{ ...BTN.primary, ...(uploadingLogo ? BTN.disabled : {}) }}>
-                {uploadingLogo ? 'Saving...' : 'Save image'}
+              {/* Fixed width and full colour, so the button doesn't jump or fade while it saves */}
+              <button
+                type="button"
+                onClick={handleCropAndUpload}
+                disabled={uploadingLogo}
+                aria-busy={uploadingLogo}
+                style={{ ...BTN.primary, minWidth: 118, cursor: uploadingLogo ? 'default' : 'pointer' }}
+              >
+                {uploadingLogo && <span className="btn-spinner" aria-hidden="true" />}
+                {uploadingLogo ? 'Saving' : 'Save image'}
               </button>
             </>
           }
         >
           <div style={{ fontSize: 12, color: TEXT3, fontWeight: 600, marginBottom: 12, overflowWrap: 'anywhere' }}>{selectedFileName}</div>
+          <div style={{ opacity: uploadingLogo ? 0.55 : 1, pointerEvents: uploadingLogo ? 'none' : 'auto', transition: 'opacity 0.15s ease' }}>
           <LogoEditor
             image={selectedImage}
             businessName={business.name}
@@ -1090,6 +1099,7 @@ export default function SettingsPage() {
               setLogoRound(round)
             }}
           />
+          </div>
         </Modal>
       )}
     </div>
