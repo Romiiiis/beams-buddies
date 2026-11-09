@@ -51,12 +51,16 @@ const mobilePrimaryTabs = [
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
-// Same groups as the desktop sidebar. Home, Jobs, Customers and Settings live in the bottom tab bar.
+// The same full list and groups as the desktop sidebar
 const mobileMenuGroups: { label?: string; items: { label: string; href: string }[] }[] = [
-  { items: [{ label: 'Leads', href: '/dashboard/leads' }] },
+  { items: navMain },
   { label: 'Finance', items: navFinance },
-  { label: 'Manage', items: navManage.filter(i => i.href !== '/dashboard/settings') },
+  { label: 'Manage', items: navManage },
 ]
+
+// One row height for the phone menu: never below a comfortable tap size, a little taller on tall
+// phones so the list fills the panel.
+const MENU_ROW_HEIGHT = 'clamp(44px, 5.4dvh, 52px)'
 
 function DashboardIcon() {
   return <AppIcon name="dashboard" size={20} />
@@ -127,7 +131,11 @@ function LogoutIcon() {
 }
 
 function CloseIcon() {
-  return <AppIcon name="close" size={20} />
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+      <path d="M5 5l10 10M15 5L5 15" />
+    </svg>
+  )
 }
 
 export function Sidebar({ active }: { active: string }) {
@@ -343,59 +351,35 @@ export function Sidebar({ active }: { active: string }) {
             />
           )}
 
+          {/* Stops at the tab bar. The header and Log out stay put; only the list between them scrolls on short phones. */}
           <aside
-            className="mobile-menu-scroll"
             style={{
               position: 'fixed',
               top: 0,
               left: isMobileMenuOpen ? 0 : '-82vw',
-              bottom: 0,
+              bottom: 'var(--tabbar-h)',
               width: 'min(78vw, 318px)',
               zIndex: 110,
               background: BG,
               borderRight: `1px solid ${BORDER}`,
               boxShadow: 'none',
-              padding: 'calc(env(safe-area-inset-top) + 22px) 18px calc(16px + env(safe-area-inset-bottom))',
+              padding: 'calc(env(safe-area-inset-top) + 14px) 12px 0',
               transition: 'left 0.24s ease',
               display: 'flex',
               flexDirection: 'column',
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              overscrollBehavior: 'contain',
-              WebkitOverflowScrolling: 'touch',
+              overflow: 'hidden',
               fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             }}
           >
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              aria-label="Close menu"
-              style={{
-                position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 16px)',
-                right: 14,
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                lineHeight: 0,
-              }}
-            >
-              <CloseIcon />
-            </button>
-
             {/* The logo sits in a fixed slot beside the name, so any logo shape leaves the name and title in place */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
-                padding: '8px 42px 22px 2px',
+                padding: '0 0 14px 12px',
+                flexShrink: 0,
+                borderBottom: `1px solid ${BORDER}`,
               }}
             >
               {!loading && business?.logo_url ? (
@@ -404,8 +388,8 @@ export function Sidebar({ active }: { active: string }) {
                   alt={business?.name || 'Company logo'}
                   style={{
                     display: 'block',
-                    width: 76,
-                    height: 56,
+                    width: 72,
+                    height: 48,
                     objectFit: 'contain',
                     objectPosition: 'left center',
                     flexShrink: 0,
@@ -414,8 +398,8 @@ export function Sidebar({ active }: { active: string }) {
               ) : loading ? (
                 <div
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     borderRadius: '50%',
                     background: BG,
                     border: `1px solid ${BORDER}`,
@@ -425,8 +409,8 @@ export function Sidebar({ active }: { active: string }) {
               ) : (
                 <div
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     borderRadius: '50%',
                     background: TEAL,
                     color: WHITE,
@@ -443,7 +427,7 @@ export function Sidebar({ active }: { active: string }) {
                 </div>
               )}
 
-              <div style={{ minWidth: 0 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <div
                   style={{
                     fontSize: 16,
@@ -478,14 +462,42 @@ export function Sidebar({ active }: { active: string }) {
                   {loading ? '' : business?.role_title || business?.name || 'Jobyra workspace'}
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Close menu"
+                style={{
+                  width: 36,
+                  height: 36,
+                  flexShrink: 0,
+                  border: 'none',
+                  background: 'transparent',
+                  color: TEXT3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                  lineHeight: 0,
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <CloseIcon />
+              </button>
             </div>
 
             <div
+              className="mobile-menu-scroll"
               style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                overscrollBehavior: 'contain',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 7,
-                marginBottom: 18,
+                padding: '6px 0',
               }}
             >
               {mobileMenuGroups.map((group, gi) => (
@@ -498,8 +510,9 @@ export function Sidebar({ active }: { active: string }) {
                         letterSpacing: '0.10em',
                         textTransform: 'uppercase',
                         color: TEXT3,
-                        padding: '14px 12px 4px',
+                        padding: '10px 12px 3px',
                         lineHeight: 1.2,
+                        flexShrink: 0,
                       }}
                     >
                       {group.label}
@@ -515,11 +528,12 @@ export function Sidebar({ active }: { active: string }) {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 12,
+                      gap: 10,
                       width: '100%',
-                      minHeight: 48,
-                      padding: '10px 12px',
-                      borderRadius: 14,
+                      height: MENU_ROW_HEIGHT,
+                      flexShrink: 0,
+                      padding: '0 8px',
+                      borderRadius: 12,
                       border: 'none',
                       background: isActive ? TEAL_SOFT : 'transparent',
                       color: isActive ? TEAL : TEXT2,
@@ -562,8 +576,8 @@ export function Sidebar({ active }: { active: string }) {
 
             <div
               style={{
-                marginTop: 'auto',
-                paddingTop: 12,
+                flexShrink: 0,
+                padding: '6px 0 8px',
                 borderTop: `1px solid ${BORDER}`,
               }}
             >
@@ -572,11 +586,11 @@ export function Sidebar({ active }: { active: string }) {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 12,
+                  gap: 10,
                   width: '100%',
-                  minHeight: 48,
-                  padding: '10px 12px',
-                  borderRadius: 14,
+                  height: MENU_ROW_HEIGHT,
+                  padding: '0 8px',
+                  borderRadius: 12,
                   border: 'none',
                   background: 'transparent',
                   color: '#DC2626',
@@ -618,7 +632,7 @@ export function Sidebar({ active }: { active: string }) {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 100,
+              zIndex: 111,
               height: 'var(--tabbar-h)',
               background: WHITE,
               borderTop: `1px solid ${BORDER}`,
