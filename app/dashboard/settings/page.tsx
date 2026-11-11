@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { Status } from '@/components/Status'
 import { PageSkeleton } from '@/components/Skeleton'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -582,7 +581,21 @@ export default function SettingsPage() {
       <Sidebar active="/dashboard/settings" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <PageHeader title="Settings">
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Settings
+          </h1>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {saved && <Status label="Saved" tone="success" />}
             <HeaderToolbar
@@ -590,7 +603,7 @@ export default function SettingsPage() {
               items={[{ label: saving ? 'Saving...' : 'Save changes', icon: <AppIcon name="tick" size={15} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
             />
           </div>
-        </PageHeader>
+        </div>
 
         <div className="page-content"
           style={{

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -380,12 +379,25 @@ export default function SchedulePage() {
       <Sidebar active="/dashboard/schedule" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <PageHeader title="Schedule">
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Schedule
+          </h1>
           <HeaderToolbar isMobile={isMobile} items={[
             { label: 'Customers', icon: <AppIcon name="customers" size={15} />, onClick: () => router.push('/dashboard/customers') },
             { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
           ]} />
-        </PageHeader>
+        </div>
 
         <div className="page-content"
           style={{

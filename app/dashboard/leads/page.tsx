@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -837,7 +836,18 @@ export default function LeadsPage() {
       <Sidebar active="/dashboard/leads" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <PageHeader title="Leads">
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Leads</h1>
           <HeaderToolbar
             isMobile={isMobile}
             search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
@@ -847,7 +857,7 @@ export default function LeadsPage() {
               { label: 'Add lead', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => setShowAddLead(true), disabled: !businessId },
             ]}
           />
-        </PageHeader>
+        </div>
 
         <div className="page-content"
           style={{

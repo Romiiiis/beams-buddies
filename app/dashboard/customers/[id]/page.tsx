@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -432,33 +431,47 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       <Sidebar active="/dashboard/customers" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <PageHeader
-          title={<>{customer.first_name} {customer.last_name}</>}
-          leading={
-            isMobile ? (
-              <button
-                type="button"
-                onClick={() => router.push('/dashboard/customers')}
-                aria-label="Back to customers"
-                style={{ width: 36, height: 36, borderRadius: 12, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, padding: 0 }}
-              >
-                <IconArrowLeft size={16} />
-              </button>
-            ) : null
-          }
-          eyebrow={
-            isMobile ? null : (
-              <button
-                type="button"
-                onClick={() => router.push('/dashboard/customers')}
-                style={{ background: 'transparent', border: 'none', padding: 0, margin: 0, color: TEXT3, display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, minHeight: 24 }}
-              >
-                <IconArrowLeft size={12} />
-                Customers
-              </button>
-            )
-          }
+        {/* Unified sticky page header */}
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
         >
+          <div style={{ minWidth: 0 }}>
+            <button
+              onClick={() => router.push('/dashboard/customers')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                color: TEXT3,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: FONT,
+                minHeight: isMobile ? 36 : 24,
+                marginBottom: isMobile ? '-4px' : '2px',
+              }}
+            >
+              <IconArrowLeft size={12} />
+              Customers
+            </button>
+            <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {customer.first_name} {customer.last_name}
+            </h1>
+          </div>
+
           <HeaderToolbar
             isMobile={isMobile}
             items={[
@@ -473,7 +486,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               { label: 'Add job', icon: <IconPlus size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs') },
             ]}
           />
-        </PageHeader>
+        </div>
 
         {/* Mobile action buttons row */}
         {isMobile && (

@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
@@ -937,7 +936,20 @@ export default function JobsPage() {
       <Sidebar active="/dashboard/jobs" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <PageHeader title="Jobs">
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Jobs
+          </h1>
           {/* Labels only: this page is kept icon-free */}
           <HeaderToolbar
             isMobile={isMobile}
@@ -947,7 +959,7 @@ export default function JobsPage() {
               { label: 'Add job', tone: 'primary', onClick: () => router.push('/dashboard/jobs/add') },
             ]}
           />
-        </PageHeader>
+        </div>
 
         <div className="page-content"
           style={{

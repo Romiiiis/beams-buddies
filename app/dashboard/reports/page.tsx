@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -360,7 +359,8 @@ export default function ReportsPage() {
       <Sidebar active="/dashboard/reports" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <PageHeader title="Reports">
+        <div style={{ background: BG, borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '14px 14px 12px' : '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <h1 style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
           <HeaderToolbar
             isMobile={isMobile}
             items={[
@@ -368,7 +368,7 @@ export default function ReportsPage() {
               { label: 'View invoices', icon: <AppIcon name="invoice" size={15} />, onClick: () => router.push('/dashboard/invoices') },
             ]}
           />
-        </PageHeader>
+        </div>
 
         <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 48, background: BG }}>
           {/* One pair of controls drives everything below: the four figures, the chart and both rankings */}

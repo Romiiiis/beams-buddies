@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
-import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
@@ -380,7 +379,21 @@ export default function CustomersPage() {
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Unified sticky page header */}
-        <PageHeader title="Customers">
+        <div
+          style={{
+            background: BG,
+            borderBottom: `1px solid ${BORDER}`,
+            padding: isMobile ? '14px 14px 12px' : '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            gap: '12px',
+          }}
+        >
+          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
+            Customers
+          </h1>
           <HeaderToolbar
             isMobile={isMobile}
             search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
@@ -388,7 +401,7 @@ export default function CustomersPage() {
               { label: 'New customer', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowAddCustomer(true) },
             ]}
           />
-        </PageHeader>
+        </div>
 
         {/* Scrollable content */}
         <div className="page-content"
