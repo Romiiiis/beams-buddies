@@ -37,6 +37,7 @@ const navFinance = [
 ]
 
 const navManage = [
+  { label: 'Calendar', href: '/dashboard/calendar' },
   { label: 'Service schedule', href: '/dashboard/schedule' },
   { label: 'Marketing', href: '/dashboard/marketing' },
   { label: 'Reports', href: '/dashboard/reports' },
@@ -120,6 +121,7 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/revenue': <RevenueIcon />,
   '/dashboard/schedule': <ScheduleIcon />,
   '/dashboard/marketing': <AppIcon name="message" size={20} />,
+  '/dashboard/calendar': <AppIcon name="clock" size={20} />,
   '/dashboard/qrcodes': <QrCodesIcon />,
   '/dashboard/reports': <ReportsIcon />,
   '/dashboard/settings': <SettingsIcon />,
@@ -195,6 +197,7 @@ export function Sidebar({ active }: { active: string }) {
       '/dashboard/revenue',
       '/dashboard/schedule',
       '/dashboard/marketing',
+      '/dashboard/calendar',
       '/dashboard/qrcodes',
       '/dashboard/reports',
     ]

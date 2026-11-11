@@ -119,7 +119,7 @@ const DAY_LABELS_SHORT = ['S','M','T','W','T','F','S']
 
 type CalItem = {
   id: string
-  kind: 'service' | 'booking'
+  kind: 'service' | 'booking' | 'visit'
   dateKey: string
   name: string
   label: string
@@ -132,6 +132,7 @@ type CalItem = {
 const KIND_STYLE = {
   service: { label: 'Service due', bg: TEAL_LIGHT, fg: TEAL_DARK },
   booking: { label: 'Booked', bg: '#EFF6FF', fg: '#1D4ED8' },
+  visit: { label: 'Visit', bg: '#EEF2FF', fg: '#4338CA' },
 }
 
 function JobDayPopup({ date, jobs, onClose, onJobClick }: {
@@ -381,6 +382,7 @@ export default function DashboardPage() {
   const [popupDate,    setPopupDate]    = useState<Date | null>(null)
   const [popupJobs,    setPopupJobs]    = useState<CalItem[]>([])
   const [allLeads,     setAllLeads]     = useState<any[]>([])
+  const [allVisits,    setAllVisits]    = useState<any[]>([])
   const [stats,        setStats]        = useState({ customers: 0, units: 0, overdue: 0, jobsThisMonth: 0, jobsToday: 0 })
   const [invoiceStats, setInvoiceStats] = useState({ outstanding: 0, overdueCount: 0, allInvoices: [] as any[] })
   const [allJobs,      setAllJobs]      = useState<any[]>([])
@@ -406,18 +408,23 @@ export default function DashboardPage() {
       const nowMonth   = todayLocal.getMonth()
       const nowYear    = todayLocal.getFullYear()
 
-      const [customersRes, jobsRes, invoicesRes, leadsRes] = await Promise.all([
+      const visitFrom = new Date(nowYear, nowMonth - 1, 1).toISOString()
+      const visitTo   = new Date(nowYear, nowMonth + 5, 1).toISOString()
+      const [customersRes, jobsRes, invoicesRes, leadsRes, visitsRes] = await Promise.all([
         supabase.from('customers').select('id').eq('business_id', bid),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
         supabase.from('invoices').select('*, customers(first_name, last_name)').eq('business_id', bid).order('created_at', { ascending: false }),
         // Booked visits from the Leads board also belong on the calendar
         supabase.from('leads').select('id, customer_name, phone_number, suburb, job_type, status, preferred_date, preferred_start_time').eq('status', 'booked').not('preferred_date', 'is', null),
+        // Scheduled visits from the Calendar (technicians)
+        supabase.from('job_visits').select('id, title, kind, status, start_at, customers(first_name, last_name, suburb, phone), staff_members(name)').eq('business_id', bid).neq('status', 'cancelled').gte('start_at', visitFrom).lt('start_at', visitTo),
       ])
 
       const jobs: any[]     = jobsRes.data || []
       const invoices: any[] = invoicesRes.data || []
 
       setAllLeads(leadsRes.data || [])
+      setAllVisits(visitsRes.data || [])
 
       const overdue       = jobs.filter(j => serviceBucket(j) === 'overdue')
       const jobsToday     = 0 // worked out from the calendar items below
@@ -501,8 +508,25 @@ export default function DashboardPage() {
         href: '/dashboard/leads',
       })
     })
+    allVisits.forEach(v => {
+      const start = new Date(v.start_at)
+      if (isNaN(start.getTime())) return
+      const kindLabel = ({ service: 'Service', install: 'Installation', repair: 'Repair', quote: 'Quote visit', other: 'Visit' } as Record<string, string>)[v.kind] || 'Visit'
+      const tech = v.staff_members?.name ? String(v.staff_members.name).split(' ')[0] : ''
+      out.push({
+        id: `visit-${v.id}`,
+        kind: 'visit',
+        dateKey: toYMD(start),
+        name: `${v.customers?.first_name || ''} ${v.customers?.last_name || ''}`.trim() || v.title || 'Visit',
+        label: tech ? `${kindLabel} · ${tech}` : kindLabel,
+        suburb: v.customers?.suburb,
+        phone: v.customers?.phone,
+        time: `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`,
+        href: '/dashboard/calendar',
+      })
+    })
     return out
-  }, [allJobs, allLeads])
+  }, [allJobs, allLeads, allVisits])
 
   const todayItems = useMemo(
     () => calendarItems.filter(i => i.dateKey === todayKey).sort((a, b) => (a.time || '99').localeCompare(b.time || '99')),
@@ -520,7 +544,7 @@ export default function DashboardPage() {
   const statChips = [
     { label: 'Total Customers', value: stats.customers,  danger: false,              icon: <IconUsers size={13} />,       onClick: () => router.push('/dashboard/customers') },
     { label: 'Upcoming Jobs',   value: scheduledCount,   danger: false,              icon: <IconCalendar size={13} />,    onClick: () => router.push('/dashboard/jobs') },
-    { label: 'Jobs Today',      value: todayItems.length,  danger: false,              icon: <IconClock size={13} />,       onClick: () => router.push('/dashboard/schedule') },
+    { label: 'Jobs Today',      value: todayItems.length,  danger: false,              icon: <IconClock size={13} />,       onClick: () => router.push('/dashboard/calendar') },
     { label: 'Overdue Jobs',    value: stats.overdue,    danger: stats.overdue > 0,  icon: <IconAlertCircle size={13} />, onClick: () => router.push('/dashboard/jobs') },
   ]
 
@@ -578,7 +602,7 @@ export default function DashboardPage() {
               items={[
                 ...(!isMobile
                   ? [
-                      { label: 'Schedule', icon: <AppIcon name="calendar-clock" size={15} />, onClick: () => router.push('/dashboard/schedule') },
+                      { label: 'Calendar', icon: <AppIcon name="calendar-clock" size={15} />, onClick: () => router.push('/dashboard/calendar') },
                       { label: 'Revenue', icon: <AppIcon name="dollar" size={15} />, onClick: () => router.push('/dashboard/revenue') },
                     ]
                   : []),
@@ -664,7 +688,7 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: TEXT3 }}>{todayItems.length} booked</span>
-                    <HeaderToolbar size="sm" items={[{ label: 'Full calendar', icon: <AppIcon name="calendar" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
+                    <HeaderToolbar size="sm" items={[{ label: 'Full calendar', icon: <AppIcon name="calendar" size={14} />, onClick: () => router.push('/dashboard/calendar') }]} />
                   </div>
                 </div>
 
@@ -720,7 +744,7 @@ export default function DashboardPage() {
               <div style={card}>
                 <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Bookings</span>
-                  <HeaderToolbar size="sm" items={[{ label: 'View schedule', icon: <AppIcon name="calendar-clock" size={14} />, onClick: () => router.push('/dashboard/schedule') }]} />
+                  <HeaderToolbar size="sm" items={[{ label: 'View calendar', icon: <AppIcon name="calendar-clock" size={14} />, onClick: () => router.push('/dashboard/calendar') }]} />
                 </div>
                 <BookingsWidget
                   items={calendarItems}
@@ -804,7 +828,7 @@ export default function DashboardPage() {
                   { label: 'New Job',       sub: 'Add a job for a customer',    onClick: () => router.push('/dashboard/jobs/add') },
                   { label: 'New Invoice',   sub: 'Create and send an invoice',  onClick: () => router.push('/dashboard/invoices') },
                   { label: 'Add Customer',  sub: 'Register a new customer',     onClick: () => router.push('/dashboard/customers') },
-                  { label: 'View Schedule', sub: 'Open the service calendar',   onClick: () => router.push('/dashboard/schedule') },
+                  { label: 'Calendar',      sub: 'Plan visits for your team',   onClick: () => router.push('/dashboard/calendar') },
                 ] as { label: string; sub: string; onClick: () => void }[]).map(action => (
                   <button
                     key={action.label}
