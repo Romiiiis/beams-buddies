@@ -14,7 +14,11 @@ import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
 import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
-import { BTN, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal } from '@/components/forms'
+import { BTN, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
+import { QuoteView } from './QuoteView'
+import { randomQuoteNumber } from '@/lib/quote-number'
+
+const QUOTE_SELECT = '*, customers(first_name, last_name, suburb, phone, email, address)'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -105,6 +109,7 @@ type Quote = {
     suburb: string
     phone: string
     email: string
+    address?: string
   }
 }
 
@@ -192,6 +197,9 @@ export default function QuotesPage() {
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Quote | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [viewingId, setViewingId] = useState<string | null>(null)
+  const [businessInfo, setBusinessInfo] = useState<any>(null)
+  const [notice, setNotice] = useState('')
 
   const [form, setForm] = useState({
     customer_id: '',
@@ -221,10 +229,10 @@ export default function QuotesPage() {
 
       setBusinessId(userData.business_id)
 
-      const [quotesRes, customersRes] = await Promise.all([
+      const [quotesRes, customersRes, businessRes] = await Promise.all([
         supabase
           .from('quotes')
-          .select('*, customers(first_name, last_name, suburb, phone, email)')
+          .select(QUOTE_SELECT)
           .eq('business_id', userData.business_id)
           .order('created_at', { ascending: false }),
         supabase
@@ -232,10 +240,12 @@ export default function QuotesPage() {
           .select('id, first_name, last_name, suburb')
           .eq('business_id', userData.business_id)
           .order('first_name'),
+        supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
       ])
 
       setQuotes((quotesRes.data as Quote[]) || [])
       setCustomers(customersRes.data || [])
+      setBusinessInfo(businessRes.data)
       setLoading(false)
     }
 
@@ -271,28 +281,44 @@ export default function QuotesPage() {
     setSaving(true)
     const taxRate = parseFloat(form.tax_rate) || 10
     const { subtotal, tax_amount, total } = calcTotals(form.line_items, taxRate)
-    const quote_number = `Q-${String(quotes.length + 1).padStart(4, '0')}`
-
-    const { data } = await supabase
-      .from('quotes')
-      .insert({
-        business_id: businessId,
-        customer_id: form.customer_id,
-        quote_number,
-        status: 'draft',
-        line_items: form.line_items,
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount,
-        total,
-        notes: form.notes,
-        valid_until: form.valid_until || null,
-      })
-      .select('*, customers(first_name, last_name, suburb, phone, email)')
-      .single()
+    // A random number that no other quote has. The database also refuses repeats; if it ever says a number is
+    // taken, another is tried.
+    const taken = quotes.map(q => q.quote_number)
+    let data: Quote | null = null
+    let failed = false
+    for (let attempt = 0; attempt < 6 && !data; attempt++) {
+      const quote_number = randomQuoteNumber(taken)
+      const res = await supabase
+        .from('quotes')
+        .insert({
+          business_id: businessId,
+          customer_id: form.customer_id,
+          quote_number,
+          status: 'draft',
+          line_items: form.line_items,
+          subtotal,
+          tax_rate: taxRate,
+          tax_amount,
+          total,
+          notes: form.notes,
+          valid_until: form.valid_until || null,
+        })
+        .select(QUOTE_SELECT)
+        .single()
+      if (res.data) data = res.data as Quote
+      else if (res.error?.code === '23505') taken.push(quote_number)
+      else {
+        failed = true
+        break
+      }
+    }
 
     if (data) {
       setQuotes(prev => [data as Quote, ...prev])
+    } else if (failed || !data) {
+      setNotice('The quote could not be saved. Please try again.')
+      setSaving(false)
+      return
     }
 
     setShowForm(false)
@@ -316,10 +342,13 @@ export default function QuotesPage() {
     const { error } = await supabase.from('quotes').delete().eq('id', id)
     if (!error) {
       setQuotes(prev => prev.filter(q => q.id !== id))
+      if (viewingId === id) setViewingId(null)
       setDeleteTarget(null)
     }
     setDeleting(false)
   }
+
+  const viewing = quotes.find(q => q.id === viewingId) || null
 
   const statusCounts = useMemo(() => {
     const counts = { draft: 0, sent: 0, accepted: 0, declined: 0, expired: 0 }
@@ -554,7 +583,11 @@ export default function QuotesPage() {
               rows={filtered}
               rowKey={q => q.id}
               emptyText="No quotes found."
-              rowActions={() => [{ label: 'Delete quote', danger: true, onClick: q => setDeleteTarget(q) }]}
+              onRowClick={q => setViewingId(q.id)}
+              rowActions={() => [
+                { label: 'Open quote', onClick: q => setViewingId(q.id) },
+                { label: 'Delete quote', danger: true, onClick: q => setDeleteTarget(q) },
+              ]}
               tabs={quoteTabs}
               activeTab={filterStatus}
               onTabChange={setFilterStatus}
@@ -810,6 +843,25 @@ export default function QuotesPage() {
         </Modal>
       )}
 
+      {viewing && (
+        <QuoteView
+          quote={viewing}
+          business={businessInfo}
+          isMobile={isMobile}
+          statusControl={
+            <StatusSelect
+              value={viewing.status}
+              options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
+              onChange={v => updateStatus(viewing.id, v)}
+              colors={{ bg: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).bg, fg: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).color, border: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).border }}
+              label="Quote status"
+            />
+          }
+          onClose={() => setViewingId(null)}
+          onDelete={() => setDeleteTarget(viewing)}
+        />
+      )}
+
       {deleteTarget && (
         <ConfirmDialog
           title={`Delete ${deleteTarget.quote_number}?`}
@@ -820,6 +872,8 @@ export default function QuotesPage() {
           onConfirm={() => deleteQuote(deleteTarget.id)}
         />
       )}
+
+      {notice && <Toast message={notice} tone="error" onClose={() => setNotice('')} />}
     </div>
   )
 }

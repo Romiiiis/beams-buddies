@@ -194,11 +194,12 @@ interface LeadDrawerProps {
   onClose: () => void
   onUpdate: (updated: any) => void
   onConvert: (lead: any) => void
+  onDelete: (lead: any) => void
   converting: boolean
   isMobile: boolean
 }
 
-function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }: LeadDrawerProps) {
+function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, isMobile }: LeadDrawerProps) {
   const [status, setStatus] = useState(lead.status)
   const [preferredDate, setPreferredDate] = useState(lead.preferred_date || '')
   const [preferredTime, setPreferredTime] = useState(lead.preferred_start_time || '')
@@ -592,6 +593,24 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, converting, isMobile }
               <IconPhone size={15} /> Call {lead.customer_name?.split(' ')[0]}
             </a>
           )}
+
+          <button
+            type="button"
+            onClick={() => onDelete(lead)}
+            style={{
+              height: '44px',
+              borderRadius: '12px',
+              border: '1px solid #FECACA',
+              background: WHITE,
+              color: RED,
+              fontSize: '13px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              fontFamily: FONT,
+            }}
+          >
+            Delete lead
+          </button>
         </div>
       </div>
     </>
@@ -611,6 +630,8 @@ export default function LeadsPage() {
   const [showAddLead, setShowAddLead] = useState(false)
   const [movingId, setMovingId] = useState<string | null>(null)
   const [convertTarget, setConvertTarget] = useState<any>(null)
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
+  const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
 
   useEffect(() => {
@@ -715,6 +736,20 @@ export default function LeadsPage() {
       setToast({ text: `Couldn’t move the lead: ${error.message}`, error: true })
     }
     setMovingId(null)
+  }
+
+  async function deleteLead(lead: any) {
+    setDeleting(true)
+    const { error } = await supabase.from('leads').delete().eq('id', lead.id)
+    setDeleting(false)
+    setDeleteTarget(null)
+    if (error) {
+      setToast({ text: `Couldn’t delete the lead: ${error.message}`, error: true })
+      return
+    }
+    setLeads(prev => prev.filter(l => l.id !== lead.id))
+    setSelectedLead(null)
+    setToast({ text: 'Lead deleted.' })
   }
 
   async function convertToJob(lead: any) {
@@ -963,8 +998,23 @@ export default function LeadsPage() {
           onClose={() => setSelectedLead(null)}
           onUpdate={handleUpdate}
           onConvert={convertToJob}
+          onDelete={lead => setDeleteTarget(lead)}
           converting={converting === selectedLead.id}
           isMobile={isMobile}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title={`Delete ${deleteTarget.customer_name || 'this lead'}?`}
+          message={
+            deleteTarget.status === 'converted'
+              ? 'This removes the lead only. The customer and job already made from it stay.'
+              : 'This permanently deletes the lead. This cannot be undone.'
+          }
+          busy={deleting}
+          busyLabel="Deleting..."
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => deleteLead(deleteTarget)}
         />
       )}
       {convertTarget && (
