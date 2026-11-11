@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { invoiceHtml, invoiceSubject, invoiceText, type InvoiceSender } from '@/lib/invoice-email'
+import { invoiceLink } from '@/lib/site'
 
 // Sends an invoice email to the invoice's customer through Resend, same as service reminders.
 //
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
 
   const sender: InvoiceSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
   const subject = invoiceSubject(invoice, sender)
+  const link = invoiceLink(String((invoice as any).public_token))
   const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
 
   const ownDomain = String((business as any)?.email_domain || '').trim().toLowerCase()
@@ -80,8 +82,8 @@ export async function POST(request: Request) {
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
       subject,
-      html: invoiceHtml(invoice, sender, settings),
-      text: invoiceText(invoice, sender, settings),
+      html: invoiceHtml(invoice, sender, settings, link),
+      text: invoiceText(invoice, sender, settings, link),
     }),
   })
 
@@ -92,9 +94,9 @@ export async function POST(request: Request) {
   }
 
   // A draft becomes "sent" once it has gone to the customer
-  if ((invoice as any).status === 'draft') {
-    await supabase.from('invoices').update({ status: 'sent' }).eq('id', invoiceId).eq('business_id', businessId)
-  }
+  const patch: Record<string, unknown> = { sent_at: new Date().toISOString() }
+  if ((invoice as any).status === 'draft') patch.status = 'sent'
+  await supabase.from('invoices').update(patch).eq('id', invoiceId).eq('business_id', businessId)
 
   return json({ ok: true, sent_at: new Date().toISOString(), to, status: (invoice as any).status === 'draft' ? 'sent' : (invoice as any).status }, 200)
 }

@@ -12,7 +12,9 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
-import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
+import { BTN, FIELD, LABEL, Modal, Toast } from '@/components/forms'
+import { ImportCustomersModal } from './ImportCustomersModal'
+import { downloadCsv } from '@/lib/csv'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -125,6 +127,25 @@ export default function CustomersPage() {
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', phone: '', email: '' })
   const [addSaving, setAddSaving] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [notice, setNotice] = useState('')
+
+  function exportCsv() {
+    downloadCsv('customers.csv', [
+      ['First name', 'Last name', 'Email', 'Phone', 'Address', 'Suburb', 'State', 'Postcode', 'Notes', 'Jobs', 'Added'],
+      ...customers.map(c => [c.first_name, c.last_name, c.email, c.phone, c.address, c.suburb, c.state, c.postcode, c.notes, c.jobs?.length || 0, String(c.created_at || '').slice(0, 10)]),
+    ])
+  }
+
+  async function reloadCustomers() {
+    if (!businessId) return
+    const { data } = await supabase
+      .from('customers')
+      .select('*, jobs(id, brand, model, capacity_kw, next_service_date, created_at)')
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+    setCustomers(data || [])
+  }
 
   useEffect(() => {
     async function load() {
@@ -398,7 +419,13 @@ export default function CustomersPage() {
             isMobile={isMobile}
             search={{ value: search, onChange: setSearch, placeholder: 'Search...' }}
             items={[
-              { label: 'New customer', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowAddCustomer(true) },
+              ...(!isMobile
+                ? [
+                    { label: 'Import', icon: <AppIcon name="upload" size={15} />, onClick: () => setShowImport(true) },
+                    { label: 'Export', icon: <AppIcon name="download" size={15} />, onClick: exportCsv },
+                  ]
+                : []),
+              { label: 'New customer', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => setShowAddCustomer(true) },
             ]}
           />
         </div>
@@ -597,6 +624,21 @@ export default function CustomersPage() {
           </div>
         </Modal>
       )}
+
+      {showImport && businessId && (
+        <ImportCustomersModal
+          businessId={businessId}
+          existing={customers}
+          onClose={() => setShowImport(false)}
+          onDone={async n => {
+            setShowImport(false)
+            await reloadCustomers()
+            setNotice(`${n} customer${n === 1 ? '' : 's'} imported.`)
+          }}
+        />
+      )}
+
+      {notice && <Toast message={notice} onClose={() => setNotice('')} />}
     </>
   )
 }

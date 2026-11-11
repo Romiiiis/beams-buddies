@@ -241,6 +241,8 @@ export type QuoteInput = {
   validUntil: Date | null
   /** Whole days until the quote expires (negative when expired). */
   validDays: number | null
+  /** Private quote page. When given, the email links there so the customer can accept online. */
+  link?: string
   lines: LineInput[]
   total: number
 }
@@ -256,7 +258,7 @@ export function buildQuote(i: QuoteInput, s: EmailSender): EmailContent {
   if (what) facts.push(['For', what])
   if (i.sent) facts.push(['Sent', dateShort(i.sent)])
   if (i.validUntil) facts.push(['Valid until', dateShort(i.validUntil)])
-  const href = replyHref(s, `Quote ${i.number}`)
+  const href = i.link || replyHref(s, `Quote ${i.number}`)
   return {
     kind: 'quote',
     subject: `Following up on quote ${i.number} | ${biz}`,
@@ -272,8 +274,8 @@ export function buildQuote(i: QuoteInput, s: EmailSender): EmailContent {
       chip,
     },
     facts,
-    closing: [`If everything looks good, just reply to this email${callUs} and we will lock in a date.`],
-    button: href ? { text: 'Reply to this quote', href } : undefined,
+    closing: i.link ? [`You can accept online in a minute, or reply to this email${callUs} if you would like to change anything.`] : [`If everything looks good, just reply to this email${callUs} and we will lock in a date.`],
+    button: href ? { text: i.link ? 'View and accept quote' : 'Reply to this quote', href } : undefined,
     signoff: 'Kind regards,',
   }
 }
