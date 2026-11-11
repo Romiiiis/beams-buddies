@@ -285,6 +285,11 @@ textarea::placeholder {
   .jb-select:not(.sm) { font-size: 16px; }
 }
 
+/* The actions under a phone pop-up's title (Send, Contact, Delete...) share the row evenly; a lone button keeps its size */
+.modal-actions { order: 3; width: 100%; display: flex; gap: 8px; }
+.modal-actions > * { flex: 1 1 0; min-width: 0; }
+.modal-actions > :only-child { flex: 0 0 auto; }
+
 /* Option chooser: a soft grey track with the chosen option raised on a white tile (like an iOS segmented control).
    Up to six options share one equal width; more than that wrap. On a phone it spans the width. */
 .jb-chips {

@@ -12,6 +12,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { Status, type StatusTone } from '@/components/Status'
+import { DrawerHeader } from '@/components/DrawerHeader'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
@@ -226,47 +227,30 @@ function JobDrawer({
           fontFamily: FONT,
         }}
       >
-        <div
-          style={{
-            padding: '18px 20px 16px',
-            borderBottom: `1px solid ${BORDER}`,
-            background: WHITE,
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-            <div>
-              <div style={{ ...TYPE.label, marginBottom: '6px' }}>
-                {getEquipmentLabel(form.equipment_type)}
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px', letterSpacing: '-0.035em' }}>
-                {name}
-              </div>
-              {customer?.phone && <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{customer.phone}</div>}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <button
-                onClick={() => setShowContact(true)}
-                style={{ height: '34px', padding: '0 12px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-              >
-                Contact
-              </button>
-              <button
-                onClick={onClose}
-                aria-label="Close"
-                style={{ width: '34px', height: '34px', borderRadius: '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', lineHeight: 1, fontFamily: FONT }}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-
-          <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-            <Status label={serviceLabel} tone={serviceTone} />
-            {saved && <Status label="Saved" tone="success" />}
-          </div>
-        </div>
+        <DrawerHeader
+          isMobile={isMobile}
+          onClose={onClose}
+          closeLabel="Back to jobs"
+          eyebrow={getEquipmentLabel(form.equipment_type)}
+          title={name}
+          detail={customer?.phone}
+          meta={
+            <>
+              <Status label={serviceLabel} tone={serviceTone} />
+              {isMobile && getEquipmentLabel(form.equipment_type) && <span>· {getEquipmentLabel(form.equipment_type)}</span>}
+              {saved && <Status label="Saved" tone="success" />}
+            </>
+          }
+          actions={
+            <button
+              type="button"
+              onClick={() => setShowContact(true)}
+              style={{ height: isMobile ? '36px' : '34px', padding: '0 12px', borderRadius: isMobile ? '12px' : '10px', border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              Contact
+            </button>
+          }
+        />
 
         <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gridAutoRows: 'max-content', alignContent: 'start', gap: '12px', background: BG }}>
           <div style={fieldBox}>
@@ -274,7 +258,7 @@ function JobDrawer({
               <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
               <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Customer</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
                 { label: 'Name', value: name },
                 { label: 'Phone', value: customer?.phone || '—' },
@@ -297,7 +281,7 @@ function JobDrawer({
                   <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                   <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT, textTransform: 'capitalize' }}>{industryConfig.terminology.equipment} details</div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {[
                     { label: industryConfig.fields.brand.label, value: form.brand || '—' },
                     { label: industryConfig.fields.model.label, value: form.model || '—' },
@@ -321,7 +305,7 @@ function JobDrawer({
                   <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
                   <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Service schedule</div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {[
                     {
                       label: industryConfig.fields.installDate.label,
@@ -483,10 +467,13 @@ function JobDrawer({
                 Edit job
               </button>
 
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile && customer?.phone ? '1fr 1fr' : '1fr', gap: '8px' }}>
               <button
                 onClick={() => router.push('/dashboard/jobs/add')}
                 style={{
                   height: '44px',
+                  minWidth: 0,
+                  padding: '0 10px',
                   borderRadius: '12px',
                   border: `1px solid ${BORDER}`,
                   background: WHITE,
@@ -509,6 +496,8 @@ function JobDrawer({
                   href={`tel:${customer.phone}`}
                   style={{
                     height: '44px',
+                  minWidth: 0,
+                  padding: '0 10px',
                     borderRadius: '12px',
                     border: `1px solid ${BORDER}`,
                     background: WHITE,
@@ -525,9 +514,10 @@ function JobDrawer({
                   Call {customer.first_name}
                 </a>
               )}
+              </div>
             </>
           ) : (
-            <>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 2fr' : '1fr', gap: '8px' }}>
               <button
                 onClick={saveJob}
                 disabled={saving}
@@ -546,6 +536,7 @@ function JobDrawer({
                   justifyContent: 'center',
                   gap: '8px',
                   opacity: saving ? 0.7 : 1,
+                  order: isMobile ? 2 : 0,
                 }}
               >
                 {saving ? 'Saving...' : 'Save changes'}
@@ -554,6 +545,7 @@ function JobDrawer({
               <button
                 onClick={() => setEditing(false)}
                 style={{
+                  order: isMobile ? 1 : 0,
                   height: '44px',
                   borderRadius: '12px',
                   border: `1px solid ${BORDER}`,
@@ -567,7 +559,7 @@ function JobDrawer({
               >
                 Cancel
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

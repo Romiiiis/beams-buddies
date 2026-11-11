@@ -129,48 +129,32 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
           fontFamily: FONT,
         }}
       >
-        <div style={{ height: '4px', background: TEAL }} />
-
-        <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '17px', fontWeight: 800, color: TEXT, letterSpacing: '-0.03em' }}>
+        <div style={{ padding: '16px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ fontSize: '17px', fontWeight: 800, color: TEXT, letterSpacing: '-0.03em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             Contact {customer.first_name}
           </div>
           <button
+            type="button"
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: TEXT3, fontSize: '22px', lineHeight: 1, padding: '0 4px', fontFamily: FONT }}
+            aria-label="Close"
+            style={{ width: isMobile ? 36 : 34, height: isMobile ? 36 : 34, flexShrink: 0, borderRadius: isMobile ? 12 : 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, cursor: 'pointer', fontSize: '20px', lineHeight: 1, padding: 0, fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             ×
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', padding: '0 20px 16px' }}>
-          {([
-            { key: 'call' as const,  label: 'Call',  icon: <IconPhone size={13} /> },
-            { key: 'text' as const,  label: 'Text',  icon: <IconMessage size={13} /> },
-            { key: 'email' as const, label: 'Email', icon: <IconMail size={13} /> },
-          ]).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setChannel(tab.key)}
-              style={{
-                height: '34px',
-                padding: '0 14px',
-                borderRadius: '9px',
-                border: channel === tab.key ? 'none' : `1px solid ${BORDER}`,
-                background: channel === tab.key ? TEAL : WHITE,
-                color: channel === tab.key ? WHITE : TEXT2,
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: FONT,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              {tab.icon}{tab.label}
-            </button>
-          ))}
+        <div style={{ padding: '0 20px 16px' }}>
+          <div className="jb-chips" role="radiogroup" aria-label="How to contact">
+            {([
+              { key: 'call' as const,  label: 'Call',  icon: <IconPhone size={14} /> },
+              { key: 'text' as const,  label: 'Text',  icon: <IconMessage size={14} /> },
+              { key: 'email' as const, label: 'Email', icon: <IconMail size={14} /> },
+            ]).map(tab => (
+              <button key={tab.key} type="button" role="radio" aria-checked={channel === tab.key} className="jb-chip" onClick={() => setChannel(tab.key)}>
+                {tab.icon}{tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {channel === 'call' ? (

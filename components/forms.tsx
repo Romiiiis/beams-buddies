@@ -232,38 +232,37 @@ export function Modal({
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: 10,
+            gap: phone ? 12 : 10,
             flexShrink: 0,
           }}
         >
-          <div style={{ fontSize: 17, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1.25, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>{title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', ...(phone && headerExtra ? { width: '100%', order: 3 } : {}) }}>
-            {headerExtra}
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={busy}
-              aria-label="Close"
-              style={{
-                width: 34,
-                height: 34,
-                flexShrink: 0,
-                borderRadius: 10,
-                border: `1px solid ${LINE}`,
-                background: WHITE,
-                color: TEXT3,
-                fontSize: 20,
-                lineHeight: 1,
-                cursor: busy ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...(phone && headerExtra ? { marginLeft: 'auto' } : {}),
-              }}
-            >
-              ×
-            </button>
-          </div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', lineHeight: 1.25, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', ...(phone ? { flex: 1 } : {}) }}>{title}</div>
+          {/* On a phone the close button stays beside the title and the actions get a row of their own, evenly spread */}
+          {!phone && headerExtra && <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>{headerExtra}</div>}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            aria-label="Close"
+            style={{
+              width: phone ? 36 : 34,
+              height: phone ? 36 : 34,
+              flexShrink: 0,
+              borderRadius: phone ? 12 : 10,
+              border: `1px solid ${LINE}`,
+              background: WHITE,
+              color: TEXT3,
+              fontSize: 20,
+              lineHeight: 1,
+              cursor: busy ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ×
+          </button>
+          {phone && headerExtra && <div className="modal-actions">{headerExtra}</div>}
         </div>
 
         <div className="modal-body" style={{ padding: flush ? 0 : phone ? '16px' : '20px 24px', overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain', flex: 1, minHeight: 0 }}>

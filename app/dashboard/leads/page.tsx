@@ -14,6 +14,7 @@ import { Status, STATUS_DOT, type StatusTone } from '@/components/Status'
 import { LeadPipeline, type PipelineStage } from './LeadPipeline'
 import { AddLeadModal } from './AddLeadModal'
 import { ConfirmDialog, Toast } from '@/components/forms'
+import { DrawerHeader } from '@/components/DrawerHeader'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -90,10 +91,6 @@ function IconArrow({ size = 15 }: { size?: number }) {
 
 function IconFilter({ size = 15 }: { size?: number }) {
   return <AppIcon name="filter" size={size} />
-}
-
-function IconClose({ size = 18 }: { size?: number }) {
-  return <AppIcon name="close" size={size} />
 }
 
 function IconEdit({ size = 15 }: { size?: number }) {
@@ -225,53 +222,25 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
           fontFamily: FONT,
         }}
       >
-        <div
-          style={{
-            padding: '18px 20px 16px',
-            borderBottom: `1px solid ${BORDER}`,
-            background: WHITE,
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ ...TYPE.label, marginBottom: '6px' }}>Inbound call</div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: TEXT, lineHeight: 1.2, marginBottom: '4px', letterSpacing: '-0.035em' }}>
-                {lead.customer_name}
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: TEXT3 }}>{lead.phone_number}</div>
-            </div>
-
-            <button
-              onClick={onClose}
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                border: `1px solid ${BORDER}`,
-                background: WHITE,
-                color: TEXT3,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <IconClose size={16} />
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px', flexWrap: 'wrap' }}>
-            <StatusBadge status={status} />
-            {lead.job_type && (
-              <>
-                <span aria-hidden="true" style={{ color: '#CBD5E1', fontWeight: 700 }}>·</span>
-                <JobTypeBadge type={lead.job_type} />
-              </>
-            )}
-          </div>
-        </div>
+        <DrawerHeader
+          isMobile={isMobile}
+          onClose={onClose}
+          closeLabel="Back to leads"
+          eyebrow="Inbound call"
+          title={lead.customer_name}
+          detail={lead.phone_number}
+          meta={
+            <>
+              <StatusBadge status={status} />
+              {lead.job_type && (
+                <>
+                  <span aria-hidden="true" style={{ color: '#CBD5E1', fontWeight: 700 }}>·</span>
+                  <JobTypeBadge type={lead.job_type} />
+                </>
+              )}
+            </>
+          }
+        />
 
         <div className="drawer-content" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'grid', gridAutoRows: 'max-content', alignContent: 'start', gap: '12px', background: BG }}>
           <div
@@ -507,11 +476,13 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
             </div>
           )}
 
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile && lead.phone_number ? '1fr 1fr' : '1fr', gap: '8px' }}>
           {lead.phone_number && (
             <a
               href={`tel:${lead.phone_number}`}
               style={{
                 height: '44px',
+                minWidth: 0,
                 borderRadius: '12px',
                 border: `1px solid ${BORDER}`,
                 background: WHITE,
@@ -534,6 +505,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
             onClick={() => onDelete(lead)}
             style={{
               height: '44px',
+                minWidth: 0,
               borderRadius: '12px',
               border: '1px solid #FECACA',
               background: WHITE,
@@ -546,6 +518,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
           >
             Delete lead
           </button>
+          </div>
         </div>
       </div>
     </>
