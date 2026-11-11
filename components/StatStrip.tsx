@@ -50,9 +50,14 @@ function deltaTone(delta: string, up: boolean | undefined, label: string) {
 /**
  * Overview strip at the top of a page: label, a large number, then a change pill and a short note.
  * Four cells in one rounded card with thin dividers; two by two on phones.
+ *
+ * On a phone the cells are compact: smaller type and spacing, and the change is plain coloured text on the
+ * same line as its note instead of a tinted pill. Every figure and note is still there. Pass variant="full"
+ * to keep the roomier phone layout (the Reports page does).
  */
-export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: boolean }) {
+export function StatStrip({ items, isMobile, variant = 'compact' }: { items: StatItem[]; isMobile: boolean; variant?: 'compact' | 'full' }) {
   const cols = isMobile ? 2 : Math.min(items.length, 4)
+  const compact = isMobile && variant === 'compact'
   return (
     <div
       style={{
@@ -80,7 +85,7 @@ export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: bo
             key={item.label}
             onClick={item.onClick}
             style={{
-              padding: isMobile ? '14px 16px' : '16px 20px',
+              padding: compact ? '8px 12px' : isMobile ? '14px 16px' : '16px 20px',
               minWidth: 0,
               cursor: item.onClick ? 'pointer' : 'default',
               borderLeft: showLeft ? `1px solid ${BORDER}` : 'none',
@@ -90,11 +95,11 @@ export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: bo
             onMouseEnter={e => { if (item.onClick) e.currentTarget.style.background = '#F8FAFC' }}
             onMouseLeave={e => { e.currentTarget.style.background = WHITE }}
           >
-            <div style={{ fontSize: 12.5, fontWeight: 500, color: TEXT3, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
+            <div style={{ fontSize: compact ? 11 : 12.5, fontWeight: 500, color: TEXT3, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
             <div
               style={{
-                marginTop: 2,
-                fontSize: text ? (isMobile ? 17 : 20) : isMobile ? 23 : 27,
+                marginTop: compact ? 1 : 2,
+                fontSize: text ? (compact ? 14 : isMobile ? 17 : 20) : compact ? 19 : isMobile ? 23 : 27,
                 fontWeight: text ? 600 : 650,
                 color: danger ? RED : empty ? TEXT3 : TEXT,
                 letterSpacing: '-0.032em',
@@ -108,9 +113,13 @@ export function StatStrip({ items, isMobile }: { items: StatItem[]; isMobile: bo
               {item.value}
             </div>
             {(delta || note) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, fontSize: 12, color: TEXT3, minWidth: 0, whiteSpace: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 6 : 8, marginTop: compact ? 2 : 5, fontSize: compact ? 11 : 12, lineHeight: compact ? 1.2 : undefined, color: TEXT3, minWidth: 0, whiteSpace: 'nowrap' }}>
                 {delta && tone && (
-                  <span style={{ padding: '1px 7px', borderRadius: 99, background: tone.bg, color: tone.fg, fontSize: 11.5, fontWeight: 650, flexShrink: 0 }}>{delta}</span>
+                  compact ? (
+                    <span style={{ color: tone.fg === TEXT3 ? TEXT3 : tone.fg, fontWeight: 650, flexShrink: 0 }}>{delta}</span>
+                  ) : (
+                    <span style={{ padding: '1px 7px', borderRadius: 99, background: tone.bg, color: tone.fg, fontSize: 11.5, fontWeight: 650, flexShrink: 0 }}>{delta}</span>
+                  )
                 )}
                 {note && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note}</span>}
               </div>

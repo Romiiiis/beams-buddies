@@ -388,7 +388,7 @@ export default function ReportsPage() {
             </Select>
           </div>
 
-          <StatStrip items={stripItems} isMobile={isMobile} />
+          <StatStrip items={stripItems} isMobile={isMobile} variant="full" />
 
           <div style={card}>
             <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

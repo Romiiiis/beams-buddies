@@ -35,12 +35,14 @@ const css = `
   .sk-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
   .sk-hide-mobile { display: block; }
+  .sk-note { display: none; }
 
   @media (max-width: 767px) {
     .sk-head { padding: 14px 14px 12px; }
     .sk-body { padding: 12px 12px calc(var(--tabbar-h) + 24px); }
     .sk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .sk-stat { padding: 12px 14px; }
+    .sk-stat { padding: 10px 12px; gap: 4px; }
+    .sk-note { display: block; }
     .sk-stat:nth-child(odd) { border-left: none; }
     .sk-stat:nth-child(n+3) { border-top: 1px solid #E8EDF2; }
     .sk-dash { grid-template-columns: 1fr; }
@@ -64,6 +66,7 @@ function StatStripSkeleton() {
         <div key={i} className="sk-stat">
           <SkeletonBox w="55%" h={10} />
           <SkeletonBox w="35%" h={20} r={6} />
+          <SkeletonBox w="62%" h={9} className="sk-note" />
         </div>
       ))}
     </div>
