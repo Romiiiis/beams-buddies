@@ -112,20 +112,6 @@ export function LogoEditor({ image, businessName, personName, onChange }: Props)
     setZoom(1)
   }
 
-  const pill = (active: boolean): React.CSSProperties => ({
-    height: 32,
-    padding: '0 12px',
-    borderRadius: 9,
-    border: 'none',
-    background: active ? TEAL : 'transparent',
-    color: active ? WHITE : TEXT2,
-    fontSize: 12.5,
-    fontWeight: 700,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    whiteSpace: 'nowrap',
-  })
-
   const greeting = (() => {
     const h = new Date().getHours()
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
@@ -136,9 +122,9 @@ export function LogoEditor({ image, businessName, personName, onChange }: Props)
     <div style={{ display: 'grid', gap: 16 }}>
       {/* Shape + reset */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-        <div role="radiogroup" aria-label="Logo shape" style={{ display: 'inline-flex', padding: 3, background: WHITE, border: `1px solid #E3E8EE`, borderRadius: 12, gap: 2 }}>
+        <div className="jb-chips" role="radiogroup" aria-label="Logo shape">
           {SHAPES.map(s => (
-            <button key={s.key} type="button" role="radio" aria-checked={shape === s.key} onClick={() => setShape(s.key)} style={pill(shape === s.key)}>
+            <button key={s.key} type="button" role="radio" className="jb-chip" aria-checked={shape === s.key} onClick={() => setShape(s.key)}>
               {s.label}
             </button>
           ))}

@@ -237,27 +237,59 @@ textarea::placeholder {
   .jb-select:not(.sm) { font-size: 16px; }
 }
 
-.jb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Option chooser: a soft grey track with the chosen option raised on a white tile (like an iOS segmented control).
+   Up to six options share one equal width; more than that wrap. On a phone it spans the width. */
+.jb-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 2px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 4px;
+  background: #EEF1F5;
+  border-radius: 16px;
+}
+.jb-chips:not(:has(> :nth-child(7))) {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.jb-chips:not(:has(> :nth-child(7)))::-webkit-scrollbar { display: none; }
 .jb-chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 32px;
-  padding: 0 13px;
-  border-radius: 999px;
-  border: 1px solid #DCE3EA;
-  background: #FFFFFF;
-  color: #1F2937;
-  font: 600 13px var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #64748B;
+  font: 650 14px var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
-@media (hover: hover) { .jb-chip:hover { border-color: #CBD5E1; } }
-.jb-chip:focus-visible { outline: none; border-color: #2AA198; }
-.jb-chip[aria-pressed='true'] { background: #E3F5F2; border-color: transparent; color: #1F857C; }
-.jb-chip .count { font-weight: 650; color: #64748B; font-variant-numeric: tabular-nums; }
-.jb-chip[aria-pressed='true'] .count { color: inherit; }
+@media (hover: hover) { .jb-chip:not([aria-pressed='true']):not([aria-checked='true']):not(:disabled):hover { color: #0B1220; } }
+.jb-chip:focus-visible { outline: 2px solid #2AA198; outline-offset: 1px; }
+.jb-chip[aria-pressed='true'], .jb-chip[aria-checked='true'] { background: #FFFFFF; color: #0B1220; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10), 0 3px 8px rgba(15, 23, 42, 0.07); }
+.jb-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+.jb-chip svg { flex-shrink: 0; }
+.jb-chip .count { font-size: 12px; font-weight: 700; color: #94A3B8; font-variant-numeric: tabular-nums; }
+.jb-chip[aria-pressed='true'] .count, .jb-chip[aria-checked='true'] .count { color: #64748B; }
+@media (max-width: 767px) {
+  .jb-chips, .jb-chips:not(:has(> :nth-child(7))) { display: flex; flex-wrap: wrap; width: 100%; overflow-x: visible; }
+  .jb-chip { flex: 1 1 auto; padding: 0 10px; font-size: 13px; }
+}
+/* On the narrowest phones, four short options (Invoiced, Collected, Outstanding, Overdue) still fit on one row */
+@media (max-width: 420px) {
+  .jb-chip { padding: 0 6px; font-size: 12.5px; }
+}
 
 /* Coloured status pill that is also a dropdown (lists of invoices, quotes...) */
 .jb-status { position: relative; display: inline-block; }

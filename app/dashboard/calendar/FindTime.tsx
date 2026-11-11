@@ -14,11 +14,13 @@ type Props = {
   from: Date
   /** When editing, the visit itself should not block its own time. */
   ignoreVisitId?: string
+  /** The start time currently chosen on the form, so the matching suggestion looks selected. */
+  selected?: Date | null
   onPick: (slot: FreeSlot) => void
 }
 
 /** "Find a free time": the next open slots, from working hours, days off and what is already booked. */
-export function FindTime({ staff, timeOff, durationMin, from, ignoreVisitId, onPick }: Props) {
+export function FindTime({ staff, timeOff, durationMin, from, ignoreVisitId, selected, onPick }: Props) {
   const [open, setOpen] = useState(false)
   const [slots, setSlots] = useState<FreeSlot[] | null>(null)
   const [more, setMore] = useState(false)
@@ -67,7 +69,7 @@ export function FindTime({ staff, timeOff, durationMin, from, ignoreVisitId, onP
             <>
               <div className="jb-chips">
                 {slots.map(s => (
-                  <button key={s.start.getTime() + s.staffId} type="button" className="jb-chip" onClick={() => onPick(s)}>
+                  <button key={s.start.getTime() + s.staffId} type="button" className="jb-chip" aria-pressed={!!selected && s.start.getTime() === selected.getTime()} onClick={() => onPick(s)}>
                     {fmtDay(s.start)} · {fmtTime(s.start)}
                     {named && <span className="count">{staff.find(x => x.id === s.staffId)?.name.split(' ')[0]}</span>}
                   </button>

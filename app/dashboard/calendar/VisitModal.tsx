@@ -687,6 +687,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
                 durationMin={duration}
                 from={searchFrom}
                 ignoreVisitId={visit?.id}
+                selected={start}
                 onPick={slot => {
                   setDate(toDateInput(slot.start))
                   setTime(toTimeInput(slot.start))

@@ -8,7 +8,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
-import { AppIcon } from '@/components/AppIcon'
+import { AppIcon, type AppIconName } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
 import { DataList, PersonCell, TextCell } from '@/components/DataList'
 import { useIsPhone } from '@/components/forms'
@@ -57,6 +57,7 @@ const RANK_STYLES: Record<number | 'rest', React.CSSProperties> = {
 
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
 
+const VIEW_ICON: Record<ReportView, AppIconName> = { revenue: 'dollar', jobs: 'jobs', quotes: 'document', services: 'calendar-clock' }
 const TREND_TITLE: Record<ReportView, string> = { revenue: 'Revenue trend', jobs: 'Jobs trend', quotes: 'Quote trend', services: 'Service trend' }
 const SERIES_LABEL: Record<ReportView, string> = { revenue: 'Revenue', jobs: 'Jobs added', quotes: 'Quote value', services: 'Service dates' }
 const STRIP_LINK: Record<ReportView, string> = { revenue: '/dashboard/invoices', jobs: '/dashboard/jobs', quotes: '/dashboard/quotes', services: '/dashboard/schedule' }
@@ -372,35 +373,19 @@ export default function ReportsPage() {
         <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 48, background: BG }}>
           {/* One pair of controls drives everything below: the four figures, the chart and both rankings */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            {isMobile ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, width: '100%' }}>
-                <Select value={view} onChange={e => setView(e.target.value as ReportView)} style={{ height: 40, width: '100%' }} aria-label="Report">
-                  {VIEWS.map(v => (
-                    <option key={v.value} value={v.value}>{v.label}</option>
-                  ))}
-                </Select>
-                <Select value={period} onChange={e => setPeriod(e.target.value as Period)} style={{ height: 40, width: '100%' }} aria-label="Period">
-                  {PERIODS.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </Select>
-              </div>
-            ) : (
-              <>
-                <div className="jb-chips" role="group" aria-label="Report">
-                  {VIEWS.map(v => (
-                    <button key={v.value} type="button" className="jb-chip" aria-pressed={view === v.value} onClick={() => setView(v.value)}>
-                      {v.label}
-                    </button>
-                  ))}
-                </div>
-                <Select value={period} onChange={e => setPeriod(e.target.value as Period)} style={{ height: 36, width: 150 }} aria-label="Period">
-                  {PERIODS.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </Select>
-              </>
-            )}
+            <div className="jb-chips" role="group" aria-label="Report">
+              {VIEWS.map(v => (
+                <button key={v.value} type="button" className="jb-chip" aria-pressed={view === v.value} onClick={() => setView(v.value)}>
+                  {!isMobile && <AppIcon name={VIEW_ICON[v.value]} size={16} />}
+                  {v.label}
+                </button>
+              ))}
+            </div>
+            <Select value={period} onChange={e => setPeriod(e.target.value as Period)} style={{ height: isMobile ? 40 : 36, width: isMobile ? '100%' : 150 }} aria-label="Period">
+              {PERIODS.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </Select>
           </div>
 
           <StatStrip items={stripItems} isMobile={isMobile} />
@@ -412,22 +397,15 @@ export default function ReportsPage() {
                 <div style={{ fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em', lineHeight: 1.2 }}>{TREND_TITLE[view]}</div>
               </div>
 
-              {view === 'revenue' &&
-                (isMobile ? (
-                  <Select value={metric} onChange={e => setMetric(e.target.value as RevenueMetric)} style={{ height: 36, width: '100%' }} aria-label="Show">
-                    {METRICS.map(m => (
-                      <option key={m.value} value={m.value}>{m.label}</option>
-                    ))}
-                  </Select>
-                ) : (
-                  <div className="jb-chips" role="group" aria-label="Show">
-                    {METRICS.map(m => (
-                      <button key={m.value} type="button" className="jb-chip" aria-pressed={metric === m.value} onClick={() => setMetric(m.value)}>
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                ))}
+              {view === 'revenue' && (
+                <div className="jb-chips" role="group" aria-label="Show">
+                  {METRICS.map(m => (
+                    <button key={m.value} type="button" className="jb-chip" aria-pressed={metric === m.value} onClick={() => setMetric(m.value)}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div style={{ padding: isMobile ? '16px 12px 12px 44px' : '20px 24px 16px' }}>
