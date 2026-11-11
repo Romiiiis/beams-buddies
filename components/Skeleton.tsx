@@ -70,7 +70,7 @@ function StatStripSkeleton() {
   )
 }
 
-/** Placeholder rows for a list: avatar, two lines of text and a status pill. */
+/** Placeholder rows for a list: two lines of text and a status pill. */
 export function SkeletonRows({ count = 6 }: { count?: number }) {
   const widths = ['62%', '48%', '70%', '55%', '66%', '44%', '58%', '50%']
   return (
@@ -78,7 +78,6 @@ export function SkeletonRows({ count = 6 }: { count?: number }) {
       <style>{css}</style>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="sk-row">
-          <SkeletonBox w={36} h={36} r={10} />
           <div className="sk-grow">
             <SkeletonBox w={widths[i % widths.length]} h={11} />
             <SkeletonBox w="32%" h={9} />

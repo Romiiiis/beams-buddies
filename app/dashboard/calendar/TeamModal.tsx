@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BTN, BTN_SM, FIELD, LABEL, LINE, Modal, RED, TEAL_DARK, TEXT, TEXT2, TEXT3 } from '@/components/forms'
-import { STAFF_COLOURS, type StaffMember, initialsOf } from '@/lib/schedule'
+import { STAFF_COLOURS, type StaffMember } from '@/lib/schedule'
 
 type Props = {
   businessId: string
@@ -175,7 +175,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       ) : (
         staff.map((s, i) => (
           <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}`, opacity: s.active ? 1 : 0.55 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: s.colour, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{initialsOf(s.name)}</div>
+            <span aria-hidden="true" title="Calendar colour" style={{ width: 12, height: 12, borderRadius: '50%', background: s.colour, flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: TEXT, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 {s.name}

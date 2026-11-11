@@ -147,10 +147,8 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
       {jobs.length === 0 && <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: '13px', color: TEXT3 }}>Nothing booked for this day.</div>}
       {jobs.map((item, idx) => {
         const k = KIND_STYLE[item.kind]
-        const initials = item.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
         return (
           <div key={item.id} onClick={() => onJobClick(item)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: idx === jobs.length - 1 ? 'none' : `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')} onMouseLeave={e => (e.currentTarget.style.background = WHITE)}>
-            <div style={{ width: 36, height: 36, borderRadius: '10px', background: k.bg, color: k.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{initials || '?'}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT }}>{item.name}</div>
               <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{[item.time, item.label, item.suburb].filter(Boolean).join(' · ')}</div>

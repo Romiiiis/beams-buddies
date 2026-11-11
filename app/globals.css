@@ -204,3 +204,75 @@ textarea::placeholder {
     padding-bottom: 0 !important;
   }
 }
+
+/* ---------- Dropdowns and filter chips ----------
+   The look of the Clients filter in Lumyra: flat fields with a hairline border and a soft grey chevron, and rounded
+   chips with a count. The dropdown is a real <select>, so phones open their own picker and nothing floats over the page. */
+.jb-select-wrap { position: relative; max-width: 100%; }
+.jb-select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 38px 0 14px;
+  border: 1px solid #DCE3EA;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #0B1220;
+  font: 500 14px/1.2 var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.jb-select.sm { padding: 0 32px 0 12px; font-size: 13px; }
+.jb-select[data-empty='true'] { color: #64748B; }
+.jb-select:focus { outline: none; border-color: #2AA198; }
+.jb-select:disabled { opacity: 0.55; cursor: not-allowed; }
+.jb-select option { color: #0B1220; background: #FFFFFF; }
+.jb-select-chev { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #8A949C; pointer-events: none; }
+.jb-select.sm + .jb-select-chev { right: 10px; width: 14px; height: 14px; }
+/* Phones zoom the whole page when a field under 16px gets focus, so full-size fields are 16px on touch screens */
+@media (hover: none) and (pointer: coarse) {
+  .jb-select:not(.sm) { font-size: 16px; }
+}
+
+.jb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.jb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid #DCE3EA;
+  background: #FFFFFF;
+  color: #1F2937;
+  font: 600 13px var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+@media (hover: hover) { .jb-chip:hover { border-color: #CBD5E1; } }
+.jb-chip:focus-visible { outline: none; border-color: #2AA198; }
+.jb-chip[aria-pressed='true'] { background: #E3F5F2; border-color: transparent; color: #1F857C; }
+.jb-chip .count { font-weight: 650; color: #64748B; font-variant-numeric: tabular-nums; }
+.jb-chip[aria-pressed='true'] .count { color: inherit; }
+
+/* Coloured status pill that is also a dropdown (lists of invoices, quotes...) */
+.jb-status { position: relative; display: inline-block; }
+.jb-status select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 0 26px 0 12px;
+  border-radius: 10px;
+  font: 800 12px var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.jb-status select:focus { outline: none; box-shadow: 0 0 0 2px rgba(42, 161, 152, 0.35); }
+.jb-status option { color: #0B1220; background: #FFFFFF; font-weight: 500; }
+.jb-status svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; }

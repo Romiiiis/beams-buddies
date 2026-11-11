@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { SkeletonRows } from './Skeleton'
-import { ChevronBadge, Dropdown } from './Select'
+import { Select } from './Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -205,48 +205,12 @@ function RowMenu<T>({ row, actions }: { row: T; actions: DataListRowAction<T>[] 
   )
 }
 
-const AVATAR_TINTS = [
-  { bg: '#E6F6F4', fg: '#1F857C' },
-  { bg: '#EEF2FF', fg: '#4F46E5' },
-  { bg: '#FEF3C7', fg: '#92400E' },
-  { bg: '#FCE7F3', fg: '#BE185D' },
-  { bg: '#E0F2FE', fg: '#0369A1' },
-  { bg: '#F1F5F9', fg: '#475569' },
-]
-
-function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-}
-
-/** Avatar + bold name + muted second line, as in the reference's "Client" column. */
+/** Bold name with a muted second line. No avatar or initials badge. */
 export function PersonCell({ name, sub }: { name: string; sub?: string | null }) {
-  const tint = AVATAR_TINTS[[...name].reduce((n, c) => n + c.charCodeAt(0), 0) % AVATAR_TINTS.length]
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: '50%',
-          background: tint.bg,
-          color: tint.fg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 13,
-          fontWeight: 800,
-          flexShrink: 0,
-        }}
-      >
-        {initialsOf(name)}
-      </div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-        {sub ? <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div> : null}
-      </div>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+      {sub ? <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div> : null}
     </div>
   )
 }
@@ -297,46 +261,16 @@ export function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: 
   )
 }
 
-/** Phone filter: the shared dropdown, listing each option with its count. */
+/** Phone filter: a flat dropdown listing each option with its count, like the Clients filter in Lumyra. */
 function FilterDropdown({ tabs, value, onChange }: { tabs: DataListTab[]; value?: string; onChange?: (value: string) => void }) {
   const current = tabs.find(t => t.value === value) || tabs[0]
   return (
-    <Dropdown
-      options={tabs.map(t => ({ value: t.value, label: t.label, hint: typeof t.count === 'number' ? t.count : undefined }))}
+    <Select
       value={current.value}
-      onChange={v => onChange?.(v)}
-      label="Filter"
-      renderTrigger={({ open, props }) => (
-        <button
-          {...props}
-          style={{
-            width: '100%',
-            height: 48,
-            padding: '0 12px 0 16px',
-            borderRadius: 12,
-            border: `1px solid ${open ? TEAL : BORDER}`,
-            background: WHITE,
-            boxShadow: open ? `0 0 0 1px ${TEAL}` : '0 1px 2px rgba(15,23,42,0.04)',
-            fontFamily: FONT,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            cursor: 'pointer',
-            textAlign: 'left',
-            boxSizing: 'border-box',
-            transition: 'border-color 0.12s, box-shadow 0.12s',
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 600, color: TEXT3 }}>Show</span>
-          <span style={{ fontSize: 15, fontWeight: 800, color: TEXT, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current.label}</span>
-          {typeof current.count === 'number' && (
-            <span style={{ minWidth: 26, height: 24, padding: '0 8px', borderRadius: 8, background: TEAL_LIGHT, color: TEAL_DARK, fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-              {current.count}
-            </span>
-          )}
-          <ChevronBadge open={open} />
-        </button>
-      )}
+      onChange={e => onChange?.(e.target.value)}
+      options={tabs.map(t => ({ value: t.value, label: t.label, hint: typeof t.count === 'number' ? t.count : undefined }))}
+      style={{ width: '100%', height: 44 }}
+      aria-label="Filter"
     />
   )
 }
@@ -495,52 +429,13 @@ export function DataList<T>({
           {isMobile ? (
             <FilterDropdown tabs={tabs} value={activeTab} onChange={onTabChange} />
           ) : (
-            <div style={{ display: 'inline-flex', gap: 2, padding: 4, background: '#F1F5F9', borderRadius: 12, maxWidth: '100%' }}>
-              {tabs.map(t => {
-                const active = t.value === activeTab
-                return (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => onTabChange?.(t.value)}
-                    style={{
-                      height: 32,
-                      padding: '0 14px',
-                      borderRadius: 9,
-                      border: 'none',
-                      background: active ? WHITE : 'transparent',
-                      boxShadow: active ? '0 1px 3px rgba(15,23,42,0.10)' : 'none',
-                      color: active ? TEXT : TEXT3,
-                      fontFamily: FONT,
-                      fontSize: 12,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      transition: 'background 0.12s, color 0.12s',
-                    }}
-                    onMouseEnter={e => {
-                      if (!active) {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.7)'
-                        e.currentTarget.style.color = TEXT
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!active) {
-                        e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = TEXT3
-                      }
-                    }}
-                  >
-                    {t.label}
-                    {typeof t.count === 'number' && (
-                      <span style={{ fontSize: 11, fontWeight: 800, color: active ? TEAL_DARK : '#94A3B8' }}>{t.count}</span>
-                    )}
-                  </button>
-                )
-              })}
+            <div className="jb-chips">
+              {tabs.map(t => (
+                <button key={t.value} type="button" className="jb-chip" aria-pressed={t.value === activeTab} onClick={() => onTabChange?.(t.value)}>
+                  {t.label}
+                  {typeof t.count === 'number' && <span className="count">{t.count}</span>}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -679,7 +574,7 @@ export function DataList<T>({
 }
 
 
-/** Coloured status dropdown: a rounded rectangle in the status colour with the round chevron, and the shared panel. */
+/** Coloured status dropdown: a pill in the status colour that opens the phone's own picker (or the computer's menu). */
 export function StatusSelect({
   value,
   options,
@@ -696,40 +591,22 @@ export function StatusSelect({
   width?: number
 }) {
   return (
-    <Dropdown
-      options={options}
-      value={value}
-      onChange={onChange}
-      label={label}
-      size="sm"
-      minPanelWidth={170}
-      wrapperStyle={{ width, display: 'inline-block' }}
-      renderTrigger={({ open, current, props }) => (
-        <button
-          {...props}
-          style={{
-            width: '100%',
-            height: 34,
-            padding: '0 7px 0 12px',
-            borderRadius: 10,
-            border: `1px solid ${colors.border}`,
-            background: colors.bg,
-            color: colors.fg,
-            fontSize: 12,
-            fontWeight: 800,
-            fontFamily: FONT,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            textAlign: 'left',
-            cursor: 'pointer',
-            boxSizing: 'border-box',
-          }}
-        >
-          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current?.label ?? ''}</span>
-          <ChevronBadge open={open} size={18} bg="rgba(255,255,255,0.75)" fg={colors.fg} />
-        </button>
-      )}
-    />
+    <span className="jb-status" style={{ width }} onClick={e => e.stopPropagation()}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        aria-label={label}
+        style={{ border: `1px solid ${colors.border}`, background: colors.bg, color: colors.fg }}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={colors.fg} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </span>
   )
 }

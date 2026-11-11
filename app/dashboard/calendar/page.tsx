@@ -21,7 +21,6 @@ import {
   fmtDay,
   fmtRange,
   fmtTime,
-  initialsOf,
   sameDay,
   startOfDay,
   startOfWeek,

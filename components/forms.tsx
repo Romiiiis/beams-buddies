@@ -84,7 +84,9 @@ export const BTN = {
 export const BTN_SM: React.CSSProperties = { height: 34, padding: '0 14px', fontSize: 13, borderRadius: 10 }
 
 export function useIsPhone() {
-  const [phone, setPhone] = useState(false)
+  // Read the real width straight away. Starting at "not a phone" made every pop-up open as a desktop card and then
+  // jump into a phone sheet a moment later, which looked like the screen moving.
+  const [phone, setPhone] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
   useEffect(() => {
     const check = () => setPhone(window.innerWidth < 768)
     check()
@@ -95,6 +97,7 @@ export function useIsPhone() {
 }
 
 const SIZES = { sm: 440, md: 560, lg: 680, xl: 760 }
+const TOP_GAP = '6dvh'
 
 // The page behind a pop-up must not scroll. Pop-ups can open on top of each other and close in any
 // order, so the lock is counted: the page is released only when the last one has closed.
@@ -129,6 +132,7 @@ export function Modal({
   flush = false,
   onSubmit,
   id,
+  compact = false,
 }: {
   title: React.ReactNode
   onClose: () => void
@@ -145,9 +149,13 @@ export function Modal({
   /** Makes the whole pop-up a form, so a submit button in the footer sends it. */
   onSubmit?: (e: React.FormEvent) => void
   id?: string
+  /** Short messages ("Are you sure?"): the pop-up is only as tall as its text. Everything else keeps one fixed size. */
+  compact?: boolean
 }) {
   const phone = useIsPhone()
   const Card = (onSubmit ? 'form' : 'div') as React.ElementType
+  // A fixed height means the pop-up never grows or shrinks as fields, lines or messages change, so it never moves.
+  const stable = !compact && (phone || size === 'lg' || size === 'xl')
 
   // Registered once when the pop-up opens, so the stacking order is the order they were opened in
   const token = useRef({})
@@ -184,9 +192,10 @@ export function Modal({
         zIndex: layer,
         background: 'rgba(11,18,32,0.45)',
         display: 'flex',
-        alignItems: phone ? 'flex-end' : 'center',
+        // Anchored to the top on a computer, so a change in height only ever extends downwards
+        alignItems: phone ? 'flex-end' : 'flex-start',
         justifyContent: 'center',
-        padding: phone ? 0 : 20,
+        padding: phone ? 0 : `${TOP_GAP} 20px 20px`,
         fontFamily: FONT,
       }}
     >
@@ -200,7 +209,9 @@ export function Modal({
         style={{
           width: '100%',
           maxWidth: SIZES[size],
-          maxHeight: phone ? '92dvh' : 'calc(100dvh - 40px)',
+          ...(stable ? { height: phone ? '92dvh' : `min(calc(100dvh - ${TOP_GAP} - 20px), 780px)` } : {}),
+          maxHeight: phone ? '92dvh' : `calc(100dvh - ${TOP_GAP} - 20px)`,
+          touchAction: 'pan-y pinch-zoom',
           display: 'flex',
           flexDirection: 'column',
           background: WHITE,
@@ -252,7 +263,7 @@ export function Modal({
           </div>
         </div>
 
-        <div className="modal-body" style={{ padding: flush ? 0 : phone ? '16px' : '20px 24px', overflowY: 'auto', overscrollBehavior: 'contain', flex: 1, minHeight: 0 }}>
+        <div className="modal-body" style={{ padding: flush ? 0 : phone ? '16px' : '20px 24px', overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain', flex: 1, minHeight: 0 }}>
           {children}
         </div>
 
@@ -303,6 +314,7 @@ export function ConfirmDialog({
     <Modal
       title={title}
       size="sm"
+      compact
       layer={layer}
       busy={busy}
       onClose={onCancel}

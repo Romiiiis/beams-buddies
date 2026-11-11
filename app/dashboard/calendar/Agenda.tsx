@@ -12,7 +12,6 @@ import {
   customerName,
   fmtDay,
   fmtRange,
-  initialsOf,
   sameDay,
 } from '@/lib/schedule'
 
@@ -94,7 +93,7 @@ export function Agenda({ weekStart, anchor, onPickDay, visits, staffById, matche
                   <span style={{ display: 'block', fontSize: 13, color: TEXT2, marginTop: 2 }}>{kindLabel}{name && v.title !== kindLabel ? ` · ${v.title}` : ''}</span>
                   {addr && <span style={{ display: 'block', fontSize: 13, color: TEXT3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{addr}</span>}
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, fontWeight: 700, color: s ? TEXT2 : TEXT3 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 8, background: s?.colour || '#E2E8F0', color: WHITE, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>{s ? initialsOf(s.name) : '?'}</span>
+                    <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: '50%', background: s?.colour || '#CBD5E1', flexShrink: 0 }} />
                     {s ? s.name : 'Unassigned'}
                   </span>
                 </span>
