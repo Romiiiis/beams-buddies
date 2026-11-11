@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Select } from '@/components/Select'
-import { BTN, BTN_SM, ConfirmDialog, FIELD, FIELD_TEXTAREA, LABEL, Modal, RED, TEXT, TEXT2, TEXT3, useIsPhone } from '@/components/forms'
+import { BTN, BTN_SM, ConfirmDialog, FIELD, FIELD_TEXTAREA, LABEL, Modal, RED, TEXT, TEXT2, TEXT3, useIsPhone, FormError } from '@/components/forms'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { describeRule, expandRule, type RepeatRule } from '@/lib/recurrence'
 import {
@@ -32,6 +32,7 @@ import {
 } from '@/lib/schedule'
 import { NO_REPEAT, RepeatFields, ruleFromState, stateFromRule, type RepeatState } from './RepeatFields'
 import { FindTime } from './FindTime'
+import { VisitChecklists } from './VisitChecklists'
 
 type CustomerOption = { id: string; first_name: string | null; last_name: string | null; suburb: string | null }
 type JobOption = { id: string; customer_id: string; brand: string | null; model: string | null; equipment_type: string | null }
@@ -86,6 +87,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [checklistCount, setChecklistCount] = useState(0)
   const [conflict, setConflict] = useState('')
 
   // Repeating visits
@@ -655,6 +657,8 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
             </div>
           )}
 
+          {visit && <VisitChecklists businessId={businessId} visit={visit} technician={tech?.name || null} onCount={setChecklistCount} />}
+
           {tech?.email && (!visit || visit.staff_id !== staffId) && when === 'set' && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: TEXT2, cursor: 'pointer' }}>
               <input type="checkbox" checked={notify} onChange={e => setNotify(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#2AA198' }} />
@@ -665,14 +669,14 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
             <div style={{ fontSize: 12, color: TEXT3 }}>Add an email to {tech.name.split(' ')[0]} in Team to send them the details automatically.</div>
           )}
 
-          {error && <div style={{ fontSize: 13, fontWeight: 500, color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 12px' }}>{error}</div>}
+          {error && <FormError message={error} />}
         </div>
       </Modal>
 
       {confirmDelete && !inSeries && (
         <ConfirmDialog
           title="Delete this visit?"
-          message="It will be removed from the calendar. The customer and job are not affected."
+          message={checklistCount > 0 ? 'It will be removed from the calendar, along with its checklists and any signatures on them. The customer and job are not affected.' : 'It will be removed from the calendar. The customer and job are not affected.'}
           busy={saving}
           busyLabel="Deleting..."
           onCancel={() => setConfirmDelete(false)}
@@ -696,7 +700,10 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
             </>
           }
         >
-          <div style={{ fontSize: 14, lineHeight: 1.6, color: TEXT3 }}>This visit is part of a repeating run. Finished visits are always kept.</div>
+          <div style={{ fontSize: 14, lineHeight: 1.6, color: TEXT3 }}>
+            This visit is part of a repeating run. Finished visits are always kept.
+            {checklistCount > 0 ? ' Checklists on the visits that are deleted go with them.' : ''}
+          </div>
         </Modal>
       )}
     </>

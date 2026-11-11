@@ -376,3 +376,16 @@ export function Toast({ message, onClose, tone = 'dark' }: { message: string; on
     </div>
   )
 }
+
+/** Red message under a form. It scrolls itself into view when it appears, so a long pop-up never hides it. */
+export function FormError({ message }: { message: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    ref.current?.scrollIntoView({ block: 'nearest' })
+  }, [message])
+  return (
+    <div ref={ref} role="alert" style={{ fontSize: 13, fontWeight: 500, color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 12px' }}>
+      {message}
+    </div>
+  )
+}

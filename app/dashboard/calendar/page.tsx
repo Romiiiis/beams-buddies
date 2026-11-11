@@ -35,6 +35,7 @@ import { VisitModal, type SavedInfo, type VisitPrefill } from './VisitModal'
 import { TeamModal } from './TeamModal'
 import { ToBookPanel, type DueService, type ToBookRow } from './ToBookPanel'
 import { LateModal } from './LateModal'
+import { ChecklistsModal } from './ChecklistsModal'
 import { NextVisitPrompt } from './NextVisitPrompt'
 
 const BG = '#FAFAFA'
@@ -78,6 +79,7 @@ export default function CalendarPage() {
   const [prefill, setPrefill] = useState<VisitPrefill | undefined>(undefined)
   const [showTeam, setShowTeam] = useState(false)
   const [showLate, setShowLate] = useState(false)
+  const [showChecklists, setShowChecklists] = useState(false)
   const [nextPrompt, setNextPrompt] = useState<Visit | null>(null)
   const [removeTarget, setRemoveTarget] = useState<ToBookRow | null>(null)
   const [toast, setToast] = useState('')
@@ -347,6 +349,7 @@ export default function CalendarPage() {
             isMobile={isMobile}
             items={[
               { label: 'Team', onClick: () => setShowTeam(true) },
+              { label: 'Checklists', onClick: () => setShowChecklists(true) },
               { label: 'New visit', tone: 'primary', onClick: () => startVisit(anchor, filterStaff) },
             ]}
           />
@@ -454,6 +457,8 @@ export default function CalendarPage() {
           }}
         />
       )}
+
+      {showChecklists && <ChecklistsModal businessId={businessId} onClose={() => setShowChecklists(false)} />}
 
       {showLate && (
         <LateModal

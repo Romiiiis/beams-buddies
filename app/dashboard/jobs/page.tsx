@@ -15,6 +15,7 @@ import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-c
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
 import { Select } from '@/components/Select'
 import { BTN, FIELD, FIELD_TEXTAREA, LABEL, Modal } from '@/components/forms'
+import { JobCosts } from './JobCosts'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -353,6 +354,8 @@ function JobDrawer({
                   ))}
                 </div>
               </div>
+
+              <JobCosts job={job} isMobile={isMobile} />
 
               <div style={fieldBox}>
                 <div style={{ ...TYPE.label, marginBottom: '10px' }}>Notes</div>

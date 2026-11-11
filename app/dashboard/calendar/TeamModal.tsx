@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { BTN, BTN_SM, FIELD, LABEL, LINE, Modal, RED, TEAL_DARK, TEXT, TEXT2, TEXT3 } from '@/components/forms'
+import { BTN, BTN_SM, FIELD, LABEL, LINE, Modal, RED, TEAL_DARK, TEXT, TEXT2, TEXT3, FormError } from '@/components/forms'
 import { STAFF_COLOURS, type StaffMember, type TimeOff, WEEKDAY_SHORT, WEEK_ORDER, fmtDay, workSummary } from '@/lib/schedule'
+import { parseAmount } from '@/lib/expenses'
 
 type Props = {
   businessId: string
@@ -13,9 +14,9 @@ type Props = {
   onChanged: () => void
 }
 
-type FormState = { id: string | null; name: string; phone: string; email: string; colour: string; active: boolean; workDays: number[]; workStart: string; workEnd: string }
+type FormState = { id: string | null; name: string; phone: string; email: string; colour: string; active: boolean; workDays: number[]; workStart: string; workEnd: string; hourlyCost: string }
 
-const EMPTY = (colour: string): FormState => ({ id: null, name: '', phone: '', email: '', colour, active: true, workDays: [1, 2, 3, 4, 5], workStart: '07:00', workEnd: '16:00' })
+const EMPTY = (colour: string): FormState => ({ id: null, name: '', phone: '', email: '', colour, active: true, workDays: [1, 2, 3, 4, 5], workStart: '07:00', workEnd: '16:00', hourlyCost: '' })
 
 function feedUrl(token: string) {
   return `${typeof window !== 'undefined' ? window.location.origin : ''}/api/calendar/${token}`
@@ -99,6 +100,11 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       setError('The finish time needs to be after the start time.')
       return
     }
+    const cost = form.hourlyCost.trim() === '' ? null : parseAmount(form.hourlyCost)
+    if (form.hourlyCost.trim() !== '' && (cost === null || cost > 1000)) {
+      setError('Cost per hour should be an amount like 55 (or leave it empty).')
+      return
+    }
     setSaving(true)
     setError('')
     const payload = {
@@ -110,6 +116,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       work_days: [...form.workDays].sort((a, b) => a - b),
       work_start: form.workStart,
       work_end: form.workEnd,
+      hourly_cost: cost,
     }
     const { error: err } = form.id
       ? await supabase.from('staff_members').update(payload).eq('id', form.id)
@@ -217,6 +224,12 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
             <div style={{ fontSize: 12, color: TEXT3, marginTop: 6, lineHeight: 1.5 }}>Used to shade the calendar and to suggest free times.</div>
           </div>
 
+          <div>
+            <label style={LABEL}>Cost per hour (optional)</label>
+            <input style={FIELD} inputMode="decimal" value={form.hourlyCost} onChange={e => setForm({ ...form, hourlyCost: e.target.value })} placeholder="e.g. 55" />
+            <div style={{ fontSize: 12, color: TEXT3, marginTop: 6, lineHeight: 1.5 }}>What an hour of their time costs you, with super and on-costs. Only used to work out a job&apos;s profit. Customers never see it.</div>
+          </div>
+
           {form.id && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: TEXT2, cursor: 'pointer' }}>
               <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} style={{ width: 18, height: 18, accentColor: '#2AA198' }} />
@@ -268,7 +281,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
             </div>
           )}
 
-          {error && <div style={{ fontSize: 13, fontWeight: 500, color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 12px' }}>{error}</div>}
+          {error && <FormError message={error} />}
         </div>
       </Modal>
     )
@@ -305,7 +318,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
               <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[s.phone, s.email].filter(Boolean).join(' · ') || 'No contact details'}</div>
               <div style={{ fontSize: 12, color: TEXT3, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{workSummary(s)}</div>
             </div>
-            <button type="button" onClick={() => setForm({ id: s.id, name: s.name, phone: s.phone || '', email: s.email || '', colour: s.colour, active: s.active, workDays: s.work_days || [1, 2, 3, 4, 5], workStart: String(s.work_start || '07:00').slice(0, 5), workEnd: String(s.work_end || '16:00').slice(0, 5) })} style={{ ...BTN.secondary, ...BTN_SM, color: TEAL_DARK }}>
+            <button type="button" onClick={() => setForm({ id: s.id, name: s.name, phone: s.phone || '', email: s.email || '', colour: s.colour, active: s.active, workDays: s.work_days || [1, 2, 3, 4, 5], workStart: String(s.work_start || '07:00').slice(0, 5), workEnd: String(s.work_end || '16:00').slice(0, 5), hourlyCost: s.hourly_cost != null ? String(s.hourly_cost) : '' })} style={{ ...BTN.secondary, ...BTN_SM, color: TEAL_DARK }}>
               Edit
             </button>
           </div>

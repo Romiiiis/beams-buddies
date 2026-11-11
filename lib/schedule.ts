@@ -16,6 +16,8 @@ export type StaffMember = {
   work_days: number[]
   work_start: string
   work_end: string
+  /** What an hour of their time costs the business (private; used for job costing) */
+  hourly_cost?: number | null
 }
 
 export type TimeOff = { id: string; staff_id: string; start_date: string; end_date: string; note: string | null }
