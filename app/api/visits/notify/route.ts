@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { renderEmail, renderText, type EmailContent } from '@/lib/email-theme'
 import { emailLogoUrl, formatPhone } from '@/lib/automation-email'
-import { customerAddress, customerName, durationLabel, mapsUrl, minutesBetween, VISIT_KINDS } from '@/lib/schedule'
+import { customerName, durationLabel, mapsUrl, minutesBetween, visitAddress, VISIT_KINDS } from '@/lib/schedule'
 
 // Emails a technician the details of a visit they have been given.
 //
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const [{ data: visit }, { data: business }] = await Promise.all([
     supabase
       .from('job_visits')
-      .select('*, customers(first_name, last_name, phone, address, suburb, state, postcode), jobs(brand, model), staff_members(name, email)')
+      .select('*, customers(first_name, last_name, phone, address, suburb, state, postcode), jobs(brand, model), staff_members(name, email), customer_sites(label, address, suburb, state, postcode)')
       .eq('id', visitId)
       .eq('business_id', businessId)
       .single(),
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   const c: any = (visit as any).customers
   const who = customerName(c)
-  const address = customerAddress(c)
+  const address = visitAddress({ customer_sites: (visit as any).customer_sites, customers: c })
   const kind = VISIT_KINDS.find(k => k.value === (visit as any).kind)?.label || 'visit'
   const first = staff.name.trim().split(/\s+/)[0] || 'there'
   const minutes = minutesBetween(new Date((visit as any).start_at), new Date((visit as any).end_at))

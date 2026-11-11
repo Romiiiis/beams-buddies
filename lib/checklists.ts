@@ -1,6 +1,6 @@
 // Checklists: a template is written once; a copy is ticked off on each visit. No imports, so it also runs in Node tests.
 
-export type ChecklistItemType = 'check' | 'text' | 'number'
+export type ChecklistItemType = 'check' | 'text' | 'number' | 'photo'
 
 export type TemplateItem = { id: string; text: string; type: ChecklistItemType; /** For readings: the unit, e.g. "°C" */ unit?: string }
 export type FilledItem = TemplateItem & { done: boolean; value: string }
@@ -25,6 +25,7 @@ export const ITEM_TYPES: { value: ChecklistItemType; label: string }[] = [
   { value: 'check', label: 'Tick' },
   { value: 'text', label: 'Answer' },
   { value: 'number', label: 'Reading' },
+  { value: 'photo', label: 'Photo' },
 ]
 
 export function newId() {
@@ -36,7 +37,7 @@ export function fillItems(items: TemplateItem[]): FilledItem[] {
   return items.map(i => ({ ...i, id: i.id || newId(), done: false, value: '' }))
 }
 
-/** How many items are done. A tick counts when ticked; an answer or reading counts once something is written. */
+/** How many items are done. A tick counts when ticked; an answer or reading counts once something is written; a photo step counts once a photo is taken (its value holds how many). */
 export function progress(items: FilledItem[]) {
   const done = items.filter(i => (i.type === 'check' ? i.done : String(i.value || '').trim() !== '')).length
   return { done, total: items.length }
@@ -52,6 +53,7 @@ export const EXAMPLES: Example[] = [
     name: 'Air conditioner service',
     requires_signature: false,
     items: [
+      { text: 'Photo of the filters before cleaning', type: 'photo' },
       { text: 'Clean or replace the filters', type: 'check' },
       { text: 'Clean the indoor coil and fan', type: 'check' },
       { text: 'Flush the drain and test drainage', type: 'check' },
@@ -73,6 +75,7 @@ export const EXAMPLES: Example[] = [
       { text: 'Test run completed', type: 'check' },
       { text: 'Remote and care shown to the customer', type: 'check' },
       { text: 'Site left clean and tidy', type: 'check' },
+      { text: 'Photo of the finished install', type: 'photo' },
     ],
   },
   {

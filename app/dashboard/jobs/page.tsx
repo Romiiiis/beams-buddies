@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import QRCode from 'qrcode'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
@@ -15,7 +15,9 @@ import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-c
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
 import { Select } from '@/components/Select'
 import { BTN, FIELD, FIELD_TEXTAREA, LABEL, Modal } from '@/components/forms'
-import { JobCosts } from './JobCosts'
+// Loaded when a job is opened, not with the list
+const JobCosts = dynamic(() => import('./JobCosts').then(m => m.JobCosts), { ssr: false, loading: () => <div style={{ minHeight: 120 }} /> })
+import { customerAddress, type Site } from '@/lib/schedule'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -100,7 +102,9 @@ function JobDrawer({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showContact, setShowContact] = useState(false)
+  const [siteOptions, setSiteOptions] = useState<Site[]>([])
   const [form, setForm] = useState({
+    site_id: job.site_id || '',
     brand: job.brand || '',
     model: job.model || '',
     capacity_kw: job.capacity_kw ?? '',
@@ -134,6 +138,23 @@ function JobDrawer({
     return Math.ceil((d.getTime() - Date.now()) / 86400000)
   })()
 
+  // The customer's other properties, fetched only when the job is opened for editing
+  useEffect(() => {
+    if (!editing || !job.customer_id) return
+    let cancelled = false
+    supabase
+      .from('customer_sites')
+      .select('id, customer_id, label, address, suburb, state, postcode')
+      .eq('customer_id', job.customer_id)
+      .order('created_at')
+      .then(({ data }) => {
+        if (!cancelled) setSiteOptions((data as Site[]) || [])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [editing, job.customer_id])
+
   const isOverdue = days !== null && days < 0
   const isDueSoon = days !== null && days >= 0 && days <= 30
   const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL_DARK
@@ -163,12 +184,13 @@ function JobDrawer({
       service_interval_months: Number(form.service_interval_months || 12),
       reminder_lead_days: Number(form.reminder_lead_days || 14),
       notes: form.notes || null,
+      site_id: form.site_id || null,
     }
 
     const { error } = await supabase.from('jobs').update(payload).eq('id', job.id)
 
     if (!error) {
-      const updated = { ...job, ...payload }
+      const updated = { ...job, ...payload, customer_sites: form.site_id ? siteOptions.find(s => s.id === form.site_id) || null : null }
       onSaved(updated)
       setEditing(false)
       setSaved(true)
@@ -289,6 +311,7 @@ function JobDrawer({
                 { label: 'Phone', value: customer?.phone || '—' },
                 { label: 'Suburb', value: customer?.suburb || '—' },
                 { label: 'Address', value: customer?.address || '—' },
+                ...(job.customer_sites ? [{ label: 'Property', value: `${job.customer_sites.label} · ${customerAddress(job.customer_sites)}` }] : []),
               ].map(({ label, value }) => (
                 <div key={label} style={{ background: '#FCFCFD', border: `1px solid ${BORDER}`, borderRadius: '10px', padding: '10px 12px' }}>
                   <div style={{ ...TYPE.label, marginBottom: '5px' }}>{label}</div>
@@ -405,6 +428,17 @@ function JobDrawer({
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.installLocation.label}</div>
                     <input style={inputStyle} value={form.install_location} onChange={e => setForm(p => ({ ...p, install_location: e.target.value }))} />
                   </div>
+                  {siteOptions.length > 0 && (
+                    <div>
+                      <div style={{ ...TYPE.label, marginBottom: '6px' }}>Property</div>
+                      <Select style={inputStyle} value={form.site_id} onChange={e => setForm(p => ({ ...p, site_id: e.target.value }))}>
+                        <option value="">Main address</option>
+                        {siteOptions.map(s => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>{industryConfig.fields.installDate.label}</div>
                     <input type="date" style={inputStyle} value={form.install_date} onChange={e => setForm(p => ({ ...p, install_date: e.target.value }))} />
@@ -603,7 +637,8 @@ function QrModal({
       setDataUrl('')
       return
     }
-    QRCode.toDataURL(registerUrl, { width: 260, margin: 1 }).then(url => {
+    // The QR library is only fetched when a code is actually drawn
+    import('qrcode').then(({ default: QRCode }) => QRCode.toDataURL(registerUrl, { width: 260, margin: 1 })).then(url => {
       if (!cancelled) setDataUrl(url)
     })
     return () => {
@@ -713,7 +748,7 @@ export default function JobsPage() {
       }
       const { data } = await supabase
         .from('jobs')
-        .select(`*, customers ( first_name, last_name, phone, email, suburb, address )`)
+        .select(`*, customers ( first_name, last_name, phone, email, suburb, address ), customer_sites ( label, address, suburb, state, postcode )`)
         .eq('business_id', userData.business_id)
         .order('install_date', { ascending: false })
       setJobs(data || [])

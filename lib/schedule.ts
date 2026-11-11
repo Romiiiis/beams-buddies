@@ -20,6 +20,10 @@ export type StaffMember = {
   hourly_cost?: number | null
 }
 
+/** An extra address a customer has (a rental, a second home...). The customer's own address is the main property. */
+export type Site = { id: string; customer_id: string; label: string; address: string; suburb?: string | null; state?: string | null; postcode?: string | null; notes?: string | null }
+export type SiteLite = { label?: string | null; address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null }
+
 export type TimeOff = { id: string; staff_id: string; start_date: string; end_date: string; note: string | null }
 
 export type Visit = {
@@ -36,6 +40,9 @@ export type Visit = {
   notes: string | null
   /** Set when the visit belongs to a repeating run */
   series_id?: string | null
+  /** Which of the customer's properties the visit is at; empty means their main address */
+  site_id?: string | null
+  customer_sites?: SiteLite | null
   customers?: { first_name?: string | null; last_name?: string | null; phone?: string | null; email?: string | null; address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null } | null
   jobs?: { brand?: string | null; model?: string | null; equipment_type?: string | null } | null
 }
@@ -128,6 +135,11 @@ export function customerName(c?: { first_name?: string | null; last_name?: strin
 
 export function customerAddress(c?: { address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null } | null) {
   return [c?.address, c?.suburb, c?.state, c?.postcode].map(x => String(x || '').trim()).filter(Boolean).join(', ')
+}
+
+/** The address a visit is at: its property when it has one, otherwise the customer's own address. */
+export function visitAddress(v: { customer_sites?: SiteLite | null; customers?: { address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null } | null }) {
+  return (v.customer_sites && customerAddress(v.customer_sites)) || customerAddress(v.customers)
 }
 
 export function mapsUrl(address: string) {

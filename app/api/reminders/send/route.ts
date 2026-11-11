@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const [{ data: job }, { data: business }] = await Promise.all([
     supabase
       .from('jobs')
-      .select('*, customers(first_name, last_name, email, phone, address, suburb)')
+      .select('*, customers(first_name, last_name, email, phone, address, suburb), customer_sites(label, address, suburb, state, postcode)')
       .eq('id', jobId)
       .eq('business_id', businessId)
       .single(),

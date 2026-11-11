@@ -47,7 +47,7 @@ function StepRow({
       style={{ ...FIELD, ...(phone ? {} : { flex: 1, minWidth: 0, width: 'auto' }) }}
       value={item.text}
       onChange={e => onChange({ text: e.target.value })}
-      placeholder={item.type === 'check' ? 'What needs doing' : item.type === 'number' ? 'What to measure' : 'The question to answer'}
+      placeholder={item.type === 'check' ? 'What needs doing' : item.type === 'number' ? 'What to measure' : item.type === 'photo' ? 'What to photograph' : 'The question to answer'}
       maxLength={200}
       aria-label={`Step ${index + 1}`}
     />
@@ -238,7 +238,7 @@ export function ChecklistsModal({ businessId, onClose }: Props) {
                 >
                   Add a step
                 </button>
-                <span style={{ fontSize: 12, color: TEXT3 }}>Tick = done or not. Answer = a short written answer. Reading = a number, like a temperature.</span>
+                <span style={{ fontSize: 12, color: TEXT3 }}>Tick = done or not. Answer = a short written answer. Reading = a number, like a temperature. Photo = pictures taken on site.</span>
               </div>
             </div>
 

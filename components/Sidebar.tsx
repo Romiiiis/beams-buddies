@@ -195,8 +195,16 @@ export function Sidebar({ active }: { active: string }) {
       '/dashboard/reports',
     ]
 
-    routes.forEach(route => router.prefetch(route))
-  }, [isMobile, router])
+    // Quietly, once the page has settled, and one at a time so the page being shown keeps the network to itself
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const start = setTimeout(() => {
+      routes.filter(route => route !== active).forEach((route, i) => timers.push(setTimeout(() => router.prefetch(route), i * 400)))
+    }, 2500)
+    return () => {
+      clearTimeout(start)
+      timers.forEach(clearTimeout)
+    }
+  }, [isMobile, router, active])
 
   const initials = business?.full_name
     ? business.full_name

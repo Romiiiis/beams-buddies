@@ -3,19 +3,7 @@
 import React from 'react'
 import { BTN, FONT, LINE, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE } from '@/components/forms'
 import { AppIcon } from '@/components/AppIcon'
-import {
-  VISIT_KINDS,
-  VISIT_STATUS,
-  type StaffMember,
-  type Visit,
-  addDays,
-  customerAddress,
-  customerName,
-  fmtDay,
-  fmtRange,
-  isLate,
-  sameDay,
-} from '@/lib/schedule'
+import { VISIT_KINDS, VISIT_STATUS, type StaffMember, type Visit, addDays, customerName, fmtDay, fmtRange, isLate, sameDay, visitAddress } from '@/lib/schedule'
 
 const UNASSIGNED = '#94A3B8'
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, overflow: 'hidden' }
@@ -75,7 +63,7 @@ export function Agenda({ weekStart, anchor, onPickDay, visits, staffById, matche
           {day.map(v => {
             const s = v.staff_id ? staffById.get(v.staff_id) : undefined
             const st = VISIT_STATUS[v.status]
-            const addr = customerAddress(v.customers)
+            const addr = visitAddress(v)
             const kindLabel = VISIT_KINDS.find(k => k.value === v.kind)?.label
             const name = customerName(v.customers)
             return (

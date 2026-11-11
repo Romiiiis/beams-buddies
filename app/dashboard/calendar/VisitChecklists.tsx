@@ -1,12 +1,16 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { Select } from '@/components/Select'
 import { BTN, BTN_SM, ConfirmDialog, LINE, RED, TEAL_DARK, TEXT, TEXT3 } from '@/components/forms'
 import { type Template, type VisitChecklist, fillItems, isSigned, progress } from '@/lib/checklists'
 import type { Visit } from '@/lib/schedule'
-import { ChecklistFill } from './ChecklistFill'
+import type { PhotosApi } from './usePhotos'
+
+// The on-site checklist screen (with the signature box and photo viewer) is only needed when one is opened
+const ChecklistFill = dynamic(() => import('./ChecklistFill').then(m => m.ChecklistFill), { ssr: false })
 
 type Props = {
   businessId: string
@@ -14,12 +18,13 @@ type Props = {
   technician?: string | null
   /** Tells the visit pop-up how many checklists there are, so deleting the visit can warn about them. */
   onCount?: (n: number) => void
+  photos: PhotosApi
 }
 
 const pill = (bg: string, fg: string): React.CSSProperties => ({ fontSize: 11, fontWeight: 800, color: fg, background: bg, borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' })
 
 /** The checklists on one visit: add one from a template, tick it off on site, get it signed. */
-export function VisitChecklists({ businessId, visit, technician, onCount }: Props) {
+export function VisitChecklists({ businessId, visit, technician, onCount, photos }: Props) {
   const [templates, setTemplates] = useState<Template[]>([])
   const [lists, setLists] = useState<VisitChecklist[]>([])
   const [loading, setLoading] = useState(true)
@@ -135,6 +140,7 @@ export function VisitChecklists({ businessId, visit, technician, onCount }: Prop
           checklist={opened}
           visit={visit}
           technician={technician}
+          photos={photos}
           onClose={() => setOpenId(null)}
           onChanged={c => setLists(prev => prev.map(x => (x.id === c.id ? c : x)))}
         />
@@ -143,7 +149,7 @@ export function VisitChecklists({ businessId, visit, technician, onCount }: Prop
       {removeTarget && (
         <ConfirmDialog
           title="Remove this checklist?"
-          message={`"${removeTarget.title}" is taken off this visit, with ${isSigned(removeTarget) ? 'its ticks, notes and signature' : 'its ticks and notes'}. The template stays.`}
+          message={`"${removeTarget.title}" is taken off this visit, with ${isSigned(removeTarget) ? 'its ticks, notes and signature' : 'its ticks and notes'}. The template stays${removeTarget.items.some(i => i.type === 'photo' && i.value) ? ', and its photos stay on the visit' : ''}.`}
           confirmLabel="Remove"
           busyLabel="Removing..."
           busy={busy}

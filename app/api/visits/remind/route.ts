@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { buildMoved, buildOnTheWay, buildVisit, renderEmail, renderText, type EmailContent, type EmailSender } from '@/lib/email-theme'
 import { emailLogoUrl, formatPhone } from '@/lib/automation-email'
-import { customerAddress, durationLabel, minutesBetween, VISIT_KINDS } from '@/lib/schedule'
+import { durationLabel, minutesBetween, visitAddress, VISIT_KINDS } from '@/lib/schedule'
 
 // Emails the customer about a booked visit, on request from the visit window: a reminder ("Email a reminder"),
 // "on my way", or "your visit has a new time". Each one is kept in visit_messages so Marketing can show it.
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   const [{ data: visit }, { data: business }] = await Promise.all([
     supabase
       .from('job_visits')
-      .select('*, customers(first_name, last_name, email, address, suburb, state, postcode), jobs(brand, model), staff_members(name)')
+      .select('*, customers(first_name, last_name, email, address, suburb, state, postcode), jobs(brand, model), staff_members(name), customer_sites(label, address, suburb, state, postcode)')
       .eq('id', visitId)
       .eq('business_id', businessId)
       .single(),
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     time,
     what: kindLabel,
     equipment: equipment || undefined,
-    address: customerAddress(v.customers) || undefined,
+    address: visitAddress(v) || undefined,
     tech: tech || undefined,
   }
   const length = durationLabel(Math.max(15, minutesBetween(new Date(v.start_at), new Date(v.end_at))))

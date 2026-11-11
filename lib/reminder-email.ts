@@ -34,7 +34,7 @@ function facts(job: any, sender: ReminderSender): ReminderFacts {
     what: [job.brand, job.model].map(clean).filter(Boolean).join(' ') || getEquipmentLabel(job.equipment_type) || 'system',
     when: next ? formatDate(next) : null,
     overdue: timingText(job).bucket === 'overdue',
-    address: [job.customers?.address, job.customers?.suburb].map(clean).filter(Boolean).join(', '),
+    address: [(job.customer_sites || job.customers)?.address, (job.customer_sites || job.customers)?.suburb].map(clean).filter(Boolean).join(', '),
     location: clean(job.install_location),
     phone: clean(sender.phone),
     email: clean(sender.email),

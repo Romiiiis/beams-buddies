@@ -14,6 +14,8 @@ import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
 import { ConfirmDialog } from '@/components/forms'
 import { FIELD, FIELD_TEXTAREA, LABEL } from '@/components/forms'
+import { PropertyModal } from './PropertyModal'
+import { customerAddress, type Site } from '@/lib/schedule'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -152,6 +154,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [customerForm, setCustomerForm] = useState<any>({})
   const [jobForms, setJobForms] = useState<Record<string, any>>({})
   const [showContact, setShowContact] = useState(false)
+  const [sites, setSites] = useState<Site[]>([])
+  const [editingSite, setEditingSite] = useState<Site | null>(null)
+  const [addingSite, setAddingSite] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -164,15 +169,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         return
       }
 
-      const [customerRes, jobsRes, clicksRes] = await Promise.all([
+      const [customerRes, jobsRes, clicksRes, sitesRes] = await Promise.all([
         supabase.from('customers').select('*').eq('id', id).single(),
         supabase.from('jobs').select('*, service_records(*)').eq('customer_id', id).order('created_at', { ascending: false }),
         supabase.from('review_clicks').select('*').eq('customer_id', id).order('clicked_at', { ascending: false }),
+        supabase.from('customer_sites').select('id, customer_id, label, address, suburb, state, postcode, notes').eq('customer_id', id).order('created_at'),
       ])
 
       setCustomer(customerRes.data)
       setCustomerForm(customerRes.data)
       setJobs(jobsRes.data || [])
+      setSites((sitesRes.data as Site[]) || [])
 
       const forms: Record<string, any> = {}
       for (const job of jobsRes.data || []) {
@@ -229,6 +236,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         service_interval_months: parseInt(f.service_interval_months),
         reminder_lead_days: parseInt(f.reminder_lead_days),
         notes: f.notes,
+        site_id: f.site_id || null,
       })
       .eq('id', jobId)
 
@@ -326,6 +334,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     month: 'long',
     year: 'numeric',
   })
+
+  const siteById = useMemo(() => new Map(sites.map(s => [s.id, s])), [sites])
 
   const card: React.CSSProperties = {
     background: WHITE,
@@ -664,6 +674,46 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
+            {/* Properties card: the customer's own address is the main one; extra ones are added here */}
+            <div style={card}>
+              <div style={{ padding: '13px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: TEXT }}>Properties</span>
+                <button type="button" onClick={() => setAddingSite(true)} style={{ ...btnOutline, height: 32 }}>
+                  <IconPlus size={12} /> Add property
+                </button>
+              </div>
+
+              <div style={{ display: 'grid' }}>
+                <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 850, color: TEXT, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      Main address
+                      <span style={{ fontSize: 10, fontWeight: 800, color: TEAL_DARK, background: TEAL_LIGHT, borderRadius: 999, padding: '2px 8px' }}>Main</span>
+                    </div>
+                    <div style={{ ...TYPE.bodySm, marginTop: 4, wordBreak: 'break-word' }}>{customerAddress(customer) || 'No address saved'}</div>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap' }}>{jobs.filter(j => !j.site_id).length} unit{jobs.filter(j => !j.site_id).length === 1 ? '' : 's'}</div>
+                </div>
+
+                {sites.map(s => {
+                  const units = jobs.filter(j => j.site_id === s.id).length
+                  return (
+                    <div key={s.id} style={{ padding: '14px 18px', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ ...TYPE.title, fontSize: '14px', fontWeight: 850, color: TEXT, wordBreak: 'break-word' }}>{s.label}</div>
+                        <div style={{ ...TYPE.bodySm, marginTop: 4, wordBreak: 'break-word' }}>{customerAddress(s)}</div>
+                        {s.notes && <div style={{ ...TYPE.bodySm, marginTop: 4, wordBreak: 'break-word' }}>{s.notes}</div>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: TEXT3, whiteSpace: 'nowrap' }}>{units} unit{units === 1 ? '' : 's'}</span>
+                        <button type="button" onClick={() => setEditingSite(s)} style={{ ...btnOutline, height: 32 }}>Edit</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Jobs card */}
             <div style={card}>
               <div
@@ -832,6 +882,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                   value: `Every ${job.service_interval_months} months`,
                                   icon: <AppIcon name="repeat" size={14} />,
                                 },
+                                ...(job.site_id && siteById.get(job.site_id)
+                                  ? [{ label: 'Property', value: `${siteById.get(job.site_id)!.label} · ${customerAddress(siteById.get(job.site_id))}`, icon: <IconMapPin size={14} /> }]
+                                  : []),
                               ].map(row => (
                                 <div
                                   key={row.label}
@@ -913,6 +966,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 <label style={labelStyle}>{industryConfig.fields.installLocation.label}</label>
                                 <input style={inputStyle} value={f.install_location || ''} onChange={e => setJobField(job.id, 'install_location', e.target.value)} />
                               </div>
+                              {sites.length > 0 && (
+                                <div>
+                                  <label style={labelStyle}>Property</label>
+                                  <Select style={inputStyle} value={f.site_id || ''} onChange={e => setJobField(job.id, 'site_id', e.target.value)}>
+                                    <option value="">Main address</option>
+                                    {sites.map(s => (
+                                      <option key={s.id} value={s.id}>{s.label}</option>
+                                    ))}
+                                  </Select>
+                                </div>
+                              )}
                               <div>
                                 <label style={labelStyle}>{industryConfig.fields.installDate.label}</label>
                                 <input type="date" style={inputStyle} value={f.install_date?.slice(0, 10) || ''} onChange={e => setJobField(job.id, 'install_date', e.target.value)} />
@@ -1119,6 +1183,31 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         onClose={() => setShowContact(false)}
         isMobile={isMobile}
       />
+
+      {(addingSite || editingSite) && customer && (
+        <PropertyModal
+          key={editingSite?.id || 'new'}
+          businessId={customer.business_id}
+          customerId={id}
+          site={editingSite}
+          unitCount={editingSite ? jobs.filter(j => j.site_id === editingSite.id).length : 0}
+          onClose={() => {
+            setAddingSite(false)
+            setEditingSite(null)
+          }}
+          onSaved={saved => {
+            setSites(prev => (prev.some(x => x.id === saved.id) ? prev.map(x => (x.id === saved.id ? saved : x)) : [...prev, saved]))
+            setAddingSite(false)
+            setEditingSite(null)
+          }}
+          onDeleted={deletedId => {
+            setSites(prev => prev.filter(x => x.id !== deletedId))
+            setJobs(prev => prev.map(j => (j.site_id === deletedId ? { ...j, site_id: null } : j)))
+            setAddingSite(false)
+            setEditingSite(null)
+          }}
+        />
+      )}
     </div>
   )
 }

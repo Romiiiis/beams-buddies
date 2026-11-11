@@ -65,7 +65,8 @@ export function serviceContent(job: any, s: EmailSender): EmailContent {
       what: equipment(job),
       due: nextServiceDate(job),
       days: daysUntilService(job),
-      address: [job?.customers?.address, job?.customers?.suburb].map(clean).filter(Boolean).join(', '),
+      // The property the unit is at, or the customer's own address
+      address: [(job?.customer_sites || job?.customers)?.address, (job?.customer_sites || job?.customers)?.suburb].map(clean).filter(Boolean).join(', '),
       location: clean(job?.install_location),
     },
     s
@@ -144,7 +145,8 @@ export function visitContent(v: any, s: EmailSender, timeZone: string): EmailCon
   const mins = Math.max(15, Math.round((end.getTime() - start.getTime()) / 60000))
   const length = mins < 60 ? `${mins} min` : mins % 60 ? `${Math.floor(mins / 60)} hr ${mins % 60} min` : `${mins / 60} hr`
   const c = v?.customers || {}
-  const address = [c.address, c.suburb, c.state, c.postcode].map((x: unknown) => clean(x)).filter(Boolean).join(', ')
+  const place = v?.customer_sites && [v.customer_sites.address, v.customer_sites.suburb, v.customer_sites.state, v.customer_sites.postcode].some(Boolean) ? v.customer_sites : c
+  const address = [place.address, place.suburb, place.state, place.postcode].map((x: unknown) => clean(x)).filter(Boolean).join(', ')
   const kinds: Record<string, string> = { service: 'Service', install: 'Installation', repair: 'Repair', quote: 'Quote visit', other: 'Visit' }
   const tech = clean(v?.staff_members?.name).split(/\s+/)[0]
   return buildVisit(

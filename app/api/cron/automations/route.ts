@@ -104,7 +104,7 @@ export async function GET(request: Request) {
     if (kinds.has('service') || kinds.has('review')) {
       const { data: jobs } = await db
         .from('jobs')
-        .select('*, customers(first_name, last_name, email, phone, address, suburb)')
+        .select('*, customers(first_name, last_name, email, phone, address, suburb), customer_sites(label, address, suburb, state, postcode)')
         .eq('business_id', businessId)
 
       for (const job of jobs || []) {
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
       const today = asDay(ymdIn(nowD))
       const { data: visits } = await db
         .from('job_visits')
-        .select('*, customers(first_name, last_name, email, address, suburb, state, postcode), jobs(brand, model), staff_members(name)')
+        .select('*, customers(first_name, last_name, email, address, suburb, state, postcode), jobs(brand, model), staff_members(name), customer_sites(label, address, suburb, state, postcode)')
         .eq('business_id', businessId)
         .eq('status', 'scheduled')
         .gt('start_at', nowD.toISOString())

@@ -1,18 +1,26 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { SignaturePad } from '@/components/SignaturePad'
 import { BTN, BTN_SM, FIELD, FIELD_TEXTAREA, LABEL, LINE, Modal, RED, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE, FormError } from '@/components/forms'
 import { type FilledItem, type VisitChecklist, progress } from '@/lib/checklists'
 import { printElement } from '@/lib/print'
-import { type Visit, customerAddress, customerName, fmtDay, fmtRange } from '@/lib/schedule'
+import { tagLabel } from '@/lib/photos'
+import { PhotoThumb } from './PhotoThumb'
+import type { PhotosApi } from './usePhotos'
+import { type Visit, customerName, fmtDay, fmtRange, visitAddress } from '@/lib/schedule'
+
+const PhotoViewer = dynamic(() => import('./PhotoViewer').then(m => m.PhotoViewer), { ssr: false })
 
 type Props = {
   businessId: string
   checklist: VisitChecklist
-  visit: Pick<Visit, 'start_at' | 'end_at' | 'title' | 'customers'>
+  visit: Pick<Visit, 'start_at' | 'end_at' | 'title' | 'customers' | 'customer_sites'>
   technician?: string | null
+  /** The visit's photos, shared with the Photos card so both always agree */
+  photos: PhotosApi
   onClose: () => void
   /** Called after every save, so the list behind can show the new progress. */
   onChanged: (c: VisitChecklist) => void
@@ -21,7 +29,7 @@ type Props = {
 const when = (iso: string) => new Date(iso).toLocaleString('en-AU', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 
 /** Tick things off, write notes, and get the customer's sign-off. Saves as you go. */
-export function ChecklistFill({ businessId, checklist, visit, technician, onClose, onChanged }: Props) {
+export function ChecklistFill({ businessId, checklist, visit, technician, photos, onClose, onChanged }: Props) {
   const [items, setItems] = useState<FilledItem[]>(checklist.items || [])
   const [notes, setNotes] = useState(checklist.notes || '')
   const [signedName, setSignedName] = useState(checklist.signed_name || '')
@@ -32,6 +40,30 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
   const [business, setBusiness] = useState<any>(null)
   const lastSaved = useRef(JSON.stringify({ items: checklist.items, notes: (checklist.notes || '').trim() }))
   const signed = !!current.signed_at
+
+  // Photo steps: the photos taken for each step, with the count kept in the step's value so progress counts them
+  const [viewer, setViewer] = useState<string | null>(null)
+  const [printUrls, setPrintUrls] = useState<Record<string, string>>({})
+  const pickInput = useRef<HTMLInputElement>(null)
+  const pickItem = useRef('')
+  const photosFor = (itemId: string) => photos.photos.filter(p => p.checklist_id === current.id && p.item_id === itemId)
+  const photoCounts = items.filter(i => i.type === 'photo').map(i => `${i.id}:${photosFor(i.id).length}`).join(',')
+  useEffect(() => {
+    if (signed || photos.loading) return
+    setItems(prev => {
+      let changed = false
+      const next = prev.map(it => {
+        if (it.type !== 'photo') return it
+        const n = photosFor(it.id).length
+        const value = n ? String(n) : ''
+        if (value === it.value) return it
+        changed = true
+        return { ...it, value }
+      })
+      return changed ? next : prev
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photoCounts, signed, photos.loading])
 
   // Remember the latest values so a change made a moment before closing is still saved
   const latest = useRef({ id: current.id, items, notes, signed })
@@ -114,9 +146,19 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
     setSig(null)
   }
 
+  async function printReport() {
+    const list = items.filter(i => i.type === 'photo').flatMap(i => photosFor(i.id))
+    if (list.length) setPrintUrls(await photos.fullUrls(list))
+    // let the report draw before it is copied for printing
+    await new Promise(r => setTimeout(r, 120))
+    printElement('checklist-print', current.title)
+  }
+
   const p = progress(items)
+  const viewerPhoto = photos.photos.find(x => x.id === viewer)
+  const viewerList = viewerPhoto ? photosFor(viewerPhoto.item_id || '') : []
   const name = customerName(visit.customers)
-  const address = customerAddress(visit.customers)
+  const address = visitAddress(visit)
   const s = new Date(visit.start_at)
   const e = new Date(visit.end_at)
 
@@ -135,7 +177,7 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
       layer={500}
       onClose={onClose}
       headerExtra={
-        <button type="button" onClick={() => printElement('checklist-print', current.title)} style={{ ...BTN.secondary, ...BTN_SM }}>
+        <button type="button" onClick={printReport} style={{ ...BTN.secondary, ...BTN_SM }}>
           Print report
         </button>
       }
@@ -161,6 +203,29 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
                   <input type="checkbox" checked={it.done} disabled={signed} onChange={ev => setItem(it.id, { done: ev.target.checked })} style={{ width: 22, height: 22, accentColor: TEAL, flexShrink: 0 }} />
                   <span style={{ fontSize: 15, fontWeight: 600, color: it.done ? TEXT3 : TEXT, textDecoration: it.done ? 'line-through' : 'none', overflowWrap: 'anywhere' }}>{it.text}</span>
                 </label>
+              ) : it.type === 'photo' ? (
+                <div>
+                  <div style={{ ...LABEL, textTransform: 'none', letterSpacing: 0, fontSize: 13, fontWeight: 700, color: TEXT2 }}>{it.text}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                    {photosFor(it.id).map((ph, n) => (
+                      <PhotoThumb key={ph.id} url={photos.thumbs[ph.id]} tag={ph.tag} size={64} label={`Open photo ${n + 1} for ${it.text}`} onClick={() => setViewer(ph.id)} />
+                    ))}
+                    {!signed && (
+                      <button
+                        type="button"
+                        disabled={!!photos.progress}
+                        onClick={() => {
+                          pickItem.current = it.id
+                          pickInput.current?.click()
+                        }}
+                        style={{ ...BTN.secondary, ...BTN_SM, ...(photos.progress ? BTN.disabled : {}) }}
+                      >
+                        {photos.progress ? 'Adding...' : photosFor(it.id).length ? 'Add another' : 'Add photo'}
+                      </button>
+                    )}
+                    {signed && photosFor(it.id).length === 0 && <span style={{ fontSize: 13, color: TEXT3 }}>No photos</span>}
+                  </div>
+                </div>
               ) : (
                 <div>
                   <div style={{ ...LABEL, textTransform: 'none', letterSpacing: 0, fontSize: 13, fontWeight: 700, color: TEXT2 }}>{it.text}</div>
@@ -206,8 +271,23 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
           )}
         </div>
 
+        {photos.error && <FormError message={photos.error} />}
         {error && <FormError message={error} />}
       </div>
+
+      <input
+        ref={pickInput}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={ev => {
+          const files = Array.from(ev.target.files || [])
+          ev.target.value = ''
+          if (files.length && pickItem.current) photos.add(files, { checklistId: current.id, itemId: pickItem.current })
+        }}
+      />
+      {viewer && viewerList.length > 0 && <PhotoViewer photos={viewerList} startId={viewer} api={photos} locked={signed} onClose={() => setViewer(null)} />}
 
       {/* The printed report. Hidden on screen; "Print report" copies just this. */}
       <div style={{ display: 'none' }}>
@@ -234,11 +314,32 @@ export function ChecklistFill({ businessId, checklist, visit, technician, onClos
                 <tr key={it.id}>
                   <td style={{ padding: '7px 0', borderBottom: `1px solid ${LINE}`, width: 26 }}>{it.type === 'check' ? (it.done ? '[x]' : '[ ]') : ''}</td>
                   <td style={{ padding: '7px 8px', borderBottom: `1px solid ${LINE}` }}>{it.text}</td>
-                  <td style={{ padding: '7px 0', borderBottom: `1px solid ${LINE}`, textAlign: 'right', fontWeight: 700 }}>{it.type === 'check' ? '' : `${it.value || '-'}${it.type === 'number' && it.value && it.unit ? ` ${it.unit}` : ''}`}</td>
+                  <td style={{ padding: '7px 0', borderBottom: `1px solid ${LINE}`, textAlign: 'right', fontWeight: 700 }}>{it.type === 'check' ? '' : it.type === 'photo' ? (it.value ? `${it.value} photo${it.value === '1' ? '' : 's'}` : 'None') : `${it.value || '-'}${it.type === 'number' && it.value && it.unit ? ` ${it.unit}` : ''}`}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {items
+            .filter(i => i.type === 'photo' && photosFor(i.id).length > 0)
+            .map(it => (
+              <div key={it.id} style={{ marginTop: 14, breakInside: 'avoid' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{it.text}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                  {photosFor(it.id).map(ph => (
+                    <div key={ph.id}>
+                      {printUrls[ph.id] && <img src={printUrls[ph.id]} alt="" style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 4, display: 'block' }} />}
+                      {(ph.tag || ph.caption) && (
+                        <div style={{ fontSize: 11, marginTop: 3 }}>
+                          {ph.tag && <b>{tagLabel(ph.tag)}</b>}
+                          {ph.tag && ph.caption ? ' · ' : ''}
+                          {ph.caption}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           {notes.trim() && (
             <div style={{ marginTop: 14, fontSize: 13 }}>
               <b>Notes</b>

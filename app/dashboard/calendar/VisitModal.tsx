@@ -12,6 +12,7 @@ import {
   VISIT_STATUS,
   type StaffMember,
   type TimeOff,
+  type Site,
   type Visit,
   type VisitKind,
   type VisitStatus,
@@ -34,9 +35,12 @@ import {
 import { NO_REPEAT, RepeatFields, ruleFromState, stateFromRule, type RepeatState } from './RepeatFields'
 import { FindTime } from './FindTime'
 import { VisitChecklists } from './VisitChecklists'
+import { VisitPhotos } from './VisitPhotos'
+import { usePhotos } from './usePhotos'
+import { removeFilesForVisits } from '@/lib/photo-client'
 
 type CustomerOption = { id: string; first_name: string | null; last_name: string | null; suburb: string | null }
-type JobOption = { id: string; customer_id: string; brand: string | null; model: string | null; equipment_type: string | null }
+type JobOption = { id: string; customer_id: string; site_id?: string | null; brand: string | null; model: string | null; equipment_type: string | null }
 
 export type VisitPrefill = { customerId?: string; jobId?: string; staffId?: string | null; title?: string; kind?: VisitKind; notes?: string; duration?: number; toBookId?: string }
 export type SavedInfo = { completed?: Visit }
@@ -49,6 +53,8 @@ type Props = {
   prefill?: VisitPrefill
   customers: CustomerOption[]
   jobs: JobOption[]
+  /** Each customer's extra properties, so a visit can say which one it is at */
+  sites: Site[]
   staff: StaffMember[]
   timeOff: TimeOff[]
   onClose: () => void
@@ -67,7 +73,7 @@ const note = (tone: 'warn' | 'info'): React.CSSProperties => ({
 
 const kindLabelOf = (k: VisitKind) => VISIT_KINDS.find(x => x.value === k)?.label || 'Visit'
 
-export function VisitModal({ businessId, visit, defaults, prefill, customers, jobs, staff, timeOff, onClose, onSaved }: Props) {
+export function VisitModal({ businessId, visit, defaults, prefill, customers, jobs, sites, staff, timeOff, onClose, onSaved }: Props) {
   const phone = useIsPhone()
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const initialStart = visit ? new Date(visit.start_at) : defaults?.date ?? new Date()
@@ -76,6 +82,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
   const [when, setWhen] = useState<'set' | 'later'>('set')
   const [customerId, setCustomerId] = useState(visit?.customer_id || prefill?.customerId || '')
   const [jobId, setJobId] = useState(visit?.job_id || prefill?.jobId || '')
+  const [siteId, setSiteId] = useState(visit ? visit.site_id || '' : jobs.find(j => j.id === prefill?.jobId)?.site_id || '')
   const [kind, setKind] = useState<VisitKind>(visit?.kind || prefill?.kind || 'service')
   const [title, setTitle] = useState(visit ? (visit.title !== kindLabelOf(visit.kind) ? visit.title : '') : prefill?.title || '')
   const [staffId, setStaffId] = useState(visit?.staff_id ?? prefill?.staffId ?? defaults?.staffId ?? '')
@@ -89,6 +96,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
   const [error, setError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [checklistCount, setChecklistCount] = useState(0)
+  const photos = usePhotos(businessId, visit?.id)
   const [conflict, setConflict] = useState('')
 
   // Repeating visits
@@ -110,6 +118,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
 
   const customer = customers.find(c => c.id === customerId)
   const customerJobs = useMemo(() => jobs.filter(j => j.customer_id === customerId), [jobs, customerId])
+  const customerSites = useMemo(() => sites.filter(s => s.customer_id === customerId), [sites, customerId])
   const assignable = staff.filter(s => s.active || s.id === visit?.staff_id)
   const tech = staff.find(s => s.id === staffId)
   const durations = Array.from(new Set([...DURATIONS, duration])).sort((a, b) => a - b)
@@ -122,6 +131,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     setCustomerId(id)
     const list = jobs.filter(j => j.customer_id === id)
     setJobId(list.length === 1 ? list[0].id : '')
+    setSiteId(list.length === 1 ? list[0].site_id || '' : '')
   }
 
   // The run this visit belongs to, and the last reminder emailed about it
@@ -272,6 +282,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     const resolvedTitle = title.trim() || kindLabelOf(kind)
     const payload = {
       job_id: jobId || null,
+      site_id: siteId || null,
       customer_id: customerId || null,
       staff_id: staffId || null,
       title: resolvedTitle,
@@ -307,7 +318,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
         }
         const ser = await supabase
           .from('visit_series')
-          .insert({ business_id: businessId, rule, template: { customer_id: customerId || null, job_id: jobId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } })
+          .insert({ business_id: businessId, rule, template: { customer_id: customerId || null, job_id: jobId || null, site_id: siteId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } })
           .select('id')
           .single()
         if (ser.error || !ser.data) {
@@ -397,7 +408,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
           return
         }
       }
-      await supabase.from('visit_series').update({ rule, template: { customer_id: customerId || null, job_id: jobId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } }).eq('id', series.id)
+      await supabase.from('visit_series').update({ rule, template: { customer_id: customerId || null, job_id: jobId || null, site_id: siteId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } }).eq('id', series.id)
       setSaving(false)
       onSaved(`Repeat changed: ${dates.length} visits from ${fmtDay(dates[0])}`)
       return
@@ -433,6 +444,13 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
   async function remove(mode: 'one' | 'following') {
     if (!visit) return
     setSaving(true)
+    // Take the pictures out of storage first; their rows go with the visit
+    let doomed = [visit.id]
+    if (mode === 'following' && visit.series_id) {
+      const { data } = await supabase.from('job_visits').select('id').eq('series_id', visit.series_id).gte('start_at', visit.start_at).neq('status', 'completed')
+      doomed = (data || []).map(r => r.id as string)
+    }
+    await removeFilesForVisits(doomed)
     const q =
       mode === 'following' && visit.series_id
         ? supabase.from('job_visits').delete().eq('series_id', visit.series_id).gte('start_at', visit.start_at).neq('status', 'completed')
@@ -510,7 +528,8 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     onSaved(message)
   }
 
-  const address = customerAddress((visit?.customers as any) || (customer as any))
+  const chosenSite = customerSites.find(s => s.id === siteId) || null
+  const address = chosenSite ? customerAddress(chosenSite) : customerAddress((visit?.customers as any) || (customer as any))
   const customerPhone = visit?.customers?.phone
   const customerEmail = String(visit?.customers?.email || '').trim()
   const late = visit ? isLate({ status: visit.status, end_at: visit.end_at }) : false
@@ -590,12 +609,31 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
           {customerId && customerJobs.length > 0 && (
             <div>
               <label style={LABEL}>Equipment</label>
-              <Select style={FIELD} value={jobId} onChange={e => setJobId(e.target.value)}>
+              <Select
+                style={FIELD}
+                value={jobId}
+                onChange={e => {
+                  setJobId(e.target.value)
+                  setSiteId(customerJobs.find(j => j.id === e.target.value)?.site_id || '')
+                }}
+              >
                 <option value="">Not for a specific unit</option>
                 {customerJobs.map(j => (
                   <option key={j.id} value={j.id}>
                     {[j.brand, j.model].filter(Boolean).join(' ') || 'Unit'} · {getEquipmentLabel(j.equipment_type) || 'Equipment'}
                   </option>
+                ))}
+              </Select>
+            </div>
+          )}
+
+          {customerId && customerSites.length > 0 && (
+            <div>
+              <label style={LABEL}>Property</label>
+              <Select style={FIELD} value={siteId} onChange={e => setSiteId(e.target.value)}>
+                <option value="">{customer?.suburb ? `Main address - ${customer.suburb}` : 'Main address'}</option>
+                {customerSites.map(s => (
+                  <option key={s.id} value={s.id}>{s.label} - {s.address}</option>
                 ))}
               </Select>
             </div>
@@ -724,7 +762,9 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
             </div>
           )}
 
-          {visit && <VisitChecklists businessId={businessId} visit={visit} technician={tech?.name || null} onCount={setChecklistCount} />}
+          {visit && <VisitChecklists businessId={businessId} visit={visit} technician={tech?.name || null} onCount={setChecklistCount} photos={photos} />}
+
+          {visit && <VisitPhotos businessId={businessId} visit={visit} api={photos} technician={tech?.name || null} />}
 
           {tech?.email && (!visit || visit.staff_id !== staffId) && when === 'set' && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: TEXT2, cursor: 'pointer' }}>
@@ -786,7 +826,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
       {confirmDelete && !inSeries && (
         <ConfirmDialog
           title="Delete this visit?"
-          message={checklistCount > 0 ? 'It will be removed from the calendar, along with its checklists and any signatures on them. The customer and job are not affected.' : 'It will be removed from the calendar. The customer and job are not affected.'}
+          message={`It will be removed from the calendar${[checklistCount > 0 && 'checklists and any signatures on them', photos.photos.length > 0 && 'photos'].filter(Boolean).length ? `, along with its ${[checklistCount > 0 && 'checklists and any signatures on them', photos.photos.length > 0 && 'photos'].filter(Boolean).join(' and ')}` : ''}. The customer and job are not affected.`}
           busy={saving}
           busyLabel="Deleting..."
           onCancel={() => setConfirmDelete(false)}
@@ -812,7 +852,7 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
         >
           <div style={{ fontSize: 14, lineHeight: 1.6, color: TEXT3 }}>
             This visit is part of a repeating run. Finished visits are always kept.
-            {checklistCount > 0 ? ' Checklists on the visits that are deleted go with them.' : ''}
+            {checklistCount > 0 || photos.photos.length > 0 ? ' Checklists and photos on the visits that are deleted go with them.' : ''}
           </div>
         </Modal>
       )}

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { daysUntilService } from '@/lib/service'
@@ -11,32 +12,19 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { Select } from '@/components/Select'
 import { BTN, BTN_SM, ConfirmDialog, FONT, LINE, TEXT, TEXT3, Toast, WHITE } from '@/components/forms'
-import {
-  VISIT_KINDS,
-  type StaffMember,
-  type TimeOff,
-  type Visit,
-  addDays,
-  addMonths,
-  clockMinutes,
-  customerName,
-  fmtDay,
-  isLate,
-  isOnLeave,
-  monthGridStart,
-  sameDay,
-  startOfDay,
-  startOfWeek,
-} from '@/lib/schedule'
+import { VISIT_KINDS, type StaffMember, type TimeOff, type Visit, addDays, addMonths, clockMinutes, customerName, fmtDay, isLate, isOnLeave, monthGridStart, sameDay, startOfDay, startOfWeek, type Site } from '@/lib/schedule'
 import { Agenda } from './Agenda'
 import { TimeGrid, type GridColumn, type GridVisit } from './TimeGrid'
 import { MonthGrid } from './MonthGrid'
-import { VisitModal, type SavedInfo, type VisitPrefill } from './VisitModal'
-import { TeamModal } from './TeamModal'
+import type { SavedInfo, VisitPrefill } from './VisitModal'
 import { ToBookPanel, type DueService, type ToBookRow } from './ToBookPanel'
-import { LateModal } from './LateModal'
-import { ChecklistsModal } from './ChecklistsModal'
-import { NextVisitPrompt } from './NextVisitPrompt'
+
+// The pop-ups are only needed after a click, so they are not part of the page's first download
+const VisitModal = dynamic(() => import('./VisitModal').then(m => m.VisitModal), { ssr: false })
+const TeamModal = dynamic(() => import('./TeamModal').then(m => m.TeamModal), { ssr: false })
+const LateModal = dynamic(() => import('./LateModal').then(m => m.LateModal), { ssr: false })
+const ChecklistsModal = dynamic(() => import('./ChecklistsModal').then(m => m.ChecklistsModal), { ssr: false })
+const NextVisitPrompt = dynamic(() => import('./NextVisitPrompt').then(m => m.NextVisitPrompt), { ssr: false })
 
 const BG = '#FAFAFA'
 const UNASSIGNED = '#94A3B8'
@@ -55,7 +43,7 @@ function useIsMobile() {
 }
 
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, overflow: 'hidden' }
-const VISIT_SELECT = '*, customers(first_name, last_name, phone, email, address, suburb, state, postcode), jobs(brand, model, equipment_type)'
+const VISIT_SELECT = '*, customers(first_name, last_name, phone, email, address, suburb, state, postcode), jobs(brand, model, equipment_type), customer_sites(label, address, suburb, state, postcode)'
 
 export default function CalendarPage() {
   const router = useRouter()
@@ -65,6 +53,7 @@ export default function CalendarPage() {
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [customers, setCustomers] = useState<any[]>([])
   const [jobs, setJobs] = useState<any[]>([])
+  const [sites, setSites] = useState<Site[]>([])
   const [visits, setVisits] = useState<Visit[]>([])
   const [timeOff, setTimeOff] = useState<TimeOff[]>([])
   const [toBook, setToBook] = useState<ToBookRow[]>([])
@@ -93,6 +82,15 @@ export default function CalendarPage() {
   const rangeEnd = mode === 'month' ? addDays(gridStart, 42) : mode === 'week' ? addDays(weekStart, 7) : addDays(anchor, 1)
   const rangeKey = `${rangeStart.getTime()}-${rangeEnd.getTime()}`
 
+  // Once the page is up, fetch the visit pop-up quietly so the first click opens it straight away
+  useEffect(() => {
+    if (loading) return
+    const t = setTimeout(() => {
+      void import('./VisitModal')
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [loading])
+
   // Who and what we can schedule
   useEffect(() => {
     async function init() {
@@ -107,14 +105,16 @@ export default function CalendarPage() {
         return
       }
       setBusinessId(u.business_id)
-      const [st, cu, jb] = await Promise.all([
+      const [st, cu, jb, si] = await Promise.all([
         supabase.from('staff_members').select('*').eq('business_id', u.business_id).order('created_at'),
         supabase.from('customers').select('id, first_name, last_name, suburb').eq('business_id', u.business_id).order('first_name'),
-        supabase.from('jobs').select('id, customer_id, brand, model, equipment_type, next_service_date, install_date, service_interval_months').eq('business_id', u.business_id),
+        supabase.from('jobs').select('id, customer_id, site_id, brand, model, equipment_type, next_service_date, install_date, service_interval_months').eq('business_id', u.business_id),
+        supabase.from('customer_sites').select('id, customer_id, label, address, suburb, state, postcode').eq('business_id', u.business_id),
       ])
       setStaff((st.data as StaffMember[]) || [])
       setCustomers(cu.data || [])
       setJobs(jb.data || [])
+      setSites((si.data as Site[]) || [])
       setLoading(false)
       if (new URLSearchParams(window.location.search).get('team') === '1') setShowTeam(true)
 
@@ -386,7 +386,7 @@ export default function CalendarPage() {
               <button type="button" onClick={() => setAnchor(startOfDay(new Date()))} style={{ ...BTN.secondary, ...BTN_SM }}>Today</button>
               <button type="button" aria-label="Next" onClick={() => go(1)} style={{ ...BTN.secondary, ...BTN_SM, width: 34, padding: 0 }}>›</button>
             </div>
-            <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', flex: 1, minWidth: 0 }}>{label}</div>
+            <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', flex: '1 1 150px', minWidth: 0 }}>{label}</div>
             <div style={{ width: isMobile ? '100%' : 200 }}>
               <Select value={filter} onChange={e => setFilter(e.target.value)} style={{ height: 36 }} aria-label="Show">
                 {filterOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -435,6 +435,7 @@ export default function CalendarPage() {
           prefill={editing ? undefined : prefill}
           customers={customers}
           jobs={jobs}
+          sites={sites}
           staff={staff}
           timeOff={timeOff}
           onClose={() => {
