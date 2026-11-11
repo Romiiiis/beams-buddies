@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent } from '@/lib/automation-email'
+import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
 import { nextServiceDate, toYMD } from '@/lib/service'
-import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue } from '@/lib/automation-rules'
+import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue, visitDue } from '@/lib/automation-rules'
 
 // Runs once a day (see vercel.json). For every business with an automation switched on, sends the
 // matching customer emails through Resend, at most once per job / invoice / quote.
@@ -17,7 +17,7 @@ const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
 const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/
 const PER_BUSINESS_LIMIT = 30
 
-type Kind = 'service' | 'overdue' | 'quote' | 'review'
+type Kind = 'service' | 'overdue' | 'quote' | 'review' | 'visit'
 
 function safeDisplayName(name: string) {
   return name.replace(/[\r\n<>"\\]/g, '').trim().slice(0, 80) || 'Jobyra'
@@ -50,11 +50,11 @@ export async function GET(request: Request) {
     daysFor.set(`${r.business_id}:${r.kind}`, Number(r.days) > 0 ? Number(r.days) : AUTOMATION_DEFAULT_DAYS[r.kind as Kind])
   }
 
-  const summary: Record<string, number> = { service: 0, overdue: 0, quote: 0, review: 0, failed: 0 }
+  const summary: Record<string, number> = { service: 0, overdue: 0, quote: 0, review: 0, visit: 0, failed: 0 }
 
   for (const [businessId, kinds] of byBusiness) {
     const [{ data: business }, { data: settings }] = await Promise.all([
-      db.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', businessId).single(),
+      db.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified, timezone').eq('id', businessId).single(),
       db.from('business_settings').select('*').eq('business_id', businessId).single(),
     ])
     if (!business) continue
@@ -138,6 +138,42 @@ export async function GET(request: Request) {
         if (to && overdueDue(inv, days('overdue'))) {
           await deliver('overdue', inv.id, '', to, renderAutomation(overdueContent(inv, sender, settings), sender))
         }
+      }
+    }
+
+    if (kinds.has('visit')) {
+      const tz = String((business as any).timezone || 'Australia/Sydney')
+      const ymdIn = (d: Date) => {
+        try {
+          return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+        } catch {
+          return new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+        }
+      }
+      const asDay = (ymd: string) => {
+        const [y, m, dd] = ymd.split('-').map(Number)
+        return new Date(y, m - 1, dd)
+      }
+      const nowD = new Date()
+      const today = asDay(ymdIn(nowD))
+      const { data: visits } = await db
+        .from('job_visits')
+        .select('*, customers(first_name, last_name, email, address, suburb, state, postcode), jobs(brand, model), staff_members(name)')
+        .eq('business_id', businessId)
+        .eq('status', 'scheduled')
+        .gt('start_at', nowD.toISOString())
+        .lt('start_at', new Date(nowD.getTime() + (days('visit') + 2) * 86400000).toISOString())
+      // Reminders sent by hand count too, so nobody is told twice
+      const ids = (visits || []).map(v => v.id as string)
+      const { data: manual } = ids.length ? await db.from('visit_reminders').select('visit_id, for_start').in('visit_id', ids) : { data: [] as { visit_id: string; for_start: string }[] }
+      const manualSent = new Set((manual || []).map(m => `${m.visit_id}:${new Date(m.for_start).toISOString()}`))
+      for (const v of visits || []) {
+        const to = emailOf(v.customers)
+        const startIso = new Date(v.start_at).toISOString()
+        if (!to || manualSent.has(`${v.id}:${startIso}`)) continue
+        if (!visitDue(v, days('visit'), today, nowD, iso => asDay(ymdIn(new Date(iso))))) continue
+        const sentOk = await deliver('visit', v.id, startIso, to, renderAutomation(visitContent(v, sender, tz), sender))
+        if (sentOk) await db.from('visit_reminders').insert({ business_id: businessId, visit_id: v.id, for_start: v.start_at, to_email: to, source: 'auto' })
       }
     }
 

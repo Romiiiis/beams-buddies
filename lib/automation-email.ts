@@ -5,6 +5,7 @@ import {
   buildOverdue,
   buildQuote,
   buildReview,
+  buildVisit,
   buildService,
   renderEmail,
   renderText,
@@ -125,4 +126,29 @@ export type RenderedEmail = { subject: string; html: string; text: string }
 /** Final subject, HTML and plain text, ready to send. */
 export function renderAutomation(c: EmailContent, s: EmailSender, style: EmailStyleId = EMAIL_STYLE): RenderedEmail {
   return { subject: c.subject, html: renderEmail(style, c, s), text: renderText(c, s) }
+}
+
+/** The reminder for a booked visit. Times are worded in the business's own time zone. */
+export function visitContent(v: any, s: EmailSender, timeZone: string): EmailContent {
+  const start = new Date(v?.start_at)
+  const end = new Date(v?.end_at)
+  const fmt = (opts: Intl.DateTimeFormatOptions) => {
+    try {
+      return new Intl.DateTimeFormat('en-AU', { timeZone, ...opts })
+    } catch {
+      return new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', ...opts })
+    }
+  }
+  const day = fmt({ weekday: 'short', day: 'numeric', month: 'short' }).format(start).replace(',', '')
+  const clock = (d: Date) => fmt({ hour: 'numeric', minute: '2-digit', hour12: true }).format(d).replace(/\s/g, '').toLowerCase()
+  const mins = Math.max(15, Math.round((end.getTime() - start.getTime()) / 60000))
+  const length = mins < 60 ? `${mins} min` : mins % 60 ? `${Math.floor(mins / 60)} hr ${mins % 60} min` : `${mins / 60} hr`
+  const c = v?.customers || {}
+  const address = [c.address, c.suburb, c.state, c.postcode].map((x: unknown) => clean(x)).filter(Boolean).join(', ')
+  const kinds: Record<string, string> = { service: 'Service', install: 'Installation', repair: 'Repair', quote: 'Quote visit', other: 'Visit' }
+  const tech = clean(v?.staff_members?.name).split(/\s+/)[0]
+  return buildVisit(
+    { first: clean(c.first_name), when: day, time: `${clock(start)} to ${clock(end)}`, length, what: kinds[v?.kind] || 'Visit', equipment: [v?.jobs?.brand, v?.jobs?.model].map(clean).filter(Boolean).join(' ') || undefined, address: address || undefined, tech: tech || undefined },
+    s
+  )
 }

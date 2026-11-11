@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { BTN, FONT, LINE, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE } from '@/components/forms'
+import { AppIcon } from '@/components/AppIcon'
 import {
   VISIT_KINDS,
   VISIT_STATUS,
@@ -12,6 +13,7 @@ import {
   customerName,
   fmtDay,
   fmtRange,
+  isLate,
   sameDay,
 } from '@/lib/schedule'
 
@@ -86,8 +88,14 @@ export function Agenda({ weekStart, anchor, onPickDay, visits, staffById, matche
                 <span style={{ width: 5, background: s?.colour || UNASSIGNED, flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0, padding: '12px 14px', display: 'block' }}>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: TEAL_DARK }}>{fmtRange(new Date(v.start_at), new Date(v.end_at))}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: st.bg, color: st.fg, whiteSpace: 'nowrap' }}>{st.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      {fmtRange(new Date(v.start_at), new Date(v.end_at))}
+                      {v.series_id && <AppIcon name="repeat" size={13} />}
+                    </span>
+                    <span style={{ display: 'inline-flex', gap: 6 }}>
+                      {isLate({ status: v.status, end_at: v.end_at }) && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: '#FEE2E2', color: '#B91C1C', whiteSpace: 'nowrap' }}>Late</span>}
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: st.bg, color: st.fg, whiteSpace: 'nowrap' }}>{st.label}</span>
+                    </span>
                   </span>
                   <span style={{ display: 'block', fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', marginTop: 4 }}>{name || v.title}</span>
                   <span style={{ display: 'block', fontSize: 13, color: TEXT2, marginTop: 2 }}>{kindLabel}{name && v.title !== kindLabel ? ` · ${v.title}` : ''}</span>

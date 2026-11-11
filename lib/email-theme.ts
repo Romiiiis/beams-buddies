@@ -5,7 +5,7 @@
 // fonts, so it holds up in Gmail, Outlook and phone mail apps.
 // This file has no imports on purpose, so it also runs in plain Node for previews and tests.
 
-export type EmailKind = 'service' | 'overdue' | 'quote' | 'review'
+export type EmailKind = 'service' | 'overdue' | 'quote' | 'review' | 'visit'
 export type EmailStyleId = 'classic' | 'banner' | 'letter' | 'summary' | 'bold'
 export type Tone = 'neutral' | 'good' | 'warn' | 'danger'
 
@@ -624,8 +624,54 @@ export function renderText(c: EmailContent, s: EmailSender): string {
 }
 
 /** Example content with realistic details, used for previews before any real data exists. */
+export type VisitInput = {
+  first: string
+  /** The day, already worded in the business's own time, e.g. "Tue 17 Nov". */
+  when: string
+  /** The time, e.g. "9:00am to 10:00am". */
+  time: string
+  /** How long it takes, e.g. "1 hr". */
+  length?: string
+  /** "Service", "Repair"... */
+  what: string
+  equipment?: string
+  address?: string
+  /** The technician's first name. */
+  tech?: string
+}
+
+/** Reminder that a visit is booked. The internal notes for the technician are never included. */
+export function buildVisit(i: VisitInput, s: EmailSender): EmailContent {
+  const first = firstName(i.first)
+  const biz = s.name || 'our team'
+  const callUs = s.phone ? ` or call us on ${s.phone}` : ''
+  const start = i.time.split(' to ')[0]
+  const facts: [string, string][] = [['Visit', i.what]]
+  if (i.equipment) facts.push(['Equipment', i.equipment])
+  if (i.address) facts.push(['Address', i.address])
+  if (i.tech) facts.push(['Technician', i.tech])
+  const href = replyHref(s, `Change my booking${i.first ? ` - ${i.first}` : ''}`)
+  return {
+    kind: 'visit',
+    subject: `Reminder: your ${i.what.toLowerCase()} on ${i.when} | ${biz}`,
+    preheader: `We are booked in on ${i.when} at ${start}.`,
+    label: 'Visit reminder',
+    headline: `Hi ${first}, we are booked in on ${i.when}`,
+    greeting: `Hi ${first},`,
+    paragraphs: [`This is a friendly reminder from ${biz} about your upcoming visit. The details are below.`],
+    highlight: { label: 'When', value: i.when, sub: i.time, chip: i.length ? { text: i.length, tone: 'neutral' } : undefined },
+    facts,
+    closing: [`Need to change the time? Just reply to this email${callUs} and we will sort it out.`],
+    button: href ? { text: 'Change my booking', href } : undefined,
+    signoff: 'Kind regards,',
+  }
+}
+
 export function sampleContent(kind: EmailKind, s: EmailSender, today: Date = new Date()): EmailContent {
   const day = (n: number) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + n)
+  if (kind === 'visit') {
+    return buildVisit({ first: 'Sophie', when: dateMid(day(1)), time: '9:00am to 10:00am', length: '1 hr', what: 'Service', equipment: 'Daikin Cora split system', address: '14 Marlow Street, Parramatta', tech: 'Sam' }, s)
+  }
   const lines: LineInput[] = [
     { description: 'Split system service, 2 units', qty: 2, unit: 110 },
     { description: 'Refrigerant top-up', qty: 1, unit: 60 },

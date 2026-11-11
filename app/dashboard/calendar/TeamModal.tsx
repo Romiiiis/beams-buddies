@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BTN, BTN_SM, FIELD, LABEL, LINE, Modal, RED, TEAL_DARK, TEXT, TEXT2, TEXT3 } from '@/components/forms'
-import { STAFF_COLOURS, type StaffMember } from '@/lib/schedule'
+import { STAFF_COLOURS, type StaffMember, type TimeOff, WEEKDAY_SHORT, WEEK_ORDER, fmtDay, workSummary } from '@/lib/schedule'
 
 type Props = {
   businessId: string
@@ -13,9 +13,9 @@ type Props = {
   onChanged: () => void
 }
 
-type FormState = { id: string | null; name: string; phone: string; email: string; colour: string; active: boolean }
+type FormState = { id: string | null; name: string; phone: string; email: string; colour: string; active: boolean; workDays: number[]; workStart: string; workEnd: string }
 
-const EMPTY = (colour: string): FormState => ({ id: null, name: '', phone: '', email: '', colour, active: true })
+const EMPTY = (colour: string): FormState => ({ id: null, name: '', phone: '', email: '', colour, active: true, workDays: [1, 2, 3, 4, 5], workStart: '07:00', workEnd: '16:00' })
 
 function feedUrl(token: string) {
   return `${typeof window !== 'undefined' ? window.location.origin : ''}/api/calendar/${token}`
@@ -26,6 +26,65 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState('')
+  const [timeOff, setTimeOff] = useState<TimeOff[]>([])
+  const [off, setOff] = useState({ start: '', end: '', note: '' })
+
+  // Days off for the person being edited
+  useEffect(() => {
+    if (!form?.id) {
+      setTimeOff([])
+      return
+    }
+    let cancelled = false
+    supabase
+      .from('staff_time_off')
+      .select('*')
+      .eq('staff_id', form.id)
+      .gte('end_date', new Date().toISOString().slice(0, 10))
+      .order('start_date')
+      .then(({ data }) => {
+        if (!cancelled) setTimeOff((data as TimeOff[]) || [])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [form?.id])
+
+  async function addTimeOff() {
+    if (!form?.id) return
+    if (!off.start) {
+      setError('Pick the first day off.')
+      return
+    }
+    const end = off.end || off.start
+    if (end < off.start) {
+      setError('The last day off is before the first.')
+      return
+    }
+    setError('')
+    const { data, error: err } = await supabase
+      .from('staff_time_off')
+      .insert({ business_id: businessId, staff_id: form.id, start_date: off.start, end_date: end, note: off.note.trim() || null })
+      .select('*')
+      .single()
+    if (err || !data) {
+      setError(err?.message || 'Could not save the time off.')
+      return
+    }
+    setTimeOff(prev => [...prev, data as TimeOff].sort((a, b) => a.start_date.localeCompare(b.start_date)))
+    setOff({ start: '', end: '', note: '' })
+    onChanged()
+  }
+
+  async function removeTimeOff(id: string) {
+    const { error: err } = await supabase.from('staff_time_off').delete().eq('id', id)
+    if (err) {
+      setError(err.message)
+      return
+    }
+    setTimeOff(prev => prev.filter(t => t.id !== id))
+    onChanged()
+  }
 
   const editing = form ? staff.find(s => s.id === form.id) : undefined
   const nextColour = STAFF_COLOURS[staff.length % STAFF_COLOURS.length]
@@ -36,6 +95,10 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       setError('Add a name.')
       return
     }
+    if (form.workEnd <= form.workStart) {
+      setError('The finish time needs to be after the start time.')
+      return
+    }
     setSaving(true)
     setError('')
     const payload = {
@@ -44,6 +107,9 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       email: form.email.trim() || null,
       colour: form.colour,
       active: form.active,
+      work_days: [...form.workDays].sort((a, b) => a - b),
+      work_start: form.workStart,
+      work_end: form.workEnd,
     }
     const { error: err } = form.id
       ? await supabase.from('staff_members').update(payload).eq('id', form.id)
@@ -80,6 +146,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
       <Modal
         title={form.id ? 'Edit team member' : 'Add team member'}
         size="sm"
+        fixed
         busy={saving}
         onClose={() => {
           setForm(null)
@@ -125,6 +192,31 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
             </div>
           </div>
 
+          <div>
+            <label style={LABEL}>Working days</label>
+            <div className="jb-chips">
+              {WEEK_ORDER.map(d => {
+                const on = form.workDays.includes(d)
+                return (
+                  <button key={d} type="button" className="jb-chip" aria-pressed={on} onClick={() => setForm({ ...form, workDays: on ? form.workDays.filter(x => x !== d) : [...form.workDays, d] })}>
+                    {WEEKDAY_SHORT[d]}
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <div>
+                <label style={LABEL}>Starts</label>
+                <input type="time" style={FIELD} value={form.workStart} onChange={e => setForm({ ...form, workStart: e.target.value })} />
+              </div>
+              <div>
+                <label style={LABEL}>Finishes</label>
+                <input type="time" style={FIELD} value={form.workEnd} onChange={e => setForm({ ...form, workEnd: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: TEXT3, marginTop: 6, lineHeight: 1.5 }}>Used to shade the calendar and to suggest free times.</div>
+          </div>
+
           {form.id && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: TEXT2, cursor: 'pointer' }}>
               <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} style={{ width: 18, height: 18, accentColor: '#2AA198' }} />
@@ -148,6 +240,34 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
             </div>
           )}
 
+          {editing && (
+            <div style={{ border: `1px solid ${LINE}`, borderRadius: 12, padding: 14 }}>
+              <div style={{ ...LABEL, marginBottom: 8 }}>Time off</div>
+              {timeOff.length === 0 ? (
+                <div style={{ fontSize: 13, color: TEXT3, marginBottom: 10 }}>Nothing booked off.</div>
+              ) : (
+                <div style={{ marginBottom: 10 }}>
+                  {timeOff.map(t => (
+                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '6px 0', fontSize: 13, color: TEXT2 }}>
+                      <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+                        {fmtDay(new Date(t.start_date + 'T00:00:00'))}{t.end_date !== t.start_date ? ` to ${fmtDay(new Date(t.end_date + 'T00:00:00'))}` : ''}{t.note ? ` · ${t.note}` : ''}
+                      </span>
+                      <button type="button" onClick={() => removeTimeOff(t.id)} aria-label="Remove time off" style={{ background: 'none', border: 'none', color: TEXT3, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <input type="date" style={FIELD} value={off.start} onChange={e => setOff({ ...off, start: e.target.value })} aria-label="First day off" />
+                <input type="date" style={FIELD} value={off.end} onChange={e => setOff({ ...off, end: e.target.value })} aria-label="Last day off" />
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                <input style={{ ...FIELD, flex: 1 }} value={off.note} onChange={e => setOff({ ...off, note: e.target.value })} placeholder="Holiday, sick, training..." maxLength={200} />
+                <button type="button" onClick={addTimeOff} style={BTN.secondary}>Add</button>
+              </div>
+            </div>
+          )}
+
           {error && <div style={{ fontSize: 13, fontWeight: 500, color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 12px' }}>{error}</div>}
         </div>
       </Modal>
@@ -159,6 +279,7 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
     <Modal
       title="Team"
       size="sm"
+      fixed
       onClose={onClose}
       flush
       footer={
@@ -182,8 +303,9 @@ export function TeamModal({ businessId, staff, onClose, onChanged }: Props) {
                 {!s.active && <span style={{ fontSize: 11, fontWeight: 700, color: TEXT3, background: '#F1F5F9', borderRadius: 6, padding: '2px 7px' }}>Left</span>}
               </div>
               <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[s.phone, s.email].filter(Boolean).join(' · ') || 'No contact details'}</div>
+              <div style={{ fontSize: 12, color: TEXT3, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{workSummary(s)}</div>
             </div>
-            <button type="button" onClick={() => setForm({ id: s.id, name: s.name, phone: s.phone || '', email: s.email || '', colour: s.colour, active: s.active })} style={{ ...BTN.secondary, ...BTN_SM, color: TEAL_DARK }}>
+            <button type="button" onClick={() => setForm({ id: s.id, name: s.name, phone: s.phone || '', email: s.email || '', colour: s.colour, active: s.active, workDays: s.work_days || [1, 2, 3, 4, 5], workStart: String(s.work_start || '07:00').slice(0, 5), workEnd: String(s.work_end || '16:00').slice(0, 5) })} style={{ ...BTN.secondary, ...BTN_SM, color: TEAL_DARK }}>
               Edit
             </button>
           </div>

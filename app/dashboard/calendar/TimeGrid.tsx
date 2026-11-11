@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { type Visit, fmtTime, layoutOverlaps, startOfDay } from '@/lib/schedule'
+import { AppIcon } from '@/components/AppIcon'
+import { type Visit, fmtTime, isLate, layoutOverlaps, startOfDay } from '@/lib/schedule'
 
 export const START_HOUR = 6
 export const END_HOUR = 20
@@ -19,6 +20,8 @@ export type GridColumn = {
   staffId?: string | null
   accent?: string
   today?: boolean
+  /** Day view: this technician's working hours (minutes after midnight), or why the day is off. Shown as shading. */
+  hours?: { start: number; end: number } | { off: string }
 }
 
 type Props = {
@@ -112,7 +115,19 @@ export function TimeGrid({ columns, visitsFor, onCreate, onOpen }: Props) {
                   backgroundColor: col.today ? '#FBFEFD' : '#fff',
                 }}
               >
+                {col.hours && 'off' in col.hours && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.045)', pointerEvents: 'none' }}>
+                    <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 700, color: TEXT3 }}>{col.hours.off}</span>
+                  </div>
+                )}
+                {col.hours && 'start' in col.hours && (
+                  <>
+                    {col.hours.start / 60 > START_HOUR && <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: Math.min(totalPx, (col.hours.start / 60 - START_HOUR) * HOUR_PX), background: 'rgba(15,23,42,0.045)', pointerEvents: 'none' }} />}
+                    {col.hours.end / 60 < END_HOUR && <div style={{ position: 'absolute', left: 0, right: 0, top: Math.max(0, (col.hours.end / 60 - START_HOUR) * HOUR_PX), bottom: 0, background: 'rgba(15,23,42,0.045)', pointerEvents: 'none' }} />}
+                  </>
+                )}
                 {laid.map(it => {
+                  const late = isLate({ status: it.v.status, end_at: it.v.end_at })
                   const done = it.v.status === 'completed'
                   const cancelled = it.v.status === 'cancelled'
                   return (
@@ -146,8 +161,10 @@ export function TimeGrid({ columns, visitsFor, onCreate, onOpen }: Props) {
                         display: 'block',
                       }}
                     >
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>
-                        {fmtTime(it.s)}{done ? ' · Done' : ''}
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span>{fmtTime(it.s)}{done ? ' · Done' : ''}</span>
+                        {late && <span style={{ color: '#B91C1C' }}>Late</span>}
+                        {it.v.series_id && <AppIcon name="repeat" size={11} />}
                       </div>
                       <div style={{ fontSize: 12.5, fontWeight: 800, color: TEXT, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.customer || it.v.title}</div>
                       {it.end - it.start > 52 && <div style={{ fontSize: 11.5, color: '#475569', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.customer ? it.v.title : ''}{it.staffName ? `${it.customer ? ' · ' : ''}${it.staffName.split(' ')[0]}` : ''}</div>}

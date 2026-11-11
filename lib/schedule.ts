@@ -12,7 +12,13 @@ export type StaffMember = {
   colour: string
   active: boolean
   calendar_token: string
+  /** Working days (0 = Sunday ... 6 = Saturday) and hours ("07:00") */
+  work_days: number[]
+  work_start: string
+  work_end: string
 }
+
+export type TimeOff = { id: string; staff_id: string; start_date: string; end_date: string; note: string | null }
 
 export type Visit = {
   id: string
@@ -26,7 +32,9 @@ export type Visit = {
   end_at: string
   status: VisitStatus
   notes: string | null
-  customers?: { first_name?: string | null; last_name?: string | null; phone?: string | null; address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null } | null
+  /** Set when the visit belongs to a repeating run */
+  series_id?: string | null
+  customers?: { first_name?: string | null; last_name?: string | null; phone?: string | null; email?: string | null; address?: string | null; suburb?: string | null; state?: string | null; postcode?: string | null } | null
   jobs?: { brand?: string | null; model?: string | null; equipment_type?: string | null } | null
 }
 
@@ -156,4 +164,116 @@ export function layoutOverlaps<T extends { start: number; end: number }>(items: 
   }
   if (cluster.length) flush()
   return out
+}
+
+
+// ── Late visits ──
+
+/** A visit that has finished its time but was never marked done or cancelled. */
+export function isLate(v: { status: VisitStatus; end_at: string }, now: Date = new Date()) {
+  return (v.status === 'scheduled' || v.status === 'on_the_way' || v.status === 'in_progress') && new Date(v.end_at).getTime() < now.getTime()
+}
+
+// ── Months ──
+
+export function addMonths(d: Date, n: number) {
+  return new Date(d.getFullYear(), d.getMonth() + n, 1)
+}
+
+/** The Monday on or before the 1st of the month: where a month grid starts. */
+export function monthGridStart(d: Date) {
+  return startOfWeek(new Date(d.getFullYear(), d.getMonth(), 1))
+}
+
+// ── Working hours, time off and free times ──
+
+export const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+/** Monday first, the order the calendar uses. */
+export const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
+
+/** "07:30" or "07:30:00" as minutes after midnight. */
+export function clockMinutes(t: string | null | undefined, fallback = 0) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t || ''))
+  return m ? Number(m[1]) * 60 + Number(m[2]) : fallback
+}
+
+export function clockLabel(t: string | null | undefined) {
+  const mins = clockMinutes(t)
+  return new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }).replace(' ', '')
+}
+
+/** "Mon to Fri, 7:00am to 4:00pm" */
+export function workSummary(s: Pick<StaffMember, 'work_days' | 'work_start' | 'work_end'>) {
+  const days = WEEK_ORDER.filter(d => (s.work_days || []).includes(d))
+  let label: string
+  if (days.length === 0) label = 'No working days'
+  else if (days.length === 7) label = 'Every day'
+  else {
+    const idx = days.map(d => WEEK_ORDER.indexOf(d))
+    const run = idx.every((x, i) => i === 0 || x === idx[i - 1] + 1)
+    label = run && days.length > 2 ? `${WEEKDAY_SHORT[days[0]]} to ${WEEKDAY_SHORT[days[days.length - 1]]}` : days.map(d => WEEKDAY_SHORT[d]).join(', ')
+  }
+  return days.length ? `${label}, ${clockLabel(s.work_start)} to ${clockLabel(s.work_end)}` : label
+}
+
+export function isOnLeave(staffId: string, day: Date, timeOff: TimeOff[]) {
+  const key = toDateInput(day)
+  return timeOff.some(t => t.staff_id === staffId && t.start_date <= key && key <= t.end_date)
+}
+
+export type FreeSlot = { start: Date; end: Date; staffId: string }
+
+/**
+ * The next free times for a visit of `durationMin` minutes. Only working days and hours count, days off are skipped,
+ * and a technician who already has a visit then is not offered. Several technicians free at the same moment give one slot.
+ */
+export function findFreeSlots(opts: {
+  staff: Pick<StaffMember, 'id' | 'work_days' | 'work_start' | 'work_end'>[]
+  visits: { staff_id: string | null; start_at: string; end_at: string; status: string }[]
+  timeOff: TimeOff[]
+  durationMin: number
+  from: Date
+  days?: number
+  limit?: number
+  stepMin?: number
+}): FreeSlot[] {
+  const { staff, visits, timeOff, durationMin, from } = opts
+  const days = opts.days ?? 14
+  const limit = opts.limit ?? 6
+  const step = opts.stepMin ?? 30
+  const busy = new Map<string, { s: number; e: number }[]>()
+  for (const v of visits) {
+    if (!v.staff_id || v.status === 'cancelled') continue
+    const list = busy.get(v.staff_id) || []
+    list.push({ s: new Date(v.start_at).getTime(), e: new Date(v.end_at).getTime() })
+    busy.set(v.staff_id, list)
+  }
+  const fromMs = from.getTime()
+  const found: FreeSlot[] = []
+  const seen = new Set<number>()
+  for (let d = 0; d < days && found.length < limit; d++) {
+    const day = addDays(startOfDay(from), d)
+    const weekday = day.getDay()
+    const slotsToday: FreeSlot[] = []
+    for (const s of staff) {
+      if (!(s.work_days || []).includes(weekday) || isOnLeave(s.id, day, timeOff)) continue
+      const winStart = clockMinutes(s.work_start, 7 * 60)
+      const winEnd = clockMinutes(s.work_end, 16 * 60)
+      for (let m = winStart; m + durationMin <= winEnd; m += step) {
+        const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(m / 60), m % 60)
+        const end = new Date(start.getTime() + durationMin * 60000)
+        if (start.getTime() < fromMs) continue
+        const clash = (busy.get(s.id) || []).some(b => b.s < end.getTime() && b.e > start.getTime())
+        if (!clash) slotsToday.push({ start, end, staffId: s.id })
+      }
+    }
+    slotsToday.sort((a, b) => a.start.getTime() - b.start.getTime())
+    for (const slot of slotsToday) {
+      if (seen.has(slot.start.getTime())) continue
+      seen.add(slot.start.getTime())
+      found.push(slot)
+      if (found.length >= limit) break
+    }
+  }
+  return found
 }

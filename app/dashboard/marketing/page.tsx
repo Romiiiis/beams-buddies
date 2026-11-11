@@ -11,7 +11,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
 import { renderEmail, sampleContent, type EmailKind } from '@/lib/email-theme'
 import { nextServiceDate, serviceBucket, toYMD } from '@/lib/service'
-import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, type AutomationKind } from '@/lib/automation-rules'
+import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, visitDue, type AutomationKind } from '@/lib/automation-rules'
 import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
@@ -48,6 +48,7 @@ type Automation = {
 
 const AUTOMATIONS: Automation[] = [
   { id: 'service', name: 'Service reminder', channels: 'Email', blurb: 'Emails customers before their service is due, so they can book in.', live: true, href: '/dashboard/schedule', action: 'Open service schedule' },
+  { id: 'visit', name: 'Visit reminder', channels: 'Email', blurb: 'Emails customers before a booked visit, with the day, time and address.', live: true, href: '/dashboard/calendar', action: 'Open calendar' },
   { id: 'overdue', name: 'Overdue invoice nudge', channels: 'Email', blurb: 'Emails the invoice again when it is late and still unpaid.', live: true, href: '/dashboard/invoices', action: 'Open invoices' },
   { id: 'quote', name: 'Quote follow-up', channels: 'Email', blurb: 'Checks in on quotes that have not had a reply.', live: true, href: '/dashboard/quotes', action: 'Open quotes' },
   { id: 'review', name: 'Review request', channels: 'Email', blurb: 'Asks customers for a Google review after an install.', live: true, href: '/dashboard/settings', action: 'Open settings' },
@@ -83,6 +84,8 @@ export default function MarketingPage() {
   const [quotes, setQuotes] = useState<any[]>([])
   const [autoLog, setAutoLog] = useState<any[]>([])
   const [saveError, setSaveError] = useState('')
+  const [visits, setVisits] = useState<any[]>([])
+  const [visitSent, setVisitSent] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     async function load() {
@@ -93,18 +96,22 @@ export default function MarketingPage() {
       const bid = u.business_id
       setBizId(bid)
       const since = new Date(Date.now() - 30 * 86400000).toISOString()
-      const [j, i, c, r, b, s, st, lg, qs] = await Promise.all([
+      const [j, i, c, r, b, s, st, lg, qs, vs, vr] = await Promise.all([
         supabase.from('jobs').select('*, customers(first_name, last_name, email, phone, address, suburb)').eq('business_id', bid),
         supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', bid).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, email, phone').eq('business_id', bid),
         supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
-        supabase.from('businesses').select('name, phone, email, logo_url').eq('id', bid).single(),
+        supabase.from('businesses').select('name, phone, email, logo_url, timezone').eq('id', bid).single(),
         supabase.from('business_settings').select('*').eq('business_id', bid).single(),
         supabase.from('automation_settings').select('kind, enabled, days').eq('business_id', bid),
         supabase.from('automation_log').select('id, kind, ref_id, cycle, to_email, subject, sent_at').eq('business_id', bid).order('sent_at', { ascending: false }).limit(1000),
         supabase.from('quotes').select('*, customers(first_name, last_name, email)').eq('business_id', bid).order('created_at', { ascending: false }),
+        supabase.from('job_visits').select('id, status, start_at, customers(first_name, last_name, email)').eq('business_id', bid).eq('status', 'scheduled').gt('start_at', new Date().toISOString()).lt('start_at', new Date(Date.now() + 10 * 86400000).toISOString()),
+        supabase.from('visit_reminders').select('visit_id, for_start').eq('business_id', bid).gte('for_start', new Date(Date.now() - 86400000).toISOString()),
       ])
+      setVisits(vs.data || [])
       setQuotes(qs.data || [])
+      setVisitSent(new Set((vr.data || []).map((m: any) => `${m.visit_id}:${new Date(m.for_start).toISOString()}`)))
       setDaysSel(Object.fromEntries((st.data || []).filter((x: any) => x.days).map((x: any) => [x.kind, x.days])))
       setEnabled(Object.fromEntries((st.data || []).map((x: any) => [x.kind, !!x.enabled])))
       setAutoLog(lg.data || [])
@@ -164,6 +171,23 @@ export default function MarketingPage() {
     if (kind === 'service') return jobs.filter(j => hasEmail(j.customers) && serviceDue(j, d) && !alreadySent.has(`service:${j.id}:${nextServiceDate(j) ? toYMD(nextServiceDate(j)!) : ''}`)).length
     if (kind === 'overdue') return invoices.filter(i => hasEmail(i.customers) && overdueDue(i, d) && !alreadySent.has(`overdue:${i.id}:`)).length
     if (kind === 'quote') return quotes.filter(q => hasEmail(q.customers) && quoteDue(q, d) && !alreadySent.has(`quote:${q.id}:`)).length
+    if (kind === 'visit') {
+      const tz = business?.timezone || 'Australia/Sydney'
+      const ymdIn = (d: Date) => {
+        try {
+          return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+        } catch {
+          return toYMD(d)
+        }
+      }
+      const asDay = (ymd: string) => {
+        const [y, m, dd] = ymd.split('-').map(Number)
+        return new Date(y, m - 1, dd)
+      }
+      const now = new Date()
+      const today = asDay(ymdIn(now))
+      return visits.filter(v => hasEmail(v.customers) && visitDue(v, d, today, now, iso => asDay(ymdIn(new Date(iso)))) && !visitSent.has(`${v.id}:${new Date(v.start_at).toISOString()}`) && !alreadySent.has(`visit:${v.id}:${new Date(v.start_at).toISOString()}`)).length
+    }
     const url = String(settings?.google_review_url || '').trim()
     if (!/^https:\/\//i.test(url)) return 0
     return jobs.filter(j => hasEmail(j.customers) && reviewDue(j, d) && !alreadySent.has(`review:${j.id}:`)).length
@@ -174,7 +198,7 @@ export default function MarketingPage() {
     return [...sent.map(m => ({ ...m, kind: 'service' })), ...autoLog.filter(l => l.sent_at >= since)].sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1))
   }, [sent, autoLog])
   const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
-  const KIND_LABEL: Record<string, string> = { service: 'Service reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
+  const KIND_LABEL: Record<string, string> = { service: 'Service reminder', visit: 'Visit reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
 
   function nextLine(a: Automation) {
     const k = a.id as AutomationKind

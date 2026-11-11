@@ -43,6 +43,7 @@ export async function POST(request: Request) {
   if (typeof visitId !== 'string' || !UUID.test(visitId)) return json({ error: 'bad_request', message: 'Invalid visit.' }, 400)
   const when = label(body?.when, 60)
   const time = label(body?.time, 60)
+  const repeat = label(body?.repeat, 120)
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '', {
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
   if (c?.phone) facts.push(['Phone', formatPhone(c.phone)])
   if (address) facts.push(['Address', address])
   if (unit) facts.push(['Equipment', unit])
+  if (repeat) facts.push(['Repeats', repeat])
   if ((visit as any).notes) facts.push(['Notes', String((visit as any).notes)])
 
   const content: EmailContent = {

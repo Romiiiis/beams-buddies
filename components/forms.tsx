@@ -133,6 +133,7 @@ export function Modal({
   onSubmit,
   id,
   compact = false,
+  fixed = false,
 }: {
   title: React.ReactNode
   onClose: () => void
@@ -151,11 +152,13 @@ export function Modal({
   id?: string
   /** Short messages ("Are you sure?"): the pop-up is only as tall as its text. Everything else keeps one fixed size. */
   compact?: boolean
+  /** Keep one fixed size on a computer too (for windows whose content changes, like a list that turns into a form). */
+  fixed?: boolean
 }) {
   const phone = useIsPhone()
   const Card = (onSubmit ? 'form' : 'div') as React.ElementType
   // A fixed height means the pop-up never grows or shrinks as fields, lines or messages change, so it never moves.
-  const stable = !compact && (phone || size === 'lg' || size === 'xl')
+  const stable = !compact && (fixed || phone || size === 'lg' || size === 'xl')
 
   // Registered once when the pop-up opens, so the stacking order is the order they were opened in
   const token = useRef({})
