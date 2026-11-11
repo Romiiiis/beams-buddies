@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { SkeletonRows } from './Skeleton'
 import { Select } from './Select'
+import { Status, STATUS_DOT, type StatusTone } from './Status'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -229,36 +230,9 @@ export function TextCell({ children, strong }: { children: React.ReactNode; stro
   return <div style={{ fontSize: 13, fontWeight: strong ? 800 : 600, color: strong ? TEXT : TEXT3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{children}</div>
 }
 
-const TONES = {
-  success: { bg: '#ECFDF5', fg: '#047857' },
-  warn: { bg: '#FFF8E1', fg: '#92400E' },
-  danger: { bg: '#FEF2F2', fg: '#B91C1C' },
-  info: { bg: '#EFF6FF', fg: '#1D4ED8' },
-  neutral: { bg: '#F1F5F9', fg: '#475569' },
-  brand: { bg: TEAL_LIGHT, fg: TEAL_DARK },
-}
-
-export function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: keyof typeof TONES }) {
-  const t = TONES[tone]
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '5px 11px 5px 9px',
-        borderRadius: 8,
-        background: t.bg,
-        color: t.fg,
-        fontSize: 11,
-        fontWeight: 800,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <span style={{ width: 7, height: 7, borderRadius: '50%', background: t.fg, flexShrink: 0 }} />
-      {label}
-    </span>
-  )
+/** A status: a small coloured dot and plain text (see components/Status.tsx). */
+export function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: StatusTone }) {
+  return <Status label={label} tone={tone} />
 }
 
 /** Phone filter: a flat dropdown listing each option with its count, like the Clients filter in Lumyra. */
@@ -574,37 +548,33 @@ export function DataList<T>({
 }
 
 
-/** Coloured status dropdown: a pill in the status colour that opens the phone's own picker (or the computer's menu). */
+/** Status dropdown: a flat field with a coloured dot, opening the phone's own picker (or the computer's menu). */
 export function StatusSelect({
   value,
   options,
   onChange,
-  colors,
+  tone = 'neutral',
   label,
-  width = 118,
+  width = 124,
 }: {
   value: string
   options: { value: string; label: string }[]
   onChange: (value: string) => void
-  colors: { bg: string; fg: string; border: string }
+  tone?: StatusTone
   label: string
   width?: number
 }) {
   return (
-    <span className="jb-status" style={{ width }} onClick={e => e.stopPropagation()}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        aria-label={label}
-        style={{ border: `1px solid ${colors.border}`, background: colors.bg, color: colors.fg }}
-      >
+    <span className="jb-status" data-tone={tone} style={{ width }} onClick={e => e.stopPropagation()}>
+      <span className="dot" aria-hidden="true" style={{ background: STATUS_DOT[tone] }} />
+      <select value={value} onChange={e => onChange(e.target.value)} aria-label={label}>
         {options.map(o => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
       </select>
-      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={colors.fg} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="m6 9 6 6 6-6" />
       </svg>
     </span>

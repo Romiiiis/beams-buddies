@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { Select } from '@/components/Select'
-import { BTN, BTN_SM, ConfirmDialog, LINE, RED, TEAL_DARK, TEXT, TEXT3 } from '@/components/forms'
+import { Status } from '@/components/Status'
+import { BTN, BTN_SM, ConfirmDialog, LINE, RED, TEXT, TEXT3 } from '@/components/forms'
 import { type Template, type VisitChecklist, fillItems, isSigned, progress } from '@/lib/checklists'
 import type { Visit } from '@/lib/schedule'
 import type { PhotosApi } from './usePhotos'
@@ -21,7 +22,6 @@ type Props = {
   photos: PhotosApi
 }
 
-const pill = (bg: string, fg: string): React.CSSProperties => ({ fontSize: 11, fontWeight: 800, color: fg, background: bg, borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' })
 
 /** The checklists on one visit: add one from a template, tick it off on site, get it signed. */
 export function VisitChecklists({ businessId, visit, technician, onCount, photos }: Props) {
@@ -122,7 +122,7 @@ export function VisitChecklists({ businessId, visit, technician, onCount, photos
                 <div style={{ fontSize: 14, fontWeight: 700, color: TEXT, overflowWrap: 'anywhere' }}>{c.title}</div>
                 <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                   <span>{p.done} of {p.total} done</span>
-                  {signed ? <span style={pill('#E3F5F2', TEAL_DARK)}>Signed by {c.signed_name}</span> : c.requires_signature ? <span style={pill('#FEF3C7', '#92400E')}>Needs sign-off</span> : null}
+                  {signed ? <Status label={`Signed by ${c.signed_name}`} tone="success" size={12} /> : c.requires_signature ? <Status label="Needs sign-off" tone="warn" size={12} /> : null}
                 </div>
               </div>
               <button type="button" onClick={() => setOpenId(c.id)} style={{ ...BTN.secondary, ...BTN_SM }}>Open</button>

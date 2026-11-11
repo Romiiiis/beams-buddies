@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { SignaturePad } from '@/components/SignaturePad'
-import { BTN, BTN_SM, FIELD, FIELD_TEXTAREA, LABEL, LINE, Modal, RED, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE, FormError } from '@/components/forms'
+import { BTN, BTN_SM, FIELD, FIELD_TEXTAREA, LABEL, LINE, Modal, RED, TEAL, TEXT, TEXT2, TEXT3, WHITE, FormError } from '@/components/forms'
 import { type FilledItem, type VisitChecklist, progress } from '@/lib/checklists'
 import { printElement } from '@/lib/print'
 import { tagLabel } from '@/lib/photos'
@@ -167,7 +167,7 @@ export function ChecklistFill({ businessId, checklist, visit, technician, photos
       title={
         <>
           <span>{current.title}</span>
-          <span style={{ fontSize: 12, fontWeight: 800, color: TEAL_DARK, background: '#E3F5F2', borderRadius: 999, padding: '2px 10px' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>
             {p.done} of {p.total}
           </span>
         </>

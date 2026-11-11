@@ -13,6 +13,7 @@ import { formatCapacity, getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { nextServiceDate, daysUntilService, serviceBucket, timingText, formatDate } from '@/lib/service'
 import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
+import { Status } from '@/components/Status'
 import { type ReminderSender, reminderSms } from '@/lib/reminder-email'
 import { SendReminderModal } from './SendReminderModal'
 
@@ -51,34 +52,11 @@ const TYPE = {
   },
 }
 
+// The timing line is dark text; only an overdue service turns red
 const URGENCY_STYLES = {
-  overdue: {
-    pillBg: '#FEE2E2',
-    pillColor: '#991B1B',
-    pillBorder: '#FECACA',
-    dot: RED,
-    valColor: RED,
-    label: 'Overdue',
-    accentBar: RED,
-  },
-  due_soon: {
-    pillBg: '#FEF3C7',
-    pillColor: '#92400E',
-    pillBorder: '#FDE68A',
-    dot: '#F59E0B',
-    valColor: AMBER,
-    label: 'Due soon',
-    accentBar: '#F59E0B',
-  },
-  good: {
-    pillBg: TEAL_LIGHT,
-    pillColor: TEAL_DARK,
-    pillBorder: '#BFE7E3',
-    dot: TEAL,
-    valColor: TEAL_DARK,
-    label: 'On track',
-    accentBar: TEAL,
-  },
+  overdue: { valColor: '#B42318' },
+  due_soon: { valColor: TEXT },
+  good: { valColor: TEXT },
 }
 
 const FILTER_TABS = [
@@ -112,32 +90,6 @@ function IconSms({ size = 14 }: { size?: number }) {
   return <AppIcon name="sms" size={size} />
 }
 
-
-function UrgencyPill({ status }: { status: 'overdue' | 'due_soon' | 'good' }) {
-  const st = URGENCY_STYLES[status]
-
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '5px',
-        padding: '6px 9px',
-        borderRadius: '8px',
-        background: st.pillBg,
-        border: `1px solid ${st.pillBorder}`,
-        fontSize: '10px',
-        fontWeight: 800,
-        color: st.pillColor,
-        whiteSpace: 'nowrap' as const,
-        lineHeight: 1,
-      }}
-    >
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: st.dot, display: 'inline-block', flexShrink: 0 }} />
-      {st.label}
-    </span>
-  )
-}
 
 /**
  * Email / SMS buttons for a service reminder.
@@ -463,15 +415,11 @@ export default function SchedulePage() {
 
           <div style={{ padding: isMobile ? '0 12px' : 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {overdueJobs.length > 0 && (
-              <div style={{ background: WHITE, border: `1px solid #FECACA`, borderRadius: '14px', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', gap: '10px', background: '#FFF7F7' }}>
-                  <div style={{ width: 4, height: 28, borderRadius: '999px', background: RED, flexShrink: 0 }} />
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#991B1B', flex: 1 }}>
-                    {overdueJobs.length} overdue service{overdueJobs.length > 1 ? 's' : ''}
-                  </span>
-                  <HeaderToolbar size="sm" items={[{ label: 'View all', tone: 'danger', onClick: () => setFilter('overdue') }]} />
-                </div>
-
+              <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', display: 'flex', alignItems: 'center', padding: '10px 16px', gap: '10px' }}>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <Status label={`${overdueJobs.length} overdue service${overdueJobs.length > 1 ? 's' : ''}`} tone="danger" strong />
+                </span>
+                <HeaderToolbar size="sm" items={[{ label: 'View all', onClick: () => setFilter('overdue') }]} />
               </div>
             )}
 

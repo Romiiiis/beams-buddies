@@ -15,6 +15,7 @@ import { Select } from '@/components/Select'
 import { ConfirmDialog } from '@/components/forms'
 import { FIELD, FIELD_TEXTAREA, LABEL } from '@/components/forms'
 import { PropertyModal } from './PropertyModal'
+import { Status, type StatusTone } from '@/components/Status'
 import { customerAddress, type Site } from '@/lib/schedule'
 
 const TEAL = '#2AA198'
@@ -298,12 +299,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     return Math.floor((startOfDay(target).getTime() - startOfDay(new Date()).getTime()) / 86400000)
   }
 
-  function statusPill(nextServiceDate: string | null) {
-    if (!nextServiceDate) return { label: 'No date', bg: '#F1F5F9', color: TEXT3, border: BORDER }
+  function statusPill(nextServiceDate: string | null): { label: string; tone: StatusTone } {
+    if (!nextServiceDate) return { label: 'No date', tone: 'muted' }
     const days = getDays(nextServiceDate)
-    if (days < 0) return { label: 'Overdue', bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' }
-    if (days <= 30) return { label: 'Due soon', bg: '#FEF3C7', color: AMBER, border: '#FDE68A' }
-    return { label: 'On track', bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3' }
+    if (days < 0) return { label: 'Overdue', tone: 'danger' }
+    if (days <= 30) return { label: 'Due soon', tone: 'warn' }
+    return { label: 'On track', tone: 'success' }
   }
 
   const totalServiceRecords = useMemo(() => {
@@ -797,20 +798,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : undefined }}>
-                            <span
-                              style={{
-                                background: s.bg,
-                                color: s.color,
-                                border: `1px solid ${s.border}`,
-                                padding: '6px 10px',
-                                borderRadius: '8px',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {s.label}
-                            </span>
+                            <Status label={s.label} tone={s.tone} />
 
                             {!isEditing && (
                               <button

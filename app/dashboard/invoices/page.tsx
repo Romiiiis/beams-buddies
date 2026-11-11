@@ -11,6 +11,7 @@ import { ContactDrawer } from '@/components/ContactDrawer'
 import { SendInvoiceModal } from './SendInvoiceModal'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
+import type { StatusTone } from '@/components/Status'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
@@ -92,13 +93,16 @@ const TYPE = {
   },
 }
 
-const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; accent: string; border: string; dot: string }> = {
-  draft: { bg: '#F1F5F9', color: TEXT3, label: 'Draft', accent: '#94A3B8', border: BORDER, dot: '#94A3B8' },
-  sent: { bg: TEAL_LIGHT, color: TEAL_DARK, label: 'Sent', accent: TEAL, border: '#BFE7E3', dot: TEAL },
-  paid: { bg: TEAL_LIGHT, color: TEAL_DARK, label: 'Paid', accent: TEAL_DARK, border: '#BFE7E3', dot: TEAL_DARK },
-  overdue: { bg: '#FEE2E2', color: '#991B1B', label: 'Overdue', accent: RED, border: '#FECACA', dot: RED },
-  cancelled: { bg: '#F1F5F9', color: TEXT3, label: 'Cancelled', accent: TEXT3, border: BORDER, dot: '#CBD5E1' },
+const STATUS_STYLES: Record<string, { label: string }> = {
+  draft: { label: 'Draft' },
+  sent: { label: 'Sent' },
+  paid: { label: 'Paid' },
+  overdue: { label: 'Overdue' },
+  cancelled: { label: 'Cancelled' },
 }
+
+// Statuses are shown as a quiet dot and text: only a problem (overdue) is red, only done (paid) is teal
+const STATUS_TONE: Record<string, StatusTone> = { draft: 'muted', sent: 'neutral', paid: 'success', overdue: 'danger', cancelled: 'muted' }
 
 const FILTER_TABS = [
   { value: 'all', label: 'All' },
@@ -178,32 +182,6 @@ function IconTrendUp({ size = 11 }: { size?: number }) {
 
 function IconTrendDown({ size = 11 }: { size?: number }) {
   return <AppIcon name="trend-down" size={size} />
-}
-
-function StatusPill({ status, isAutoOverdue = false }: { status: string; isAutoOverdue?: boolean }) {
-  const key = isAutoOverdue ? 'overdue' : status
-  const st = STATUS_STYLES[key] || STATUS_STYLES.draft
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '5px',
-        padding: '6px 9px',
-        borderRadius: '8px',
-        background: st.bg,
-        border: `1px solid ${st.border}`,
-        fontSize: '10px',
-        fontWeight: 800,
-        color: st.color,
-        whiteSpace: 'nowrap' as const,
-        lineHeight: 1,
-      }}
-    >
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: st.dot, flexShrink: 0, display: 'inline-block' }} />
-      {st.label}
-    </span>
-  )
 }
 
 function pctChange(current: number, previous: number) {
@@ -593,13 +571,12 @@ export default function InvoicesPage() {
                 width: '124px',
                 render: inv => {
                   const late = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
-                  const st = STATUS_STYLES[late ? 'overdue' : inv.status] || STATUS_STYLES.draft
                   return (
                     <StatusSelect
                       value={inv.status}
                       options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
                       onChange={v => updateStatus(inv.id, v)}
-                      colors={{ bg: st.bg, fg: st.color, border: st.border }}
+                      tone={late ? 'danger' : STATUS_TONE[inv.status] || 'muted'}
                       label="Invoice status"
                     />
                   )
@@ -737,7 +714,7 @@ export default function InvoicesPage() {
                 value={viewingInvoice.status}
                 onChange={v => updateStatus(viewingInvoice.id, v)}
                 options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
-                colors={{ bg: STATUS_STYLES[viewingInvoice.status]?.bg, fg: STATUS_STYLES[viewingInvoice.status]?.color, border: STATUS_STYLES[viewingInvoice.status]?.border }}
+                tone={STATUS_TONE[viewingInvoice.status] || 'muted'}
                 label="Invoice status"
               />
             </>

@@ -58,12 +58,13 @@ export const VISIT_KINDS: { value: VisitKind; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-export const VISIT_STATUS: Record<VisitStatus, { label: string; bg: string; fg: string }> = {
-  scheduled: { label: 'Scheduled', bg: '#F1F5F9', fg: '#475569' },
-  on_the_way: { label: 'On the way', bg: '#E0F2FE', fg: '#0369A1' },
-  in_progress: { label: 'In progress', bg: '#FEF3C7', fg: '#92400E' },
-  completed: { label: 'Completed', bg: '#EBFAF7', fg: '#1F857C' },
-  cancelled: { label: 'Cancelled', bg: '#FEE2E2', fg: '#B91C1C' },
+// Each status is shown as a dot and plain words (see components/Status.tsx): slate while waiting, amber while under way, teal when done, grey when cancelled
+export const VISIT_STATUS: Record<VisitStatus, { label: string; tone: 'neutral' | 'warn' | 'success' | 'muted' }> = {
+  scheduled: { label: 'Scheduled', tone: 'neutral' },
+  on_the_way: { label: 'On the way', tone: 'warn' },
+  in_progress: { label: 'In progress', tone: 'warn' },
+  completed: { label: 'Completed', tone: 'success' },
+  cancelled: { label: 'Cancelled', tone: 'muted' },
 }
 
 export const DURATIONS = [30, 45, 60, 90, 120, 180, 240, 480]

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Select } from '@/components/Select'
+import { Status } from '@/components/Status'
 
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
@@ -17,9 +18,8 @@ export type PipelineStage = {
   /** The status a lead gets when it is moved into this column. */
   key: string
   label: string
+  /** Colour of the small dot beside the column title. */
   color: string
-  bg: string
-  border: string
   /** Plain-English line under the column title. */
   hint?: string
   /** Other statuses that also live in this column (e.g. "didn't go ahead" covers two). */
@@ -150,14 +150,8 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
 
         {(booking || otherStatus) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-            {booking && (
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#1D4ED8', background: '#EFF6FF', borderRadius: 6, padding: '4px 8px' }}>
-                Booked {booking}
-              </span>
-            )}
-            {otherStatus && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: TEXT3, background: '#F1F5F9', borderRadius: 6, padding: '4px 8px' }}>{otherStatus}</span>
-            )}
+            {booking && <Status label={`Booked ${booking}`} tone="neutral" size={12} />}
+            {otherStatus && <span style={{ fontSize: 12, fontWeight: 600, color: TEXT3 }}>{otherStatus}</span>}
           </div>
         )}
 
@@ -199,37 +193,13 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
     const items = byStage(stage.key)
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-          {stages.map(s => {
-            const active = s.key === stage.key
-            return (
-              <button
-                key={s.key}
-                onClick={() => setActiveStage(s.key)}
-                style={{
-                  minWidth: 0,
-                  height: 42,
-                  padding: '0 12px',
-                  borderRadius: 10,
-                  border: `1.5px solid ${active ? TEAL : BORDER}`,
-                  background: active ? TEAL_LIGHT : WHITE,
-                  color: active ? TEAL_DARK : TEXT2,
-                  fontFamily: FONT,
-                  fontSize: 13,
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 6,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
-                <span style={{ fontWeight: 900 }}>{byStage(s.key).length}</span>
-              </button>
-            )
-          })}
+        <div className="jb-chips wrap" role="radiogroup" aria-label="Enquiry stage">
+          {stages.map(s => (
+            <button key={s.key} type="button" role="radio" aria-checked={s.key === stage.key} className="jb-chip" onClick={() => setActiveStage(s.key)}>
+              {s.label}
+              <span className="count">{byStage(s.key).length}</span>
+            </button>
+          ))}
         </div>
         {stage.hint && <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3 }}>{stage.hint}</div>}
         {items.length === 0 ? (

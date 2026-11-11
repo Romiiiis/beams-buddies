@@ -3,6 +3,7 @@
 import React from 'react'
 import { BTN, FONT, LINE, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE } from '@/components/forms'
 import { AppIcon } from '@/components/AppIcon'
+import { Status } from '@/components/Status'
 import { VISIT_KINDS, VISIT_STATUS, type StaffMember, type Visit, addDays, customerName, fmtDay, fmtRange, isLate, sameDay, visitAddress } from '@/lib/schedule'
 
 const UNASSIGNED = '#94A3B8'
@@ -80,9 +81,9 @@ export function Agenda({ weekStart, anchor, onPickDay, visits, staffById, matche
                       {fmtRange(new Date(v.start_at), new Date(v.end_at))}
                       {v.series_id && <AppIcon name="repeat" size={13} />}
                     </span>
-                    <span style={{ display: 'inline-flex', gap: 6 }}>
-                      {isLate({ status: v.status, end_at: v.end_at }) && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: '#FEE2E2', color: '#B91C1C', whiteSpace: 'nowrap' }}>Late</span>}
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: st.bg, color: st.fg, whiteSpace: 'nowrap' }}>{st.label}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+                      {isLate({ status: v.status, end_at: v.end_at }) && <Status label="Late" tone="danger" size={12} />}
+                      <Status label={st.label} tone={st.tone} size={12} />
                     </span>
                   </span>
                   <span style={{ display: 'block', fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', marginTop: 4 }}>{name || v.title}</span>

@@ -12,6 +12,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
+import type { StatusTone } from '@/components/Status'
 import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
 import { BTN, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
@@ -82,13 +83,16 @@ const TYPE = {
   },
 }
 
-const STATUS_STYLES: Record<string, { bg: string; color: string; label: string; border: string }> = {
-  draft: { bg: '#F8FAFC', color: TEXT3, label: 'Draft', border: BORDER },
-  sent: { bg: '#F8FAFC', color: TEXT2, label: 'Sent', border: BORDER },
-  accepted: { bg: TEAL_LIGHT, color: TEAL_DARK, label: 'Accepted', border: '#BFE7E3' },
-  declined: { bg: '#FEE2E2', color: '#7F1D1D', label: 'Declined', border: '#FECACA' },
-  expired: { bg: '#F1F5F9', color: TEXT3, label: 'Expired', border: BORDER },
+const STATUS_STYLES: Record<string, { label: string }> = {
+  draft: { label: 'Draft' },
+  sent: { label: 'Sent' },
+  accepted: { label: 'Accepted' },
+  declined: { label: 'Declined' },
+  expired: { label: 'Expired' },
 }
+
+// Statuses are shown as a quiet dot and text: only a decline is red, only accepted is teal
+const QUOTE_TONE: Record<string, StatusTone> = { draft: 'muted', sent: 'neutral', accepted: 'success', declined: 'danger', expired: 'muted' }
 
 type LineItem = { description: string; qty: number; unit_price: number }
 type Quote = {
@@ -158,28 +162,6 @@ function pctChange(current: number, previous: number) {
     return 100
   }
   return Math.round(((current - previous) / previous) * 100)
-}
-
-function StatusPill({ status }: { status: string }) {
-  const st = STATUS_STYLES[status] || STATUS_STYLES.draft
-  return (
-    <span
-      style={{
-        background: st.bg,
-        color: st.color,
-        border: `1px solid ${st.border}`,
-        padding: '6px 9px',
-        borderRadius: '8px',
-        fontSize: '10px',
-        fontWeight: 800,
-        whiteSpace: 'nowrap',
-        display: 'inline-flex',
-        alignItems: 'center',
-      }}
-    >
-      {st.label}
-    </span>
-  )
 }
 
 export default function QuotesPage() {
@@ -626,13 +608,12 @@ export default function QuotesPage() {
                   label: 'Status',
                   width: '130px',
                   render: q => {
-                    const st = STATUS_STYLES[q.status] || STATUS_STYLES.draft
                     return (
                       <StatusSelect
                         value={q.status}
                         options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
                         onChange={v => updateStatus(q.id, v)}
-                        colors={{ bg: st.bg, fg: st.color, border: st.border }}
+                        tone={QUOTE_TONE[q.status] || 'muted'}
                         label="Quote status"
                       />
                     )
@@ -853,7 +834,7 @@ export default function QuotesPage() {
               value={viewing.status}
               options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
               onChange={v => updateStatus(viewing.id, v)}
-              colors={{ bg: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).bg, fg: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).color, border: (STATUS_STYLES[viewing.status] || STATUS_STYLES.draft).border }}
+              tone={QUOTE_TONE[viewing.status] || 'muted'}
               label="Quote status"
             />
           }

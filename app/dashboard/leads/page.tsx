@@ -9,7 +9,7 @@ import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
-import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
+import { Status, STATUS_DOT, type StatusTone } from '@/components/Status'
 import { LeadPipeline, type PipelineStage } from './LeadPipeline'
 import { AddLeadModal } from './AddLeadModal'
 import { ConfirmDialog, Toast } from '@/components/forms'
@@ -18,9 +18,6 @@ const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
 const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
-const AMBER = '#92400E'
-const BLUE = '#1E3A8A'
-const GREEN = '#166534'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -118,72 +115,24 @@ function pctChange(current: number, previous: number) {
   return Math.round(((current - previous) / previous) * 100)
 }
 
-const STATUS_CONFIG: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  booked: { bg: '#DCFCE7', color: '#166534', border: '#BBF7D0', label: 'Booked in' },
-  pending: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A', label: 'To call back' },
-  incomplete: { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: 'Missing details' },
-  wrong_number: { bg: '#FEE2E2', color: '#7F1D1D', border: '#FECACA', label: 'Wrong number' },
-  converted: { bg: TEAL_LIGHT, color: TEAL_DARK, border: '#BFE7E3', label: 'Job created' },
-}
-
-const LEAD_TONE: Record<string, 'success' | 'warn' | 'neutral' | 'danger' | 'brand'> = {
-  booked: 'success',
-  pending: 'warn',
-  incomplete: 'neutral',
-  wrong_number: 'danger',
-  converted: 'brand',
+// A lead's status is one quiet dot and a few words: teal when it went well, amber when it needs a call, red when it was a dead end
+const STATUS_CONFIG: Record<string, { label: string; tone: StatusTone }> = {
+  booked: { label: 'Booked in', tone: 'success' },
+  pending: { label: 'To call back', tone: 'warn' },
+  incomplete: { label: 'Missing details', tone: 'neutral' },
+  wrong_number: { label: 'Wrong number', tone: 'danger' },
+  converted: { label: 'Job created', tone: 'brand' },
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const s = STATUS_CONFIG[status] || { bg: '#F1F5F9', color: TEXT3, border: BORDER, label: status }
-  return (
-    <span
-      style={{
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        padding: '6px 10px',
-        borderRadius: '8px',
-        fontSize: '10px',
-        fontWeight: 800,
-        whiteSpace: 'nowrap',
-        display: 'inline-flex',
-        alignItems: 'center',
-        letterSpacing: '0.02em',
-      }}
-    >
-      {s.label}
-    </span>
-  )
+  const s = STATUS_CONFIG[status] || { label: status, tone: 'muted' as StatusTone }
+  return <Status label={s.label} tone={s.tone} size={13} />
 }
 
-const JOB_TYPE_CONFIG: Record<string, { bg: string; color: string; border: string }> = {
-  installation: { bg: '#EDE9FE', color: '#4C1D95', border: '#DDD6FE' },
-  service: { bg: '#E8F4F1', color: '#0A4F4C', border: '#CBE7E1' },
-  repair: { bg: '#FFE4E6', color: '#881337', border: '#FECDD3' },
-  quote: { bg: '#FEF3C7', color: '#78350F', border: '#FDE68A' },
-  site_visit: { bg: '#DBEAFE', color: '#1E3A8A', border: '#BFDBFE' },
-}
-
+// What the enquiry is for, as plain grey words (it is a label, not a status)
 function JobTypeBadge({ type }: { type: string }) {
-  const s = JOB_TYPE_CONFIG[type] || { bg: '#F1F5F9', color: TEXT3, border: BORDER }
   return (
-    <span
-      style={{
-        background: s.bg,
-        color: s.color,
-        border: `1px solid ${s.border}`,
-        padding: '6px 10px',
-        borderRadius: '8px',
-        fontSize: '10px',
-        fontWeight: 800,
-        textTransform: 'capitalize',
-        whiteSpace: 'nowrap',
-        display: 'inline-flex',
-        alignItems: 'center',
-        letterSpacing: '0.02em',
-      }}
-    >
+    <span style={{ fontSize: '13px', fontWeight: 600, color: TEXT3, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
       {type?.replace('_', ' ')}
     </span>
   )
@@ -312,9 +261,14 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-            <JobTypeBadge type={lead.job_type} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '14px', flexWrap: 'wrap' }}>
             <StatusBadge status={status} />
+            {lead.job_type && (
+              <>
+                <span aria-hidden="true" style={{ color: '#CBD5E1', fontWeight: 700 }}>·</span>
+                <JobTypeBadge type={lead.job_type} />
+              </>
+            )}
           </div>
         </div>
 
@@ -408,29 +362,9 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
             <div style={{ padding: '16px', display: 'grid', gap: '16px' }}>
               <div>
                 <label style={labelStyle}>Status</label>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <div className="jb-chips wrap" role="radiogroup" aria-label="Lead status">
                   {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                    <button
-                      key={key}
-                      onClick={() => setStatus(key)}
-                      style={{
-                        height: '32px',
-                        padding: '0 12px',
-                        borderRadius: '8px',
-                        border: status === key ? `1px solid ${TEAL}` : `1px solid ${BORDER}`,
-                        background: status === key ? TEAL : WHITE,
-                        color: status === key ? WHITE : TEXT2,
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        fontFamily: FONT,
-                        textTransform: 'capitalize',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                      }}
-                    >
-                      {status === key && <IconCheck size={12} />}
+                    <button key={key} type="button" role="radio" aria-checked={status === key} className="jb-chip" onClick={() => setStatus(key)}>
                       {cfg.label}
                     </button>
                   ))}
@@ -694,17 +628,15 @@ export default function LeadsPage() {
 
   // Pipeline columns, in the order a lead normally moves through them
   const pipelineStages: PipelineStage[] = [
-    { key: 'pending', hint: 'Call them back', ...STATUS_CONFIG.pending },
-    { key: 'booked', hint: 'Visit or quote booked', ...STATUS_CONFIG.booked },
-    { key: 'converted', hint: 'Now a customer', ...STATUS_CONFIG.converted },
+    { key: 'pending', hint: 'Call them back', label: STATUS_CONFIG.pending.label, color: STATUS_DOT[STATUS_CONFIG.pending.tone] },
+    { key: 'booked', hint: 'Visit or quote booked', label: STATUS_CONFIG.booked.label, color: STATUS_DOT[STATUS_CONFIG.booked.tone] },
+    { key: 'converted', hint: 'Now a customer', label: STATUS_CONFIG.converted.label, color: STATUS_DOT[STATUS_CONFIG.converted.tone] },
     {
       key: 'incomplete',
       alsoHolds: ['wrong_number'],
       label: 'Didn’t go ahead',
       hint: 'No answer or wrong number',
-      color: STATUS_CONFIG.wrong_number.color,
-      bg: STATUS_CONFIG.wrong_number.bg,
-      border: STATUS_CONFIG.wrong_number.border,
+      color: STATUS_DOT.muted,
     },
   ]
   const statusLabels: Record<string, string> = Object.fromEntries(Object.entries(STATUS_CONFIG).map(([k, v]) => [k, v.label]))

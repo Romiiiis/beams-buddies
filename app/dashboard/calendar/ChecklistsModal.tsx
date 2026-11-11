@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Select } from '@/components/Select'
-import { BTN, BTN_SM, ConfirmDialog, FIELD, LABEL, LINE, Modal, RED, TEAL_DARK, TEXT, TEXT2, TEXT3, useIsPhone, FormError } from '@/components/forms'
+import { BTN, BTN_SM, ConfirmDialog, FIELD, LABEL, LINE, Modal, RED, TEXT, TEXT2, TEXT3, useIsPhone, FormError } from '@/components/forms'
 import { EXAMPLES, ITEM_TYPES, type ChecklistItemType, type Template, type TemplateItem, newId } from '@/lib/checklists'
 
 type Props = {
@@ -269,7 +269,7 @@ export function ChecklistsModal({ businessId, onClose }: Props) {
                         <div style={{ fontSize: 14, fontWeight: 700, color: TEXT, overflowWrap: 'anywhere' }}>{t.name}</div>
                         <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <span>{t.items.length} step{t.items.length === 1 ? '' : 's'}</span>
-                          {t.requires_signature && <span style={{ fontSize: 11, fontWeight: 800, color: TEAL_DARK, background: '#E3F5F2', borderRadius: 999, padding: '2px 9px' }}>Customer signs</span>}
+                          {t.requires_signature && <span>· Customer signs</span>}
                         </div>
                       </div>
                       <button type="button" onClick={() => { setDraft({ id: t.id, name: t.name, requires_signature: t.requires_signature, items: t.items.map(i => ({ ...i })) }); setError('') }} style={{ ...BTN.secondary, ...BTN_SM }}>

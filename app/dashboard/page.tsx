@@ -14,6 +14,7 @@ import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
 import { Modal } from '@/components/forms'
+import { Status } from '@/components/Status'
 
 const TEAL       = '#2AA198'
 const TEAL_DARK  = '#1F857C'
@@ -129,10 +130,11 @@ type CalItem = {
   href: string
 }
 
+// What kind of entry it is, shown as plain grey words (it is a label, not a status, so no colour)
 const KIND_STYLE = {
-  service: { label: 'Service due', bg: TEAL_LIGHT, fg: TEAL_DARK },
-  booking: { label: 'Booked', bg: '#EFF6FF', fg: '#1D4ED8' },
-  visit: { label: 'Visit', bg: '#EEF2FF', fg: '#4338CA' },
+  service: { label: 'Service due' },
+  booking: { label: 'Booked' },
+  visit: { label: 'Visit' },
 }
 
 function JobDayPopup({ date, jobs, onClose, onJobClick }: {
@@ -153,7 +155,7 @@ function JobDayPopup({ date, jobs, onClose, onJobClick }: {
               <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT }}>{item.name}</div>
               <div style={{ fontSize: '12px', color: TEXT3, marginTop: '1px', textTransform: 'capitalize' }}>{[item.time, item.label, item.suburb].filter(Boolean).join(' · ')}</div>
             </div>
-            <span style={{ padding: '3px 8px', borderRadius: '6px', background: k.bg, color: k.fg, fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap' }}>{k.label}</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap' }}>{k.label}</span>
           </div>
         )
       })}
@@ -729,9 +731,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div style={{ alignSelf: 'center' }}>
-                        <span style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap', background: k.bg, color: k.fg }}>
-                          {k.label}
-                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT3, whiteSpace: 'nowrap' }}>{k.label}</span>
                       </div>
                     </div>
                   )
@@ -764,13 +764,11 @@ export default function DashboardPage() {
                     <HeaderToolbar size="sm" items={[{ label: 'View all', icon: <AppIcon name="invoice" size={14} />, onClick: () => router.push('/dashboard/invoices') }]} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontSize: '28px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? '#DC2626' : TEAL_DARK, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                    <span style={{ fontSize: '28px', fontWeight: 900, color: invoiceStats.outstanding > 0 ? TEXT : TEAL_DARK, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
                       {money(invoiceStats.outstanding)}
                     </span>
                     {invoiceStats.overdueCount > 0 && (
-                      <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px', background: '#FEE2E2', color: '#991B1B' }}>
-                        {invoiceStats.overdueCount} overdue
-                      </span>
+                      <Status label={`${invoiceStats.overdueCount} overdue`} tone="danger" size={12} />
                     )}
                   </div>
                 </div>
@@ -785,22 +783,19 @@ export default function DashboardPage() {
                   const amt       = Math.max(0, Number(inv.total || 0) - Number(inv.amount_paid || 0))
                   return (
                     <div key={inv.id || i} onClick={() => router.push('/dashboard/invoices')}
-                      style={{ display: 'grid', gridTemplateColumns: '3px 1fr auto', cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.12s', overflow: 'hidden' }}
+                      style={{ display: 'grid', gridTemplateColumns: '1fr auto', cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.12s', overflow: 'hidden' }}
                       onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.background = TEAL_LIGHT)}
                       onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.background = WHITE)}
                     >
-                      <div style={{ background: isOverdue ? '#EF4444' : '#F59E0B', flexShrink: 0 }} />
-                      <div style={{ padding: '10px 12px', minWidth: 0 }}>
+                      <div style={{ padding: '10px 12px 10px 16px', minWidth: 0 }}>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
                         <div style={{ fontSize: '10px', color: TEXT3, marginTop: '2px', fontWeight: 500 }}>
                           {parseDateLocal(inv.created_at)?.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) || ''}
                         </div>
                       </div>
-                      <div style={{ padding: '10px 14px 10px 0', textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: 800, color: isOverdue ? '#991B1B' : TEXT, fontVariantNumeric: 'tabular-nums' }}>{money(amt)}</div>
-                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: isOverdue ? '#FEE2E2' : '#FEF3C7', color: isOverdue ? '#991B1B' : '#92400E', textAlign: 'center' }}>
-                          {isOverdue ? 'Overdue' : 'Sent'}
-                        </span>
+                      <div style={{ padding: '10px 16px 10px 0', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: '3px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, fontVariantNumeric: 'tabular-nums' }}>{money(amt)}</div>
+                        <Status label={isOverdue ? 'Overdue' : 'Sent'} tone={isOverdue ? 'danger' : 'neutral'} size={11.5} />
                       </div>
                     </div>
                   )

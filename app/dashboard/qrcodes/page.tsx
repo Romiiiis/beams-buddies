@@ -12,6 +12,7 @@ import QRCode from 'qrcode'
 import { useBusinessData } from '@/lib/business-context'
 import { formatCapacity } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
+import { Status } from '@/components/Status'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -91,14 +92,6 @@ function IconPrint({ size = 14 }: { size?: number }) {
 
 function IconExternalLink({ size = 14 }: { size?: number }) {
   return <AppIcon name="external-link" size={size} />
-}
-
-function IconCheckCircle({ size = 11 }: { size?: number }) {
-  return <AppIcon name="tick" size={size} />
-}
-
-function IconClock({ size = 11 }: { size?: number }) {
-  return <AppIcon name="clock" size={size} />
 }
 
 export default function QRCodesPage() {
@@ -486,43 +479,9 @@ export default function QRCodesPage() {
                                   </div>
 
                                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0, alignItems: 'center' }}>
-                                    <span
-                                      style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                        padding: '3px 8px',
-                                        borderRadius: '8px',
-                                        background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
-                                        border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
-                                        fontSize: '10px',
-                                        fontWeight: 800,
-                                        color: reviewClicked ? '#15803D' : '#B45309',
-                                        whiteSpace: 'nowrap',
-                                      }}
-                                    >
-                                      {reviewClicked ? <IconCheckCircle size={9} /> : <IconClock size={9} />}
-                                      {reviewClicked ? 'Reviewed' : 'Pending'}
-                                    </span>
+                                    <Status label={reviewClicked ? 'Reviewed' : 'Pending'} tone={reviewClicked ? 'success' : 'warn'} size={12} />
 
-                                    <span
-                                      style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '5px',
-                                        padding: '4px 9px',
-                                        borderRadius: '8px',
-                                        background: isSelected ? '#DDF7F5' : '#F1F5F9',
-                                        border: `1px solid ${isSelected ? '#B8ECE7' : BORDER}`,
-                                        fontSize: '10px',
-                                        fontWeight: 800,
-                                        color: isSelected ? TEAL_DARK : TEXT3,
-                                        whiteSpace: 'nowrap',
-                                        flexShrink: 0,
-                                      }}
-                                    >
-                                      {isSelected ? 'Selected' : 'Select'}
-                                    </span>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? TEAL_DARK : TEXT3, whiteSpace: 'nowrap', flexShrink: 0 }}>{isSelected ? 'Selected' : 'Select'}</span>
                                   </div>
                                 </div>
 
@@ -586,44 +545,11 @@ export default function QRCodesPage() {
                             </div>
 
                             <div style={{ padding: '0 12px 0 0' }}>
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '5px',
-                                  padding: '4px 9px',
-                                  borderRadius: '8px',
-                                  background: reviewClicked ? '#F0FBFA' : '#FFF7ED',
-                                  border: `1px solid ${reviewClicked ? '#BBF7D0' : '#FDE68A'}`,
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  color: reviewClicked ? '#15803D' : '#B45309',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {reviewClicked ? <IconCheckCircle size={10} /> : <IconClock size={10} />}
-                                {reviewClicked ? 'Reviewed' : 'Pending'}
-                              </span>
+                              <Status label={reviewClicked ? 'Reviewed' : 'Pending'} tone={reviewClicked ? 'success' : 'warn'} size={12} />
                             </div>
 
                             <div style={{ paddingRight: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '5px',
-                                  padding: '4px 9px',
-                                  borderRadius: '8px',
-                                  background: isSelected ? '#DDF7F5' : hasQR ? '#F0FBFA' : '#F1F5F9',
-                                  border: `1px solid ${isSelected ? '#B8ECE7' : hasQR ? '#BBF7D0' : BORDER}`,
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  color: isSelected ? TEAL_DARK : hasQR ? '#15803D' : TEXT3,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {isSelected ? 'Selected' : hasQR ? 'Ready' : 'No token'}
-                              </span>
+                              <Status label={isSelected ? 'Selected' : hasQR ? 'Ready' : 'No token'} tone={isSelected ? 'brand' : hasQR ? 'success' : 'muted'} size={12} />
                             </div>
                           </div>
                         </button>
@@ -674,23 +600,7 @@ export default function QRCodesPage() {
                           )}
                         </div>
 
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '4px 10px',
-                            borderRadius: '8px',
-                            background: '#F0FBFA',
-                            border: '1px solid #BBF7D0',
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            color: '#15803D',
-                          }}
-                        >
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }} />
-                          Ready to scan
-                        </span>
+                        <Status label="Ready to scan" tone="success" size={12} />
                       </div>
 
                       <div style={{ borderRadius: '12px', border: `1px solid ${BORDER}`, background: WHITE, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -703,24 +613,7 @@ export default function QRCodesPage() {
                             <div style={{ fontSize: '11px', fontWeight: 600, color: TEXT3, marginTop: '3px' }}>{selectedJob.customers?.suburb || '—'}</div>
                           </div>
 
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              flexShrink: 0,
-                              background: selectedJob.review_link_clicked ? '#F0FBFA' : '#FFF7ED',
-                              border: `1px solid ${selectedJob.review_link_clicked ? '#BBF7D0' : '#FDE68A'}`,
-                              fontSize: '10px',
-                              fontWeight: 800,
-                              color: selectedJob.review_link_clicked ? '#15803D' : '#B45309',
-                            }}
-                          >
-                            {selectedJob.review_link_clicked ? <IconCheckCircle size={10} /> : <IconClock size={10} />}
-                            {selectedJob.review_link_clicked ? 'Reviewed' : 'Review pending'}
-                          </span>
+                          <Status label={selectedJob.review_link_clicked ? 'Reviewed' : 'Review pending'} tone={selectedJob.review_link_clicked ? 'success' : 'warn'} size={12} />
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

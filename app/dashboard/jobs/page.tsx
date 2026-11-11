@@ -10,6 +10,7 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
+import { Status, type StatusTone } from '@/components/Status'
 import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { daysUntilService, nextServiceDate, serviceBucket, formatDate, timingText, SERVICE_LABEL } from '@/lib/service'
@@ -23,7 +24,6 @@ const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
 const TEAL_LIGHT = '#EBFAF7'
 const RED = '#B91C1C'
-const AMBER = '#92400E'
 const TEXT = '#0B1220'
 const TEXT2 = '#1F2937'
 const TEXT3 = '#64748B'
@@ -157,9 +157,7 @@ function JobDrawer({
 
   const isOverdue = days !== null && days < 0
   const isDueSoon = days !== null && days >= 0 && days <= 30
-  const serviceColor = isOverdue ? '#B91C1C' : isDueSoon ? '#92400E' : TEAL_DARK
-  const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : TEAL_LIGHT
-  const serviceBorder = isOverdue ? '#FECACA' : isDueSoon ? '#FDE68A' : '#BFE7E3'
+  const serviceTone: StatusTone = days === null ? 'muted' : isOverdue ? 'danger' : isDueSoon ? 'warn' : 'success'
   const serviceLabel = isOverdue ? `Overdue by ${Math.abs(days!)} days` : isDueSoon ? `Due in ${days} days` : days !== null ? `${days} days away` : '—'
 
   const nextServiceDate = (() => {
@@ -263,39 +261,9 @@ function JobDrawer({
             </div>
           </div>
 
-          <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <span
-              style={{
-                background: serviceBg,
-                color: serviceColor,
-                border: `1px solid ${serviceBorder}`,
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                fontWeight: 800,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              {serviceLabel}
-            </span>
-
-            {saved && (
-              <span
-                style={{
-                  background: TEAL_LIGHT,
-                  color: TEAL_DARK,
-                  border: '1px solid #BFE7E3',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                }}
-              >
-                Saved
-              </span>
-            )}
+          <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <Status label={serviceLabel} tone={serviceTone} />
+            {saved && <Status label="Saved" tone="success" />}
           </div>
         </div>
 
@@ -789,11 +757,8 @@ export default function JobsPage() {
     const next = nextServiceDate(job) ? formatDate(nextServiceDate(job)) : null
     const isDueSoon = bucket === 'due_soon'
     const isOverdue = bucket === 'overdue'
-    const serviceColor = isOverdue ? '#991B1B' : isDueSoon ? AMBER : TEAL_DARK
-    const serviceBg = isOverdue ? '#FEE2E2' : isDueSoon ? '#FEF3C7' : TEAL_LIGHT
-    const serviceBorder = isOverdue ? '#FECACA' : isDueSoon ? '#FDE68A' : '#BFE7E3'
     const serviceLabel = SERVICE_LABEL[bucket]
-    return { days, next, bucket, isDueSoon, isOverdue, serviceColor, serviceBg, serviceBorder, serviceLabel }
+    return { days, next, bucket, isDueSoon, isOverdue, serviceLabel }
   }
 
   const todayStr = new Date().toLocaleDateString('en-AU', {
@@ -1062,7 +1027,7 @@ export default function JobsPage() {
               const m = serviceMeta(job)
               const t = timingText(job)
               const what = [`${job.brand || 'TBC'}${job.model ? ` ${job.model}` : ''}`, getEquipmentLabel(job.equipment_type) || ''].filter(Boolean).join(' · ')
-              const timingColor = m.isOverdue ? '#B91C1C' : m.isDueSoon ? AMBER : TEAL_DARK
+              const timingColor = m.isOverdue ? '#B42318' : TEXT
               return (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
