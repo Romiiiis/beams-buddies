@@ -6,11 +6,10 @@ import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
-import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
 import { renderEmail, sampleContent, type EmailKind } from '@/lib/email-theme'
-import { nextServiceDate, serviceBucket, toYMD } from '@/lib/service'
+import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, visitDue, type AutomationKind } from '@/lib/automation-rules'
 import { Select } from '@/components/Select'
 
@@ -54,6 +53,8 @@ const AUTOMATIONS: Automation[] = [
   { id: 'review', name: 'Review request', channels: 'Email', blurb: 'Asks customers for a Google review after an install.', live: true, href: '/dashboard/settings', action: 'Open settings' },
 ]
 
+type RecentMessage = { key: string; id: string; source: 'reminder_emails' | 'automation_log' | 'visit_messages'; kind: string; to_email: string; subject: string; sent_at: string }
+
 const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden' }
 const cardTitle: React.CSSProperties = { fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }
 
@@ -73,8 +74,9 @@ export default function MarketingPage() {
   const [loading, setLoading] = useState(true)
   const [jobs, setJobs] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
-  const [customers, setCustomers] = useState<any[]>([])
-  const [sent, setSent] = useState<any[]>([])
+  const [recent, setRecent] = useState<RecentMessage[]>([])
+  const [openMsg, setOpenMsg] = useState<string | null>(null)
+  const [bodies, setBodies] = useState<Record<string, string | null>>({})
   const [business, setBusiness] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [sel, setSel] = useState('service')
@@ -96,19 +98,29 @@ export default function MarketingPage() {
       const bid = u.business_id
       setBizId(bid)
       const since = new Date(Date.now() - 30 * 86400000).toISOString()
-      const [j, i, c, r, b, s, st, lg, qs, vs, vr] = await Promise.all([
-        supabase.from('jobs').select('*, customers(first_name, last_name, email, phone, address, suburb)').eq('business_id', bid),
-        supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', bid).order('created_at', { ascending: false }),
-        supabase.from('customers').select('id, email, phone').eq('business_id', bid),
-        supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }),
+      const nowIso = new Date().toISOString()
+      const cust = 'customers(email)'
+      // Only what the "Next" lines and the message list need: a few columns each, filtered in the database
+      const [j, i, r, b, s, st, lg, rc, qs, vs, vr, vm] = await Promise.all([
+        supabase.from('jobs').select(`id, install_date, next_service_date, service_interval_months, ${cust}`).eq('business_id', bid),
+        supabase.from('invoices').select(`id, status, total, amount_paid, due_date, ${cust}`).eq('business_id', bid).in('status', ['sent', 'overdue']),
+        supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }).limit(8),
         supabase.from('businesses').select('name, phone, email, logo_url, timezone').eq('id', bid).single(),
-        supabase.from('business_settings').select('*').eq('business_id', bid).single(),
+        supabase.from('business_settings').select('google_review_url').eq('business_id', bid).maybeSingle(),
         supabase.from('automation_settings').select('kind, enabled, days').eq('business_id', bid),
-        supabase.from('automation_log').select('id, kind, ref_id, cycle, to_email, subject, sent_at').eq('business_id', bid).order('sent_at', { ascending: false }).limit(1000),
-        supabase.from('quotes').select('*, customers(first_name, last_name, email)').eq('business_id', bid).order('created_at', { ascending: false }),
-        supabase.from('job_visits').select('id, status, start_at, customers(first_name, last_name, email)').eq('business_id', bid).eq('status', 'scheduled').gt('start_at', new Date().toISOString()).lt('start_at', new Date(Date.now() + 10 * 86400000).toISOString()),
+        supabase.from('automation_log').select('kind, ref_id, cycle').eq('business_id', bid).order('sent_at', { ascending: false }).limit(1000),
+        supabase.from('automation_log').select('id, kind, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }).limit(8),
+        supabase.from('quotes').select(`id, status, created_at, ${cust}`).eq('business_id', bid).eq('status', 'sent'),
+        supabase.from('job_visits').select(`id, status, start_at, ${cust}`).eq('business_id', bid).eq('status', 'scheduled').gt('start_at', nowIso).lt('start_at', new Date(Date.now() + 10 * 86400000).toISOString()),
         supabase.from('visit_reminders').select('visit_id, for_start').eq('business_id', bid).gte('for_start', new Date(Date.now() - 86400000).toISOString()),
+        supabase.from('visit_messages').select('id, kind, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }).limit(8),
       ])
+      const merged: RecentMessage[] = [
+        ...(r.data || []).map((m: any) => ({ ...m, key: `reminder_emails:${m.id}`, source: 'reminder_emails' as const, kind: 'service' })),
+        ...(rc.data || []).map((m: any) => ({ ...m, key: `automation_log:${m.id}`, source: 'automation_log' as const })),
+        ...(vm.data || []).map((m: any) => ({ ...m, key: `visit_messages:${m.id}`, source: 'visit_messages' as const, kind: m.kind === 'reminder' ? 'visit' : m.kind })),
+      ]
+      setRecent(merged.sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1)).slice(0, 8))
       setVisits(vs.data || [])
       setQuotes(qs.data || [])
       setVisitSent(new Set((vr.data || []).map((m: any) => `${m.visit_id}:${new Date(m.for_start).toISOString()}`)))
@@ -117,8 +129,6 @@ export default function MarketingPage() {
       setAutoLog(lg.data || [])
       setJobs(j.data || [])
       setInvoices(i.data || [])
-      setCustomers(c.data || [])
-      setSent(r.data || [])
       setBusiness(b.data)
       setSettings(s.data)
       setLoading(false)
@@ -127,11 +137,6 @@ export default function MarketingPage() {
   }, [router])
 
   const sender = useMemo(() => senderFrom(business), [business])
-
-  const dueJobs = useMemo(() => jobs.filter(j => ['overdue', 'due_soon'].includes(serviceBucket(j))), [jobs])
-  const overdueJobs = useMemo(() => jobs.filter(j => serviceBucket(j) === 'overdue'), [jobs])
-  const outstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (Number(i.total) - Number(i.amount_paid || 0)), 0)
-  const reachable = customers.filter(c => (c.email || '').trim() || (c.phone || '').trim()).length
 
   // The preview uses an example customer with your real business name, logo and contact details
   const cur = AUTOMATIONS.find(a => a.id === sel) || AUTOMATIONS[0]
@@ -193,12 +198,19 @@ export default function MarketingPage() {
     return jobs.filter(j => hasEmail(j.customers) && reviewDue(j, d) && !alreadySent.has(`review:${j.id}:`)).length
   }
 
-  const allSent = useMemo(() => {
-    const since = new Date(Date.now() - 30 * 86400000).toISOString()
-    return [...sent.map(m => ({ ...m, kind: 'service' })), ...autoLog.filter(l => l.sent_at >= since)].sort((x, y) => (x.sent_at < y.sent_at ? 1 : -1))
-  }, [sent, autoLog])
-  const sentCount = (kind: string) => allSent.filter(m => m.kind === kind).length
-  const KIND_LABEL: Record<string, string> = { service: 'Service reminder', visit: 'Visit reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request' }
+  const KIND_LABEL: Record<string, string> = { service: 'Service reminder', visit: 'Visit reminder', overdue: 'Overdue invoice', quote: 'Quote follow-up', review: 'Review request', on_the_way: 'On my way', moved: 'Visit moved' }
+
+  /** Open or close a message; its wording is fetched the first time it is opened. */
+  async function toggleMessage(m: RecentMessage) {
+    if (openMsg === m.key) {
+      setOpenMsg(null)
+      return
+    }
+    setOpenMsg(m.key)
+    if (m.key in bodies) return
+    const { data } = await supabase.from(m.source).select('body_html').eq('id', m.id).single()
+    setBodies(prev => ({ ...prev, [m.key]: (data as { body_html: string | null } | null)?.body_html ?? null }))
+  }
 
   function nextLine(a: Automation) {
     const k = a.id as AutomationKind
@@ -236,16 +248,6 @@ export default function MarketingPage() {
           className="page-content"
           style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 48 }}
         >
-          <StatStrip
-            isMobile={isMobile}
-            items={[
-              { label: 'Emails sent', value: allSent.length, sub: 'last 30 days' },
-              { label: 'Services overdue', value: overdueJobs.length, sub: `${dueJobs.length} due or overdue` },
-              { label: 'Outstanding', value: `$${outstanding.toLocaleString('en-AU', { maximumFractionDigits: 0 })}`, sub: 'unpaid invoices' },
-              { label: 'Customers reachable', value: reachable, sub: `of ${customers.length} customers` },
-            ]}
-          />
-
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.25fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
             <div style={card}>
               <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}` }}>
@@ -320,18 +322,53 @@ export default function MarketingPage() {
             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}` }}>
               <div style={cardTitle}>Recent messages</div>
             </div>
-            {allSent.length === 0 ? (
+            {recent.length === 0 ? (
               <div style={{ padding: '22px 18px', fontSize: 13, color: TEXT3 }}>Nothing sent in the last 30 days. Switch an automation on, or send a reminder from the service schedule.</div>
             ) : (
-              allSent.slice(0, 8).map((m, idx) => (
-                <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}` }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, overflowWrap: 'anywhere' }}>{m.subject}</div>
-                    <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflowWrap: 'anywhere' }}>{KIND_LABEL[m.kind] || 'Email'} · {m.to_email}</div>
+              recent.map((m, idx) => {
+                const open = openMsg === m.key
+                const loaded = m.key in bodies
+                const body = bodies[m.key]
+                return (
+                  <div key={m.key} style={{ borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: open ? '#F7FCFB' : WHITE }}>
+                    <button
+                      type="button"
+                      onClick={() => toggleMessage(m)}
+                      aria-expanded={open}
+                      style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 18px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: FONT }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, overflowWrap: 'anywhere' }}>{m.subject}</div>
+                        <div style={{ fontSize: 12, color: TEXT3, marginTop: 2, overflowWrap: 'anywhere' }}>{KIND_LABEL[m.kind] || 'Email'} · {m.to_email}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, color: TEXT3, whiteSpace: 'nowrap' }}>{fmtDate(m.sent_at)}</span>
+                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={TEXT3} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </div>
+                    </button>
+                    {open && (
+                      <div style={{ padding: '0 18px 18px' }}>
+                        <div style={{ fontSize: 12, color: TEXT3, marginBottom: 10, lineHeight: 1.6 }}>
+                          Sent to <b style={{ color: TEXT2 }}>{m.to_email}</b> on {new Date(m.sent_at).toLocaleString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}
+                        </div>
+                        {!loaded ? (
+                          <div style={{ fontSize: 13, color: TEXT3 }}>Loading...</div>
+                        ) : body ? (
+                          <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
+                            <iframe title="Message" srcDoc={body} sandbox="" loading="lazy" style={{ width: '100%', height: isMobile ? 480 : 560, border: 'none', display: 'block', background: '#F4F6F8' }} />
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 13, color: TEXT3, lineHeight: 1.5, border: `1px solid ${BORDER}`, borderRadius: 12, padding: '12px 14px', background: WHITE }}>
+                            The wording of this message was not kept. Jobyra started keeping copies recently, and it clears copies after 90 days.
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ fontSize: 12, color: TEXT3, whiteSpace: 'nowrap' }}>{fmtDate(m.sent_at)}</div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </div>

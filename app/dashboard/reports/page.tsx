@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
@@ -10,6 +10,31 @@ import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
+import { DataList, PersonCell, TextCell } from '@/components/DataList'
+import { useIsPhone } from '@/components/forms'
+import { money } from '@/lib/format'
+import {
+  AGE_LABELS,
+  METRICS,
+  PERIODS,
+  VIEWS,
+  agedReceivables,
+  earliestDate,
+  formatMoney,
+  makeBuckets,
+  periodWindow,
+  rankingsFor,
+  seriesFor,
+  stripFor,
+  type OwingRow,
+  type Period,
+  type RLine,
+  type Ranked,
+  type ReportData,
+  type ReportView,
+  type RevenueMetric,
+  type SeriesPoint,
+} from '@/lib/report-data'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -22,53 +47,6 @@ const BG = '#FAFAFA'
 const WHITE = '#FFFFFF'
 const FONT = 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
-const TYPE = {
-  label: {
-    fontSize: '10px',
-    fontWeight: 800,
-    letterSpacing: '0.08em' as const,
-    textTransform: 'uppercase' as const,
-    color: TEXT3,
-  },
-  bodySm: {
-    fontSize: '11px',
-    fontWeight: 500,
-    color: TEXT3,
-    lineHeight: 1.45,
-  },
-  body: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: TEXT2,
-    lineHeight: 1.45,
-  },
-  titleSm: {
-    fontSize: '12px',
-    fontWeight: 800,
-    color: TEXT,
-    lineHeight: 1.3,
-  },
-  title: {
-    fontSize: '13px',
-    fontWeight: 700,
-    color: TEXT2,
-    lineHeight: 1.35,
-  },
-  valueLg: {
-    fontSize: '28px',
-    fontWeight: 900,
-    letterSpacing: '-0.05em' as const,
-    lineHeight: 1,
-  },
-  valueMd: {
-    fontSize: '20px',
-    fontWeight: 900,
-    color: TEXT,
-    letterSpacing: '-0.04em' as const,
-    lineHeight: 1,
-  },
-}
-
 // Rank badges on the "Top ..." cards: 1st solid teal, 2nd soft teal, 3rd soft grey, the rest plain
 const RANK_STYLES: Record<number | 'rest', React.CSSProperties> = {
   0: { background: TEAL, color: '#FFFFFF' },
@@ -77,100 +55,13 @@ const RANK_STYLES: Record<number | 'rest', React.CSSProperties> = {
   rest: { background: 'transparent', color: TEXT3 },
 }
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+const card: React.CSSProperties = { background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
 
-  useEffect(() => {
-    function check() {
-      setIsMobile(window.innerWidth < 768)
-    }
+const TREND_TITLE: Record<ReportView, string> = { revenue: 'Revenue trend', jobs: 'Jobs trend', quotes: 'Quote trend', services: 'Service trend' }
+const SERIES_LABEL: Record<ReportView, string> = { revenue: 'Revenue', jobs: 'Jobs added', quotes: 'Quote value', services: 'Service dates' }
+const STRIP_LINK: Record<ReportView, string> = { revenue: '/dashboard/invoices', jobs: '/dashboard/jobs', quotes: '/dashboard/quotes', services: '/dashboard/schedule' }
 
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  return isMobile
-}
-
-type Job = {
-  id: string
-  created_at: string
-  install_date: string | null
-  next_service_date: string | null
-  brand: string | null
-  capacity_kw: number | null
-  customer_id: string | null
-}
-
-type Invoice = {
-  id: string
-  created_at: string
-  status: string
-  total: number
-  amount_paid: number
-}
-
-type Quote = {
-  id: string
-  created_at: string
-  status: string
-  total: number
-}
-
-type Customer = {
-  id: string
-  created_at: string
-  suburb: string | null
-}
-
-type ReportView = 'revenue' | 'jobs' | 'quotes' | 'services'
-
-type TrendPoint = {
-  label: string
-  total: number
-}
-
-function isSameMonth(dateStr: string | null | undefined, base: Date) {
-  if (!dateStr) return false
-  const d = new Date(dateStr)
-  return d.getMonth() === base.getMonth() && d.getFullYear() === base.getFullYear()
-}
-
-function formatMoney(value: number) {
-  return `$${value.toLocaleString('en-AU', { maximumFractionDigits: 0 })}`
-}
-
-function monthLabelFromOffset(base: Date, offset: number) {
-  const d = new Date(base.getFullYear(), base.getMonth() + offset, 1)
-  return d.toLocaleDateString('en-AU', { month: 'short' })
-}
-
-function IconSpark({ size = 16 }: { size?: number }) {
-  return <AppIcon name="sparkle" size={size} />
-}
-
-function IconPrint({ size = 15 }: { size?: number }) {
-  return <AppIcon name="print" size={size} />
-}
-
-function IconExternalLink({ size = 14 }: { size?: number }) {
-  return <AppIcon name="external-link" size={size} />
-}
-
-function AreaChart({
-  series,
-  maxVal,
-  height = 240,
-  isMobile = false,
-  formatValue,
-}: {
-  series: TrendPoint[]
-  maxVal: number
-  height?: number
-  isMobile?: boolean
-  formatValue: (v: number) => string
-}) {
+function AreaChart({ series, maxVal, height = 240, isMobile = false, formatValue }: { series: SeriesPoint[]; maxVal: number; height?: number; isMobile?: boolean; formatValue: (v: number) => string }) {
   const [hovered, setHovered] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const [svgWidth, setSvgWidth] = useState(600)
@@ -179,7 +70,6 @@ function AreaChart({
     function measure() {
       if (svgRef.current) setSvgWidth(svgRef.current.getBoundingClientRect().width)
     }
-
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
@@ -196,7 +86,6 @@ function AreaChart({
   function xOf(i: number) {
     return PAD_L + (i / Math.max(n - 1, 1)) * chartW
   }
-
   function yOf(v: number) {
     const pct = maxVal > 0 ? v / maxVal : 0
     return PAD_T + chartH - pct * chartH
@@ -207,39 +96,29 @@ function AreaChart({
   function smoothPath(pts: { x: number; y: number }[]) {
     if (pts.length < 2) return ''
     let d = `M ${pts[0].x} ${pts[0].y}`
-
     for (let i = 1; i < pts.length; i++) {
       const prev = pts[i - 1]
       const curr = pts[i]
       const cpx = (prev.x + curr.x) / 2
       d += ` C ${cpx} ${prev.y}, ${cpx} ${curr.y}, ${curr.x} ${curr.y}`
     }
-
     return d
   }
 
   const linePath = smoothPath(points)
-  const areaPath = linePath
-    ? `${linePath} L ${points[n - 1].x} ${PAD_T + chartH} L ${points[0].x} ${PAD_T + chartH} Z`
-    : ''
+  const areaPath = linePath ? `${linePath} L ${points[n - 1].x} ${PAD_T + chartH} L ${points[0].x} ${PAD_T + chartH} Z` : ''
 
   // Skip repeated labels (an empty chart would otherwise read $0, $0, $1, $1, $1)
   const yTicks = [0, 0.25, 0.5, 0.75, 1]
-    .map(f => ({
-      y: PAD_T + chartH - f * chartH,
-      val: Math.round(maxVal * f),
-    }))
+    .map(f => ({ y: PAD_T + chartH - f * chartH, val: Math.round(maxVal * f) }))
     .filter((t, i, arr) => arr.findIndex(x => x.val === t.val) === i)
+
+  // With many points, label every few; the newest point is always labelled
+  const every = Math.max(1, Math.ceil(n / (isMobile ? 6 : 14)))
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <svg
-        ref={svgRef}
-        width="100%"
-        height={height}
-        style={{ display: 'block', overflow: 'visible' }}
-        onMouseLeave={() => setHovered(null)}
-      >
+      <svg ref={svgRef} width="100%" height={height} style={{ display: 'block', overflow: 'visible' }} onMouseLeave={() => setHovered(null)}>
         <defs>
           <linearGradient id="reportsAreaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={TEAL} stopOpacity="0.18" />
@@ -249,114 +128,58 @@ function AreaChart({
 
         {yTicks.map((t, i) => (
           <g key={i}>
-            <line
-              x1={PAD_L}
-              x2={PAD_L + chartW}
-              y1={t.y}
-              y2={t.y}
-              stroke={i === 0 ? BORDER : '#EEF2F7'}
-              strokeWidth={i === 0 ? 1 : 0.8}
-              strokeDasharray={i === 0 ? '0' : '4 3'}
-            />
-            <text
-              x={PAD_L - 6}
-              y={t.y + 3.5}
-              textAnchor="end"
-              fontSize="9"
-              fontWeight="700"
-              fill={TEXT3}
-              fontFamily={FONT}
-            >
+            <line x1={PAD_L} x2={PAD_L + chartW} y1={t.y} y2={t.y} stroke={i === 0 ? BORDER : '#EEF2F7'} strokeWidth={i === 0 ? 1 : 0.8} strokeDasharray={i === 0 ? '0' : '4 3'} />
+            <text x={PAD_L - 6} y={t.y + 3.5} textAnchor="end" fontSize="9" fontWeight="700" fill={TEXT3} fontFamily={FONT}>
               {formatValue(t.val)}
             </text>
           </g>
         ))}
 
         {points.map((p, i) => (
-          <line
-            key={`vl-${i}`}
-            x1={p.x}
-            x2={p.x}
-            y1={PAD_T}
-            y2={PAD_T + chartH}
-            stroke={hovered === i ? '#CBD5E1' : 'transparent'}
-            strokeWidth="1"
-            strokeDasharray="3 2"
-          />
+          <line key={`vl-${i}`} x1={p.x} x2={p.x} y1={PAD_T} y2={PAD_T + chartH} stroke={hovered === i ? '#CBD5E1' : 'transparent'} strokeWidth="1" strokeDasharray="3 2" />
         ))}
 
         {areaPath && <path d={areaPath} fill="url(#reportsAreaGrad)" />}
-
-        {linePath && (
-          <path
-            d={linePath}
-            fill="none"
-            stroke={TEAL}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
+        {linePath && <path d={linePath} fill="none" stroke={TEAL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
 
         {points.map((p, i) => (
           <g key={`dot-${i}`}>
-            <circle
-              cx={p.x}
-              cy={p.y}
-              r={hovered === i ? 5 : 3.5}
-              fill={hovered === i ? TEAL : WHITE}
-              stroke={TEAL}
-              strokeWidth={hovered === i ? 2.5 : 1.8}
-              style={{ transition: 'r 0.15s, fill 0.15s' }}
-            />
-            <rect
-              x={p.x - chartW / n / 2}
-              y={PAD_T}
-              width={chartW / n}
-              height={chartH}
-              fill="transparent"
-              style={{ cursor: 'crosshair' }}
-              onMouseEnter={() => setHovered(i)}
-            />
+            {(n <= 40 || hovered === i) && (
+              <circle cx={p.x} cy={p.y} r={hovered === i ? 5 : n > 20 ? 2.5 : 3.5} fill={hovered === i ? TEAL : WHITE} stroke={TEAL} strokeWidth={hovered === i ? 2.5 : 1.8} style={{ transition: 'r 0.15s, fill 0.15s' }} />
+            )}
+            <rect x={p.x - chartW / n / 2} y={PAD_T} width={chartW / n} height={chartH} fill="transparent" style={{ cursor: 'crosshair' }} onMouseEnter={() => setHovered(i)} />
           </g>
         ))}
 
-        {points.map((p, i) => (
-          <text
-            key={`xl-${i}`}
-            x={p.x}
-            y={PAD_T + chartH + 20}
-            textAnchor="middle"
-            fontSize="10"
-            fontWeight="700"
-            fill={hovered === i ? TEXT : TEXT3}
-            fontFamily={FONT}
-          >
-            {p.label}
-          </text>
-        ))}
+        {points.map((p, i) =>
+          (n - 1 - i) % every === 0 ? (
+            <text key={`xl-${i}`} x={p.x} y={PAD_T + chartH + 20} textAnchor="middle" fontSize="10" fontWeight="700" fill={hovered === i ? TEXT : TEXT3} fontFamily={FONT}>
+              {p.label}
+            </text>
+          ) : null
+        )}
 
-        {hovered !== null && (() => {
-          const p = points[hovered]
-          const tw = 90
-          const th = 38
-          let tx = p.x - tw / 2
-          if (tx < PAD_L) tx = PAD_L
-          if (tx + tw > PAD_L + chartW) tx = PAD_L + chartW - tw
-          const ty = Math.max(PAD_T - 2, p.y - th - 10)
-
-          return (
-            <g style={{ pointerEvents: 'none' }}>
-              <rect x={tx} y={ty} width={tw} height={th} rx="8" fill={TEXT} />
-              <text x={tx + tw / 2} y={ty + 13} textAnchor="middle" fontSize="9" fontWeight="700" fill="#94A3B8" fontFamily={FONT}>
-                {p.label}
-              </text>
-              <text x={tx + tw / 2} y={ty + 27} textAnchor="middle" fontSize="12" fontWeight="900" fill={WHITE} fontFamily={FONT}>
-                {formatValue(p.total)}
-              </text>
-            </g>
-          )
-        })()}
+        {hovered !== null &&
+          (() => {
+            const p = points[hovered]
+            const tw = 104
+            const th = 38
+            let tx = p.x - tw / 2
+            if (tx < PAD_L) tx = PAD_L
+            if (tx + tw > PAD_L + chartW) tx = PAD_L + chartW - tw
+            const ty = Math.max(PAD_T - 2, p.y - th - 10)
+            return (
+              <g style={{ pointerEvents: 'none' }}>
+                <rect x={tx} y={ty} width={tw} height={th} rx="8" fill={TEXT} />
+                <text x={tx + tw / 2} y={ty + 13} textAnchor="middle" fontSize="9" fontWeight="700" fill="#94A3B8" fontFamily={FONT}>
+                  {p.tip}
+                </text>
+                <text x={tx + tw / 2} y={ty + 27} textAnchor="middle" fontSize="12" fontWeight="900" fill={WHITE} fontFamily={FONT}>
+                  {formatValue(p.total)}
+                </text>
+              </g>
+            )
+          })()}
       </svg>
     </div>
   )
@@ -364,465 +187,148 @@ function AreaChart({
 
 export default function ReportsPage() {
   const router = useRouter()
-  const isMobile = useIsMobile()
+  const isMobile = useIsPhone()
   const [loading, setLoading] = useState(true)
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [quotes, setQuotes] = useState<Quote[]>([])
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [reportView, setReportView] = useState<ReportView>('revenue')
+  const [bizId, setBizId] = useState('')
+  const [data, setData] = useState<ReportData>({ invoices: [], quotes: [], jobs: [], customers: [] })
+  const [view, setView] = useState<ReportView>('revenue')
+  const [period, setPeriod] = useState<Period>('6m')
+  const [metric, setMetric] = useState<RevenueMetric>('invoiced')
+  const [owingTab, setOwingTab] = useState('all')
+  const [showAllOwing, setShowAllOwing] = useState(false)
+  // Line items (what was sold) are only needed for the "Top products" card, so they arrive after the page is up
+  const [lines, setLines] = useState<Record<string, RLine[]>>({})
+  const [linesFrom, setLinesFrom] = useState<number | null>(null)
 
   useEffect(() => {
     async function load() {
       const {
         data: { session },
       } = await supabase.auth.getSession()
-
       if (!session) {
         router.push('/login')
         return
       }
-
       const { data: userData } = await getUserRow(session.user.id)
-
       if (!userData) {
         setLoading(false)
         return
       }
+      const bid = userData.business_id as string
+      setBizId(bid)
 
       const [jobsRes, invoicesRes, quotesRes, customersRes] = await Promise.all([
-        supabase
-          .from('jobs')
-          .select('id, created_at, install_date, next_service_date, brand, capacity_kw, customer_id')
-          .eq('business_id', userData.business_id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('invoices')
-          .select('id, created_at, status, total, amount_paid')
-          .eq('business_id', userData.business_id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('quotes')
-          .select('id, created_at, status, total')
-          .eq('business_id', userData.business_id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('customers')
-          .select('id, created_at, suburb')
-          .eq('business_id', userData.business_id)
-          .order('created_at', { ascending: false }),
+        supabase.from('jobs').select('id, created_at, next_service_date, brand, customer_id').eq('business_id', bid),
+        supabase.from('invoices').select('id, created_at, status, total, amount_paid, customer_id, due_date, invoice_number').eq('business_id', bid),
+        supabase.from('quotes').select('id, created_at, status, total, customer_id').eq('business_id', bid),
+        supabase.from('customers').select('id, created_at, suburb, first_name, last_name').eq('business_id', bid),
       ])
 
-      setJobs((jobsRes.data || []) as Job[])
-      setInvoices((invoicesRes.data || []) as Invoice[])
-      setQuotes((quotesRes.data || []) as Quote[])
-      setCustomers((customersRes.data || []) as Customer[])
+      setData({
+        jobs: (jobsRes.data || []) as ReportData['jobs'],
+        invoices: (invoicesRes.data || []) as ReportData['invoices'],
+        quotes: (quotesRes.data || []) as ReportData['quotes'],
+        customers: (customersRes.data || []) as ReportData['customers'],
+      })
       setLoading(false)
     }
-
     load()
   }, [router])
 
-  const today = new Date()
+  const now = useMemo(() => new Date(), [])
+  const earliest = useMemo(() => earliestDate(data), [data])
+  const win = useMemo(() => periodWindow(period, now, earliest), [period, now, earliest])
+  const words = PERIODS.find(p => p.value === period)?.words || ''
+  const isMoney = view === 'revenue' || view === 'quotes'
 
-  const todayStr = today.toLocaleDateString('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const cells = useMemo(() => stripFor(view, data, win, words, now), [view, data, win, words, now])
+  const buckets = useMemo(() => makeBuckets(period, win), [period, win])
+  const series = useMemo(() => seriesFor(view, metric, data, buckets, now), [view, metric, data, buckets, now])
+  const maxVal = Math.max(...series.map(p => p.total), 1)
+  const fmt = (v: number) => (isMoney ? formatMoney(v) : String(Math.round(v)))
 
-  const report = useMemo(() => {
-    const currentMonth = today
-    const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-
-    const revenueCollected = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (Number(i.total) || 0), 0)
-
-    const outstanding = invoices
-      .filter(i => i.status === 'sent' || i.status === 'overdue')
-      .reduce((sum, i) => sum + ((Number(i.total) || 0) - (Number(i.amount_paid) || 0)), 0)
-
-    const quotesAcceptedValue = quotes.filter(q => q.status === 'accepted').reduce((sum, q) => sum + (Number(q.total) || 0), 0)
-
-    const jobsThisMonth = jobs.filter(j => isSameMonth(j.created_at, currentMonth)).length
-    const jobsLastMonth = jobs.filter(j => isSameMonth(j.created_at, previousMonth)).length
-    const newCustomersThisMonth = customers.filter(c => isSameMonth(c.created_at, currentMonth)).length
-    const invoicesThisMonth = invoices.filter(i => isSameMonth(i.created_at, currentMonth)).length
-    const quotesThisMonth = quotes.filter(q => isSameMonth(q.created_at, currentMonth)).length
-
-    const overdueServices = jobs.filter(j => j.next_service_date && new Date(j.next_service_date) < today).length
-
-    const dueSoonServices = jobs.filter(j => {
-      if (!j.next_service_date) return false
-      const diff = Math.floor((new Date(j.next_service_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      return diff >= 0 && diff <= 30
-    }).length
-
-    const acceptedQuotes = quotes.filter(q => q.status === 'accepted').length
-    const sentQuotes = quotes.filter(q => q.status === 'sent').length
-    const acceptanceRate = quotes.length > 0 ? Math.round((acceptedQuotes / quotes.length) * 100) : 0
-
-    const monthlyRevenue = [-5, -4, -3, -2, -1, 0].map(offset => {
-      const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-      const total = invoices.filter(i => isSameMonth(i.created_at, monthDate)).reduce((sum, i) => sum + (Number(i.total) || 0), 0)
-
-      return {
-        label: monthLabelFromOffset(today, offset),
-        total,
+  // Fetch line items for the dates being looked at, once, and again only if the period reaches further back
+  const needFrom = win.start.getTime()
+  useEffect(() => {
+    if (loading || !bizId || (view !== 'revenue' && view !== 'quotes')) return
+    if (linesFrom !== null && linesFrom <= needFrom) return
+    let cancelled = false
+    const since = new Date(needFrom).toISOString()
+    Promise.all([
+      supabase.from('invoices').select('id, line_items').eq('business_id', bizId).gte('created_at', since),
+      supabase.from('quotes').select('id, line_items').eq('business_id', bizId).gte('created_at', since),
+    ]).then(([inv, quo]) => {
+      if (cancelled) return
+      const next: Record<string, RLine[]> = {}
+      for (const r of [...((inv.data as { id: string; line_items: RLine[] | null }[]) || []), ...((quo.data as { id: string; line_items: RLine[] | null }[]) || [])]) {
+        next[r.id] = Array.isArray(r.line_items) ? r.line_items : []
       }
+      setLines(prev => ({ ...prev, ...next }))
+      setLinesFrom(needFrom)
     })
-
-    const suburbCounts: Record<string, number> = {}
-    customers.forEach(c => {
-      const key = (c.suburb || 'Unknown').trim() || 'Unknown'
-      suburbCounts[key] = (suburbCounts[key] || 0) + 1
-    })
-    const topSuburbs = Object.entries(suburbCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
-
-    const brandCounts: Record<string, number> = {}
-    jobs.forEach(j => {
-      const key = (j.brand || 'Unknown').trim() || 'Unknown'
-      brandCounts[key] = (brandCounts[key] || 0) + 1
-    })
-    const topBrands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
-
-    return {
-      revenueCollected,
-      outstanding,
-      quotesAcceptedValue,
-      jobsThisMonth,
-      jobsLastMonth,
-      newCustomersThisMonth,
-      invoicesThisMonth,
-      quotesThisMonth,
-      overdueServices,
-      dueSoonServices,
-      acceptedQuotes,
-      sentQuotes,
-      acceptanceRate,
-      monthlyRevenue,
-      topSuburbs,
-      topBrands,
+    return () => {
+      cancelled = true
     }
-  }, [customers, invoices, jobs, quotes, today])
+  }, [loading, bizId, view, needFrom, linesFrom])
 
-  const trendConfig = useMemo(() => {
-    if (reportView === 'jobs') {
-      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
-        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-        const total = jobs.filter(j => isSameMonth(j.created_at, monthDate)).length
-        return { label: monthLabelFromOffset(today, offset), total }
-      })
+  const linesReady = linesFrom !== null && linesFrom <= needFrom
+  const rankings = useMemo(() => rankingsFor(view, metric, data, win, now, linesReady ? lines : null), [view, metric, data, win, now, lines, linesReady])
 
-      return {
-        title: 'Jobs trend',
-        pill: `${report.jobsThisMonth} this month`,
-        selectedLabel: 'Jobs created',
-        selectedTotal: report.jobsThisMonth,
-        widgets: [
-          { label: 'Jobs this month', value: report.jobsThisMonth },
-          { label: 'Last month', value: report.jobsLastMonth },
-          { label: 'New customers', value: report.newCustomersThisMonth },
-          { label: 'Invoices', value: report.invoicesThisMonth },
-          { label: 'Quotes', value: report.quotesThisMonth },
-          { label: 'Due soon', value: report.dueSoonServices },
-        ],
-        monthly,
-        max: Math.max(...monthly.map(m => m.total), 1),
-        formatValue: (v: number) => String(v),
-      }
-    }
+  const customerName = useMemo(() => {
+    const m = new Map(data.customers.map(c => [c.id, [c.first_name, c.last_name].filter(Boolean).join(' ').trim()]))
+    return (id?: string | null) => (id ? m.get(id) || '' : '')
+  }, [data.customers])
+  const aged = useMemo(() => agedReceivables(data.invoices, customerName, now), [data.invoices, customerName, now])
+  const owingRows = useMemo(() => {
+    const tab = owingTab === 'all' ? null : Number(owingTab)
+    return aged.rows.filter(r => tab === null || r.buckets[tab] > 0)
+  }, [aged.rows, owingTab])
 
-    if (reportView === 'quotes') {
-      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
-        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-        const total = quotes.filter(q => isSameMonth(q.created_at, monthDate)).reduce((sum, q) => sum + (Number(q.total) || 0), 0)
-        return { label: monthLabelFromOffset(today, offset), total }
-      })
-
-      return {
-        title: 'Quote trend',
-        pill: `Acceptance ${report.acceptanceRate}%`,
-        selectedLabel: 'Quote value',
-        selectedTotal: report.quotesAcceptedValue,
-        widgets: [
-          { label: 'Accepted', value: report.acceptedQuotes },
-          { label: 'Sent', value: report.sentQuotes },
-          { label: 'Quotes this month', value: report.quotesThisMonth },
-          { label: 'Acceptance', value: `${report.acceptanceRate}%` },
-          { label: 'Accepted value', value: formatMoney(report.quotesAcceptedValue) },
-          { label: 'Outstanding', value: formatMoney(report.outstanding) },
-        ],
-        monthly,
-        max: Math.max(...monthly.map(m => m.total), 1),
-        formatValue: (v: number) => `$${Math.round(v).toLocaleString('en-AU')}`,
-      }
-    }
-
-    if (reportView === 'services') {
-      const monthly = [-5, -4, -3, -2, -1, 0].map(offset => {
-        const monthDate = new Date(today.getFullYear(), today.getMonth() + offset, 1)
-        const total = jobs.filter(j => j.next_service_date && isSameMonth(j.next_service_date, monthDate)).length
-        return { label: monthLabelFromOffset(today, offset), total }
-      })
-
-      return {
-        title: 'Service trend',
-        pill: `${report.overdueServices + report.dueSoonServices} active`,
-        selectedLabel: 'Services scheduled',
-        selectedTotal: report.overdueServices + report.dueSoonServices,
-        widgets: [
-          { label: 'Overdue', value: report.overdueServices },
-          { label: 'Due soon', value: report.dueSoonServices },
-          { label: 'Jobs this month', value: report.jobsThisMonth },
-          { label: 'Last month', value: report.jobsLastMonth },
-          { label: 'New customers', value: report.newCustomersThisMonth },
-          { label: 'Quotes', value: report.quotesThisMonth },
-        ],
-        monthly,
-        max: Math.max(...monthly.map(m => m.total), 1),
-        formatValue: (v: number) => String(v),
-      }
-    }
-
-    const monthly = report.monthlyRevenue
-
-    return {
-      title: 'Revenue trend',
-      pill: `Acceptance rate ${report.acceptanceRate}%`,
-      selectedLabel: 'Invoiced revenue',
-      selectedTotal: report.revenueCollected,
-      widgets: [
-        { label: 'Jobs this month', value: report.jobsThisMonth },
-        { label: 'Last month', value: report.jobsLastMonth },
-        { label: 'New customers', value: report.newCustomersThisMonth },
-        { label: 'Invoices', value: report.invoicesThisMonth },
-        { label: 'Quotes', value: report.quotesThisMonth },
-        { label: 'Due soon', value: report.dueSoonServices },
-      ],
-      monthly,
-      max: Math.max(...monthly.map(m => m.total), 1),
-      formatValue: (v: number) => `$${Math.round(v).toLocaleString('en-AU')}`,
-    }
-  }, [reportView, report, jobs, quotes, today])
-
-  const card: React.CSSProperties = {
-    background: WHITE,
-    border: `1px solid ${BORDER}`,
-    borderRadius: '14px',
-    overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-  }
-
-  const cardArrowBtn: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: TEXT3,
-    padding: 0,
-    width: 36,
-    height: 36,
-    margin: '-8px -8px -8px 0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-
-  const btnOutline: React.CSSProperties = {
-    height: '34px',
-    padding: '0 14px',
-    background: WHITE,
-    border: `1px solid ${BORDER}`,
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    color: TEXT2,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap',
-  }
-
-  const btnPrimary: React.CSSProperties = {
-    height: '34px',
-    padding: '0 14px',
-    background: TEAL,
-    color: WHITE,
-    border: 'none',
-    borderRadius: '9px',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    fontFamily: FONT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    whiteSpace: 'nowrap',
-  }
-
-  const statChips = [
-    {
-      label: 'Revenue Collected',
-      value: formatMoney(report.revenueCollected),
-      sub: 'paid invoices',
-      onClick: () => router.push('/dashboard/invoices'),
-    },
-    {
-      label: 'Outstanding',
-      value: formatMoney(report.outstanding),
-      sub: report.outstanding > 0 ? 'open balance' : 'clear',
-      onClick: () => router.push('/dashboard/invoices'),
-    },
-    {
-      label: 'Jobs This Month',
-      value: report.jobsThisMonth,
-      sub: 'created this month',
-      onClick: () => router.push('/dashboard/jobs'),
-    },
-    {
-      label: 'Quotes This Month',
-      value: report.quotesThisMonth,
-      sub: 'created this month',
-      onClick: () => router.push('/dashboard/quotes'),
-    },
-  ]
-
-  function renderRankingCard({
-    title,
-    subtitle,
-    data,
-    empty,
-    route,
-    accent,
-  }: {
-    title: string
-    subtitle: string
-    data: [string, number][]
-    empty: string
-    route: string
-    accent: string
-  }) {
-    const maxCount = Math.max(...data.map(item => item[1]), 1)
-    const totalCount = data.reduce((sum, item) => sum + item[1], 0)
+  function renderRankingCard({ title, subtitle, items, empty, route }: { title: string; subtitle: string; items: Ranked[] | null; empty: string; route: string }) {
+    const maxValue = Math.max(...(items || []).map(i => i.value), 1)
+    const totalValue = (items || []).reduce((s, i) => s + i.value, 0)
+    const show = (v: number) => (rankings.money ? formatMoney(v) : String(v))
 
     return (
-      <div style={{ ...card, borderRadius: '14px', border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-        <div
-          style={{
-            padding: isMobile ? '16px' : '18px 20px',
-            borderBottom: `1px solid ${BORDER}`,
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '12px',
-            background: WHITE,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
-            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
+      <div style={card}>
+        <div style={{ padding: isMobile ? '16px' : '18px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, background: WHITE }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0 }}>
+            <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: 999, background: TEAL, flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>
-                  {title}
-                </span>
-              </div>
+              <div style={{ fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em' }}>{title}</div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: TEXT3, marginTop: 3, lineHeight: 1.4 }}>{subtitle}</div>
             </div>
           </div>
-
-          <button onClick={() => router.push(route)} aria-label={`Open ${title}`} style={cardArrowBtn}>
-            <IconExternalLink size={14} />
+          <button type="button" onClick={() => router.push(route)} aria-label={`Open ${title}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXT3, padding: 0, width: 36, height: 36, margin: '-8px -8px -8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AppIcon name="external-link" size={14} />
           </button>
         </div>
 
-        <div style={{ padding: isMobile ? '14px' : '16px' }}>
-          {data.length === 0 ? (
-            <div
-              style={{
-                padding: '22px 14px',
-                borderRadius: '12px',
-                background: '#F8FAFC',
-                border: `1px solid ${BORDER}`,
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: TEXT3,
-              }}
-            >
-              {empty}
-            </div>
+        <div style={{ padding: isMobile ? 14 : 16 }}>
+          {items === null ? (
+            <div style={{ padding: '22px 14px', borderRadius: 12, background: '#F8FAFC', border: `1px solid ${BORDER}`, textAlign: 'center', fontSize: 12, fontWeight: 600, color: TEXT3 }}>Loading...</div>
+          ) : items.length === 0 ? (
+            <div style={{ padding: '22px 14px', borderRadius: 12, background: '#F8FAFC', border: `1px solid ${BORDER}`, textAlign: 'center', fontSize: 12, fontWeight: 600, color: TEXT3 }}>{empty}</div>
           ) : (
-            <div style={{ display: 'grid', gap: '9px' }}>
-              {data.map(([name, count], index) => {
-                const width = Math.max(8, Math.round((count / maxCount) * 100))
-
+            <div style={{ display: 'grid', gap: 9 }}>
+              {items.map((item, index) => {
+                const width = Math.max(8, Math.round((item.value / maxValue) * 100))
                 return (
-                  <div
-                    key={name}
-                    style={{
-                      padding: '12px',
-                      borderRadius: '12px',
-                      background: WHITE,
-                      border: `1px solid ${BORDER}`,
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '9px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                        {/* Rank badge: podium tints for the top three, a plain number after that */}
-                        <div
-                          aria-label={`Rank ${index + 1}`}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: '999px',
-                            ...(RANK_STYLES[index] || RANK_STYLES.rest),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '13px',
-                            fontWeight: 800,
-                            fontVariantNumeric: 'tabular-nums',
-                            letterSpacing: '-0.02em',
-                            flexShrink: 0,
-                          }}
-                        >
+                  <div key={item.name} style={{ padding: 12, borderRadius: 12, background: WHITE, border: `1px solid ${BORDER}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 9 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                        <div aria-label={`Rank ${index + 1}`} style={{ width: 28, height: 28, borderRadius: 999, ...(RANK_STYLES[index] || RANK_STYLES.rest), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', flexShrink: 0 }}>
                           {index + 1}
                         </div>
-
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '13px', fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {name}
-                          </div>
-                          <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, marginTop: '2px' }}>
-                            {Math.round((count / Math.max(totalCount, 1)) * 100)}% of listed records
-                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: TEXT3, marginTop: 2 }}>{Math.round((item.value / Math.max(totalValue, 1)) * 100)}% of the top {items.length}</div>
                         </div>
                       </div>
-
-                      <div
-                        style={{
-                          minWidth: 34,
-                          height: 28,
-                          borderRadius: '8px',
-                          background: '#F8FAFC',
-                          border: `1px solid ${BORDER}`,
-                          color: TEXT,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          fontWeight: 900,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {count}
-                      </div>
+                      <div style={{ minWidth: 34, height: 28, padding: '0 9px', borderRadius: 8, background: '#F8FAFC', border: `1px solid ${BORDER}`, color: TEXT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{show(item.value)}</div>
                     </div>
-
-                    <div style={{ width: '100%', height: 8, borderRadius: '999px', background: '#EAEFF4', overflow: 'hidden' }}>
-                      <div style={{ width: `${width}%`, height: '100%', borderRadius: '999px', background: accent }} />
+                    <div style={{ width: '100%', height: 8, borderRadius: 999, background: '#EAEFF4', overflow: 'hidden' }}>
+                      <div style={{ width: `${width}%`, height: '100%', borderRadius: 999, background: TEAL }} />
                     </div>
                   </div>
                 )
@@ -843,192 +349,145 @@ export default function ReportsPage() {
     )
   }
 
+  const metricLabel = METRICS.find(m => m.value === metric)?.label.toLowerCase() || ''
+  const basis = view === 'revenue' ? `${metricLabel} invoices, ${words}` : view === 'quotes' ? `quoted value, ${words}` : view === 'jobs' ? `jobs added, ${words}` : `service dates, ${words}`
+  const stripItems = cells.map(c => ({ label: c.label, value: c.value, sub: c.sub, delta: c.delta, up: c.up, onClick: () => router.push(STRIP_LINK[view]) }))
+
   return (
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/reports" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div
-          style={{
-            background: BG,
-            borderBottom: `1px solid ${BORDER}`,
-            padding: isMobile ? '14px 14px 12px' : '16px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexShrink: 0,
-          }}
-        >
-          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
-          <HeaderToolbar isMobile={isMobile} items={[
-            { label: 'Print', icon: <IconPrint size={15} />, onClick: () => window.print() },
-            { label: 'View invoices', icon: <AppIcon name="invoice" size={15} />, onClick: () => router.push('/dashboard/invoices') },
-          ]} />
+        <div style={{ background: BG, borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '14px 14px 12px' : '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <h1 style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Reports</h1>
+          <HeaderToolbar
+            isMobile={isMobile}
+            items={[
+              { label: 'Print', icon: <AppIcon name="print" size={15} />, onClick: () => window.print() },
+              { label: 'View invoices', icon: <AppIcon name="invoice" size={15} />, onClick: () => router.push('/dashboard/invoices') },
+            ]}
+          />
         </div>
 
-        <div className="page-content"
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: isMobile ? '12px' : '20px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px',
-            background: BG,
-          }}
-        >
-          <StatStrip items={statChips} isMobile={isMobile} />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', alignItems: 'start' }}>
-            <div style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-                    <div style={{ fontSize: '17px', fontWeight: 900, color: TEXT, letterSpacing: '-0.035em', lineHeight: 1.2 }}>
-                      {trendConfig.title}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
-                    <Select
-                      value={reportView}
-                      onChange={e => setReportView(e.target.value as ReportView)}
-                      style={{
-                        height: '34px',
-                        padding: '0 38px 0 12px',
-                        borderRadius: '9px',
-                        border: `1px solid ${BORDER}`,
-                        background: WHITE,
-                        color: TEXT2,
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        fontFamily: FONT,
-                        outline: 'none',
-                        cursor: 'pointer',
-                        appearance: 'none',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        minWidth: isMobile ? '100%' : '150px',
-                        width: isMobile ? '100%' : 'auto',
-                      }}
-                    >
-                      <option value="revenue">Revenue</option>
-                      <option value="jobs">Jobs</option>
-                      <option value="quotes">Quotes</option>
-                      <option value="services">Services</option>
-                    </Select>
-
-                    <div
-                      style={{
-                        position: 'absolute',
-                        right: '12px',
-                        pointerEvents: 'none',
-                        color: TEXT3,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <AppIcon name="arrow-down" size={14} />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      height: '34px',
-                      padding: '0 12px',
-                      borderRadius: '9px',
-                      border: `1px solid ${BORDER}`,
-                      background: '#F8FAFC',
-                      color: TEXT2,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {trendConfig.pill}
-                  </div>
-                  </div>
-                </div>
-
-                <div style={isMobile ? { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', borderTop: `1px solid ${BORDER}`, marginLeft: '-16px', marginRight: '-16px' } : { display: 'flex', borderTop: `1px solid ${BORDER}`, marginLeft: '-24px', marginRight: '-24px' }}>
-                  {trendConfig.widgets.slice(0, 5).map((item, i, arr) => (
-                    <div
-                      key={item.label}
-                      style={{
-                        flex: 1,
-                        padding: isMobile ? '12px 14px' : '14px 20px',
-                        borderRight: isMobile ? (i % 2 === 0 && i !== arr.length - 1 ? `1px solid ${BORDER}` : 'none') : i < arr.length - 1 ? `1px solid ${BORDER}` : 'none',
-                        borderTop: isMobile && i > 1 ? `1px solid ${BORDER}` : 'none',
-                        gridColumn: isMobile && i === arr.length - 1 && arr.length % 2 === 1 ? '1 / -1' : undefined,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px',
-                        minWidth: 0,
-                      }}
-                    >
-                      <div style={{ fontSize: isMobile ? '10px' : '9px', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: TEXT3, whiteSpace: isMobile ? 'normal' : 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.value}
-                      </div>
-                    </div>
+        <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 48, background: BG }}>
+          {/* One pair of controls drives everything below: the four figures, the chart and both rankings */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            {isMobile ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, width: '100%' }}>
+                <Select value={view} onChange={e => setView(e.target.value as ReportView)} style={{ height: 40, width: '100%' }} aria-label="Report">
+                  {VIEWS.map(v => (
+                    <option key={v.value} value={v.value}>{v.label}</option>
+                  ))}
+                </Select>
+                <Select value={period} onChange={e => setPeriod(e.target.value as Period)} style={{ height: 40, width: '100%' }} aria-label="Period">
+                  {PERIODS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </Select>
+              </div>
+            ) : (
+              <>
+                <div className="jb-chips" role="group" aria-label="Report">
+                  {VIEWS.map(v => (
+                    <button key={v.value} type="button" className="jb-chip" aria-pressed={view === v.value} onClick={() => setView(v.value)}>
+                      {v.label}
+                    </button>
                   ))}
                 </div>
+                <Select value={period} onChange={e => setPeriod(e.target.value as Period)} style={{ height: 36, width: 150 }} aria-label="Period">
+                  {PERIODS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </Select>
+              </>
+            )}
+          </div>
+
+          <StatStrip items={stripItems} isMobile={isMobile} />
+
+          <div style={card}>
+            <div style={{ padding: isMobile ? '16px 16px 0' : '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <div style={{ width: 4, alignSelf: 'stretch', minHeight: 22, borderRadius: 999, background: TEAL, flexShrink: 0 }} />
+                <div style={{ fontSize: 17, fontWeight: 900, color: TEXT, letterSpacing: '-0.035em', lineHeight: 1.2 }}>{TREND_TITLE[view]}</div>
               </div>
 
-              <div style={{ padding: isMobile ? '16px 12px 12px' : '20px 24px 16px' }}>
-                <AreaChart
-                  series={trendConfig.monthly}
-                  maxVal={trendConfig.max}
-                  height={isMobile ? 210 : 240}
-                  isMobile={isMobile}
-                  formatValue={trendConfig.formatValue}
-                />
+              {view === 'revenue' &&
+                (isMobile ? (
+                  <Select value={metric} onChange={e => setMetric(e.target.value as RevenueMetric)} style={{ height: 36, width: '100%' }} aria-label="Show">
+                    {METRICS.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </Select>
+                ) : (
+                  <div className="jb-chips" role="group" aria-label="Show">
+                    {METRICS.map(m => (
+                      <button key={m.value} type="button" className="jb-chip" aria-pressed={metric === m.value} onClick={() => setMetric(m.value)}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+            </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? '4px' : '52px', marginTop: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>{trendConfig.selectedLabel}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1', border: '1.5px solid #94A3B8' }} />
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: TEXT3 }}>Monthly count</span>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: TEXT3 }}>
-                    {new Date().toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
-                  </div>
+            <div style={{ padding: isMobile ? '16px 12px 12px 44px' : '20px 24px 16px' }}>
+              <AreaChart series={series} maxVal={maxVal} height={isMobile ? 210 : 240} isMobile={isMobile} formatValue={fmt} />
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: isMobile ? 0 : 52, marginTop: 6, gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ width: 16, height: 2, background: TEAL, borderRadius: 1 }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: TEXT3 }}>{view === 'revenue' ? `${METRICS.find(m => m.value === metric)?.label} value` : SERIES_LABEL[view]}</span>
                 </div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: TEXT3 }}>{words.charAt(0).toUpperCase() + words.slice(1)}</div>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, alignItems: 'start' }}>
             {renderRankingCard({
               title: 'Top suburbs',
-              subtitle: 'Customer concentration by suburb across your database.',
-              data: report.topSuburbs,
-              empty: 'No suburb data yet.',
+              subtitle: view === 'revenue' || view === 'quotes' ? `By amount: ${basis}` : `By number of customers' ${basis}`,
+              items: rankings.suburbs,
+              empty: 'Nothing in this period yet.',
               route: '/dashboard/customers',
-              accent: TEAL,
             })}
-
             {renderRankingCard({
-              title: 'Top brands & products',
-              subtitle: 'Most common brands and products recorded across jobs.',
-              data: report.topBrands,
-              empty: 'No brand data yet.',
-              route: '/dashboard/jobs',
-              accent: TEAL_DARK,
+              title: rankings.productsKind === 'items' ? 'Top products & services' : 'Top brands & products',
+              subtitle: rankings.productsKind === 'items' ? `By the amount on invoice and quote lines: ${basis}` : `By number of units: ${basis}`,
+              items: rankings.products,
+              empty: 'Nothing in this period yet.',
+              route: view === 'quotes' ? '/dashboard/quotes' : view === 'revenue' ? '/dashboard/invoices' : '/dashboard/jobs',
             })}
           </div>
+
+          {view === 'revenue' && (
+            <>
+              <DataList<OwingRow>
+                title={`Who owes you · ${money(aged.total)}`}
+                isMobile={isMobile}
+                rows={showAllOwing ? owingRows : owingRows.slice(0, 10)}
+                rowKey={r => r.customerId || r.name}
+                emptyText="Nobody owes you anything right now."
+                onRowClick={r => {
+                  if (r.customerId) router.push(`/dashboard/customers/${r.customerId}`)
+                }}
+                tabs={[{ value: 'all', label: 'Everyone', count: aged.rows.length }, ...AGE_LABELS.map((l, i) => ({ value: String(i), label: l, count: aged.rows.filter(r => r.buckets[i] > 0).length }))]}
+                activeTab={owingTab}
+                onTabChange={setOwingTab}
+                columns={[
+                  { key: 'who', label: 'Customer', width: 'minmax(0,1.5fr)', render: r => <PersonCell name={r.name} sub={`${r.invoices} unpaid invoice${r.invoices === 1 ? '' : 's'}`} /> },
+                  ...AGE_LABELS.map((l, i) => ({ key: `age${i}`, label: l, width: '112px', mobileLabel: l, render: (r: OwingRow) => <TextCell>{r.buckets[i] > 0 ? money(r.buckets[i]) : '-'}</TextCell> })),
+                  { key: 'total', label: 'Total owing', width: '104px', mobileHeader: true, render: (r: OwingRow) => <TextCell strong>{money(r.total)}</TextCell> },
+                ]}
+              />
+              {owingRows.length > 10 && (
+                <button type="button" onClick={() => setShowAllOwing(s => !s)} style={{ alignSelf: 'center', background: 'none', border: 'none', color: TEAL_DARK, fontFamily: FONT, fontSize: 13, fontWeight: 800, cursor: 'pointer', padding: 6 }}>
+                  {showAllOwing ? 'Show fewer' : `Show all ${owingRows.length} customers`}
+                </button>
+              )}
+              <div style={{ fontSize: 12, color: TEXT3, lineHeight: 1.5, marginTop: -6 }}>Counts invoices that are sent or overdue and not fully paid. An invoice with no due date counts as not due yet. This list is as of today and does not change with the period.</div>
+            </>
+          )}
         </div>
       </div>
     </div>

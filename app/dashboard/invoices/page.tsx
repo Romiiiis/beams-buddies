@@ -516,7 +516,7 @@ export default function InvoicesPage() {
             Invoices
           </h1>
           <HeaderToolbar isMobile={isMobile} search={{ value: search, onChange: setSearch, placeholder: 'Search...' }} items={[
-            { label: 'View revenue', icon: <IconRevenue size={15} />, onClick: () => router.push('/dashboard/revenue') },
+            { label: 'View reports', icon: <IconRevenue size={15} />, onClick: () => router.push('/dashboard/reports') },
             { label: 'New invoice', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowForm(true) },
           ]} />
         </div>

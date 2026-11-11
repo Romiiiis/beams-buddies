@@ -371,7 +371,7 @@ export default function CalendarPage() {
             </div>
           )}
 
-          <ToBookPanel items={toBook} due={dueServices} onBook={p => startVisit(guessDate(), p.staffId ?? null, p)} onRemove={setRemoveTarget} />
+          <ToBookPanel items={toBook} due={dueServices} isMobile={isMobile} onBook={p => startVisit(guessDate(), p.staffId ?? null, p)} onRemove={setRemoveTarget} />
 
           <div style={{ ...card, padding: isMobile ? 12 : '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <div className="jb-chips" role="group" aria-label="View">

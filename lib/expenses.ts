@@ -57,19 +57,3 @@ export function dateKey(d: Date) {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
-
-/** Start of the Australian financial year (1 July) that a date falls in. */
-export function financialYearStart(d: Date) {
-  return new Date(d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1, 6, 1)
-}
-
-/** Totals for a set of expenses. */
-export function sumExpenses(list: { amount: number | string; gst: number | string | null }[]) {
-  let amount = 0
-  let gst = 0
-  for (const e of list) {
-    amount += Number(e.amount) || 0
-    gst += Number(e.gst) || 0
-  }
-  return { count: list.length, amount: round2(amount), gst: round2(gst), exGst: round2(amount - gst) }
-}

@@ -80,6 +80,7 @@ export async function POST(request: Request) {
 
   const sender: ReminderSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
   const subject = reminderSubject(job, sender)
+  const html = reminderHtml(job, sender)
   const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
 
   // A business sends from its own domain once Jobyra has verified it in Resend (owner-only setting)
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
       subject,
-      html: reminderHtml(job, sender),
+      html,
       text: reminderText(job, sender),
     }),
   })
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
       customer_id: (job as any).customer_id ?? null,
       to_email: to,
       subject,
+      body_html: html,
       provider_id: (result as any)?.id ?? null,
       sent_at: sentAt,
     }),

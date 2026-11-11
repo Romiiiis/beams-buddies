@@ -22,6 +22,7 @@ import {
   durationLabel,
   fmtDay,
   fmtRange,
+  fmtTime,
   fromInputs,
   isLate,
   isOnLeave,
@@ -100,6 +101,12 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
   const [lastReminder, setLastReminder] = useState<string | null>(null)
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
+  // Tell the customer when a booked visit moves, and when the technician sets off
+  const [emailMoved, setEmailMoved] = useState(true)
+  const [showOnWay, setShowOnWay] = useState(false)
+  const [etaMinutes, setEtaMinutes] = useState('')
+  const [sendingWay, setSendingWay] = useState(false)
+  const [wayError, setWayError] = useState('')
 
   const customer = customers.find(c => c.id === customerId)
   const customerJobs = useMemo(() => jobs.filter(j => j.customer_id === customerId), [jobs, customerId])
@@ -406,6 +413,18 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     // Tell the technician by email if asked, and only when they have an email saved
     const staffChanged = original.staff_id !== (staffId || null)
     if (staffChanged) message += await notifyTech(res.data.id, start, end, '')
+    // Tell the customer the new time, if asked (and only for a visit that is still to happen)
+    if (timeChanged && emailMoved && canEmailMoved) {
+      const first = original.customers?.first_name || 'the customer'
+      try {
+        const was = new Date(original.start_at)
+        const wasEnd = new Date(original.end_at)
+        const { ok } = await postVisitMail('moved', { when: fmtDay(start), time: fmtRange(start, end), was_when: fmtDay(was), was_time: fmtRange(was, wasEnd) })
+        message += ok ? `, and ${first} was emailed the new time` : `, but the email to ${first} about the new time did not send`
+      } catch {
+        message += `, but the email to ${first} about the new time did not send`
+      }
+    }
     const completedNow = status === 'completed' && original.status !== 'completed'
     setSaving(false)
     onSaved(message, completedNow ? { completed: { ...original, ...payload } as Visit } : undefined)
@@ -428,21 +447,27 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     onSaved(mode === 'following' ? 'This and the following visits were deleted' : 'Visit deleted')
   }
 
+  /** Asks the server to email the customer about this visit. The day and time wording is made here, in the browser's time. */
+  async function postVisitMail(kind: 'reminder' | 'on_the_way' | 'moved', extra: Record<string, string>) {
+    const { data: sess } = await supabase.auth.getSession()
+    const r = await fetch('/api/visits/remind', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sess.session?.access_token || ''}` },
+      body: JSON.stringify({ visit_id: visit?.id, kind, ...extra }),
+    })
+    const body = await r.json().catch(() => ({}))
+    return { ok: r.ok, body }
+  }
+
   async function emailReminder() {
     if (!visit) return
     setReminding(true)
     setReminderMsg('')
     try {
-      const { data: sess } = await supabase.auth.getSession()
       const s = new Date(visit.start_at)
       const e = new Date(visit.end_at)
-      const r = await fetch('/api/visits/remind', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sess.session?.access_token || ''}` },
-        body: JSON.stringify({ visit_id: visit.id, when: fmtDay(s), time: fmtRange(s, e) }),
-      })
-      const body = await r.json().catch(() => ({}))
-      if (r.ok) {
+      const { ok, body } = await postVisitMail('reminder', { when: fmtDay(s), time: fmtRange(s, e) })
+      if (ok) {
         setLastReminder(body.sent_at || new Date().toISOString())
         setReminderMsg(`Reminder emailed to ${body.to}.`)
       } else if (body.error === 'not_configured') {
@@ -456,12 +481,43 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
     setReminding(false)
   }
 
+  /** The technician sets off: mark the visit on the way and, if the customer has an email, say so. */
+  async function onTheWay() {
+    if (!visit) return
+    setSendingWay(true)
+    setWayError('')
+    const upd = await supabase.from('job_visits').update({ status: 'on_the_way' }).eq('id', visit.id)
+    if (upd.error) {
+      setSendingWay(false)
+      setWayError(upd.error.message)
+      return
+    }
+    let message = 'Marked as on the way'
+    const first = visit.customers?.first_name || 'the customer'
+    if (customerEmail) {
+      try {
+        const s = new Date(visit.start_at)
+        const e = new Date(visit.end_at)
+        const eta = etaMinutes ? `around ${fmtTime(new Date(Date.now() + Number(etaMinutes) * 60000))}` : ''
+        const { ok, body } = await postVisitMail('on_the_way', { when: fmtDay(s), time: fmtRange(s, e), ...(eta ? { eta } : {}) })
+        message += ok ? ` and ${first} was emailed` : body.error === 'not_configured' ? ', but email sending is not switched on yet' : `, but the email to ${first} did not send`
+      } catch {
+        message += `, but the email to ${first} did not send`
+      }
+    }
+    setSendingWay(false)
+    setShowOnWay(false)
+    onSaved(message)
+  }
+
   const address = customerAddress((visit?.customers as any) || (customer as any))
   const customerPhone = visit?.customers?.phone
   const customerEmail = String(visit?.customers?.email || '').trim()
   const late = visit ? isLate({ status: visit.status, end_at: visit.end_at }) : false
   const timeChanged = !!visit && !!start && start.getTime() !== new Date(visit.start_at).getTime()
   const reminderOk = !!visit && !!customerEmail && visit.status !== 'cancelled' && visit.status !== 'completed'
+  const canEmailMoved = !!visit && !!customerEmail && visit.status !== 'cancelled' && visit.status !== 'completed' && status !== 'cancelled' && status !== 'completed'
+  const canSetOff = !!visit && visit.status === 'scheduled' && status === 'scheduled'
 
   return (
     <>
@@ -493,8 +549,13 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
           )}
           {!visit && when === 'later' && <div style={note('info')}>This goes on the to-be-booked list on the calendar, so you can give it a time when you are ready.</div>}
 
-          {visit && (customerPhone || address) && (
+          {visit && (customerPhone || address || canSetOff) && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {canSetOff && (
+                <button type="button" onClick={() => { setWayError(''); setShowOnWay(true) }} style={{ ...BTN.primary, ...BTN_SM }}>
+                  On my way
+                </button>
+              )}
               {customerPhone && <a href={`tel:${customerPhone}`} style={{ ...BTN.secondary, ...BTN_SM, textDecoration: 'none' }}>Call {customerPhone}</a>}
               {address && <a href={mapsUrl(address)} target="_blank" rel="noreferrer" style={{ ...BTN.secondary, ...BTN_SM, textDecoration: 'none' }}>Directions</a>}
               {visit.customer_id && <a href={`/dashboard/customers/${visit.customer_id}`} style={{ ...BTN.secondary, ...BTN_SM, textDecoration: 'none' }}>Open customer</a>}
@@ -647,7 +708,13 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
                   {lastReminder ? `Emailed ${new Date(lastReminder).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}` : customerEmail ? 'Not sent yet' : ''}
                   {reminderMsg ? ` · ${reminderMsg}` : ''}
                 </div>
-                {timeChanged && <div style={{ fontSize: 12, color: '#92400E', marginTop: 2 }}>Save the new time first, so the reminder shows it.</div>}
+                {timeChanged && canEmailMoved && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: TEXT2, cursor: 'pointer', marginTop: 6 }}>
+                    <input type="checkbox" checked={emailMoved} onChange={e => setEmailMoved(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#2AA198' }} />
+                    Email {visit.customers?.first_name || 'the customer'} the new time when you save
+                  </label>
+                )}
+                {timeChanged && !(canEmailMoved && emailMoved) && <div style={{ fontSize: 12, color: '#92400E', marginTop: 2 }}>Save the new time first, so the reminder shows it.</div>}
               </div>
               {reminderOk && (
                 <button type="button" onClick={emailReminder} disabled={reminding || timeChanged} style={{ ...BTN.secondary, ...BTN_SM, ...(reminding || timeChanged ? BTN.disabled : {}) }}>
@@ -672,6 +739,49 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
           {error && <FormError message={error} />}
         </div>
       </Modal>
+
+      {showOnWay && visit && (
+        <Modal
+          title="On my way"
+          size="sm"
+          compact
+          layer={450}
+          busy={sendingWay}
+          onClose={() => setShowOnWay(false)}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowOnWay(false)} disabled={sendingWay} style={BTN.secondary}>Cancel</button>
+              <button type="button" onClick={onTheWay} disabled={sendingWay} style={{ ...BTN.primary, ...(sendingWay ? BTN.disabled : {}) }}>
+                {sendingWay ? 'Sending...' : customerEmail ? 'Send and mark on the way' : 'Mark on the way'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {customerEmail ? (
+              <>
+                <div style={{ fontSize: 14, lineHeight: 1.6, color: TEXT3 }}>
+                  This emails {visit.customers?.first_name || 'the customer'} to say {tech ? `${tech.name.split(' ')[0]} is` : 'you are'} on the way, and marks the visit as on the way.
+                </div>
+                <div>
+                  <label style={LABEL}>Arriving in (optional)</label>
+                  <Select style={FIELD} value={etaMinutes} onChange={e => setEtaMinutes(e.target.value)}>
+                    <option value="">Do not give a time</option>
+                    {[10, 15, 20, 30, 45, 60].map(m => (
+                      <option key={m} value={String(m)}>{m === 60 ? 'In about an hour' : `In about ${m} minutes`}</option>
+                    ))}
+                  </Select>
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 14, lineHeight: 1.6, color: TEXT3 }}>
+                {visit.customers?.first_name || 'This customer'} has no email address saved, so nothing will be sent. This only marks the visit as on the way.
+              </div>
+            )}
+            {wayError && <FormError message={wayError} />}
+          </div>
+        </Modal>
+      )}
 
       {confirmDelete && !inSeries && (
         <ConfirmDialog

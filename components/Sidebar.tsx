@@ -33,8 +33,6 @@ const navMain = [
 const navFinance = [
   { label: 'Quotes', href: '/dashboard/quotes' },
   { label: 'Invoices', href: '/dashboard/invoices' },
-  { label: 'Expenses', href: '/dashboard/expenses' },
-  { label: 'Revenue', href: '/dashboard/revenue' },
 ]
 
 const navManage = [
@@ -88,10 +86,6 @@ function InvoicesIcon() {
   return <AppIcon name="invoice" size={20} />
 }
 
-function RevenueIcon() {
-  return <AppIcon name="dollar" size={20} />
-}
-
 function ScheduleIcon() {
   return <AppIcon name="calendar-clock" size={20} />
 }
@@ -119,8 +113,6 @@ const icons: Record<string, React.ReactElement> = {
   '/dashboard/jobs': <JobsIcon />,
   '/dashboard/quotes': <QuotesIcon />,
   '/dashboard/invoices': <InvoicesIcon />,
-  '/dashboard/expenses': <AppIcon name="receipt" size={20} />,
-  '/dashboard/revenue': <RevenueIcon />,
   '/dashboard/schedule': <ScheduleIcon />,
   '/dashboard/marketing': <AppIcon name="message" size={20} />,
   '/dashboard/calendar': <AppIcon name="clock" size={20} />,
@@ -196,8 +188,6 @@ export function Sidebar({ active }: { active: string }) {
       '/dashboard/leads',
       '/dashboard/quotes',
       '/dashboard/invoices',
-      '/dashboard/expenses',
-      '/dashboard/revenue',
       '/dashboard/schedule',
       '/dashboard/marketing',
       '/dashboard/calendar',

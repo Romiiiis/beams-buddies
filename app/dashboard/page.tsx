@@ -549,7 +549,7 @@ export default function DashboardPage() {
   // Metric cards (row 2)
   const metricCards = [
     { label: 'Outstanding',       value: moneyWhole(outCurr),  delta: pctChange(outCurr, outPrev),         up: pctChange(outCurr, outPrev) >= 0,         hasDelta: outPrev > 0,          sub: `${invoiceStats.overdueCount} overdue`,      accent: '#EF4444', onClick: () => router.push('/dashboard/invoices') },
-    { label: 'Revenue (30d)',      value: moneyWhole(revCurr),  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                           accent: TEAL,      onClick: () => router.push('/dashboard/revenue') },
+    { label: 'Revenue (30d)',      value: moneyWhole(revCurr),  delta: pctChange(revCurr, revPrev),         up: pctChange(revCurr, revPrev) >= 0,         hasDelta: revPrev > 0,          sub: 'vs prev 30 days',                           accent: TEAL,      onClick: () => router.push('/dashboard/reports') },
     { label: 'Jobs This Month',    value: `${jobsCurrMonth}`,                     delta: pctChange(jobsCurrMonth, jobsPrevMonth), up: pctChange(jobsCurrMonth, jobsPrevMonth) >= 0, hasDelta: jobsPrevMonth > 0, sub: 'vs last month',                           accent: '#6366F1', onClick: () => router.push('/dashboard/jobs') },
     { label: 'Invoice Paid Rate',  value: `${convRate}%`,                         delta: currConv - prevConv,                  up: currConv >= prevConv,                     hasDelta: prevWin.length > 0,   sub: `${paidInv} of ${totalInv} invoices`,        accent: '#10B981', onClick: () => router.push('/dashboard/invoices') },
   ]
@@ -601,7 +601,7 @@ export default function DashboardPage() {
                 ...(!isMobile
                   ? [
                       { label: 'Calendar', icon: <AppIcon name="calendar-clock" size={15} />, onClick: () => router.push('/dashboard/calendar') },
-                      { label: 'Revenue', icon: <AppIcon name="dollar" size={15} />, onClick: () => router.push('/dashboard/revenue') },
+                      { label: 'Reports', icon: <AppIcon name="reports" size={15} />, onClick: () => router.push('/dashboard/reports') },
                     ]
                   : []),
                 { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs/add') },

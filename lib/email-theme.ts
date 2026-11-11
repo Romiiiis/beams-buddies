@@ -6,13 +6,15 @@
 // This file has no imports on purpose, so it also runs in plain Node for previews and tests.
 
 export type EmailKind = 'service' | 'overdue' | 'quote' | 'review' | 'visit'
+/** Every kind of message the app can send. The two after 'visit' are one-off messages about a booked visit. */
+export type MailKind = EmailKind | 'on_the_way' | 'moved'
 export type EmailStyleId = 'classic' | 'banner' | 'letter' | 'summary' | 'bold'
 export type Tone = 'neutral' | 'good' | 'warn' | 'danger'
 
 export type EmailSender = { name: string; phone?: string; email?: string; logoUrl?: string }
 
 export type EmailContent = {
-  kind: EmailKind
+  kind: MailKind
   subject: string
   /** Grey preview line next to the subject in the inbox. */
   preheader: string
@@ -663,6 +665,86 @@ export function buildVisit(i: VisitInput, s: EmailSender): EmailContent {
     facts,
     closing: [`Need to change the time? Just reply to this email${callUs} and we will sort it out.`],
     button: href ? { text: 'Change my booking', href } : undefined,
+    signoff: 'Kind regards,',
+  }
+}
+
+export type OnTheWayInput = {
+  first: string
+  /** The visit as it was booked, e.g. "Tue 17 Nov" and "9:00am to 10:00am". */
+  when: string
+  time: string
+  what: string
+  equipment?: string
+  address?: string
+  /** The technician's first name. */
+  tech?: string
+  /** When they expect to arrive, already worded, e.g. "around 9:20am". */
+  eta?: string
+}
+
+/** "We are on our way", sent when the technician sets off. The internal notes are never included. */
+export function buildOnTheWay(i: OnTheWayInput, s: EmailSender): EmailContent {
+  const first = firstName(i.first)
+  const biz = s.name || 'our team'
+  const who = i.tech || 'Our technician'
+  const callUs = s.phone ? ` or call us on ${s.phone}` : ''
+  const facts: [string, string][] = [['Visit', i.what]]
+  if (i.equipment) facts.push(['Equipment', i.equipment])
+  if (i.address) facts.push(['Address', i.address])
+  if (i.tech) facts.push(['Technician', i.tech])
+  return {
+    kind: 'on_the_way',
+    subject: `${i.tech ? `${i.tech} is` : 'We are'} on the way | ${biz}`,
+    preheader: i.eta ? `${who} is heading to you now, arriving ${i.eta}.` : `${who} is heading to you now.`,
+    label: 'On the way',
+    headline: `Hi ${first}, ${i.tech ? `${i.tech} is` : 'we are'} on the way`,
+    greeting: `Hi ${first},`,
+    paragraphs: [`${who} from ${biz} has set off for your ${i.what.toLowerCase()} and is on the way to you now.`],
+    highlight: i.eta ? { label: 'Arriving', value: i.eta, sub: `Booked for ${i.when}, ${i.time}` } : { label: 'Booked for', value: i.when, sub: i.time },
+    facts,
+    closing: [`If something has come up, or no one will be home, please reply to this email${callUs} so we can sort it out.`],
+    signoff: 'Kind regards,',
+  }
+}
+
+export type MovedInput = {
+  first: string
+  /** The new day and time, already worded in the business's own time. */
+  when: string
+  time: string
+  /** The day and time it used to be. */
+  wasWhen: string
+  wasTime: string
+  length?: string
+  what: string
+  equipment?: string
+  address?: string
+  tech?: string
+}
+
+/** Tells the customer a booked visit has a new time. The earlier reminder no longer applies. */
+export function buildMoved(i: MovedInput, s: EmailSender): EmailContent {
+  const first = firstName(i.first)
+  const biz = s.name || 'our team'
+  const callUs = s.phone ? ` or call us on ${s.phone}` : ''
+  const facts: [string, string][] = [['Was', `${i.wasWhen}, ${i.wasTime}`], ['Visit', i.what]]
+  if (i.equipment) facts.push(['Equipment', i.equipment])
+  if (i.address) facts.push(['Address', i.address])
+  if (i.tech) facts.push(['Technician', i.tech])
+  const href = replyHref(s, `New time for my booking${i.first ? ` - ${i.first}` : ''}`)
+  return {
+    kind: 'moved',
+    subject: `New time for your ${i.what.toLowerCase()}: ${i.when} | ${biz}`,
+    preheader: `Your visit is now on ${i.when} at ${i.time.split(' to ')[0]}.`,
+    label: 'New time',
+    headline: `Hi ${first}, your visit has a new time`,
+    greeting: `Hi ${first},`,
+    paragraphs: [`The time of your upcoming ${i.what.toLowerCase()} with ${biz} has changed. The new time is below.`],
+    highlight: { label: 'New time', value: i.when, sub: i.time, chip: i.length ? { text: i.length, tone: 'neutral' } : undefined },
+    facts,
+    closing: [`If the new time does not suit you, just reply to this email${callUs} and we will find another.`],
+    button: href ? { text: 'Suggest another time', href } : undefined,
     signoff: 'Kind regards,',
   }
 }

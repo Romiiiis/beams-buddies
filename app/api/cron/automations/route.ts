@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       if (budget <= 0 || !EMAIL.test(to)) return false
       const { data: claim, error } = await db
         .from('automation_log')
-        .insert({ business_id: businessId, kind, ref_id: refId, cycle, to_email: to, subject: mail.subject })
+        .insert({ business_id: businessId, kind, ref_id: refId, cycle, to_email: to, subject: mail.subject, body_html: mail.html })
         .select('id')
         .single()
       if (error || !claim) return false // already sent (or could not record), so do not send
@@ -191,6 +191,14 @@ export async function GET(request: Request) {
       }
     }
   }
+
+  // Message copies are for looking back at recent emails; clear the wording after 90 days (the log rows stay)
+  const cutoff = new Date(Date.now() - 90 * 86400000).toISOString()
+  await Promise.all(
+    ['automation_log', 'reminder_emails', 'visit_messages'].map(table =>
+      db.from(table).update({ body_html: null }).lt('sent_at', cutoff).not('body_html', 'is', null)
+    )
+  )
 
   return NextResponse.json({ ok: true, businesses: byBusiness.size, sent: summary })
 }

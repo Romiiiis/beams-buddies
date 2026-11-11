@@ -7,7 +7,7 @@ import { money } from '@/lib/format'
 import { BTN, BTN_SM, LINE, RED, TEAL, TEAL_DARK, TEXT, TEXT2, TEXT3, WHITE } from '@/components/forms'
 import { type Expense, categoryLabel, exGst } from '@/lib/expenses'
 import { BILLED_STATUSES, jobCosting } from '@/lib/job-costing'
-import { ExpenseModal } from '@/app/dashboard/expenses/ExpenseModal'
+import { JobCostModal } from './JobCostModal'
 
 type Inv = { id: string; invoice_number: string; status: string; subtotal: number; total: number }
 type VisitRow = { start_at: string; end_at: string; status: string; staff_id: string | null }
@@ -99,7 +99,6 @@ export function JobCosts({ job, isMobile }: { job: any; isMobile: boolean }) {
     setEditing(null)
   }
 
-  const jobOption = [{ id: job.id as string, brand: job.brand, model: job.model, equipment_type: job.equipment_type, customers: job.customers }]
   const profitColour = result.profit < 0 ? RED : TEAL_DARK
   const empty = invoices.length === 0 && expenses.length === 0 && visits.length === 0
 
@@ -213,12 +212,11 @@ export function JobCosts({ job, isMobile }: { job: any; isMobile: boolean }) {
       )}
 
       {(adding || editing) && (
-        <ExpenseModal
+        <JobCostModal
           key={editing?.id || 'new'}
           businessId={job.business_id}
-          expense={editing}
-          jobs={jobOption}
-          presetJobId={job.id}
+          jobId={job.id}
+          cost={editing}
           layer={400}
           onClose={() => {
             setAdding(false)
