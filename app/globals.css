@@ -205,6 +205,54 @@ textarea::placeholder {
   }
 }
 
+/* ---------- Page header (components/PageHeader.tsx) ----------
+   A plain bar on a computer. On a phone it stays pinned while the page scrolls and, driven by --p (0 at the top of the
+   page, 1 once scrolled), the title and buttons shrink, the padding tightens and the bar turns a little see-through
+   with a soft blur so the content slides underneath. The look at the top of the page is the same as it always was. */
+.pg-head {
+  --pg-x: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: calc(16px + var(--pg-x)) 24px;
+  background: #FAFAFA;
+  border-bottom: 1px solid #E8EDF2;
+}
+.pg-head.roomy { --pg-x: 2px; }
+.pg-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.pg-titles { min-width: 0; }
+.pg-title { margin: 0; font-size: 22px; font-weight: 900; color: #0B1220; letter-spacing: -0.04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-eyebrow { font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; white-space: nowrap; }
+.pg-right { flex-shrink: 0; min-width: 0; max-width: 100%; }
+@media (max-width: 767px) {
+  .pg-head {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: calc(14px + var(--pg-x) - 7px * var(--p, 0)) 14px calc(12px + var(--pg-x) - 6px * var(--p, 0));
+    background: rgba(250, 250, 250, calc(1 - 0.34 * var(--p, 0)));
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    backdrop-filter: saturate(180%) blur(18px);
+    box-shadow: 0 8px 18px -14px rgba(15, 23, 42, calc(0.3 * var(--p, 0)));
+  }
+  .pg-left { gap: 10px; }
+  .pg-title { font-size: calc(20px - 4px * var(--p, 0)); }
+  .pg-eyebrow {
+    max-height: calc(14px * (1 - var(--p, 0)));
+    margin-bottom: calc(3px * (1 - var(--p, 0)));
+    opacity: calc(1 - 1.6 * var(--p, 0));
+    overflow: hidden;
+  }
+  .pg-head .htb-btn { height: calc(36px - 4px * var(--p, 0)); }
+  .pg-head .htb-icon-only { width: calc(36px - 4px * var(--p, 0)); }
+  .pg-head .htb-search-input { height: calc(36px - 4px * var(--p, 0)); }
+}
+@media print {
+  .pg-head { position: static; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+}
+
 /* ---------- Dropdowns and filter chips ----------
    The look of the Clients filter in Lumyra: flat fields with a hairline border and a soft grey chevron, and rounded
    chips with a count. The dropdown is a real <select>, so phones open their own picker and nothing floats over the page. */

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { PageHeader } from '@/components/PageHeader'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { createCustomer, createJob } from '@/lib/queries'
 import { useBusinessData } from '@/lib/business-context'
@@ -343,25 +344,12 @@ export default function AddJobPage() {
       <Sidebar active="/dashboard/jobs" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div
-          style={{
-            background: BG,
-            borderBottom: `1px solid ${BORDER}`,
-            padding: isMobile ? '14px 14px 12px' : '16px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexShrink: 0,
-          }}
-        >
-          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
-            Add new job
-          </h1>
+        <PageHeader title="Add new job">
           <HeaderToolbar isMobile={isMobile} items={[
             { label: 'Back', icon: <IconArrowLeft size={15} />, onClick: () => router.push('/dashboard/jobs') },
             { label: loading ? 'Saving...' : 'Save job', icon: <AppIcon name="tick" size={15} />, tone: 'primary', submitFor: 'job-form', disabled: loading },
           ]} />
-        </div>
+        </PageHeader>
 
         <div className="page-content"
           style={{

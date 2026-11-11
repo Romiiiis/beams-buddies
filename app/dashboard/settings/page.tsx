@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sidebar } from '@/components/Sidebar'
+import { PageHeader } from '@/components/PageHeader'
+import { Status } from '@/components/Status'
 import { PageSkeleton } from '@/components/Skeleton'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
@@ -580,33 +582,15 @@ export default function SettingsPage() {
       <Sidebar active="/dashboard/settings" />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div
-          style={{
-            background: BG,
-            borderBottom: `1px solid ${BORDER}`,
-            padding: isMobile ? '14px 14px 12px' : '16px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexShrink: 0,
-            gap: '12px',
-          }}
-        >
-          <h1 style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>
-            Settings
-          </h1>
+        <PageHeader title="Settings">
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {saved && (
-              <span style={{ height: '34px', padding: '0 12px', borderRadius: '9px', background: TEAL_LIGHT, border: '1px solid #BFE7E3', color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 800 }}>
-                Saved
-              </span>
-            )}
+            {saved && <Status label="Saved" tone="success" />}
             <HeaderToolbar
               isMobile={isMobile}
               items={[{ label: saving ? 'Saving...' : 'Save changes', icon: <AppIcon name="tick" size={15} />, tone: 'primary', submitFor: 'settings-form', disabled: saving || uploadingLogo }]}
             />
           </div>
-        </div>
+        </PageHeader>
 
         <div className="page-content"
           style={{

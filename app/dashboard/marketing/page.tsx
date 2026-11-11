@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
@@ -233,8 +234,7 @@ export default function MarketingPage() {
     <div style={{ display: 'flex', fontFamily: FONT, background: BG, minHeight: '100vh' }}>
       <Sidebar active="/dashboard/marketing" />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: BG }}>
-        <div style={{ background: BG, borderBottom: `1px solid ${BORDER}`, padding: isMobile ? '14px 14px 12px' : '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <h1 style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0 }}>Marketing</h1>
+        <PageHeader title="Marketing">
           <HeaderToolbar
             isMobile={isMobile}
             items={[
@@ -242,7 +242,7 @@ export default function MarketingPage() {
               { label: 'Send reminders', tone: 'primary', onClick: () => router.push('/dashboard/schedule') },
             ]}
           />
-        </div>
+        </PageHeader>
 
         <div
           className="page-content"

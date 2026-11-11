@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { PageHeader } from '@/components/PageHeader'
 import { PageSkeleton } from '@/components/Skeleton'
 import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -577,26 +578,22 @@ export default function DashboardPage() {
         <div className="page-content" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '0', paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : '48px' }}>
 
           {/* ── Header ── */}
-          <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
-              {/* Phones: greeting only (the logo lives in the menu). Desktop keeps the logo. */}
-              {isMobile ? null : logoUrl ? (
+          <PageHeader
+            roomy
+            eyebrow={new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
+            title={<>{getGreeting()}{userName ? `, ${userName}` : ''}</>}
+            leading={
+              /* Phones: greeting only (the logo lives in the menu). Desktop keeps the logo. */
+              isMobile ? null : logoUrl ? (
                 <img src={logoUrl} alt="Business logo" style={{ width: 84, height: 84, objectFit: 'contain', flexShrink: 0 }} />
               ) : businessLoading && !business ? (
                 <div style={{ width: 84, height: 84, flexShrink: 0 }} />
               ) : (
                 <img src="/jobyra-logo.jpg" alt="Jobyra" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'contain', flexShrink: 0, mixBlendMode: 'multiply' }} />
-              )}
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
-                  {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </div>
-                <h1 style={{ fontSize: isMobile ? '19px' : '22px', fontWeight: 900, color: TEXT, letterSpacing: '-0.04em', margin: 0, lineHeight: 1.1 }}>
-                  {getGreeting()}{userName ? `, ${userName}` : ''}
-                </h1>
-              </div>
-            </div>
-            {/* Phones only have room for the main action next to the logo and greeting */}
+              )
+            }
+          >
+            {/* Phones only have room for the main action next to the greeting */}
             <HeaderToolbar
               isMobile={isMobile}
               items={[
@@ -609,7 +606,7 @@ export default function DashboardPage() {
                 { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs/add') },
               ]}
             />
-          </div>
+          </PageHeader>
 
           {/* ── Row 1: Stat chips ── */}
           <div style={{ padding: isMobile ? '12px 14px 0' : '14px 24px 12px', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px', background: BG }}>
