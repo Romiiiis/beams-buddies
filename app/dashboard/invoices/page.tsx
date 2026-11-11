@@ -17,11 +17,6 @@ import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
 import { BTN, BTN_SM, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
 import { printElement } from '@/lib/print'
-import { LineItemsEditor } from '@/components/LineItemsEditor'
-import { RecordPaymentModal } from './RecordPaymentModal'
-import { downloadCsv } from '@/lib/csv'
-import { invoiceLink } from '@/lib/site'
-import { calcTotals, dateInDays, methodLabel, nextNumber, parseRate, shortDate, type LineItem, type PriceItem } from '@/lib/documents'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -114,12 +109,10 @@ const FILTER_TABS = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
-type Payment = { id: string; amount: number; paid_on: string; method: string; note: string | null }
+type LineItem = { description: string; qty: number; unit_price: number }
 
 type Invoice = {
   id: string
-  public_token: string
-  quote_id?: string | null
   invoice_number: string
   status: string
   total: number
@@ -246,10 +239,6 @@ export default function InvoicesPage() {
   const [businessSettings, setBusinessSettings] = useState<any>(null)
   const [businessInfo, setBusinessInfo] = useState<any>(null)
   const [search, setSearch] = useState('')
-  const [products, setProducts] = useState<PriceItem[]>([])
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [showPay, setShowPay] = useState(false)
-  const [noticeTone, setNoticeTone] = useState<'dark' | 'error'>('dark')
 
   const [form, setForm] = useState({
     customer_id: '',
@@ -271,173 +260,82 @@ export default function InvoicesPage() {
       const { data: userData } = await getUserRow(session.user.id)
       if (!userData) return
       setBusinessId(userData.business_id)
-      const [invoicesRes, customersRes, settingsRes, businessRes, productsRes] = await Promise.all([
+      const [invoicesRes, customersRes, settingsRes, businessRes] = await Promise.all([
         supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, first_name, last_name, suburb').eq('business_id', userData.business_id).order('first_name'),
         supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
         supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
-        supabase.from('products').select('*').eq('business_id', userData.business_id).eq('active', true).order('name'),
       ])
       setInvoices((invoicesRes.data as Invoice[]) || [])
       setCustomers(customersRes.data || [])
       setBusinessSettings(settingsRes.data)
       setBusinessInfo(businessRes.data)
-      setProducts((productsRes.data as PriceItem[]) || [])
       setLoading(false)
-
-      // Opened from a quote or a link: ?open=<invoice id>
-      const openId = new URLSearchParams(window.location.search).get('open')
-      const found = openId ? (invoicesRes.data || []).find((i: any) => i.id === openId) : null
-      if (found) setViewingInvoice(found as Invoice)
     }
     load()
   }, [router])
 
-  // Payments for whichever invoice is open
-  const viewingId = viewingInvoice?.id
-  useEffect(() => {
-    if (!viewingId) {
-      setPayments([])
-      return
-    }
-    let alive = true
-    supabase
-      .from('invoice_payments')
-      .select('*')
-      .eq('invoice_id', viewingId)
-      .order('paid_on')
-      .order('created_at')
-      .then(({ data }) => {
-        if (alive) setPayments((data as Payment[]) || [])
-      })
-    return () => {
-      alive = false
-    }
-  }, [viewingId])
+  function calcTotals(items: LineItem[], taxRate: number) {
+    const subtotal = items.reduce((s, i) => s + i.qty * i.unit_price, 0)
+    const tax_amount = subtotal * (taxRate / 100)
+    return { subtotal, tax_amount, total: subtotal + tax_amount }
+  }
 
-  function say(msg: string, tone: 'dark' | 'error' = 'dark') {
-    setNoticeTone(tone)
-    setNotice(msg)
+  function setLine(idx: number, field: keyof LineItem, value: any) {
+    const items = [...form.line_items]
+    items[idx] = { ...items[idx], [field]: field === 'description' ? value : parseFloat(value) || 0 }
+    setForm(f => ({ ...f, line_items: items }))
+  }
+
+  function addLine() {
+    setForm(f => ({ ...f, line_items: [...f.line_items, { description: '', qty: 1, unit_price: 0 }] }))
+  }
+
+  function removeLine(idx: number) {
+    setForm(f => ({
+      ...f,
+      line_items: f.line_items.length === 1 ? f.line_items : f.line_items.filter((_, i) => i !== idx),
+    }))
   }
 
   async function handleSave() {
     if (!form.customer_id) return
-    const clean = form.line_items.filter(i => i.description.trim() || i.unit_price).map(i => ({ description: i.description.trim(), qty: i.qty, unit_price: i.unit_price }))
-    if (!clean.length || clean.every(i => !i.description)) {
-      say('Add at least one line with a description.', 'error')
-      return
-    }
     setSaving(true)
-    const taxRate = parseRate(form.tax_rate)
-    const t = calcTotals(clean, taxRate)
-    const terms = Number(businessSettings?.payment_terms) || 0
+    const taxRate = parseFloat(form.tax_rate) || 10
+    const { subtotal, tax_amount, total } = calcTotals(form.line_items, taxRate)
+    const invoice_number = `INV-${String(invoices.length + 1).padStart(4, '0')}`
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('invoices')
       .insert({
         business_id: businessId,
         customer_id: form.customer_id,
-        invoice_number: nextNumber(invoices.map(i => i.invoice_number), 'INV-'),
+        invoice_number,
         status: 'draft',
-        line_items: clean,
-        subtotal: t.subtotal,
+        line_items: form.line_items,
+        subtotal,
         tax_rate: taxRate,
-        tax_amount: t.tax_amount,
-        total: t.total,
+        tax_amount,
+        total,
         amount_paid: 0,
-        notes: form.notes.trim() || null,
-        due_date: form.due_date || (terms > 0 ? dateInDays(terms) : null),
+        notes: form.notes,
+        due_date: form.due_date || null,
       })
       .select('*, customers(first_name, last_name, suburb, phone, email, address)')
       .single()
 
-    setSaving(false)
-    if (error || !data) {
-      say('The invoice could not be saved. Please try again.', 'error')
-      return
-    }
-    setInvoices(prev => [data as Invoice, ...prev])
+    if (data) setInvoices(prev => [data as Invoice, ...prev])
     setShowForm(false)
     setForm({ customer_id: '', due_date: '', notes: '', tax_rate: '10', line_items: [{ description: '', qty: 1, unit_price: 0 }] })
-  }
-
-  // Reloads one invoice and its payments (the database keeps the paid amount and status in step with the payments).
-  async function refreshInvoice(id: string) {
-    const [inv, pay] = await Promise.all([
-      supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('id', id).single(),
-      supabase.from('invoice_payments').select('*').eq('invoice_id', id).order('paid_on').order('created_at'),
-    ])
-    if (inv.data) {
-      setInvoices(prev => prev.map(i => (i.id === id ? (inv.data as Invoice) : i)))
-      setViewingInvoice(prev => (prev && prev.id === id ? (inv.data as Invoice) : prev))
-    }
-    setPayments((pay.data as Payment[]) || [])
-  }
-
-  async function removePayment(paymentId: string) {
-    if (!viewingInvoice) return
-    const { error } = await supabase.from('invoice_payments').delete().eq('id', paymentId)
-    if (error) {
-      say('The payment could not be removed.', 'error')
-      return
-    }
-    await refreshInvoice(viewingInvoice.id)
-    say('Payment removed.')
-  }
-
-  async function copyLink(inv: Invoice) {
-    const url = invoiceLink(inv.public_token)
-    try {
-      await navigator.clipboard.writeText(url)
-      say('Customer link copied.')
-    } catch {
-      say(url)
-    }
-  }
-
-  function exportCsv() {
-    downloadCsv('invoices.csv', [
-      ['Invoice', 'Customer', 'Status', 'Issued', 'Due', 'Subtotal', 'GST', 'Total', 'Paid', 'Balance'],
-      ...invoices.map(i => [
-        i.invoice_number,
-        `${i.customers?.first_name || ''} ${i.customers?.last_name || ''}`.trim(),
-        i.status,
-        i.created_at?.slice(0, 10),
-        i.due_date || '',
-        i.subtotal,
-        i.tax_amount,
-        i.total,
-        i.amount_paid,
-        Math.max(0, Math.round((Number(i.total) - Number(i.amount_paid || 0)) * 100) / 100),
-      ]),
-    ])
+    setSaving(false)
   }
 
   async function updateStatus(id: string, status: string) {
-    const current = invoices.find(i => i.id === id)
-    // Marking an invoice paid records the remaining balance as a payment, so the payment history stays complete.
-    if (status === 'paid' && current) {
-      const balance = Math.round((Number(current.total) - Number(current.amount_paid || 0)) * 100) / 100
-      if (balance > 0) {
-        const { error } = await supabase.from('invoice_payments').insert({ business_id: businessId, invoice_id: id, amount: balance, method: 'other', note: 'Marked as paid' })
-        if (error) {
-          say('The payment could not be recorded.', 'error')
-          return
-        }
-      } else {
-        await supabase.from('invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', id)
-      }
-      await refreshInvoice(id)
-      return
-    }
     const update: any = { status }
-    const { error } = await supabase.from('invoices').update(update).eq('id', id)
-    if (error) {
-      say('The status could not be changed. Please try again.', 'error')
-      return
-    }
-    setInvoices(prev => prev.map(inv => (inv.id === id ? { ...inv, ...update } : inv)))
-    if (viewingInvoice?.id === id) setViewingInvoice(prev => (prev ? { ...prev, ...update } : prev))
+    if (status === 'paid') update.paid_at = new Date().toISOString()
+    await supabase.from('invoices').update(update).eq('id', id)
+    setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...update } : inv))
+    if (viewingInvoice?.id === id) setViewingInvoice(prev => prev ? { ...prev, ...update } : prev)
   }
 
   // Asks first (see the Delete dialog below), then removes the invoice
@@ -619,7 +517,6 @@ export default function InvoicesPage() {
           </h1>
           <HeaderToolbar isMobile={isMobile} search={{ value: search, onChange: setSearch, placeholder: 'Search...' }} items={[
             { label: 'View revenue', icon: <IconRevenue size={15} />, onClick: () => router.push('/dashboard/revenue') },
-            ...(!isMobile ? [{ label: 'Export', icon: <AppIcon name="download" size={15} />, onClick: exportCsv }] : []),
             { label: 'New invoice', icon: <AppIcon name="add" size={15} />, tone: 'primary', onClick: () => setShowForm(true) },
           ]} />
         </div>
@@ -762,11 +659,44 @@ export default function InvoicesPage() {
 
               <div>
                 <label style={lbl}>Line items</label>
-                <LineItemsEditor items={form.line_items} onChange={items => setForm(f => ({ ...f, line_items: items }))} isMobile={isMobile} placeholder={lineItemPlaceholder} products={products} />
+                <div style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
+                  <div style={{ display: isMobile ? 'none' : 'grid', gridTemplateColumns: '1fr 60px 90px 32px', background: '#F8FAFC', padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                    {['Description', 'Qty', 'Unit $', ''].map(h => (
+                      <div key={h} style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', display: isMobile && h !== 'Description' ? 'none' : 'block' }}>{h}</div>
+                    ))}
+                  </div>
+                  {form.line_items.map((item, idx) => {
+                    const cell: React.CSSProperties = { ...inp, height: isMobile ? '42px' : '34px', border: isMobile ? `1px solid ${FIELD_LINE}` : 'none', background: isMobile ? WHITE : 'transparent', padding: isMobile ? '0 14px' : '0 8px' }
+                    const mini: React.CSSProperties = { display: isMobile ? 'block' : 'none', fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }
+                    return (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 60px 90px 32px', gap: isMobile ? '10px' : '0', padding: isMobile ? '12px' : '8px 12px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: isMobile ? 'end' : 'center' }}>
+                        <div style={{ gridColumn: isMobile ? '1 / -1' : undefined, minWidth: 0 }}>
+                          <input style={cell} value={item.description} onChange={e => setLine(idx, 'description', e.target.value)} placeholder={lineItemPlaceholder} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Qty</label>
+                          <input type="number" style={cell} value={item.qty} onChange={e => setLine(idx, 'qty', e.target.value)} min="1" placeholder="Qty" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <label style={mini}>Unit price ($)</label>
+                          <input type="number" style={cell} value={item.unit_price} onChange={e => setLine(idx, 'unit_price', e.target.value)} placeholder="0.00" />
+                        </div>
+                        <button onClick={() => removeLine(idx)} aria-label="Remove line" style={{ background: 'none', border: isMobile ? `1px solid ${BORDER}` : 'none', borderRadius: isMobile ? '10px' : 0, cursor: 'pointer', color: RED, fontSize: isMobile ? '14px' : '18px', fontFamily: FONT, fontWeight: 700, lineHeight: 1, height: isMobile ? '40px' : '34px', gridColumn: isMobile ? '1 / -1' : undefined }}>
+                          {isMobile ? 'Remove this line' : '×'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                  <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}`, background: WHITE }}>
+                    <button onClick={addLine} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEAL, fontSize: '13px', fontFamily: FONT, fontWeight: 700 }}>
+                      + Add line
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {(() => {
-                const taxRate = parseRate(form.tax_rate)
+                const taxRate = parseFloat(form.tax_rate) || 10
                 const { subtotal, tax_amount, total } = calcTotals(form.line_items, taxRate)
                 return (
                   <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '16px 18px' }}>
@@ -814,14 +744,8 @@ export default function InvoicesPage() {
           }
           headerExtra={
             <>
-              {viewingInvoice.status !== 'cancelled' && Number(viewingInvoice.total) - Number(viewingInvoice.amount_paid || 0) > 0.005 && (
-                <button type="button" onClick={() => setShowPay(true)} style={{ ...BTN.primary, ...BTN_SM }}>Record payment</button>
-              )}
               {viewingInvoice.customers && (
-                <button type="button" onClick={() => setShowSend(true)} style={{ ...(viewingInvoice.status === 'draft' ? BTN.primary : BTN.secondary), ...BTN_SM }}>Send</button>
-              )}
-              {viewingInvoice.status !== 'draft' && (
-                <button type="button" onClick={() => copyLink(viewingInvoice)} style={{ ...BTN.secondary, ...BTN_SM }}>Copy link</button>
+                <button type="button" onClick={() => setShowSend(true)} style={{ ...BTN.primary, ...BTN_SM }}>Send</button>
               )}
               {viewingInvoice.customers && (
                 <button type="button" onClick={() => setShowContact(true)} style={{ ...BTN.secondary, ...BTN_SM }}>Contact</button>
@@ -912,47 +836,14 @@ export default function InvoicesPage() {
                     <span style={{ fontSize: '15px', fontWeight: 700, color: WHITE }}>Total</span>
                     <span style={{ fontSize: '15px', fontWeight: 800, color: WHITE }}>{money(viewingInvoice.total)}</span>
                   </div>
-                  {Number(viewingInvoice.amount_paid) > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 2px 0' }}>
-                      <span style={{ fontSize: '13px', color: TEXT3 }}>Paid so far</span>
-                      <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>-{money(viewingInvoice.amount_paid)}</span>
+                  {viewingInvoice.status === 'paid' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', marginTop: '6px' }}>
+                      <span style={{ fontSize: '13px', color: TEAL_DARK, fontWeight: 700 }}>Paid</span>
+                      {viewingInvoice.paid_at && <span style={{ fontSize: '12px', color: TEXT3 }}>{new Date(viewingInvoice.paid_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
                     </div>
-                  )}
-                  {viewingInvoice.status === 'paid' ? (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 2px 0' }}>
-                      <span style={{ fontSize: '13px', color: TEAL_DARK, fontWeight: 800 }}>Paid in full</span>
-                      {viewingInvoice.paid_at && <span style={{ fontSize: '12px', color: TEXT3 }}>{shortDate(viewingInvoice.paid_at)}</span>}
-                    </div>
-                  ) : (
-                    Number(viewingInvoice.amount_paid) > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 2px 0' }}>
-                        <span style={{ fontSize: '14px', color: TEXT, fontWeight: 800 }}>Balance due</span>
-                        <span style={{ fontSize: '14px', color: TEAL_DARK, fontWeight: 900 }}>{money(Math.max(0, Number(viewingInvoice.total) - Number(viewingInvoice.amount_paid)))}</span>
-                      </div>
-                    )
                   )}
                 </div>
               </div>
-
-              {payments.length > 0 && (
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>Payments received</div>
-                  <div style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden' }}>
-                    {payments.map((p, i) => (
-                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '10px 14px', borderTop: i === 0 ? 'none' : `1px solid ${BORDER}` }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '13px', color: TEXT, fontWeight: 600 }}>{shortDate(p.paid_on)} · {methodLabel(p.method)}</div>
-                          {p.note && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px', overflowWrap: 'anywhere' }}>{p.note}</div>}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <b style={{ fontSize: '13px', color: TEXT }}>{money(p.amount)}</b>
-                          <button type="button" onClick={() => removePayment(p.id)} aria-label="Remove payment" style={{ background: 'none', border: 'none', color: TEXT3, cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '2px 4px' }}>×</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {(businessSettings?.bank_name || businessSettings?.bsb || businessSettings?.account_number) && (
                 <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px', marginBottom: '20px' }}>
@@ -1006,20 +897,7 @@ export default function InvoicesPage() {
         />
       )}
 
-      {viewingInvoice && showPay && (
-        <RecordPaymentModal
-          businessId={businessId}
-          invoice={viewingInvoice}
-          onClose={() => setShowPay(false)}
-          onSaved={async () => {
-            setShowPay(false)
-            await refreshInvoice(viewingInvoice.id)
-            say('Payment recorded.')
-          }}
-        />
-      )}
-
-      {notice && <Toast message={notice} tone={noticeTone} onClose={() => setNotice('')} />}
+      {notice && <Toast message={notice} onClose={() => setNotice('')} />}
 
       {viewingInvoice && (
         <ContactDrawer

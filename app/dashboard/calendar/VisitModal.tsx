@@ -32,8 +32,6 @@ type Props = {
   businessId: string
   visit: Visit | null
   defaults?: { date: Date; staffId: string | null }
-  /** Starting values for a new visit (for example from an accepted quote). */
-  prefill?: { customerId?: string; title?: string; notes?: string }
   customers: CustomerOption[]
   jobs: JobOption[]
   staff: StaffMember[]
@@ -42,21 +40,21 @@ type Props = {
   onSaved: (message: string) => void
 }
 
-export function VisitModal({ businessId, visit, defaults, prefill, customers, jobs, staff, onClose, onSaved }: Props) {
+export function VisitModal({ businessId, visit, defaults, customers, jobs, staff, onClose, onSaved }: Props) {
   const phone = useIsPhone()
   const initialStart = visit ? new Date(visit.start_at) : defaults?.date ?? new Date()
   const initialDuration = visit ? Math.max(15, minutesBetween(new Date(visit.start_at), new Date(visit.end_at))) : 60
 
-  const [customerId, setCustomerId] = useState(visit?.customer_id || prefill?.customerId || '')
+  const [customerId, setCustomerId] = useState(visit?.customer_id || '')
   const [jobId, setJobId] = useState(visit?.job_id || '')
   const [kind, setKind] = useState<VisitKind>(visit?.kind || 'service')
-  const [title, setTitle] = useState(visit ? (visit.title !== VISIT_KINDS.find(k => k.value === visit.kind)?.label ? visit.title : '') : prefill?.title || '')
+  const [title, setTitle] = useState(visit && visit.title !== VISIT_KINDS.find(k => k.value === visit.kind)?.label ? visit.title : '')
   const [staffId, setStaffId] = useState(visit?.staff_id ?? defaults?.staffId ?? '')
   const [date, setDate] = useState(toDateInput(initialStart))
   const [time, setTime] = useState(visit || (defaults && (defaults.date.getHours() || defaults.date.getMinutes())) ? toTimeInput(initialStart) : '09:00')
   const [duration, setDuration] = useState(initialDuration)
   const [status, setStatus] = useState<VisitStatus>(visit?.status || 'scheduled')
-  const [notes, setNotes] = useState(visit?.notes || prefill?.notes || '')
+  const [notes, setNotes] = useState(visit?.notes || '')
   const [notify, setNotify] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')

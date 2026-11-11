@@ -56,7 +56,7 @@ function paymentLines(p: InvoicePayment | null | undefined, ref: string) {
 }
 
 /** Plain-text version (also the fallback draft for a mail app). */
-export function invoiceText(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null, link?: string) {
+export function invoiceText(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null) {
   const first = clean(inv.customers?.first_name) || 'there'
   const name = clean(sender.name) || 'us'
   const due = longDate(inv.due_date)
@@ -74,21 +74,20 @@ export function invoiceText(inv: any, sender: InvoiceSender, pay?: InvoicePaymen
   ]
   const p = paymentLines(pay, clean(inv.invoice_number))
   if (p.length) lines.push('', 'Payment details', ...p.map(([k, v]) => `${k}: ${v}`))
-  if (link) lines.push('', `View your invoice online: ${link}`)
   lines.push('', 'Thank you,', name, ...(clean(sender.phone) ? [clean(sender.phone)] : []), ...(clean(sender.email) ? [clean(sender.email)] : []))
   return lines.join('\r\n')
 }
 
 /** Short SMS. */
-export function invoiceSms(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null, link?: string) {
+export function invoiceSms(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null) {
   const first = clean(inv.customers?.first_name) || 'there'
   const name = clean(sender.name) || 'us'
   const due = longDate(inv.due_date)
   const bank = pay && (clean(pay.bsb) || clean(pay.account_number)) ? ` Pay to BSB ${clean(pay.bsb)} Acc ${clean(pay.account_number)}, ref ${clean(inv.invoice_number)}.` : ''
-  return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}.${bank}${link ? ` View: ${link}` : ''} Thanks!`
+  return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}.${bank} Thanks!`
 }
 
-export function invoiceHtml(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null, link?: string) {
+export function invoiceHtml(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null) {
   const c = inv.customers || {}
   const billTo = [
     [clean(c.first_name), clean(c.last_name)].filter(Boolean).join(' '),
@@ -155,7 +154,6 @@ export function invoiceHtml(inv: any, sender: InvoiceSender, pay?: InvoicePaymen
     ${paid ? totalRow('Paid', money(inv.amount_paid)) + totalRow('Amount due', money(owing(inv))) : ''}
   </table>
 </td></tr>
-${link ? `<tr><td style="padding:0 0 22px 0;clear:both;"><a href="${esc(link)}" style="display:inline-block;background:${TEAL};color:#FFFFFF;font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:10px;">View invoice online</a></td></tr>` : ''}
 ${payRows.length ? `<tr><td style="padding:0 0 20px 0;clear:both;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#F8FAFC;border:1px solid #E8EDF2;border-radius:12px;border-collapse:separate;">
     <tr><td style="padding:16px 18px;">

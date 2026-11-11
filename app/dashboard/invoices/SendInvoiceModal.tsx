@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BTN, LINE, Modal, RED, TEXT2, TEXT3, useIsPhone } from '@/components/forms'
 import { type InvoicePayment, type InvoiceSender, invoiceHtml, invoiceSms, invoiceSubject, invoiceText } from '@/lib/invoice-email'
-import { invoiceLink } from '@/lib/site'
 
 type Props = {
   invoice: any
@@ -24,10 +23,9 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
   const to = String(invoice.customers?.email || '').trim()
   const tel = String(invoice.customers?.phone || '').trim()
   const subject = invoiceSubject(invoice, sender)
-  const link = invoice.public_token ? invoiceLink(invoice.public_token) : undefined
 
   const preview = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:22px 20px;background:#FFFFFF;">${invoiceHtml(invoice, sender, payment, link)}</body></html>`
+<body style="margin:0;padding:22px 20px;background:#FFFFFF;">${invoiceHtml(invoice, sender, payment)}</body></html>`
 
   async function send() {
     setSending(true)
@@ -51,7 +49,7 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
       }
       if (body.error === 'not_configured') {
         onNotice('Email sending isn’t switched on yet, so a plain draft opened in your mail app.')
-        window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(invoiceText(invoice, sender, payment, link))}`
+        window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(invoiceText(invoice, sender, payment))}`
         onClose()
         return
       }
@@ -62,7 +60,7 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
     setSending(false)
   }
 
-  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, sender, payment, link))}` : undefined
+  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, sender, payment))}` : undefined
   const metaRow: React.CSSProperties = { display: 'flex', gap: 10, minWidth: 0, fontSize: 13, color: TEXT2 }
   const metaLabel: React.CSSProperties = { color: TEXT3, width: 58, flexShrink: 0 }
   const metaValue: React.CSSProperties = { fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }

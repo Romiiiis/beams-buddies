@@ -62,8 +62,6 @@ export default function CalendarPage() {
   const [filter, setFilter] = useState('all')
   const [editing, setEditing] = useState<Visit | null>(null)
   const [creating, setCreating] = useState<{ date: Date; staffId: string | null } | null>(null)
-  // Opened from a quote: ?new=1&customer=<id>&title=...&notes=... starts a visit for that customer.
-  const [prefill, setPrefill] = useState<{ customerId?: string; title?: string; notes?: string } | undefined>(undefined)
   const [showTeam, setShowTeam] = useState(false)
   const [toast, setToast] = useState('')
   const [tick, setTick] = useState(0)
@@ -97,16 +95,7 @@ export default function CalendarPage() {
       setCustomers(cu.data || [])
       setJobs(jb.data || [])
       setLoading(false)
-      const q = new URLSearchParams(window.location.search)
-      if (q.get('team') === '1') setShowTeam(true)
-      if (q.get('new') === '1') {
-        const customerId = q.get('customer') || undefined
-        setPrefill({ customerId: customerId && (cu.data || []).some((c: any) => c.id === customerId) ? customerId : undefined, title: q.get('title') || undefined, notes: q.get('notes') || undefined })
-        const when = new Date()
-        when.setDate(when.getDate() + 1)
-        when.setHours(9, 0, 0, 0)
-        setCreating({ date: when, staffId: null })
-      }
+      if (new URLSearchParams(window.location.search).get('team') === '1') setShowTeam(true)
     }
     init()
   }, [router])
@@ -322,14 +311,12 @@ export default function CalendarPage() {
           businessId={businessId}
           visit={editing}
           defaults={creating || undefined}
-          prefill={editing ? undefined : prefill}
           customers={customers}
           jobs={jobs}
           staff={staff}
           onClose={() => {
             setEditing(null)
             setCreating(null)
-            setPrefill(undefined)
           }}
           onSaved={done}
         />

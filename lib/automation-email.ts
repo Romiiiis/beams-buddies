@@ -1,6 +1,5 @@
 // Turns database rows into the emails the automations send, in the style the business uses (Classic).
 // The wording and layout live in lib/email-theme.ts; this file only prepares the facts.
-import { quoteLink } from '@/lib/site'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import {
   buildOverdue,
@@ -112,7 +111,6 @@ export function quoteContent(q: any, s: EmailSender): EmailContent {
       validDays: daysFromToday(valid),
       lines: lines(q?.line_items),
       total: Number(q?.total) || 0,
-      link: q?.public_token ? quoteLink(String(q.public_token)) : undefined,
     },
     s
   )
