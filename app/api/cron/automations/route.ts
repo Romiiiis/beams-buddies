@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
+import { applyCopy, type EmailCopy } from '@/lib/email-copy'
 import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue, visitDue } from '@/lib/automation-rules'
 
@@ -36,17 +37,19 @@ export async function GET(request: Request) {
 
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
-  const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind, days').eq('enabled', true)
+  const { data: enabledRows } = await db.from('automation_settings').select('business_id, kind, days, subject, intro, closing').eq('enabled', true)
   // Owner-level pause: businesses with auto_reminders_enabled = false are manual only, whatever
   // they have switched on in Marketing (e.g. Avalanche Air / info@avalancheair.com.au for now)
   const { data: pausedRows } = await db.from('businesses').select('id').eq('auto_reminders_enabled', false)
   const paused = new Set((pausedRows || []).map(b => b.id as string))
   const byBusiness = new Map<string, Set<Kind>>()
   const daysFor = new Map<string, number>()
+  const copyFor = new Map<string, EmailCopy>()
   for (const r of enabledRows || []) {
     if (paused.has(r.business_id)) continue
     if (!byBusiness.has(r.business_id)) byBusiness.set(r.business_id, new Set())
     byBusiness.get(r.business_id)!.add(r.kind as Kind)
+    copyFor.set(`${r.business_id}:${r.kind}`, { subject: r.subject, intro: r.intro, closing: r.closing })
     daysFor.set(`${r.business_id}:${r.kind}`, Number(r.days) > 0 ? Number(r.days) : AUTOMATION_DEFAULT_DAYS[r.kind as Kind])
   }
 
@@ -63,6 +66,7 @@ export async function GET(request: Request) {
     const ownDomain = String((business as any).email_domain || '').trim().toLowerCase()
     const sendDomain = (business as any).email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
     let budget = PER_BUSINESS_LIMIT
+    const copyOf = (k: Kind) => copyFor.get(`${businessId}:${k}`)
     const days = (k: Kind) => daysFor.get(`${businessId}:${k}`) ?? AUTOMATION_DEFAULT_DAYS[k]
 
     // Claims the right to send (unique key stops duplicates), sends, and releases the claim if sending fails
@@ -114,14 +118,14 @@ export async function GET(request: Request) {
         if (kinds.has('service')) {
           if (serviceDue(job, days('service'))) {
             const next = nextServiceDate(job)
-            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(serviceContent(job, sender), sender))
+            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(applyCopy(serviceContent(job, sender), sender, copyOf('service')), sender))
           }
         }
 
         if (kinds.has('review')) {
           const url = String(settings?.google_review_url || '').trim()
           if (/^https:\/\//i.test(url) && reviewDue(job, days('review'))) {
-            await deliver('review', job.id, '', to, renderAutomation(reviewContent(job, sender, url), sender))
+            await deliver('review', job.id, '', to, renderAutomation(applyCopy(reviewContent(job, sender, url), sender, copyOf('review')), sender))
           }
         }
       }
@@ -136,7 +140,7 @@ export async function GET(request: Request) {
       for (const inv of invoices || []) {
         const to = emailOf(inv.customers)
         if (to && overdueDue(inv, days('overdue'))) {
-          await deliver('overdue', inv.id, '', to, renderAutomation(overdueContent(inv, sender, settings), sender))
+          await deliver('overdue', inv.id, '', to, renderAutomation(applyCopy(overdueContent(inv, sender, settings), sender, copyOf('overdue')), sender))
         }
       }
     }
@@ -172,7 +176,7 @@ export async function GET(request: Request) {
         const startIso = new Date(v.start_at).toISOString()
         if (!to || manualSent.has(`${v.id}:${startIso}`)) continue
         if (!visitDue(v, days('visit'), today, nowD, iso => asDay(ymdIn(new Date(iso))))) continue
-        const sentOk = await deliver('visit', v.id, startIso, to, renderAutomation(visitContent(v, sender, tz), sender))
+        const sentOk = await deliver('visit', v.id, startIso, to, renderAutomation(applyCopy(visitContent(v, sender, tz), sender, copyOf('visit')), sender))
         if (sentOk) await db.from('visit_reminders').insert({ business_id: businessId, visit_id: v.id, for_start: v.start_at, to_email: to, source: 'auto' })
       }
     }
@@ -186,7 +190,7 @@ export async function GET(request: Request) {
       for (const q of quotes || []) {
         const to = emailOf(q.customers)
         if (to && quoteDue(q, days('quote'))) {
-          await deliver('quote', q.id, '', to, renderAutomation(quoteContent(q, sender), sender))
+          await deliver('quote', q.id, '', to, renderAutomation(applyCopy(quoteContent(q, sender), sender, copyOf('quote')), sender))
         }
       }
     }

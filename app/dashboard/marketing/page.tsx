@@ -12,6 +12,8 @@ import { renderEmail, sampleContent, type EmailKind } from '@/lib/email-theme'
 import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, visitDue, type AutomationKind } from '@/lib/automation-rules'
 import { Select } from '@/components/Select'
+import { applyCopy, COPY_LIMITS, type EmailCopy } from '@/lib/email-copy'
+import { FIELD, FIELD_TEXTAREA } from '@/components/forms'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -86,6 +88,11 @@ export default function MarketingPage() {
   const [quotes, setQuotes] = useState<any[]>([])
   const [autoLog, setAutoLog] = useState<any[]>([])
   const [saveError, setSaveError] = useState('')
+  // The business's own wording: what is saved, what is being typed, and whether the editor is open
+  const [copySaved, setCopySaved] = useState<Record<string, EmailCopy>>({})
+  const [draft, setDraft] = useState<EmailCopy | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [savingCopy, setSavingCopy] = useState(false)
   const [visits, setVisits] = useState<any[]>([])
   const [visitSent, setVisitSent] = useState<Set<string>>(new Set())
 
@@ -107,7 +114,7 @@ export default function MarketingPage() {
         supabase.from('reminder_emails').select('id, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }).limit(8),
         supabase.from('businesses').select('name, phone, email, logo_url, timezone').eq('id', bid).single(),
         supabase.from('business_settings').select('google_review_url').eq('business_id', bid).maybeSingle(),
-        supabase.from('automation_settings').select('kind, enabled, days').eq('business_id', bid),
+        supabase.from('automation_settings').select('kind, enabled, days, subject, intro, closing').eq('business_id', bid),
         supabase.from('automation_log').select('kind, ref_id, cycle').eq('business_id', bid).order('sent_at', { ascending: false }).limit(1000),
         supabase.from('automation_log').select('id, kind, to_email, subject, sent_at').eq('business_id', bid).gte('sent_at', since).order('sent_at', { ascending: false }).limit(8),
         supabase.from('quotes').select(`id, status, created_at, ${cust}`).eq('business_id', bid).eq('status', 'sent'),
@@ -124,6 +131,7 @@ export default function MarketingPage() {
       setVisits(vs.data || [])
       setQuotes(qs.data || [])
       setVisitSent(new Set((vr.data || []).map((m: any) => `${m.visit_id}:${new Date(m.for_start).toISOString()}`)))
+      setCopySaved(Object.fromEntries((st.data || []).map((x: any) => [x.kind, { subject: x.subject, intro: x.intro, closing: x.closing }])))
       setDaysSel(Object.fromEntries((st.data || []).filter((x: any) => x.days).map((x: any) => [x.kind, x.days])))
       setEnabled(Object.fromEntries((st.data || []).map((x: any) => [x.kind, !!x.enabled])))
       setAutoLog(lg.data || [])
@@ -140,7 +148,9 @@ export default function MarketingPage() {
 
   // The preview uses an example customer with your real business name, logo and contact details
   const cur = AUTOMATIONS.find(a => a.id === sel) || AUTOMATIONS[0]
-  const content = useMemo(() => sampleContent(cur.id as EmailKind, sender), [cur.id, sender])
+  const liveCopy = editing && draft ? draft : copySaved[cur.id]
+  const content = useMemo(() => applyCopy(sampleContent(cur.id as EmailKind, sender), sender, liveCopy), [cur.id, sender, liveCopy])
+  const standard = useMemo(() => sampleContent(cur.id as EmailKind, sender), [cur.id, sender])
   const emailDoc = useMemo(() => renderEmail(EMAIL_STYLE, content, sender), [content, sender])
   const emailSubject = content.subject
 
@@ -154,6 +164,27 @@ export default function MarketingPage() {
       undo()
       setSaveError(`Could not save that change: ${error.message}`)
     }
+  }
+
+  function openEditor() {
+    const c = copySaved[cur.id] || {}
+    setDraft({ subject: c.subject || '', intro: c.intro || '', closing: c.closing || '' })
+    setEditing(true)
+  }
+
+  async function saveCopy(reset = false) {
+    if (!bizId || !draft) return
+    setSavingCopy(true)
+    setSaveError('')
+    const next: EmailCopy = reset ? { subject: null, intro: null, closing: null } : { subject: draft.subject?.trim() || null, intro: draft.intro?.trim() || null, closing: draft.closing?.trim() || null }
+    const { error } = await supabase.from('automation_settings').upsert({ business_id: bizId, kind: cur.id, enabled: !!enabled[cur.id], days: daysOf(cur.id), ...next, updated_at: new Date().toISOString() }, { onConflict: 'business_id,kind' })
+    setSavingCopy(false)
+    if (error) {
+      setSaveError(`Could not save the wording: ${error.message}`)
+      return
+    }
+    setCopySaved(prev => ({ ...prev, [cur.id]: next }))
+    setEditing(false)
   }
 
   function toggle(kind: string) {
@@ -256,7 +287,7 @@ export default function MarketingPage() {
               {AUTOMATIONS.map((a, idx) => (
                 <div
                   key={a.id}
-                  onClick={() => setSel(a.id)}
+                  onClick={() => { setSel(a.id); setEditing(false) }}
                   style={{ padding: '18px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, background: sel === a.id ? '#F7FCFB' : WHITE, boxShadow: sel === a.id ? `inset 3px 0 0 ${TEAL}` : 'none', cursor: 'pointer', fontFamily: FONT }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
@@ -304,6 +335,34 @@ export default function MarketingPage() {
                 <div style={cardTitle}>Preview: {cur.name}</div>
               </div>
               <div style={{ padding: 18, display: 'grid', gap: 16 }}>
+                {!editing ? (
+                  <button type="button" onClick={openEditor} style={{ height: 40, borderRadius: 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                    {copySaved[cur.id]?.subject || copySaved[cur.id]?.intro || copySaved[cur.id]?.closing ? 'Edit your wording' : 'Edit the wording'}
+                  </button>
+                ) : (
+                  <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, padding: 14, display: 'grid', gap: 12, background: '#FBFCFD' }}>
+                    <div style={{ fontSize: 12, color: TEXT3, lineHeight: 1.5 }}>
+                      Leave a box empty to keep the standard wording. You can use <b>{'{first}'}</b> (customer's first name), <b>{'{business}'}</b> and <b>{'{phone}'}</b>. A blank line starts a new paragraph. The details table and button stay as they are.
+                    </div>
+                    <label style={{ display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, color: TEXT2 }}>
+                      Subject
+                      <input style={FIELD} maxLength={COPY_LIMITS.subject} value={draft?.subject || ''} placeholder={standard.subject} onChange={e => setDraft(d => ({ ...d, subject: e.target.value }))} />
+                    </label>
+                    <label style={{ display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, color: TEXT2 }}>
+                      Opening message
+                      <textarea style={{ ...FIELD_TEXTAREA, minHeight: 90 }} maxLength={COPY_LIMITS.intro} value={draft?.intro || ''} placeholder={standard.paragraphs.join('\n\n')} onChange={e => setDraft(d => ({ ...d, intro: e.target.value }))} />
+                    </label>
+                    <label style={{ display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, color: TEXT2 }}>
+                      Closing message
+                      <textarea style={{ ...FIELD_TEXTAREA, minHeight: 90 }} maxLength={COPY_LIMITS.closing} value={draft?.closing || ''} placeholder={standard.closing.join('\n\n')} onChange={e => setDraft(d => ({ ...d, closing: e.target.value }))} />
+                    </label>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button type="button" disabled={savingCopy} onClick={() => saveCopy()} style={{ flex: 1, minWidth: 120, height: 40, borderRadius: 10, border: 'none', background: TEAL, color: WHITE, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: savingCopy ? 0.7 : 1 }}>{savingCopy ? 'Saving...' : 'Save wording'}</button>
+                      <button type="button" disabled={savingCopy} onClick={() => setEditing(false)} style={{ height: 40, padding: '0 16px', borderRadius: 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT2, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancel</button>
+                      <button type="button" disabled={savingCopy} onClick={() => saveCopy(true)} style={{ height: 40, padding: '0 16px', borderRadius: 10, border: `1px solid ${BORDER}`, background: WHITE, color: TEXT3, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Use standard wording</button>
+                    </div>
+                  </div>
+                )}
                 <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
                   <div style={{ padding: '8px 12px', fontSize: 12, color: TEXT2, borderBottom: `1px solid ${BORDER}`, overflowWrap: 'anywhere' }}><span style={{ color: TEXT3 }}>Subject </span><b>{emailSubject}</b></div>
                   <iframe title="Email preview" srcDoc={emailDoc} sandbox="" style={{ width: '100%', height: isMobile ? 480 : 640, border: 'none', display: 'block', background: '#F4F6F8' }} />
