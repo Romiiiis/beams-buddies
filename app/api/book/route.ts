@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { jobFromToken } from '@/lib/booking-token'
 import { computeSlots, safeZone, type Slot } from '@/lib/booking-slots'
-import { EMAIL_STYLE, senderFrom } from '@/lib/automation-email'
+import { EMAIL_STYLE, formatPhone, senderFrom } from '@/lib/automation-email'
 import { buildVisit, renderEmail, renderText } from '@/lib/email-theme'
 import { getEquipmentLabel } from '@/lib/industry-config'
 
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
   const { job, business, tz, slots, upcoming } = ctx
   const { unit, address } = describe(job)
   const base = {
-    business: { name: clean(business.name), phone: clean(business.phone), logoUrl: clean(business.logo_url) || null },
+    business: { name: clean(business.name), phone: formatPhone(business.phone), logoUrl: clean(business.logo_url) || null },
     first: clean(job.customers?.first_name),
     unit,
     address,
