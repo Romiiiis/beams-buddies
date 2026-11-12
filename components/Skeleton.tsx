@@ -18,9 +18,9 @@ const css = `
   .sk-card { background: #FFFFFF; border: 1px solid #E8EDF2; border-radius: 14px; overflow: hidden; }
   .sk-pad { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
 
-  .sk-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .sk-stat { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
-  .sk-stat + .sk-stat { border-left: 1px solid #E8EDF2; }
+  .sk-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .sk-stat { background: #FFFFFF; border: 1px solid #E8EDF2; border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .sk-stat .sk-grow { gap: 6px; }
 
   .sk-row { display: flex; align-items: center; gap: 12px; padding: 12px 6px; }
   .sk-row + .sk-row { border-top: 1px solid #F1F4F7; }
@@ -40,11 +40,10 @@ const css = `
   @media (max-width: 767px) {
     .sk-head { padding: 14px 14px 12px; }
     .sk-body { padding: 12px 12px calc(var(--tabbar-h) + 24px); }
-    .sk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .sk-stat { padding: 10px 12px; gap: 4px; }
+    .sk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .sk-stat { padding: 10px 12px; gap: 10px; border-radius: 14px; }
+    .sk-stat .sk-ico { width: 34px !important; height: 34px !important; }
     .sk-note { display: block; }
-    .sk-stat:nth-child(odd) { border-left: none; }
-    .sk-stat:nth-child(n+3) { border-top: 1px solid #E8EDF2; }
     .sk-dash { grid-template-columns: 1fr; }
     .sk-lane { flex: 0 0 82%; }
     .sk-form { grid-template-columns: 1fr; }
@@ -61,12 +60,15 @@ export function SkeletonBox({ w = '100%', h = 12, r = 8, style, className }: Box
 
 function StatStripSkeleton() {
   return (
-    <div className="sk-card sk-stats">
+    <div className="sk-stats">
       {[0, 1, 2, 3].map(i => (
         <div key={i} className="sk-stat">
-          <SkeletonBox w="55%" h={10} />
-          <SkeletonBox w="35%" h={20} r={6} />
-          <SkeletonBox w="62%" h={9} className="sk-note" />
+          <SkeletonBox w={44} h={44} r={999} className="sk-ico" />
+          <div className="sk-grow">
+            <SkeletonBox w="55%" h={10} />
+            <SkeletonBox w="40%" h={20} r={6} />
+            <SkeletonBox w="62%" h={9} className="sk-note" />
+          </div>
         </div>
       ))}
     </div>
