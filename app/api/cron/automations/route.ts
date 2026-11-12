@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
 import { applyCopy, type EmailCopy } from '@/lib/email-copy'
+import { bookingUrl } from '@/lib/booking-token'
 import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue, visitDue } from '@/lib/automation-rules'
 
@@ -118,7 +119,7 @@ export async function GET(request: Request) {
         if (kinds.has('service')) {
           if (serviceDue(job, days('service'))) {
             const next = nextServiceDate(job)
-            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(applyCopy(serviceContent(job, sender), sender, copyOf('service')), sender))
+            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(applyCopy(serviceContent(job, sender, bookingUrl(job.id)), sender, copyOf('service')), sender))
           }
         }
 

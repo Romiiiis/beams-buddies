@@ -58,7 +58,7 @@ function lines(items: any): { description: string; qty: number; unit: number }[]
 
 const daysFromToday = (d: Date | null) => (d ? Math.round((d.getTime() - startOfDay(new Date()).getTime()) / DAY) : null)
 
-export function serviceContent(job: any, s: EmailSender): EmailContent {
+export function serviceContent(job: any, s: EmailSender, bookUrl?: string): EmailContent {
   return buildService(
     {
       first: clean(job?.customers?.first_name),
@@ -68,6 +68,7 @@ export function serviceContent(job: any, s: EmailSender): EmailContent {
       // The property the unit is at, or the customer's own address
       address: [(job?.customer_sites || job?.customers)?.address, (job?.customer_sites || job?.customers)?.suburb].map(clean).filter(Boolean).join(', '),
       location: clean(job?.install_location),
+      bookUrl,
     },
     s
   )

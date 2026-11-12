@@ -70,6 +70,8 @@ const C = {
   amber: '#F5A524',
 }
 
+const DOT: Record<Tone, string> = { neutral: '#94A3B8', good: '#2AA198', warn: '#D98E04', danger: '#D64545' }
+
 const TONES: Record<Tone, { bg: string; fg: string }> = {
   neutral: { bg: '#F1F5F9', fg: '#475569' },
   good: { bg: '#EBFAF7', fg: '#1F857C' },
@@ -135,6 +137,8 @@ export type ServiceInput = {
   days: number | null
   address?: string
   location?: string
+  /** Link to the page where the customer picks a time. Without it the button opens a reply email. */
+  bookUrl?: string
 }
 
 export function buildService(i: ServiceInput, s: EmailSender): EmailContent {
@@ -154,7 +158,7 @@ export function buildService(i: ServiceInput, s: EmailSender): EmailContent {
   if (i.address) facts.push(['Address', i.address])
   if (i.location) facts.push(['Location', i.location])
   const callUs = s.phone ? ` or call us on ${s.phone}` : ''
-  const bookHref = replyHref(s, `Service booking${i.first ? ` - ${i.first}` : ''}`)
+  const bookHref = i.bookUrl || replyHref(s, `Service booking${i.first ? ` - ${i.first}` : ''}`)
   return {
     kind: 'service',
     subject: overdue
@@ -173,8 +177,12 @@ export function buildService(i: ServiceInput, s: EmailSender): EmailContent {
     ],
     highlight: i.due ? { label: overdue ? 'Service was due' : 'Service due', value: due, chip } : undefined,
     facts,
-    closing: [`Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns. To book a time, simply reply to this email${callUs}.`],
-    button: bookHref ? { text: 'Book my service', href: bookHref } : undefined,
+    closing: [
+      i.bookUrl
+        ? `Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns. Tap the button below to choose a time that suits you. You can also reply to this email${callUs}.`
+        : `Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns. To book a time, simply reply to this email${callUs}.`,
+    ],
+    button: bookHref ? { text: i.bookUrl ? 'Choose a time' : 'Book my service', href: bookHref } : undefined,
     signoff: 'Kind regards,',
   }
 }
@@ -441,17 +449,22 @@ function classic(c: EmailContent, s: EmailSender) {
     const h = c.highlight
     const value = h.stars
       ? `<div style="${T(28, 34, 400, C.amber, 'letter-spacing:4px;')}">${esc(h.value)}</div>`
-      : `<div style="${T(22, 28, 800, C.ink, 'letter-spacing:-0.01em;')}">${esc(h.value)}</div>`
+      : `<div style="${T(21, 27, 700, C.ink, 'letter-spacing:-0.01em;')}">${esc(h.value)}</div>`
+    // A status is a small coloured dot and plain words, the same quiet look as inside the app
+    const dot = h.chip ? DOT[h.chip.tone] : ''
+    const status = h.chip
+      ? `<div style="${T(13, 18, 600, h.chip.tone === 'danger' ? '#B42318' : C.text, 'padding-top:8px;')}"><span style="font-size:10px;line-height:10px;color:${dot};">&#9679;</span>&nbsp;&nbsp;${esc(h.chip.text)}</div>`
+      : ''
     rows.push(
       row(
-        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.panel}" style="background:${C.panel};border:1px solid ${C.card};border-radius:12px;border-collapse:separate;"><tr><td style="padding:16px 18px;"><div style="${T(12, 16, 600, C.muted)}">${esc(h.label)}</div>${value}${h.sub ? `<div style="${T(13, 18, 400, C.muted, 'padding-top:2px;')}">${esc(h.sub)}</div>` : ''}</td>${h.chip ? `<td align="right" valign="middle" style="padding:16px 18px 16px 0;">${chip(h.chip.text, h.chip.tone)}</td>` : ''}</tr></table>`,
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${h.chip?.tone === 'danger' ? '#D64545' : C.teal}" width="4" style="width:4px;background:${h.chip?.tone === 'danger' ? '#D64545' : C.teal};font-size:0;line-height:0;">&nbsp;</td><td bgcolor="${C.panel}" style="background:${C.panel};padding:14px 18px;"><div style="${T(11, 14, 700, C.muted, CAPS + 'padding-bottom:5px;')}">${esc(h.label)}</div>${value}${h.sub ? `<div style="${T(13, 18, 400, C.muted, 'padding-top:3px;')}">${esc(h.sub)}</div>` : ''}${status}</td></tr></table>`,
         '10px 28px 20px 28px'
       )
     )
   }
   rows.push(details(c, {}, row))
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 28px 6px 28px'))
-  if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.ink, full: true, radius: 10 }), '6px 28px 24px 28px'))
+  if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 28px 24px 28px'))
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid ${C.card};border-radius:14px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
   const foot = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;"><tr><td style="padding:16px 12px 0 12px;">${footerNote(s, 'center', c.footer)}</td></tr></table>`
@@ -759,7 +772,7 @@ export function sampleContent(kind: EmailKind, s: EmailSender, today: Date = new
     { description: 'Refrigerant top-up', qty: 1, unit: 60 },
   ]
   if (kind === 'service') {
-    return buildService({ first: 'Sophie', what: 'Daikin Cora split system', due: day(14), days: 14, address: '14 Marlow Street, Parramatta', location: 'Living room' }, s)
+    return buildService({ first: 'Sophie', what: 'Daikin Cora split system', due: day(14), days: 14, address: '14 Marlow Street, Parramatta', location: 'Living room', bookUrl: 'https://jobyra.app/book/preview' }, s)
   }
   if (kind === 'overdue') {
     return buildOverdue(
