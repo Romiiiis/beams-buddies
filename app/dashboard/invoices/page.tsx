@@ -573,7 +573,7 @@ export default function InvoicesPage() {
                   const late = inv.status === 'sent' && inv.due_date && new Date(inv.due_date) < new Date()
                   return (
                     <StatusSelect
-                      value={inv.status}
+                      value={late ? 'overdue' : inv.status}
                       options={Object.entries(STATUS_STYLES).map(([k, v]) => ({ value: k, label: v.label }))}
                       onChange={v => updateStatus(inv.id, v)}
                       tone={late ? 'danger' : STATUS_TONE[inv.status] || 'muted'}

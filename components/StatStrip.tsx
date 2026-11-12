@@ -115,7 +115,7 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
             {(delta || note) && (
               <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 6 : 8, marginTop: compact ? 2 : 5, fontSize: compact ? 11 : 12, lineHeight: compact ? 1.2 : undefined, color: TEXT3, minWidth: 0, whiteSpace: 'nowrap' }}>
                 {delta && tone && (
-                  compact ? (
+                  variant === 'compact' ? (
                     <span style={{ color: tone.fg === TEXT3 ? TEXT3 : tone.fg, fontWeight: 650, flexShrink: 0 }}>{delta}</span>
                   ) : (
                     <span style={{ padding: '1px 7px', borderRadius: 99, background: tone.bg, color: tone.fg, fontSize: 11.5, fontWeight: 650, flexShrink: 0 }}>{delta}</span>
