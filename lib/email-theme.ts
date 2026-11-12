@@ -70,7 +70,7 @@ const C = {
   amber: '#F5A524',
 }
 
-const DOT: Record<Tone, string> = { neutral: '#94A3B8', good: '#2AA198', warn: '#D98E04', danger: '#D64545' }
+const DOT: Record<Tone, string> = { neutral: '#94A3B8', good: '#2AA198', warn: '#2AA198', danger: '#D64545' }
 
 const TONES: Record<Tone, { bg: string; fg: string }> = {
   neutral: { bg: '#F1F5F9', fg: '#475569' },
@@ -447,20 +447,32 @@ function classic(c: EmailContent, s: EmailSender) {
   rows.push(row(c.paragraphs.map(p => para(p)).join(''), '0 28px 4px 28px'))
   if (c.highlight) {
     const h = c.highlight
-    const value = h.stars
-      ? `<div style="${T(28, 34, 400, C.amber, 'letter-spacing:4px;')}">${esc(h.value)}</div>`
-      : `<div style="${T(21, 27, 700, C.ink, 'letter-spacing:-0.01em;')}">${esc(h.value)}</div>`
-    // A status is a small coloured dot and plain words, the same quiet look as inside the app
-    const dot = h.chip ? DOT[h.chip.tone] : ''
+    const tone = h.chip?.tone
+    const accent = tone === 'danger' ? '#D64545' : C.teal
     const status = h.chip
-      ? `<div style="${T(13, 18, 600, h.chip.tone === 'danger' ? '#B42318' : C.text, 'padding-top:8px;')}"><span style="font-size:10px;line-height:10px;color:${dot};">&#9679;</span>&nbsp;&nbsp;${esc(h.chip.text)}</div>`
+      ? `<div style="${T(13, 18, 600, tone === 'danger' ? '#B42318' : C.text, 'padding-top:6px;')}"><span style="font-size:10px;line-height:10px;color:${DOT[h.chip.tone]};">&#9679;</span>&nbsp;&nbsp;${esc(h.chip.text)}</div>`
       : ''
-    rows.push(
-      row(
-        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${h.chip?.tone === 'danger' ? '#D64545' : C.teal}" width="4" style="width:4px;background:${h.chip?.tone === 'danger' ? '#D64545' : C.teal};font-size:0;line-height:0;">&nbsp;</td><td bgcolor="${C.panel}" style="background:${C.panel};padding:14px 18px;"><div style="${T(11, 14, 700, C.muted, CAPS + 'padding-bottom:5px;')}">${esc(h.label)}</div>${value}${h.sub ? `<div style="${T(13, 18, 400, C.muted, 'padding-top:3px;')}">${esc(h.sub)}</div>` : ''}${status}</td></tr></table>`,
-        '10px 28px 20px 28px'
+    // A date gets a little calendar tile (month on top, day number below) so it reads at a glance
+    const dm = h.stars ? null : /(\d{1,2})\s+([A-Za-z]{3})/.exec(String(h.value))
+    if (dm) {
+      const tile = `<table role="presentation" width="64" cellpadding="0" cellspacing="0" border="0" style="width:64px;border:1px solid #D5DCE4;border-radius:12px;border-collapse:separate;overflow:hidden;"><tr><td align="center" bgcolor="${accent}" style="background:${accent};padding:5px 0;${T(10, 12, 800, '#FFFFFF', 'letter-spacing:0.1em;text-transform:uppercase;')}">${esc(dm[2])}</td></tr><tr><td align="center" bgcolor="#FFFFFF" style="background:#FFFFFF;padding:6px 0 8px;${T(28, 32, 800, C.ink)}">${esc(dm[1])}</td></tr></table>`
+      rows.push(
+        row(
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" width="64" style="width:64px;">${tile}</td><td valign="middle" style="padding-left:16px;"><div style="${T(11, 14, 700, C.muted, CAPS + 'padding-bottom:4px;')}">${esc(h.label)}</div><div style="${T(20, 26, 700, C.ink, 'letter-spacing:-0.01em;')}">${esc(h.value)}</div>${h.sub ? `<div style="${T(13, 18, 400, C.muted, 'padding-top:2px;')}">${esc(h.sub)}</div>` : ''}${status}</td></tr></table>`,
+          '8px 28px 20px 28px'
+        )
       )
-    )
+    } else {
+      const value = h.stars
+        ? `<div style="${T(28, 34, 400, C.amber, 'letter-spacing:4px;')}">${esc(h.value)}</div>`
+        : `<div style="${T(21, 27, 700, C.ink, 'letter-spacing:-0.01em;')}">${esc(h.value)}</div>`
+      rows.push(
+        row(
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${accent}" width="4" style="width:4px;background:${accent};font-size:0;line-height:0;">&nbsp;</td><td bgcolor="${C.panel}" style="background:${C.panel};padding:14px 18px;"><div style="${T(11, 14, 700, C.muted, CAPS + 'padding-bottom:5px;')}">${esc(h.label)}</div>${value}${h.sub ? `<div style="${T(13, 18, 400, C.muted, 'padding-top:3px;')}">${esc(h.sub)}</div>` : ''}${status}</td></tr></table>`,
+          '10px 28px 20px 28px'
+        )
+      )
+    }
   }
   rows.push(details(c, {}, row))
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 28px 6px 28px'))

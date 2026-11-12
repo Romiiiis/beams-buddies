@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { jobFromToken } from '@/lib/booking-token'
+import { jobFromToken, SITE_URL } from '@/lib/booking-token'
 import { computeSlots, safeZone, type Slot } from '@/lib/booking-slots'
 import { EMAIL_STYLE, formatPhone, senderFrom } from '@/lib/automation-email'
 import { buildVisit, renderEmail, renderText } from '@/lib/email-theme'
@@ -163,22 +163,45 @@ export async function POST(request: Request) {
     const replyTo = sender.email && EMAIL.test(sender.email) ? sender.email : undefined
     const when = dayLabel(start, tz)
     const time = `${clockLabel(start, tz)} to ${clockLabel(end, tz)}`
+    const longDay = fmt(tz, { weekday: 'long', day: 'numeric', month: 'long' }).format(start).replace(',', '')
+    const tech = clean((ctx.staff as any[]).find(x => x.id === slot.staffId)?.name)
     const to = clean(customer.email)
     if (EMAIL.test(to)) {
-      const c = buildVisit({ first: clean(customer.first_name), when, time, length: '1 hr', what: 'Service', equipment: unit, address: address || undefined }, sender)
+      const c = buildVisit({ first: clean(customer.first_name), when, time, length: '1 hr', what: 'Service', equipment: unit, address: address || undefined, tech: tech.split(/\s+/)[0] || undefined }, sender)
       const first = clean(customer.first_name) || 'there'
       c.subject = `You are booked in: ${when} at ${clockLabel(start, tz)} | ${sender.name || 'Your service'}`
       c.preheader = `Your service is booked for ${when} at ${clockLabel(start, tz)}.`
       c.label = 'Booking confirmed'
       c.headline = `Hi ${first.charAt(0).toUpperCase() + first.slice(1)}, you are booked in`
-      c.paragraphs = [`Thanks for booking online. Your service with ${sender.name || 'us'} is confirmed. The details are below, and we will send a reminder the day before.`]
+      c.paragraphs = [`Thanks for booking online. Your service with ${sender.name || 'us'} is confirmed, and we will send a reminder the day before.`]
+      c.highlight = { label: 'Your booking', value: longDay, sub: `${time}, about 1 hour`, chip: { text: 'Confirmed', tone: 'good' } }
       await sendMail(apiKey, from, to, replyTo, c.subject, renderEmail(EMAIL_STYLE, c, sender), renderText(c, sender))
     }
     const owner = clean(business.email)
     if (EMAIL.test(owner)) {
       const who = [customer.first_name, customer.last_name].map(clean).filter(Boolean).join(' ') || 'A customer'
-      const text = `${who} booked their service online.\n\n${when}, ${time}\n${unit}${address ? `\n${address}` : ''}${customer.phone ? `\n${customer.phone}` : ''}\n\nIt is on your calendar now.`
-      await sendMail(apiKey, from, owner, undefined, `New online booking: ${who}, ${when} at ${clockLabel(start, tz)}`, `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`, text)
+      const facts: [string, string][] = [['Customer', who]]
+      if (customer.phone) facts.push(['Phone', formatPhone(customer.phone)])
+      if (customer.email) facts.push(['Email', clean(customer.email)])
+      facts.push(['Equipment', unit])
+      if (address) facts.push(['Address', address])
+      if (tech) facts.push(['Technician', tech])
+      const c = {
+        kind: 'visit' as const,
+        subject: `New online booking: ${who}, ${when} at ${clockLabel(start, tz)}`,
+        preheader: `${who} booked a service for ${when} at ${clockLabel(start, tz)}.`,
+        label: 'New online booking',
+        headline: `${who} booked a service online`,
+        greeting: '',
+        paragraphs: ['A customer picked a time from their reminder email. It is already on your calendar.'],
+        highlight: { label: 'Booked for', value: longDay, sub: `${time}, about 1 hour`, chip: { text: 'On your calendar', tone: 'good' as const } },
+        facts,
+        closing: [] as string[],
+        button: { text: 'Open calendar', href: `${SITE_URL}/dashboard/calendar` },
+        signoff: '',
+        footer: 'You are getting this because customers can book their service online from your reminder emails.',
+      }
+      await sendMail(apiKey, from, owner, undefined, c.subject, renderEmail(EMAIL_STYLE, c, sender), renderText(c, sender))
     }
   }
 
