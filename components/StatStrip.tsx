@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { AppIcon, type AppIconName } from './AppIcon'
 
 const TEAL_DARK = '#1F857C'
 const TEAL_LIGHT = '#EBFAF7'
@@ -10,6 +9,8 @@ const TEXT3 = '#64748B'
 const BORDER = '#E8EDF2'
 const WHITE = '#FFFFFF'
 const RED = '#B91C1C'
+const RED_SOLID = '#D64545'
+const TEAL = '#2AA198'
 
 export type StatItem = {
   label: string
@@ -48,21 +49,63 @@ function deltaTone(delta: string, up: boolean | undefined, label: string) {
   return rising ? good : neutral
 }
 
-/** A small icon that suits the figure, picked from its label. */
-function iconFor(label: string): AppIconName {
+type Glyph = 'people' | 'bars' | 'coin' | 'doc' | 'calendar' | 'clock' | 'check' | 'grid'
+
+/** Which simple shape suits the figure, picked from its label. */
+function glyphFor(label: string): Glyph {
   const l = label.toLowerCase()
-  if (/overdue|late/.test(l)) return 'clock'
-  if (/outstanding|unpaid|owing|revenue|paid|collected|invoiced|earn|income|sales/.test(l)) return 'dollar'
-  if (/invoice/.test(l)) return 'invoice'
-  if (/quote/.test(l)) return 'document'
-  if (/qr|token/.test(l)) return 'qrcode'
-  if (/review/.test(l)) return 'tick'
-  if (/customer|client|team|technician|reachable/.test(l)) return 'customers'
-  if (/lead|call|enquir|booked in|follow/.test(l)) return 'leads'
-  if (/visit|week|today|calendar|install|unassigned/.test(l)) return 'calendar-clock'
-  if (/due|service|maintenance|reminder|next/.test(l)) return 'clock'
-  if (/job|equipment|unit|brand|library|ready|shown|record/.test(l)) return 'jobs'
-  return 'stats'
+  if (/overdue|late|due|service|maintenance|reminder|next/.test(l) && !/invoice|quote/.test(l)) return 'clock'
+  if (/outstanding|unpaid|owing|revenue|paid|collected|invoiced|earn|income|sales/.test(l)) return 'coin'
+  if (/invoice|quote/.test(l)) return 'doc'
+  if (/qr|token/.test(l)) return 'grid'
+  if (/review/.test(l)) return 'check'
+  if (/customer|client|team|technician|reachable|lead|call|enquir|follow/.test(l)) return 'people'
+  if (/visit|week|today|calendar|install|unassigned|booked/.test(l)) return 'calendar'
+  return 'bars'
+}
+
+/** Plain filled shapes (not an icon set): `ink` is the shape, `knock` the colour of the circle behind it. */
+function GlyphIcon({ name, ink, knock, size }: { name: Glyph; ink: string; knock: string; size: number }) {
+  const k = { fill: 'none', stroke: knock, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <g fill={ink}>
+        {name === 'people' && (<><circle cx="9" cy="8" r="3.4" /><circle cx="17.2" cy="9.2" r="2.6" /><path d="M2.5 19.5c0-3.4 2.9-5.7 6.5-5.7s6.5 2.3 6.5 5.7z" /><path d="M16 14.1c2.8.1 5.5 1.7 5.5 4.7v.7h-4.3c0-2-.4-3.7-1.2-5.4z" /></>)}
+        {name === 'bars' && (<><rect x="3.5" y="12" width="4.5" height="8.5" rx="2.25" /><rect x="9.75" y="4" width="4.5" height="16.5" rx="2.25" /><rect x="16" y="8.5" width="4.5" height="12" rx="2.25" /></>)}
+        {name === 'coin' && <circle cx="12" cy="12" r="9.5" />}
+        {name === 'doc' && <rect x="4.5" y="2.5" width="15" height="19" rx="3.5" />}
+        {name === 'calendar' && <rect x="3" y="4.5" width="18" height="17" rx="4" />}
+        {name === 'clock' && <circle cx="12" cy="12" r="9.5" />}
+        {name === 'check' && <circle cx="12" cy="12" r="9.5" />}
+        {name === 'grid' && (<><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2" /><rect x="13" y="3.5" width="7.5" height="7.5" rx="2" /><rect x="3.5" y="13" width="7.5" height="7.5" rx="2" /><rect x="13" y="13" width="7.5" height="7.5" rx="2" /></>)}
+      </g>
+      {name === 'coin' && <text x="12" y="16.6" textAnchor="middle" fontSize="12.5" fontWeight="800" fill={knock} style={{ fontFamily: 'Arial, sans-serif' }}>$</text>}
+      {name === 'doc' && <path d="M8.5 9h7M8.5 13h7M8.5 17h4" {...k} />}
+      {name === 'calendar' && <path d="M8 2.5v4M16 2.5v4M3 10h18" {...k} />}
+      {name === 'clock' && <path d="M12 7v5.2l3.2 2" {...k} />}
+      {name === 'check' && <path d="M8 12.4l2.8 2.8L16.2 9.5" {...k} />}
+    </svg>
+  )
+}
+
+/** Decorative mini charts for computer widths (not data): five bars, or a soft curve. */
+function Deco({ kind }: { kind: 'bars' | 'curve' }) {
+  if (kind === 'bars') {
+    return (
+      <span className="ss-deco" aria-hidden="true" style={{ alignItems: 'flex-end', gap: 4, height: 46, flexShrink: 0 }}>
+        {[58, 88, 66, 100, 34].map((h, i) => (
+          <span key={i} style={{ position: 'relative', width: 6, height: '100%', borderRadius: 3, background: '#E9EDF3', overflow: 'hidden' }}>
+            <span style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${h}%`, borderRadius: 3, background: TEAL }} />
+          </span>
+        ))}
+      </span>
+    )
+  }
+  return (
+    <svg className="ss-deco" width="58" height="30" viewBox="0 0 58 30" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M2 24C12 25 14 8 26 12s16-9 30-7" stroke="#9AD8D1" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  )
 }
 
 /**
@@ -73,10 +116,10 @@ function iconFor(label: string): AppIconName {
 export function StatStrip({ items, isMobile, variant = 'compact' }: { items: StatItem[]; isMobile: boolean; variant?: 'compact' | 'full' }) {
   const cols = isMobile ? 2 : Math.min(items.length, 4)
   const compact = isMobile && variant === 'compact'
-  const icon = compact ? 34 : 44
+  const icon = compact ? 36 : 46
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: isMobile ? 10 : 14 }}>
-      {items.map(item => {
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: isMobile ? 10 : 16 }}>
+      {items.map((item, i) => {
         const danger = /overdue/i.test(item.label) && !isZero(item.value)
         const text = isTextValue(item.value)
         const empty = text && /^not /i.test(String(item.value))
@@ -85,16 +128,23 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
         const delta = item.delta ?? split?.[1]
         const note = split ? split[2] : item.sub
         const tone = delta ? deltaTone(delta, item.up, item.label) : null
+        // Each card in the row gets its own treatment, like a dashboard: bars, a solid circle with a curve, a pale circle, a solid circle.
+        // On a phone every card has a circle (solid and pale alternating) and no chart.
+        const pos = i % 4
+        const solid = danger || (isMobile ? pos % 2 === 1 : pos === 1 || pos === 3)
+        const showCircle = isMobile || pos !== 0
+        const deco: 'bars' | 'curve' | null = isMobile ? null : pos === 0 ? 'bars' : pos === 1 ? 'curve' : null
+        const circleBg = danger ? RED_SOLID : solid ? TEAL : '#EEF2F6'
+        const ink = solid ? '#FFFFFF' : TEAL_DARK
         return (
           <div
             key={item.label}
             onClick={item.onClick}
             style={{
               background: WHITE,
-              border: `1px solid ${BORDER}`,
-              borderRadius: compact ? 14 : 16,
-              boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
-              padding: compact ? '10px 12px' : isMobile ? '14px 14px' : '16px 18px',
+              borderRadius: compact ? 16 : 20,
+              boxShadow: '0 2px 12px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03)',
+              padding: compact ? '10px 12px' : isMobile ? '14px' : '18px 20px',
               display: 'flex',
               alignItems: 'center',
               gap: compact ? 10 : 14,
@@ -102,15 +152,14 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
               cursor: item.onClick ? 'pointer' : 'default',
               transition: 'box-shadow 0.12s',
             }}
-            onMouseEnter={e => { if (item.onClick) e.currentTarget.style.boxShadow = '0 4px 14px rgba(15, 23, 42, 0.08)' }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(15, 23, 42, 0.04)' }}
+            onMouseEnter={e => { if (item.onClick) e.currentTarget.style.boxShadow = '0 6px 18px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(15, 23, 42, 0.03)' }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03)' }}
           >
-            <span
-              aria-hidden="true"
-              style={{ width: icon, height: icon, borderRadius: '50%', background: danger ? '#FDECEC' : TEAL_LIGHT, color: danger ? RED : TEAL_DARK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            >
-              <AppIcon name={iconFor(item.label)} size={compact ? 17 : 21} />
-            </span>
+            {showCircle && (
+              <span aria-hidden="true" style={{ width: icon, height: icon, borderRadius: '50%', background: circleBg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <GlyphIcon name={glyphFor(item.label)} ink={ink} knock={circleBg} size={compact ? 17 : 22} />
+              </span>
+            )}
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: compact ? 11.5 : 12.5, fontWeight: 500, color: TEXT3, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
               <div
@@ -136,6 +185,7 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
                 </div>
               )}
             </div>
+            {deco && <Deco kind={deco} />}
           </div>
         )
       })}

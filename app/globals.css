@@ -242,6 +242,10 @@ textarea::placeholder {
 .modal-actions > * { flex: 1 1 0; min-width: 0; }
 .modal-actions > :only-child { flex: 0 0 auto; }
 
+/* Decorative mini charts on the stat cards: only where the cards are wide enough */
+.ss-deco { display: none; }
+@media (min-width: 1180px) { .ss-deco { display: inline-flex; } svg.ss-deco { display: block; } }
+
 /* Option chooser: a soft grey track with the chosen option raised on a white tile (like an iOS segmented control).
    Up to six options share one equal width; more than that wrap. On a phone it spans the width. */
 .jb-chips {
