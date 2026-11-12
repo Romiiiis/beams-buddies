@@ -7,6 +7,7 @@ import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
+import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
@@ -409,12 +410,14 @@ export default function QuotesPage() {
   const statChips = [
     {
       label: 'Quotes',
+      trend: monthlyTrend(quotes, q => q.created_at),
       value: quotes.length.toLocaleString('en-AU'),
       sub: `${quotesDelta >= 0 ? '+' : ''}${quotesDelta}% last 30 days`,
       onClick: () => setFilterStatus('all'),
     },
     {
       label: 'Accepted',
+      trend: monthlyTrend(quotes.filter(q => q.status === 'accepted'), q => q.created_at),
       value: statusCounts.accepted.toLocaleString('en-AU'),
       sub: `${acceptedDelta >= 0 ? '+' : ''}${acceptedDelta}% last 30 days`,
       onClick: () => setFilterStatus('accepted'),

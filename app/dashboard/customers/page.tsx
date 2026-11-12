@@ -9,6 +9,7 @@ import { PageSkeleton } from '@/components/Skeleton'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
 import { StatStrip } from '@/components/StatStrip'
+import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
@@ -297,12 +298,14 @@ export default function CustomersPage() {
   const statChips = [
     {
       label: 'Total Customers',
+      trend: monthlyTrend(customers, c => c.created_at),
       value: stats.totalCustomers,
       sub: 'in your CRM',
       onClick: () => router.push('/dashboard/customers'),
     },
     {
       label: 'Total Jobs',
+      trend: monthlyTrend(customers.flatMap((c: any) => c.jobs || []), (j: any) => j.created_at),
       value: stats.totalUnits,
       sub: 'linked to profiles',
       onClick: () => router.push('/dashboard/customers'),

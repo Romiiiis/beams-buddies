@@ -20,6 +20,8 @@ export type StatItem = {
   /** Change versus the previous period, e.g. "+8%". Shown as a pill. */
   delta?: string
   up?: boolean
+  /** Month-by-month figures (oldest to newest) for the little chart on a wide screen. Without it the card has no chart. */
+  trend?: number[]
   onClick?: () => void
 }
 
@@ -88,22 +90,35 @@ function GlyphIcon({ name, ink, knock, size }: { name: Glyph; ink: string; knock
   )
 }
 
-/** Decorative mini charts for computer widths (not data): five bars, or a soft curve. */
-function Deco({ kind }: { kind: 'bars' | 'curve' }) {
+/** The little chart on a wide screen: bars or a curve drawn from the card's real month-by-month figures. */
+function Deco({ kind, values }: { kind: 'bars' | 'curve'; values: number[] }) {
+  const max = Math.max(...values, 0)
+  const min = Math.min(...values)
+  const tip = `Last ${values.length} months: ${values.map(v => Math.round(v * 100) / 100).join(', ')}`
   if (kind === 'bars') {
     return (
-      <span className="ss-deco" aria-hidden="true" style={{ alignItems: 'flex-end', gap: 4, height: 46, flexShrink: 0 }}>
-        {[58, 88, 66, 100, 34].map((h, i) => (
+      <span className="ss-deco" title={tip} role="img" aria-label={tip} style={{ alignItems: 'flex-end', gap: 4, height: 46, flexShrink: 0 }}>
+        {values.map((v, i) => (
           <span key={i} style={{ position: 'relative', width: 6, height: '100%', borderRadius: 3, background: '#E9EDF3', overflow: 'hidden' }}>
-            <span style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${h}%`, borderRadius: 3, background: TEAL }} />
+            <span style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${v > 0 && max > 0 ? Math.max(10, (v / max) * 100) : 0}%`, borderRadius: 3, background: i === values.length - 1 ? TEAL : '#86CFC8' }} />
           </span>
         ))}
       </span>
     )
   }
+  const W = 58, H = 30
+  const pts = values.map((v, i) => [2 + (i * (W - 6)) / Math.max(1, values.length - 1), max === min ? H / 2 : H - 5 - ((v - min) / (max - min)) * (H - 10)])
+  let d = `M${pts[0][0]} ${pts[0][1]}`
+  for (let i = 1; i < pts.length; i++) {
+    const mx = (pts[i - 1][0] + pts[i][0]) / 2
+    d += ` C${mx} ${pts[i - 1][1]} ${mx} ${pts[i][1]} ${pts[i][0]} ${pts[i][1]}`
+  }
+  const last = pts[pts.length - 1]
   return (
-    <svg className="ss-deco" width="58" height="30" viewBox="0 0 58 30" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M2 24C12 25 14 8 26 12s16-9 30-7" stroke="#9AD8D1" strokeWidth="2.6" strokeLinecap="round" />
+    <svg className="ss-deco" width={W} height={H} viewBox={`0 0 ${W} ${H}`} fill="none" role="img" aria-label={tip} style={{ flexShrink: 0 }}>
+      <title>{tip}</title>
+      <path d={d} stroke="#9AD8D1" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r="3" fill={TEAL} />
     </svg>
   )
 }
@@ -132,8 +147,9 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
         // On a phone every card has a circle (solid and pale alternating) and no chart.
         const pos = i % 4
         const solid = danger || (isMobile ? pos % 2 === 1 : pos === 1 || pos === 3)
-        const showCircle = isMobile || pos !== 0
-        const deco: 'bars' | 'curve' | null = isMobile ? null : pos === 0 ? 'bars' : pos === 1 ? 'curve' : null
+        const hasTrend = !isMobile && !!item.trend && item.trend.length > 1 && item.trend.some(v => v > 0)
+        const deco: 'bars' | 'curve' | null = hasTrend ? (pos === 0 ? 'bars' : pos === 1 ? 'curve' : null) : null
+        const showCircle = isMobile || !(pos === 0 && deco)
         const circleBg = danger ? RED_SOLID : solid ? TEAL : '#EEF2F6'
         const ink = solid ? '#FFFFFF' : TEAL_DARK
         return (
@@ -185,7 +201,7 @@ export function StatStrip({ items, isMobile, variant = 'compact' }: { items: Sta
                 </div>
               )}
             </div>
-            {deco && <Deco kind={deco} />}
+            {deco && item.trend && <Deco kind={deco} values={item.trend} />}
           </div>
         )
       })}

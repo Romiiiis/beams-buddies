@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { StatStrip } from '@/components/StatStrip'
+import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
@@ -895,6 +896,7 @@ export default function JobsPage() {
   const statChips = [
     {
       label: 'Total jobs',
+      trend: monthlyTrend(jobs, j => j.created_at),
       value: jobs.length,
       sub: `${jobsDelta >= 0 ? '+' : ''}${jobsDelta}% last 30 days`,
       onClick: () => setFilterType('all'),

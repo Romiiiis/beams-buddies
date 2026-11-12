@@ -7,6 +7,7 @@ import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
+import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { Status, STATUS_DOT, type StatusTone } from '@/components/Status'
@@ -795,11 +796,13 @@ export default function LeadsPage() {
   const statChips = [
     {
       label: 'Leads',
+      trend: monthlyTrend(leads, l => l.created_at),
       value: totalLeads,
       sub: `${leadsDelta >= 0 ? '+' : ''}${leadsDelta}% last 30 days`,
     },
     {
       label: 'Booked',
+      trend: monthlyTrend(leads.filter(l => l.status === 'booked'), l => l.created_at),
       value: bookedCount,
       sub: `${bookedDelta >= 0 ? '+' : ''}${bookedDelta}% last 30 days`,
     },

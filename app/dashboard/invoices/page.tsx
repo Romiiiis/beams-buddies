@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
 import { StatStrip } from '@/components/StatStrip'
+import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { SendInvoiceModal } from './SendInvoiceModal'
@@ -377,12 +378,14 @@ export default function InvoicesPage() {
   const statChips = [
     {
       label: 'Invoices',
+      trend: monthlyTrend(invoices, i => i.created_at),
       value: invoices.length.toLocaleString('en-AU'),
       sub: `${invoicesDelta >= 0 ? '+' : ''}${invoicesDelta}% last 30 days`,
       onClick: () => setFilterStatus('all'),
     },
     {
       label: 'Revenue',
+      trend: monthlyTrend(invoices.filter(i => i.status === 'paid'), i => i.created_at, i => i.total),
       value: moneyWhole(totalRevenue),
       sub: `${revenueDelta >= 0 ? '+' : ''}${revenueDelta}% last 30 days`,
       onClick: () => setFilterStatus('paid'),
