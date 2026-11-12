@@ -15,6 +15,7 @@ import { Select } from '@/components/Select'
 import { ConfirmDialog } from '@/components/forms'
 import { FIELD, FIELD_TEXTAREA, LABEL } from '@/components/forms'
 import { PropertyModal } from './PropertyModal'
+import { TagEditor, TagList, cleanTags } from '@/components/TagEditor'
 import { Status, type StatusTone } from '@/components/Status'
 import { customerAddress, type Site } from '@/lib/schedule'
 
@@ -209,10 +210,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         suburb: customerForm.suburb,
         postcode: customerForm.postcode,
         notes: customerForm.notes,
+        tags: cleanTags(customerForm.tags || []),
       })
       .eq('id', id)
 
-    setCustomer(customerForm)
+    setCustomer({ ...customerForm, tags: cleanTags(customerForm.tags || []) })
     setEditingCustomer(false)
     setSaving(false)
     setSaved(true)
@@ -584,6 +586,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   ))}
 
+                  <div style={{ padding: '14px 18px', gridColumn: '1 / -1', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ ...TYPE.label, marginBottom: '6px' }}>Tags</div>
+                    <TagList tags={customer.tags} />
+                  </div>
+
                   <div style={{ padding: '14px 18px', gridColumn: '1 / -1' }}>
                     <div style={{ ...TYPE.label, marginBottom: '6px' }}>Notes</div>
                     <div style={TYPE.body}>{customer.notes || '—'}</div>
@@ -626,6 +633,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                       <label style={labelStyle}>Postcode</label>
                       <input style={inputStyle} value={customerForm.postcode || ''} onChange={e => setCustomerForm((p: any) => ({ ...p, postcode: e.target.value }))} />
                     </div>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Tags</label>
+                    <TagEditor tags={customerForm.tags || []} onChange={tags => setCustomerForm((p: any) => ({ ...p, tags }))} inputStyle={inputStyle} />
                   </div>
 
                   <div>

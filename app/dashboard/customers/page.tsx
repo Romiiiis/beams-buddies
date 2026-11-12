@@ -13,6 +13,7 @@ import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
 import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
+import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -121,6 +122,7 @@ export default function CustomersPage() {
   const [search, setSearch] = useState('')
   const [contactCustomer, setContactCustomer] = useState<any | null>(null)
   const [statusTab, setStatusTab] = useState('all')
+  const [tagFilter, setTagFilter] = useState('all')
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', phone: '', email: '' })
@@ -216,12 +218,15 @@ export default function CustomersPage() {
   const filtered = useMemo(() => {
     return customers.filter((c) => {
       if (statusTab !== 'all' && statusPill(c.jobs).label !== statusTab) return false
+      if (tagFilter !== 'all' && !(c.tags || []).includes(tagFilter)) return false
       if (!search) return true
-      return `${c.first_name || ''} ${c.last_name || ''} ${c.email || ''} ${c.phone || ''} ${c.suburb || ''} ${c.address || ''}`
+      return `${(c.tags || []).join(' ')} ${c.first_name || ''} ${c.last_name || ''} ${c.email || ''} ${c.phone || ''} ${c.suburb || ''} ${c.address || ''}`
         .toLowerCase()
         .includes(search.toLowerCase())
     })
-  }, [customers, search, statusTab])
+  }, [customers, search, statusTab, tagFilter])
+
+  const allTags = useMemo(() => [...new Set(customers.flatMap((c) => (c.tags || []) as string[]))].sort((a, b) => a.localeCompare(b)), [customers])
 
   const statusTabs = ['Overdue', 'Due soon', 'On track'].reduce(
     (tabs, label) => [...tabs, { value: label, label, count: customers.filter((c) => statusPill(c.jobs).label === label).length }],
@@ -430,6 +435,12 @@ export default function CustomersPage() {
             emptyText="No matching customers."
             onRowClick={c => router.push(`/dashboard/customers/${c.id}`)}
             rowActions={() => [{ label: 'Open customer', onClick: c => router.push(`/dashboard/customers/${c.id}`) }]}
+            filters={allTags.length > 0 ? (
+              <Select value={tagFilter} onChange={e => setTagFilter(e.target.value)} style={{ height: 36, minWidth: 160 }} aria-label="Tag">
+                <option value="all">All tags</option>
+                {allTags.map(t => <option key={t} value={t}>{t}</option>)}
+              </Select>
+            ) : undefined}
             tabs={statusTabs}
             activeTab={statusTab}
             onTabChange={setStatusTab}
@@ -451,6 +462,7 @@ export default function CustomersPage() {
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 2, marginRight: -40 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: TEXT3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.address || c.suburb || 'No address saved'}</div>
+                      {(c.tags || []).length > 0 && <div style={{ fontSize: 12, fontWeight: 600, color: TEXT3, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(c.tags as string[]).join(' · ')}</div>}
                       <div style={{ fontSize: 14, fontWeight: 700, color: TEXT2, marginTop: 8 }}>
                         {jobsList.length === 0 ? 'No jobs yet' : `${jobsList.length} job${jobsList.length === 1 ? '' : 's'}${unit ? ` · ${unit}` : ''}`}
                       </div>
@@ -488,6 +500,13 @@ export default function CustomersPage() {
                 width: 'minmax(0,1.2fr)',
                 hideOnMobile: true,
                 render: c => <TitleCell title={c.email || c.phone || 'No contact saved'} sub={c.email && c.phone ? c.phone : ''} />,
+              },
+              {
+                key: 'tags',
+                label: 'Tags',
+                width: 'minmax(0,1fr)',
+                hideOnMobile: true,
+                render: c => <TextCell>{(c.tags || []).length ? (c.tags as string[]).join(', ') : '—'}</TextCell>,
               },
               {
                 key: 'jobs',
