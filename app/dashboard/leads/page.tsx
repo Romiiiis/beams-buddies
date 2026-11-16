@@ -10,6 +10,7 @@ import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
+import { Select } from '@/components/Select'
 import { Status, STATUS_DOT, type StatusTone } from '@/components/Status'
 import { LeadPipeline, type PipelineStage } from './LeadPipeline'
 import { AddLeadModal } from './AddLeadModal'
@@ -147,16 +148,34 @@ interface LeadDrawerProps {
 }
 
 function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, isMobile }: LeadDrawerProps) {
+  const [customerName, setCustomerName] = useState(lead.customer_name || '')
+  const [phoneNumber, setPhoneNumber] = useState(lead.phone_number || '')
+  const [address, setAddress] = useState(lead.address || '')
+  const [suburb, setSuburb] = useState(lead.suburb || '')
+  const [jobType, setJobType] = useState(lead.job_type || '')
+  const [issueSummary, setIssueSummary] = useState(lead.issue_summary || '')
   const [status, setStatus] = useState(lead.status)
   const [preferredDate, setPreferredDate] = useState(lead.preferred_date || '')
   const [preferredTime, setPreferredTime] = useState(lead.preferred_start_time || '')
   const [followUpNote, setFollowUpNote] = useState(lead.follow_up_note || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   async function save() {
+    if (!customerName.trim()) {
+      setSaveError('Add the customer’s name before saving.')
+      return
+    }
     setSaving(true)
+    setSaveError('')
     const updates: any = {
+      customer_name: customerName.trim(),
+      phone_number: phoneNumber.trim() || null,
+      address: address.trim() || null,
+      suburb: suburb.trim() || null,
+      job_type: jobType.trim() || null,
+      issue_summary: issueSummary.trim() || null,
       status,
       preferred_date: preferredDate || null,
       preferred_start_time: preferredTime || null,
@@ -168,6 +187,8 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
       onUpdate({ ...lead, ...updates })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
+    } else {
+      setSaveError(`Couldn’t save changes: ${error.message}`)
     }
     setSaving(false)
   }
@@ -272,38 +293,48 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
           >
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: 4, height: 34, borderRadius: '999px', background: TEAL, flexShrink: 0 }} />
-              <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Call details</div>
+              <div style={{ fontSize: '14px', fontWeight: 900, color: TEXT }}>Lead details</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
-              {[
-                { label: 'Suburb', value: lead.suburb || '—' },
-                { label: 'Address', value: lead.address || '—' },
-                {
-                  label: 'Received',
-                  value: lead.created_at
-                    ? new Date(lead.created_at).toLocaleString('en-AU', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : '—',
-                },
-                { label: 'Job type', value: lead.job_type?.replace('_', ' ') || '—' },
-              ].map((item, index) => (
-                <div
-                  key={item.label}
-                  style={{
-                    padding: '12px 16px',
-                    borderTop: index > (isMobile ? 0 : 1) ? `1px solid ${BORDER}` : 'none',
-                    borderLeft: !isMobile && index % 2 === 1 ? `1px solid ${BORDER}` : 'none',
-                  }}
-                >
-                  <div style={{ ...TYPE.label, marginBottom: '5px' }}>{item.label}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: TEXT, textTransform: 'capitalize' }}>{item.value}</div>
+            <div style={{ padding: '14px 16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={labelStyle} htmlFor="lead-customer-name">Contact name *</label>
+                <input id="lead-customer-name" autoComplete="name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} placeholder="Customer name" />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="lead-phone-number">Phone</label>
+                <input id="lead-phone-number" type="tel" autoComplete="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} style={inputStyle} placeholder="Phone number" />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="lead-job-type">Job type</label>
+                <Select id="lead-job-type" value={jobType} onChange={e => setJobType(e.target.value)} style={inputStyle}>
+                  <option value="">Not set</option>
+                  {jobType && !['installation', 'service', 'repair', 'quote', 'site_visit', 'other'].includes(jobType) && <option value={jobType}>{jobType.replaceAll('_', ' ')}</option>}
+                  <option value="installation">Installation</option>
+                  <option value="service">Service</option>
+                  <option value="repair">Repair</option>
+                  <option value="quote">Quote</option>
+                  <option value="site_visit">Site visit</option>
+                  <option value="other">Other</option>
+                </Select>
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="lead-address">Street address</label>
+                <input id="lead-address" autoComplete="street-address" value={address} onChange={e => setAddress(e.target.value)} style={inputStyle} placeholder="Street address" />
+              </div>
+              <div>
+                <label style={labelStyle} htmlFor="lead-suburb">Suburb</label>
+                <input id="lead-suburb" autoComplete="address-level2" value={suburb} onChange={e => setSuburb(e.target.value)} style={inputStyle} placeholder="Suburb" />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={labelStyle} htmlFor="lead-issue-summary">Enquiry details</label>
+                <textarea id="lead-issue-summary" value={issueSummary} onChange={e => setIssueSummary(e.target.value)} placeholder="What does the customer need?" rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} />
+              </div>
+              {lead.created_at && (
+                <div style={{ gridColumn: '1 / -1', fontSize: '12px', color: TEXT3 }}>
+                  Received {new Date(lead.created_at).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -366,6 +397,7 @@ function LeadDrawer({ lead, onClose, onUpdate, onConvert, onDelete, converting, 
                   }}
                 />
               </div>
+              {saveError && <div role="alert" style={{ color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 12px', fontSize: 12, lineHeight: 1.5 }}>{saveError}</div>}
             </div>
           </div>
 
