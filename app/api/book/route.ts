@@ -146,9 +146,32 @@ export async function POST(request: Request) {
       status: 'scheduled',
       notes: 'Booked online by the customer',
     })
-    .select('id')
+    .select('id, created_at')
     .single()
   if (error || !visit) return json({ error: 'failed', message: 'Sorry, we could not book that. Please try again or contact us.' }, 500)
+
+  // Two people can press Confirm on the same time in the same moment, each after seeing it free. So after saving,
+  // look for anything that clashes: the same technician at an overlapping time, or this job already booked.
+  // Whichever booking was saved first stands and the other withdraws itself, so the online page can never
+  // double-book a technician or book the same service twice.
+  const [{ data: overlapping }, { data: sameJob }] = await Promise.all([
+    db.from('job_visits').select('id, created_at, staff_id').eq('business_id', job.business_id).neq('id', visit.id).neq('status', 'cancelled').lt('start_at', end.toISOString()).gt('end_at', start.toISOString()),
+    db.from('job_visits').select('id, created_at').eq('job_id', job.id).neq('id', visit.id).eq('status', 'scheduled').gt('start_at', new Date().toISOString()),
+  ])
+  const savedAt = Date.parse(String((visit as any).created_at))
+  const cameFirst = (v: { id: unknown; created_at: unknown }) => {
+    const t = Date.parse(String(v.created_at))
+    return t < savedAt || (t === savedAt && String(v.id) < String(visit.id))
+  }
+  const alreadyBooked = (sameJob || []).some(cameFirst)
+  const technicianTaken = (overlapping || []).some(v => (v.staff_id ?? null) === (slot.staffId ?? null) && cameFirst(v))
+  if (alreadyBooked || technicianTaken) {
+    await db.from('job_visits').delete().eq('id', visit.id)
+    return alreadyBooked
+      ? json({ error: 'already_booked', message: 'This service is already booked in.' }, 409)
+      : json({ error: 'taken', message: 'Sorry, that time has just been taken. Please pick another.' }, 409)
+  }
+
   // It is no longer waiting to be booked
   await db.from('to_book').delete().eq('job_id', job.id)
 

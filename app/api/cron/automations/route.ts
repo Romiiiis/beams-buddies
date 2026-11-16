@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
 import { applyCopy, type EmailCopy } from '@/lib/email-copy'
 import { bookingUrl } from '@/lib/booking-token'
+import { unsubscribeApiUrl, unsubscribeUrl } from '@/lib/unsubscribe-token'
 import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DEFAULT_DAYS, overdueDue, quoteDue, reviewDue, serviceDue, visitDue } from '@/lib/automation-rules'
 
@@ -71,7 +72,8 @@ export async function GET(request: Request) {
     const days = (k: Kind) => daysFor.get(`${businessId}:${k}`) ?? AUTOMATION_DEFAULT_DAYS[k]
 
     // Claims the right to send (unique key stops duplicates), sends, and releases the claim if sending fails
-    async function deliver(kind: Kind, refId: string, cycle: string, to: string, mail: { subject: string; html: string; text: string }) {
+    // `oneClick` is the address a mail app calls for its own Unsubscribe button (reminders and follow-ups only)
+    async function deliver(kind: Kind, refId: string, cycle: string, to: string, mail: { subject: string; html: string; text: string }, oneClick?: string) {
       if (budget <= 0 || !EMAIL.test(to)) return false
       const { data: claim, error } = await db
         .from('automation_log')
@@ -89,6 +91,7 @@ export async function GET(request: Request) {
           subject: mail.subject,
           html: mail.html,
           text: mail.text,
+          ...(oneClick ? { headers: { 'List-Unsubscribe': `<${oneClick}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } } : {}),
         }),
       })
       const result = await res.json().catch(() => ({}))
@@ -106,27 +109,34 @@ export async function GET(request: Request) {
 
     const emailOf = (c: any) => String(c?.email || '').trim()
 
+    // Service reminders, review requests and quote follow-ups carry an Unsubscribe link, and are never sent to a
+    // customer who has used it. (Overdue invoices and reminders about a booked visit are about something the
+    // customer already has with the business, so they still go out.)
+    const optedOut = (c: any) => c?.email_opt_out === true
+    const withUnsubscribe = <T extends { unsubscribeUrl?: string }>(content: T, customerId: unknown): T => ({ ...content, unsubscribeUrl: unsubscribeUrl(String(customerId || '')) })
+
     if (kinds.has('service') || kinds.has('review')) {
       const { data: jobs } = await db
         .from('jobs')
-        .select('*, customers(first_name, last_name, email, phone, address, suburb), customer_sites(label, address, suburb, state, postcode)')
+        .select('*, customers(first_name, last_name, email, phone, address, suburb, email_opt_out), customer_sites(label, address, suburb, state, postcode)')
         .eq('business_id', businessId)
 
       for (const job of jobs || []) {
         const to = emailOf(job.customers)
-        if (!to) continue
+        if (!to || optedOut(job.customers)) continue
+        const oneClick = unsubscribeApiUrl(String(job.customer_id || ''))
 
         if (kinds.has('service')) {
           if (serviceDue(job, days('service'))) {
             const next = nextServiceDate(job)
-            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(applyCopy(serviceContent(job, sender, bookingUrl(job.id)), sender, copyOf('service')), sender))
+            await deliver('service', job.id, next ? toYMD(next) : '', to, renderAutomation(withUnsubscribe(applyCopy(serviceContent(job, sender, bookingUrl(job.id)), sender, copyOf('service')), job.customer_id), sender), oneClick)
           }
         }
 
         if (kinds.has('review')) {
           const url = String(settings?.google_review_url || '').trim()
           if (/^https:\/\//i.test(url) && reviewDue(job, days('review'))) {
-            await deliver('review', job.id, '', to, renderAutomation(applyCopy(reviewContent(job, sender, url), sender, copyOf('review')), sender))
+            await deliver('review', job.id, '', to, renderAutomation(withUnsubscribe(applyCopy(reviewContent(job, sender, url), sender, copyOf('review')), job.customer_id), sender), oneClick)
           }
         }
       }
@@ -185,13 +195,13 @@ export async function GET(request: Request) {
     if (kinds.has('quote')) {
       const { data: quotes } = await db
         .from('quotes')
-        .select('*, customers(first_name, last_name, email)')
+        .select('*, customers(first_name, last_name, email, email_opt_out)')
         .eq('business_id', businessId)
         .eq('status', 'sent')
       for (const q of quotes || []) {
         const to = emailOf(q.customers)
-        if (to && quoteDue(q, days('quote'))) {
-          await deliver('quote', q.id, '', to, renderAutomation(applyCopy(quoteContent(q, sender), sender, copyOf('quote')), sender))
+        if (to && !optedOut(q.customers) && quoteDue(q, days('quote'))) {
+          await deliver('quote', q.id, '', to, renderAutomation(withUnsubscribe(applyCopy(quoteContent(q, sender), sender, copyOf('quote')), q.customer_id), sender), unsubscribeApiUrl(String(q.customer_id || '')))
         }
       }
     }

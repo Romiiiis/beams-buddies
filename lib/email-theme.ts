@@ -36,6 +36,8 @@ export type EmailContent = {
   signoff: string
   /** Replaces the usual "you are a customer of ..." line at the bottom (for emails that are not to customers). */
   footer?: string
+  /** A link that stops these emails for this customer. When set, the bottom line offers it instead of "just reply". */
+  unsubscribeUrl?: string
 }
 
 export const EMAIL_STYLES: { id: EmailStyleId; name: string; blurb: string }[] = [
@@ -398,7 +400,10 @@ function signature(c: EmailContent, s: EmailSender, o: { align?: 'left' | 'cente
   return `<div style="${T(14, 22, 400, C.muted, o.align === 'center' ? 'text-align:center;' : '')}">${esc(c.signoff)}<br><span style="${T(15, 22, 800, C.ink)}">${esc(s.name)}</span>${contact ? `<br>${contact}` : ''}</div>`
 }
 
-function footerNote(s: EmailSender, align: 'left' | 'center' = 'left', text?: string) {
+function footerNote(s: EmailSender, align: 'left' | 'center' = 'left', text?: string, unsubscribeUrl?: string) {
+  if (text === undefined && unsubscribeUrl && /^https:\/\//i.test(unsubscribeUrl)) {
+    return `<div style="${T(12, 18, 400, '#8A97A8', `text-align:${align};`)}">${esc(`You are getting this email because you are a customer of ${s.name || 'us'}.`)} <a href="${esc(unsubscribeUrl)}" target="_blank" style="color:#64748B;text-decoration:underline;">Unsubscribe</a></div>`
+  }
   return `<div style="${T(12, 18, 400, '#8A97A8', `text-align:${align};`)}">${esc(text ?? `You are getting this email because you are a customer of ${s.name || 'us'}. If you would rather not receive these, just reply and let us know.`)}</div>`
 }
 
@@ -479,7 +484,7 @@ function classic(c: EmailContent, s: EmailSender) {
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 28px 24px 28px'))
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid ${C.card};border-radius:14px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
-  const foot = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;"><tr><td style="padding:16px 12px 0 12px;">${footerNote(s, 'center', c.footer)}</td></tr></table>`
+  const foot = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;"><tr><td style="padding:16px 12px 0 12px;">${footerNote(s, 'center', c.footer, c.unsubscribeUrl)}</td></tr></table>`
   return shell(c, C.page, '28px 12px', card + foot)
 }
 
@@ -510,7 +515,7 @@ function banner(c: EmailContent, s: EmailSender) {
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 28px 6px 28px'))
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 28px 26px 28px'))
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
-  rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer)}</td></tr>`)
+  rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer, c.unsubscribeUrl)}</td></tr>`)
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid #DCE5E5;border-radius:16px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
   return shell(c, '#EAF0F0', '28px 12px', card)
 }
@@ -544,7 +549,7 @@ function letter(c: EmailContent, s: EmailSender) {
   rows.push(`<tr><td>${c.closing.map(p => para(p, { size: 16, lh: 26, mb: 16 })).join('')}</td></tr>`)
   if (c.button) rows.push(`<tr><td style="padding:4px 0 26px 0;">${button(c.button.href, c.button.text, { bg: C.tealDark, radius: 8, pad: '13px 24px' })}</td></tr>`)
   rows.push(`<tr><td style="padding:0 0 26px 0;">${signature(c, s)}</td></tr>`)
-  rows.push(`<tr><td style="padding:16px 0 0 0;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer)}</td></tr>`)
+  rows.push(`<tr><td style="padding:16px 0 0 0;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer, c.unsubscribeUrl)}</td></tr>`)
   const inner = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">${rows.join('')}</table>`
   return shell(c, '#FFFFFF', '34px 20px', inner)
 }
@@ -575,7 +580,7 @@ function summary(c: EmailContent, s: EmailSender) {
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 28px 6px 28px'))
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 12 }), '6px 28px 24px 28px'))
   rows.push(row(signature(c, s), '0 28px 26px 28px'))
-  rows.push(row(footerNote(s, 'center', c.footer), '16px 28px 22px 28px', `border-top:1px solid ${C.line};`))
+  rows.push(row(footerNote(s, 'center', c.footer, c.unsubscribeUrl), '16px 28px 22px 28px', `border-top:1px solid ${C.line};`))
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid ${C.card};border-radius:18px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
   return shell(c, '#F1F3F5', '28px 12px', card)
 }
@@ -603,7 +608,7 @@ function bold(c: EmailContent, s: EmailSender) {
   rows.push(row(c.closing.map(p => para(p, { size: 16, lh: 26 })).join(''), '0 28px 8px 28px'))
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.ink, full: true, radius: 12, size: 16, pad: '17px 22px', arrow: true }), '6px 28px 26px 28px'))
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
-  rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer)}</td></tr>`)
+  rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer, c.unsubscribeUrl)}</td></tr>`)
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border-radius:18px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
   return shell(c, '#E6ECEE', '28px 12px', card)
 }
@@ -645,7 +650,8 @@ export function renderText(c: EmailContent, s: EmailSender): string {
   L.push(c.signoff, s.name || '')
   if (s.phone) L.push(s.phone)
   if (s.email) L.push(s.email)
-  L.push('', c.footer ?? `You are getting this email because you are a customer of ${s.name || 'us'}. If you would rather not receive these, just reply and let us know.`)
+  if (c.footer === undefined && c.unsubscribeUrl) L.push('', `You are getting this email because you are a customer of ${s.name || 'us'}.`, `Unsubscribe: ${c.unsubscribeUrl}`)
+  else L.push('', c.footer ?? `You are getting this email because you are a customer of ${s.name || 'us'}. If you would rather not receive these, just reply and let us know.`)
   // \r\n keeps Outlook and Windows Mail from joining lines
   return L.join('\r\n')
 }

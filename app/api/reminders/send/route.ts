@@ -68,6 +68,12 @@ export async function POST(request: Request) {
   const to = String((job as any).customers?.email || '').trim()
   if (!EMAIL.test(to)) return json({ error: 'no_email', message: 'This customer has no valid email address saved.' }, 400)
 
+  // A customer who has unsubscribed does not get service reminders, even ones sent by hand
+  const { data: optOut } = await supabase.from('customers').select('email_opt_out').eq('id', (job as any).customer_id).maybeSingle()
+  if ((optOut as any)?.email_opt_out === true) {
+    return json({ error: 'opted_out', message: 'This customer has unsubscribed from reminder emails. You can turn them back on from the customer’s page if they ask.' }, 400)
+  }
+
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const { count } = await supabase
     .from('reminder_emails')

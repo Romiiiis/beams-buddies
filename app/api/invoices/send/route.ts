@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { invoiceHtml, invoiceSubject, invoiceText, type InvoiceSender } from '@/lib/invoice-email'
+import { MANUAL_EMAIL_DAILY_LIMIT, logSentEmail, overDailyEmailLimit } from '@/lib/email-limits'
 
 // Sends an invoice email to the invoice's customer through Resend, same as service reminders.
 //
@@ -65,6 +66,10 @@ export async function POST(request: Request) {
   const to = String((invoice as any).customers?.email || '').trim()
   if (!EMAIL.test(to)) return json({ error: 'no_email', message: 'This customer has no valid email address saved.' }, 400)
 
+  if (await overDailyEmailLimit(supabase, businessId)) {
+    return json({ error: 'rate_limited', message: `Daily limit of ${MANUAL_EMAIL_DAILY_LIMIT} emails reached. Try again tomorrow.` }, 429)
+  }
+
   const sender: InvoiceSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
   const subject = invoiceSubject(invoice, sender)
   const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
@@ -90,6 +95,8 @@ export async function POST(request: Request) {
     console.error('Resend error:', res.status, result)
     return json({ error: 'send_failed', message: 'The email could not be sent. Please try again shortly.' }, 502)
   }
+
+  await logSentEmail(supabase, { business_id: businessId, kind: 'invoice', ref_id: invoiceId, to_email: to, subject })
 
   // A draft becomes "sent" once it has gone to the customer
   if ((invoice as any).status === 'draft') {
