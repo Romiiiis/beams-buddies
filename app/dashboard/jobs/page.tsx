@@ -709,7 +709,7 @@ export default function JobsPage() {
       }
       const { data } = await supabase
         .from('jobs')
-        .select(`*, customers ( first_name, last_name, phone, email, suburb, address ), customer_sites ( label, address, suburb, state, postcode )`)
+        .select(`*, customers ( id, first_name, last_name, phone, email, suburb, address ), customer_sites ( label, address, suburb, state, postcode )`)
         .eq('business_id', userData.business_id)
         .order('install_date', { ascending: false })
       setJobs(data || [])

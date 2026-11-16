@@ -5,6 +5,8 @@ import React, { createContext, useContext } from 'react'
 type BusinessData = {
   name: string
   logo_url: string | null
+  phone: string | null
+  email: string | null
   full_name: string | null
   role_title: string | null
   industry: string | null

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { invoiceHtml, invoiceSubject, invoiceText, type InvoiceSender } from '@/lib/invoice-email'
+import { invoiceContent, publicInvoiceUrl, renderAutomation, senderFrom } from '@/lib/automation-email'
 
 // Sends an invoice email to the invoice's customer through Resend, same as service reminders.
 //
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       .eq('id', invoiceId)
       .eq('business_id', businessId)
       .single(),
-    supabase.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', businessId).single(),
+    supabase.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', businessId).single(),
     supabase.from('business_settings').select('*').eq('business_id', businessId).single(),
   ])
   if (!invoice) return json({ error: 'not_found', message: 'Invoice not found.' }, 404)
@@ -65,9 +65,9 @@ export async function POST(request: Request) {
   const to = String((invoice as any).customers?.email || '').trim()
   if (!EMAIL.test(to)) return json({ error: 'no_email', message: 'This customer has no valid email address saved.' }, 400)
 
-  const sender: InvoiceSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
-  const subject = invoiceSubject(invoice, sender)
-  const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
+  const sender = senderFrom(business)
+  const rendered = renderAutomation(invoiceContent(invoice, sender, settings, publicInvoiceUrl((invoice as any).public_token)), sender)
+  const replyTo = EMAIL.test(String(sender.email || '').trim()) ? String(sender.email).trim() : undefined
 
   const ownDomain = String((business as any)?.email_domain || '').trim().toLowerCase()
   const sendDomain = (business as any)?.email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
@@ -79,9 +79,9 @@ export async function POST(request: Request) {
       from: `${safeDisplayName(sender.name)} <invoices@${sendDomain}>`,
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
-      subject,
-      html: invoiceHtml(invoice, sender, settings),
-      text: invoiceText(invoice, sender, settings),
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
     }),
   })
 

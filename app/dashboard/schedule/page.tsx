@@ -15,6 +15,7 @@ import { nextServiceDate, daysUntilService, serviceBucket, timingText, formatDat
 import { DataList, PersonCell, TitleCell, StatusPill } from '@/components/DataList'
 import { Status } from '@/components/Status'
 import { type ReminderSender, reminderSms } from '@/lib/reminder-email'
+import { senderFrom } from '@/lib/automation-email'
 import { SendReminderModal } from './SendReminderModal'
 
 const TEAL = '#2AA198'
@@ -100,13 +101,13 @@ function ReminderButtons({ job, sender, compact, onEmail }: { job: any; sender: 
   const sms = reminderSms(job, sender)
   const email = String(job.customers?.email || '').trim()
   const phone = String(job.customers?.phone || '').replace(/[^\d+]/g, '')
-  const emailHref = email ? `mailto:${email}` : null
+  const hasEmail = Boolean(email)
   const smsHref = phone ? `sms:${phone}?&body=${encodeURIComponent(sms)}` : null
 
   function openEmail(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    if (emailHref) onEmail(job)
+    if (hasEmail) onEmail(job)
   }
 
   const base: React.CSSProperties = {
@@ -132,10 +133,10 @@ function ReminderButtons({ job, sender, compact, onEmail }: { job: any; sender: 
 
   return (
     <>
-      {emailHref ? (
-        <a href={emailHref} style={emailStyle} onClick={openEmail}>
+      {hasEmail ? (
+        <button type="button" style={{ ...emailStyle, cursor: 'pointer' }} onClick={openEmail}>
           <IconMail size={size} /> Email
-        </a>
+        </button>
       ) : (
         <span style={{ ...emailStyle, ...off }} title="No email saved for this customer">
           <IconMail size={size} /> Email
@@ -200,15 +201,18 @@ export default function SchedulePage() {
       const [{ data }, { data: biz }] = await Promise.all([
         supabase
           .from('jobs')
-          .select('*, customers(first_name, last_name, email, phone, address, suburb)')
+          .select('*, customers(first_name, last_name, email, phone, address, suburb), customer_sites(address, suburb)')
           .eq('business_id', userData.business_id)
           .order('next_service_date', { ascending: true }),
         // Business contact details for the reminder signature
-        supabase.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', userData.business_id).single(),
+        supabase.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', userData.business_id).single(),
       ])
 
       setJobs(data || [])
-      if (biz) setSender({ name: biz.name || '', phone: biz.phone || '', email: biz.email || '' })
+      if (biz) {
+        const emailSender = senderFrom(biz)
+        setSender({ name: emailSender.name || '', phone: emailSender.phone || '', email: emailSender.email || '', logoUrl: emailSender.logoUrl })
+      }
       if (biz) setFromDomain(biz.email_domain_verified && biz.email_domain ? String(biz.email_domain).toLowerCase() : 'mail.jobyra.app')
       setLoading(false)
     }

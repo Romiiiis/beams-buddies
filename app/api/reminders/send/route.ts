@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { reminderHtml, reminderSubject, reminderText, type ReminderSender } from '@/lib/reminder-email'
+import { renderAutomation, senderFrom, serviceContent } from '@/lib/automation-email'
+import { bookingUrl } from '@/lib/booking-token'
 
-// Sends a service reminder email (design C) to a job's customer through Resend.
+// Sends the shared Classic service reminder to a job's customer through Resend.
 //
 // Security: the caller's Supabase session token is forwarded, so every read and write below runs
 // as that user under the normal business-scoped rules. A user can only send reminders for jobs
@@ -24,18 +25,15 @@ function safeDisplayName(name: string) {
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    // The app falls back to opening a plain-text draft in the user's mail app
-    return json({ error: 'not_configured', message: 'Email sending is not set up yet.' }, 503)
-  }
-
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
   if (!token) return json({ error: 'unauthorized', message: 'Please sign in again.' }, 401)
 
   let jobId: unknown
+  let mode: unknown
   try {
-    ;({ job_id: jobId } = await request.json())
+    const payload = await request.json()
+    jobId = payload?.job_id
+    mode = payload?.mode
   } catch {
     return json({ error: 'bad_request', message: 'Invalid request.' }, 400)
   }
@@ -61,12 +59,16 @@ export async function POST(request: Request) {
       .eq('id', jobId)
       .eq('business_id', businessId)
       .single(),
-    supabase.from('businesses').select('name, phone, email, email_domain, email_domain_verified').eq('id', businessId).single(),
+    supabase.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', businessId).single(),
   ])
   if (!job) return json({ error: 'not_found', message: 'Job not found.' }, 404)
 
   const to = String((job as any).customers?.email || '').trim()
   if (!EMAIL.test(to)) return json({ error: 'no_email', message: 'This customer has no valid email address saved.' }, 400)
+
+  const sender = senderFrom(business)
+  const rendered = renderAutomation(serviceContent(job, sender, bookingUrl(job.id)), sender)
+  if (mode === 'preview') return json({ ok: true, html: rendered.html, text: rendered.text, subject: rendered.subject, to }, 200)
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const { count } = await supabase
@@ -78,10 +80,9 @@ export async function POST(request: Request) {
     return json({ error: 'rate_limited', message: `Daily limit of ${DAILY_LIMIT} reminder emails reached. Try again tomorrow.` }, 429)
   }
 
-  const sender: ReminderSender = { name: business?.name || '', phone: business?.phone || '', email: business?.email || '' }
-  const subject = reminderSubject(job, sender)
-  const html = reminderHtml(job, sender)
-  const replyTo = EMAIL.test(sender.email.trim()) ? sender.email.trim() : undefined
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return json({ error: 'not_configured', message: 'Email sending is not set up yet.' }, 503)
+  const replyTo = EMAIL.test((sender.email || '').trim()) ? sender.email!.trim() : undefined
 
   // A business sends from its own domain once Jobyra has verified it in Resend (owner-only setting)
   const ownDomain = String((business as any)?.email_domain || '').trim().toLowerCase()
@@ -91,12 +92,12 @@ export async function POST(request: Request) {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: `${safeDisplayName(sender.name)} <reminders@${sendDomain}>`,
+      from: `${safeDisplayName(sender.name || '')} <reminders@${sendDomain}>`,
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
-      subject,
-      html,
-      text: reminderText(job, sender),
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
     }),
   })
 
@@ -113,8 +114,8 @@ export async function POST(request: Request) {
       job_id: jobId,
       customer_id: (job as any).customer_id ?? null,
       to_email: to,
-      subject,
-      body_html: html,
+      subject: rendered.subject,
+      body_html: rendered.html,
       provider_id: (result as any)?.id ?? null,
       sent_at: sentAt,
     }),

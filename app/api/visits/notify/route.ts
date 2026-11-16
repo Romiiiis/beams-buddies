@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { renderEmail, renderText, type EmailContent } from '@/lib/email-theme'
-import { emailLogoUrl, formatPhone } from '@/lib/automation-email'
+import { EMAIL_STYLE, emailLogoUrl, formatPhone } from '@/lib/automation-email'
 import { customerName, durationLabel, mapsUrl, minutesBetween, visitAddress, VISIT_KINDS } from '@/lib/schedule'
 
 // Emails a technician the details of a visit they have been given.
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       to: [to],
       ...(replyTo ? { reply_to: replyTo } : {}),
       subject: content.subject,
-      html: renderEmail('classic', content, sender),
+      html: renderEmail(EMAIL_STYLE, content, sender),
       text: renderText(content, sender),
     }),
   })

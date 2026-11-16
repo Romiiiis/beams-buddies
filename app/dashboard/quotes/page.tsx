@@ -235,6 +235,15 @@ export default function QuotesPage() {
     load()
   }, [router])
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    const customerId = query.get('customer_id')
+    if (query.get('new') !== '1' || !customerId) return
+    setForm(current => ({ ...current, customer_id: customerId }))
+    setShowForm(true)
+    router.replace('/dashboard/quotes', { scroll: false })
+  }, [router])
+
   function calcTotals(items: LineItem[], taxRate: number) {
     const subtotal = items.reduce((s, i) => s + i.qty * i.unit_price, 0)
     const tax_amount = subtotal * (taxRate / 100)

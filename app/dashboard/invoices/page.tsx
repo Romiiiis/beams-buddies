@@ -19,6 +19,7 @@ import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
 import { BTN, BTN_SM, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
 import { printElement } from '@/lib/print'
+import { senderFrom } from '@/lib/automation-email'
 
 const TEAL = '#2AA198'
 const TEAL_DARK = '#1F857C'
@@ -131,6 +132,7 @@ type Invoice = {
   created_at: string
   line_items: LineItem[]
   customers: {
+    id?: string
     first_name: string
     last_name: string
     suburb: string
@@ -241,7 +243,7 @@ export default function InvoicesPage() {
       if (!userData) return
       setBusinessId(userData.business_id)
       const [invoicesRes, customersRes, settingsRes, businessRes] = await Promise.all([
-        supabase.from('invoices').select('*, customers(first_name, last_name, suburb, phone, email, address)').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
+        supabase.from('invoices').select('*, customers(id, first_name, last_name, suburb, phone, email, address)').eq('business_id', userData.business_id).order('created_at', { ascending: false }),
         supabase.from('customers').select('id, first_name, last_name, suburb').eq('business_id', userData.business_id).order('first_name'),
         supabase.from('business_settings').select('*').eq('business_id', userData.business_id).single(),
         supabase.from('businesses').select('*').eq('id', userData.business_id).single(),
@@ -253,6 +255,15 @@ export default function InvoicesPage() {
       setLoading(false)
     }
     load()
+  }, [router])
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    const customerId = query.get('customer_id')
+    if (query.get('new') !== '1' || !customerId) return
+    setForm(current => ({ ...current, customer_id: customerId }))
+    setShowForm(true)
+    router.replace('/dashboard/invoices', { scroll: false })
   }, [router])
 
   function calcTotals(items: LineItem[], taxRate: number) {
@@ -308,7 +319,7 @@ export default function InvoicesPage() {
           notes: form.notes,
           due_date: form.due_date || null,
         })
-        .select('*, customers(first_name, last_name, suburb, phone, email, address)')
+        .select('*, customers(id, first_name, last_name, suburb, phone, email, address)')
         .single()
       if (res.data) data = res.data as Invoice
       else if (res.error?.code !== '23505') {
@@ -891,11 +902,10 @@ export default function InvoicesPage() {
       {viewingInvoice && showSend && (
         <SendInvoiceModal
           invoice={viewingInvoice}
-          sender={{ name: businessInfo?.name || '', phone: businessInfo?.phone || '', email: businessInfo?.email || '' }}
+          sender={senderFrom(businessInfo)}
           payment={businessSettings}
           isMobile={isMobile}
           onClose={() => setShowSend(false)}
-          onNotice={setNotice}
           onSent={(id, status, to) => {
             setShowSend(false)
             setInvoices(prev => prev.map(i => i.id === id ? { ...i, status } : i))
@@ -910,7 +920,7 @@ export default function InvoicesPage() {
 
       {viewingInvoice && (
         <ContactDrawer
-          customer={viewingInvoice.customers || {}}
+          customer={{ ...(viewingInvoice.customers || {}), id: viewingInvoice.customers?.id || (viewingInvoice as any).customer_id }}
           isOpen={showContact}
           onClose={() => setShowContact(false)}
           isMobile={isMobile}

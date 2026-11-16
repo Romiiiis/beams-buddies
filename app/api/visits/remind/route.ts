@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { buildMoved, buildOnTheWay, buildVisit, renderEmail, renderText, type EmailContent, type EmailSender } from '@/lib/email-theme'
-import { emailLogoUrl, formatPhone } from '@/lib/automation-email'
+import { EMAIL_STYLE, emailLogoUrl, formatPhone } from '@/lib/automation-email'
 import { durationLabel, minutesBetween, visitAddress, VISIT_KINDS } from '@/lib/schedule'
 
 // Emails the customer about a booked visit, on request from the visit window: a reminder ("Email a reminder"),
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
   const sendDomain = (business as any)?.email_domain_verified && DOMAIN.test(ownDomain) ? ownDomain : DEFAULT_SEND_DOMAIN
   const replyTo = EMAIL.test(sender.email || '') ? sender.email : undefined
 
-  const html = renderEmail('classic', content, sender)
+  const html = renderEmail(EMAIL_STYLE, content, sender)
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },

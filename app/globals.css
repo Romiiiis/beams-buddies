@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+  root: ".jobyra-email-ui";
+  include: button, card, input, textarea;
+  prefix: d-;
+  logs: false;
+}
 
 :root {
   --background: #FAFAFA;

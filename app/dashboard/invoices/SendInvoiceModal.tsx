@@ -3,29 +3,29 @@
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BTN, LINE, Modal, RED, TEXT2, TEXT3, useIsPhone } from '@/components/forms'
-import { type InvoicePayment, type InvoiceSender, invoiceHtml, invoiceSms, invoiceSubject, invoiceText } from '@/lib/invoice-email'
+import { invoiceContent, publicInvoiceUrl, renderAutomation } from '@/lib/automation-email'
+import type { EmailSender } from '@/lib/email-theme'
+import { type InvoicePayment, invoiceSms, type InvoiceSender as SmsSender } from '@/lib/invoice-email'
 
 type Props = {
   invoice: any
-  sender: InvoiceSender
+  sender: EmailSender
   payment: InvoicePayment | null
   isMobile: boolean
   onClose: () => void
   onSent: (invoiceId: string, status: string, to: string) => void
-  onNotice: (msg: string) => void
 }
 
 /** Preview of the invoice email (exactly what the customer receives) with Email and Text buttons. */
-export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, onNotice }: Props) {
+export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent }: Props) {
   const phone = useIsPhone()
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const to = String(invoice.customers?.email || '').trim()
   const tel = String(invoice.customers?.phone || '').trim()
-  const subject = invoiceSubject(invoice, sender)
-
-  const preview = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:22px 20px;background:#FFFFFF;">${invoiceHtml(invoice, sender, payment)}</body></html>`
+  const rendered = renderAutomation(invoiceContent(invoice, sender, payment, publicInvoiceUrl(invoice.public_token)), sender)
+  const subject = rendered.subject
+  const preview = rendered.html
 
   async function send() {
     setSending(true)
@@ -34,7 +34,6 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setError('Your session has expired. Please sign in again.')
-        setSending(false)
         return
       }
       const res = await fetch('/api/invoices/send', {
@@ -47,20 +46,16 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
         onSent(invoice.id, body.status, body.to || to)
         return
       }
-      if (body.error === 'not_configured') {
-        onNotice('Email sending isn’t switched on yet, so a plain draft opened in your mail app.')
-        window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(invoiceText(invoice, sender, payment))}`
-        onClose()
-        return
-      }
       setError(body.message || 'The email could not be sent. Please try again.')
     } catch {
       setError('Could not reach Jobyra. Check your connection and try again.')
+    } finally {
+      setSending(false)
     }
-    setSending(false)
   }
 
-  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, sender, payment))}` : undefined
+  const smsSender: SmsSender = { name: sender.name, phone: sender.phone || '', email: sender.email || '' }
+  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, smsSender, payment))}` : undefined
   const metaRow: React.CSSProperties = { display: 'flex', gap: 10, minWidth: 0, fontSize: 13, color: TEXT2 }
   const metaLabel: React.CSSProperties = { color: TEXT3, width: 58, flexShrink: 0 }
   const metaValue: React.CSSProperties = { fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
@@ -84,7 +79,8 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent, on
             Send by text
           </a>
           <button type="button" onClick={send} disabled={sending || !to} style={{ ...BTN.primary, ...(sending || !to ? BTN.disabled : {}) }}>
-            {sending ? 'Sending…' : 'Send by email'}
+            {sending && <span className="btn-spinner" aria-hidden="true" />}
+            <span aria-live="polite">{sending ? 'Sending…' : 'Send by email'}</span>
           </button>
         </>
       }

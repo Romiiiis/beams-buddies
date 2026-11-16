@@ -5,7 +5,6 @@ export type IndustryId =
   | 'solar'
   | 'gas_fitting'
   | 'refrigeration'
-  | 'med_spa'
   | 'painting'
   | 'carpentry'
   | 'tiling'
@@ -168,28 +167,6 @@ export const INDUSTRIES: IndustryConfig[] = [
       notes: { placeholder: 'Any notes about the installation...' },
     },
     terminology: { equipment: 'unit', job: 'installation' },
-  },
-  {
-    id: 'med_spa',
-    label: 'Med Spa',
-    description: 'Aesthetic treatments and skin care equipment',
-    equipmentTypes: [
-      { value: 'laser', label: 'Laser device' },
-      { value: 'ipl', label: 'IPL' },
-      { value: 'cryolipolysis', label: 'Cryolipolysis' },
-      { value: 'skin_needling', label: 'Skin needling' },
-      { value: 'rf_device', label: 'RF device' },
-      { value: 'other', label: 'Other' },
-    ],
-    fields: {
-      capacityKw: { show: false, label: '', placeholder: '' },
-      brand: { label: 'Manufacturer', placeholder: 'Candela' },
-      model: { label: 'Model', placeholder: 'GentleMax Pro' },
-      installLocation: { label: 'Treatment room', placeholder: 'Room 1' },
-      installDate: { label: 'Commission date' },
-      notes: { placeholder: 'Any notes about the device...' },
-    },
-    terminology: { equipment: 'device', job: 'commission' },
   },
   {
     id: 'painting',
@@ -457,7 +434,9 @@ export const INDUSTRIES: IndustryConfig[] = [
 ]
 
 export function getIndustry(id: string | null | undefined): IndustryConfig {
-  return INDUSTRIES.find(i => i.id === id) ?? INDUSTRIES[0]
+  // Older accounts may still store this removed option. Keep those records on a neutral setup.
+  const normalized = id === 'med_spa' ? 'general_trade' : id
+  return INDUSTRIES.find(i => i.id === normalized) ?? INDUSTRIES[0]
 }
 
 const LINE_ITEM_PLACEHOLDER: Record<IndustryId, string> = {
@@ -467,7 +446,6 @@ const LINE_ITEM_PLACEHOLDER: Record<IndustryId, string> = {
   solar: 'e.g. 6.6kW solar system installation',
   gas_fitting: 'e.g. Gas hot water installation',
   refrigeration: 'e.g. Cool room installation',
-  med_spa: 'e.g. Laser treatment session',
   painting: 'e.g. Interior room painting',
   carpentry: 'e.g. Timber deck installation',
   tiling: 'e.g. Bathroom floor tiling',

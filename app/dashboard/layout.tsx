@@ -10,6 +10,8 @@ const CACHE_KEY = 'jobyra_business'
 type BusinessData = {
   name: string
   logo_url: string | null
+  phone: string | null
+  email: string | null
   full_name: string | null
   role_title: string | null
   industry: string | null
@@ -46,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { data: bizData } = await supabase
         .from('businesses')
-        .select('name, logo_url, industry')
+        .select('name, logo_url, industry, phone, email')
         .eq('id', userData.business_id)
         .single()
 
@@ -54,6 +56,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const data = {
           name: bizData.name,
           logo_url: bizData.logo_url,
+          phone: bizData.phone ?? null,
+          email: bizData.email ?? null,
           full_name: userData.full_name,
           role_title: userData.role_title,
           industry: bizData.industry ?? null,

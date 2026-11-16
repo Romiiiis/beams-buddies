@@ -197,7 +197,7 @@ export default function SettingsPage() {
           email: businessRes.data.email || '',
           phone: businessRes.data.phone || '',
           logo_url: businessRes.data.logo_url || '',
-          industry: businessRes.data.industry || 'hvac',
+          industry: businessRes.data.industry === 'med_spa' ? 'general_trade' : businessRes.data.industry || 'hvac',
         })
         setLogoOriginalUrl(businessRes.data.logo_original_url || '')
       }

@@ -3,6 +3,7 @@
 import { getEquipmentLabel } from '@/lib/industry-config'
 import {
   buildOverdue,
+  buildInvoice,
   buildQuote,
   buildReview,
   buildVisit,
@@ -19,6 +20,19 @@ import { daysUntilService, nextServiceDate, parseDateLocal, startOfDay } from '@
 export const EMAIL_STYLE: EmailStyleId = 'classic'
 
 const DAY = 86400000
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://jobyra.app').replace(/\/$/, '')
+
+export function publicQuoteUrl(token: unknown): string | undefined {
+  const value = clean(token)
+  return UUID.test(value) ? `${siteUrl()}/quote/${value}` : undefined
+}
+
+export function publicInvoiceUrl(token: unknown): string | undefined {
+  const value = clean(token)
+  return UUID.test(value) ? `${siteUrl()}/invoice/${value}` : undefined
+}
 
 function clean(v: unknown) {
   return String(v ?? '').trim()
@@ -74,7 +88,7 @@ export function serviceContent(job: any, s: EmailSender, bookUrl?: string): Emai
   )
 }
 
-export function overdueContent(inv: any, s: EmailSender, settings?: any): EmailContent {
+export function overdueContent(inv: any, s: EmailSender, settings?: any, invoiceUrl?: string): EmailContent {
   const due = parseDateLocal(inv?.due_date)
   const late = daysFromToday(due)
   const bank: [string, string][] = [
@@ -98,12 +112,13 @@ export function overdueContent(inv: any, s: EmailSender, settings?: any): EmailC
       total: Number(inv?.total) || 0,
       paid: Number(inv?.amount_paid) || 0,
       payRows,
+      invoiceUrl,
     },
     s
   )
 }
 
-export function quoteContent(q: any, s: EmailSender): EmailContent {
+export function quoteContent(q: any, s: EmailSender, quoteUrl?: string): EmailContent {
   const valid = parseDateLocal(q?.valid_until)
   return buildQuote(
     {
@@ -114,9 +129,41 @@ export function quoteContent(q: any, s: EmailSender): EmailContent {
       validDays: daysFromToday(valid),
       lines: lines(q?.line_items),
       total: Number(q?.total) || 0,
+      quoteUrl,
     },
     s
   )
+}
+
+/** The shared Classic invoice template used for the in-app preview and email send. */
+export function invoiceContent(inv: any, s: EmailSender, settings?: any, invoiceUrl?: string): EmailContent {
+  const bank: [string, string][] = [
+    ['Bank', clean(settings?.bank_name)],
+    ['Account name', clean(settings?.account_name)],
+    ['BSB', clean(settings?.bsb)],
+    ['Account no.', clean(settings?.account_number)],
+    ['Reference', clean(inv?.invoice_number)],
+    ['Terms', clean(settings?.payment_terms)],
+  ]
+  const hasBankDetails = bank.slice(0, 4).some(([, value]) => value)
+  const notes = [inv?.notes, settings?.invoice_notes]
+    .map(value => clean(value))
+    .filter(Boolean)
+    .flatMap(value => value.split(/\r?\n/).map(line => line.trim()).filter(Boolean))
+  return buildInvoice({
+    first: clean(inv?.customers?.first_name),
+    number: clean(inv?.invoice_number),
+    due: parseDateLocal(inv?.due_date),
+    lines: lines(inv?.line_items),
+    subtotal: Number(inv?.subtotal) || 0,
+    taxRate: Number(inv?.tax_rate) || 0,
+    tax: Number(inv?.tax_amount) || 0,
+    total: Number(inv?.total) || 0,
+    paid: Number(inv?.amount_paid) || 0,
+    payRows: hasBankDetails ? bank.filter(([, value]) => value) : [],
+    notes,
+    invoiceUrl,
+  }, s)
 }
 
 export function reviewContent(job: any, s: EmailSender, url: string): EmailContent {

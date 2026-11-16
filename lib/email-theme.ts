@@ -7,7 +7,7 @@
 
 export type EmailKind = 'service' | 'overdue' | 'quote' | 'review' | 'visit'
 /** Every kind of message the app can send. The two after 'visit' are one-off messages about a booked visit. */
-export type MailKind = EmailKind | 'on_the_way' | 'moved'
+export type MailKind = EmailKind | 'on_the_way' | 'moved' | 'invoice'
 export type EmailStyleId = 'classic' | 'banner' | 'letter' | 'summary' | 'bold'
 export type Tone = 'neutral' | 'good' | 'warn' | 'danger'
 
@@ -119,8 +119,7 @@ function firstName(v: unknown) {
   return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'there'
 }
 
-function replyHref(s: EmailSender, subject: string) {
-  if (s.email && s.email.trim()) return `mailto:${s.email.trim()}?subject=${encodeURIComponent(subject)}`
+function replyHref(s: EmailSender) {
   if (s.phone && s.phone.trim()) return `tel:${s.phone.replace(/[^\d+]/g, '')}`
   return undefined
 }
@@ -137,7 +136,7 @@ export type ServiceInput = {
   days: number | null
   address?: string
   location?: string
-  /** Link to the page where the customer picks a time. Without it the button opens a reply email. */
+  /** Link to the page where the customer picks a time. */
   bookUrl?: string
 }
 
@@ -158,7 +157,7 @@ export function buildService(i: ServiceInput, s: EmailSender): EmailContent {
   if (i.address) facts.push(['Address', i.address])
   if (i.location) facts.push(['Location', i.location])
   const callUs = s.phone ? ` or call us on ${s.phone}` : ''
-  const bookHref = i.bookUrl || replyHref(s, `Service booking${i.first ? ` - ${i.first}` : ''}`)
+  const bookHref = i.bookUrl || replyHref(s)
   return {
     kind: 'service',
     subject: overdue
@@ -182,7 +181,7 @@ export function buildService(i: ServiceInput, s: EmailSender): EmailContent {
         ? `Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns. Tap the button below to choose a time that suits you. You can also reply to this email${callUs}.`
         : `Regular servicing keeps everything running efficiently and helps avoid unexpected breakdowns. To book a time, simply reply to this email${callUs}.`,
     ],
-    button: bookHref ? { text: i.bookUrl ? 'Choose a time' : 'Book my service', href: bookHref } : undefined,
+    button: bookHref ? { text: i.bookUrl ? 'Book my service' : 'Call to book', href: bookHref } : undefined,
     signoff: 'Kind regards,',
   }
 }
@@ -201,6 +200,7 @@ export type OverdueInput = {
   paid: number
   /** Bank details, already labelled. Leave empty when there are none. */
   payRows: [string, string][]
+  invoiceUrl?: string
 }
 
 /** "Split system service" or "Split system service and 2 more". */
@@ -221,7 +221,7 @@ export function buildOverdue(i: OverdueInput, s: EmailSender): EmailContent {
   if (i.issued) facts.push(['Issued', dateShort(i.issued)])
   if (i.due) facts.push(['Due', dateShort(i.due)])
   const payRows = i.payRows.filter(([, v]) => v)
-  const href = replyHref(s, `Invoice ${i.number}`)
+  const href = i.invoiceUrl || replyHref(s)
   return {
     kind: 'overdue',
     subject: `Invoice ${i.number} is overdue | ${biz}`,
@@ -239,7 +239,7 @@ export function buildOverdue(i: OverdueInput, s: EmailSender): EmailContent {
     facts,
     pay: payRows.length ? { title: 'How to pay', rows: payRows } : undefined,
     closing: [`Questions about this invoice? Just reply to this email${callUs} and we will sort it out.`],
-    button: href ? { text: 'Reply about this invoice', href } : undefined,
+    button: href ? { text: i.invoiceUrl ? 'View invoice' : 'Call about invoice', href } : undefined,
     signoff: 'Thank you,',
   }
 }
@@ -253,6 +253,7 @@ export type QuoteInput = {
   validDays: number | null
   lines: LineInput[]
   total: number
+  quoteUrl?: string
 }
 
 export function buildQuote(i: QuoteInput, s: EmailSender): EmailContent {
@@ -266,7 +267,7 @@ export function buildQuote(i: QuoteInput, s: EmailSender): EmailContent {
   if (what) facts.push(['For', what])
   if (i.sent) facts.push(['Sent', dateShort(i.sent)])
   if (i.validUntil) facts.push(['Valid until', dateShort(i.validUntil)])
-  const href = replyHref(s, `Quote ${i.number}`)
+  const href = i.quoteUrl || replyHref(s)
   return {
     kind: 'quote',
     subject: `Following up on quote ${i.number} | ${biz}`,
@@ -283,12 +284,61 @@ export function buildQuote(i: QuoteInput, s: EmailSender): EmailContent {
     },
     facts,
     closing: [`If everything looks good, just reply to this email${callUs} and we will lock in a date.`],
-    button: href ? { text: 'Reply to this quote', href } : undefined,
+    button: href ? { text: i.quoteUrl ? 'View your quote' : 'Call about your quote', href } : undefined,
     signoff: 'Kind regards,',
   }
 }
 
-export type ReviewInput = { first: string; what: string; url: string }
+export type InvoiceInput = {
+  first: string
+  number: string
+  due: Date | null
+  lines: LineInput[]
+  subtotal: number
+  taxRate: number
+  tax: number
+  total: number
+  paid: number
+  /** Bank details, already labelled. Leave empty when there are none. */
+  payRows: [string, string][]
+  notes: string[]
+  invoiceUrl?: string
+}
+
+/** A new invoice sent to the customer: line items, totals and how to pay. */
+export function buildInvoice(i: InvoiceInput, s: EmailSender): EmailContent {
+  const first = firstName(i.first)
+  const biz = s.name || 'us'
+  const owing = Math.max(0, Number(i.total) - Number(i.paid || 0))
+  const paidUp = owing <= 0 && Number(i.total) > 0
+  const callUs = s.phone ? ` or call us on ${s.phone}` : ''
+  const totals: NonNullable<EmailContent['totals']> = [
+    { label: 'Subtotal', value: money(i.subtotal) },
+    { label: `GST (${i.taxRate}%)`, value: money(i.tax) },
+    { label: 'Total', value: money(i.total), strong: true },
+  ]
+  if (Number(i.paid) > 0) totals.push({ label: 'Paid', value: money(i.paid) }, { label: 'Amount due', value: money(owing) })
+  const payRows = i.payRows.filter(([, v]) => v)
+  return {
+    kind: 'invoice',
+    subject: `Invoice ${i.number} from ${biz}`,
+    preheader: paidUp ? `Invoice ${i.number}, paid in full. Thank you.` : `${money(owing)}${i.due ? ` due ${dateShort(i.due)}` : ''}. Payment details are inside.`,
+    label: 'Invoice',
+    headline: `Hi ${first}, here is invoice ${i.number}`,
+    greeting: `Hi ${first},`,
+    paragraphs: [`Thank you for choosing ${biz}. Your invoice is below${i.due && !paidUp ? `, due ${dateShort(i.due)}` : ''}.`],
+    highlight: { label: paidUp ? 'Paid in full' : 'Amount due', value: money(paidUp ? i.total : owing), sub: i.due && !paidUp ? `Due ${dateMid(i.due)}` : undefined },
+    items: i.lines.map(l => ({ description: l.description, detail: `${l.qty} x ${money(l.unit)}`, amount: money(l.qty * l.unit) })),
+    totals,
+    pay: payRows.length && !paidUp ? { title: 'How to pay', rows: payRows } : undefined,
+    closing: [...i.notes, `Questions about this invoice? Just reply to this email${callUs}.`],
+    button: i.invoiceUrl ? { text: 'View invoice', href: i.invoiceUrl } : s.phone ? { text: 'Call us about this invoice', href: replyHref(s)! } : undefined,
+    signoff: 'Thank you,',
+    footer: `Invoice ${i.number} from ${biz}.`,
+  }
+}
+
+export type ReviewInput ={ first: string; what: string; url: string }
 
 export function buildReview(i: ReviewInput, s: EmailSender): EmailContent {
   const first = firstName(i.first)
@@ -305,7 +355,7 @@ export function buildReview(i: ReviewInput, s: EmailSender): EmailContent {
     closing: [
       'If you were happy with the work, a quick review helps other customers find a team they can trust. If anything was not right, just reply to this email and we will make it right.',
     ],
-    button: i.url ? { text: 'Leave a review', href: i.url } : undefined,
+    button: i.url ? { text: 'Leave a review', href: i.url } : s.phone ? { text: 'Call us', href: replyHref(s)! } : undefined,
     signoff: 'Kind regards,',
   }
 }
@@ -641,7 +691,7 @@ export function renderText(c: EmailContent, s: EmailSender): string {
     L.push('')
   }
   for (const p of c.closing) L.push(p, '')
-  if (c.button && /^https?:/i.test(c.button.href)) L.push(`${c.button.text}: ${c.button.href}`, '')
+  if (c.button && /^(https?:\/\/|tel:)/i.test(c.button.href)) L.push(`${c.button.text}: ${c.button.href}`, '')
   L.push(c.signoff, s.name || '')
   if (s.phone) L.push(s.phone)
   if (s.email) L.push(s.email)
@@ -677,7 +727,7 @@ export function buildVisit(i: VisitInput, s: EmailSender): EmailContent {
   if (i.equipment) facts.push(['Equipment', i.equipment])
   if (i.address) facts.push(['Address', i.address])
   if (i.tech) facts.push(['Technician', i.tech])
-  const href = replyHref(s, `Change my booking${i.first ? ` - ${i.first}` : ''}`)
+  const href = replyHref(s)
   return {
     kind: 'visit',
     subject: `Reminder: your ${i.what.toLowerCase()} on ${i.when} | ${biz}`,
@@ -757,7 +807,7 @@ export function buildMoved(i: MovedInput, s: EmailSender): EmailContent {
   if (i.equipment) facts.push(['Equipment', i.equipment])
   if (i.address) facts.push(['Address', i.address])
   if (i.tech) facts.push(['Technician', i.tech])
-  const href = replyHref(s, `New time for my booking${i.first ? ` - ${i.first}` : ''}`)
+  const href = replyHref(s)
   return {
     kind: 'moved',
     subject: `New time for your ${i.what.toLowerCase()}: ${i.when} | ${biz}`,

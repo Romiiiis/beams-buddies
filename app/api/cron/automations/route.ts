@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { overdueContent, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
+import { overdueContent, publicInvoiceUrl, publicQuoteUrl, quoteContent, renderAutomation, reviewContent, senderFrom, serviceContent, visitContent } from '@/lib/automation-email'
 import { applyCopy, type EmailCopy } from '@/lib/email-copy'
 import { bookingUrl } from '@/lib/booking-token'
 import { nextServiceDate, toYMD } from '@/lib/service'
@@ -141,7 +141,7 @@ export async function GET(request: Request) {
       for (const inv of invoices || []) {
         const to = emailOf(inv.customers)
         if (to && overdueDue(inv, days('overdue'))) {
-          await deliver('overdue', inv.id, '', to, renderAutomation(applyCopy(overdueContent(inv, sender, settings), sender, copyOf('overdue')), sender))
+          await deliver('overdue', inv.id, '', to, renderAutomation(applyCopy(overdueContent(inv, sender, settings, publicInvoiceUrl(inv.public_token)), sender, copyOf('overdue')), sender))
         }
       }
     }
@@ -191,7 +191,7 @@ export async function GET(request: Request) {
       for (const q of quotes || []) {
         const to = emailOf(q.customers)
         if (to && quoteDue(q, days('quote'))) {
-          await deliver('quote', q.id, '', to, renderAutomation(applyCopy(quoteContent(q, sender), sender, copyOf('quote')), sender))
+          await deliver('quote', q.id, '', to, renderAutomation(applyCopy(quoteContent(q, sender, publicQuoteUrl(q.public_token)), sender, copyOf('quote')), sender))
         }
       }
     }
