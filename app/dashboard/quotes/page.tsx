@@ -316,7 +316,11 @@ export default function QuotesPage() {
   }
 
   async function updateStatus(id: string, status: string) {
-    await supabase.from('quotes').update({ status }).eq('id', id)
+    const { error } = await supabase.from('quotes').update({ status }).eq('id', id)
+    if (error) {
+      setNotice('The status could not be changed. Please try again.')
+      return
+    }
     setQuotes(prev => prev.map(q => (q.id === id ? { ...q, status } : q)))
   }
 
@@ -327,6 +331,8 @@ export default function QuotesPage() {
       setQuotes(prev => prev.filter(q => q.id !== id))
       if (viewingId === id) setViewingId(null)
       setDeleteTarget(null)
+    } else {
+      setNotice('The quote could not be deleted. Please try again.')
     }
     setDeleting(false)
   }

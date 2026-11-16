@@ -693,7 +693,14 @@ export default function LeadsPage() {
 
       if (jobErr) throw jobErr
 
-      await supabase.from('leads').update({ status: 'converted' }).eq('id', lead.id)
+      // The customer and job exist by now, so a failure here must not look like the whole thing failed
+      // (trying again would make a second customer). Say exactly what is left to do instead.
+      const { error: markErr } = await supabase.from('leads').update({ status: 'converted' }).eq('id', lead.id)
+      if (markErr) {
+        setToast({ text: 'The customer and job were created, but the lead could not be marked as converted. Please change its status by hand.', error: true })
+        setConverting(null)
+        return
+      }
 
       const updated = { ...lead, status: 'converted' }
       setLeads(prev => prev.map(l => (l.id === lead.id ? updated : l)))

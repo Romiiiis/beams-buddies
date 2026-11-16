@@ -303,8 +303,9 @@ export default function CalendarPage() {
   }
 
   async function removeToBook(row: ToBookRow) {
-    await supabase.from('to_book').delete().eq('id', row.id)
+    const { error } = await supabase.from('to_book').delete().eq('id', row.id)
     setRemoveTarget(null)
+    if (error) setToast('That could not be removed. Please try again.')
     setTick(t => t + 1)
   }
 

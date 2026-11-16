@@ -12,7 +12,7 @@ import { useBusinessData } from '@/lib/business-context'
 import { getIndustry, getEquipmentLabel, formatCapacity } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
 import { Select } from '@/components/Select'
-import { ConfirmDialog } from '@/components/forms'
+import { ConfirmDialog, Toast } from '@/components/forms'
 import { FIELD, FIELD_TEXTAREA, LABEL } from '@/components/forms'
 import { PropertyModal } from './PropertyModal'
 import { TagEditor, TagList, cleanTags } from '@/components/TagEditor'
@@ -148,6 +148,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -198,8 +199,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   async function saveCustomer() {
     setSaving(true)
+    setSaveError('')
 
-    await supabase
+    const { error } = await supabase
       .from('customers')
       .update({
         first_name: customerForm.first_name,
@@ -214,6 +216,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       })
       .eq('id', id)
 
+    if (error) {
+      // Stay in edit mode with everything typed, so nothing is lost
+      setSaving(false)
+      setSaveError('The changes could not be saved. Please try again.')
+      return
+    }
+
     setCustomer({ ...customerForm, tags: cleanTags(customerForm.tags || []) })
     setEditingCustomer(false)
     setSaving(false)
@@ -224,8 +233,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   async function saveJob(jobId: string) {
     setSaving(true)
     const f = jobForms[jobId]
+    setSaveError('')
 
-    await supabase
+    const { error } = await supabase
       .from('jobs')
       .update({
         brand: f.brand,
@@ -242,6 +252,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         site_id: f.site_id || null,
       })
       .eq('id', jobId)
+
+    if (error) {
+      setSaving(false)
+      setSaveError('The changes could not be saved. Please try again.')
+      return
+    }
 
     setJobs(prev => prev.map(j => (j.id === jobId ? { ...j, ...f } : j)))
     setEditingJobId(null)
@@ -520,6 +536,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         >
           {/* Connected stat chips bar */}
           <StatStrip items={statChips} isMobile={isMobile} />
+
+          {saveError && <Toast message={saveError} tone="error" onClose={() => setSaveError('')} />}
 
           {saved && (
             <div

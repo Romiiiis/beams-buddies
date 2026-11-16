@@ -13,7 +13,7 @@ import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TitleCell, TextCell, StatusPill } from '@/components/DataList'
-import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
+import { BTN, FIELD, LABEL, Modal, RED } from '@/components/forms'
 import { Select } from '@/components/Select'
 
 const TEAL = '#2AA198'
@@ -128,6 +128,7 @@ export default function CustomersPage() {
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', phone: '', email: '' })
   const [addSaving, setAddSaving] = useState(false)
+  const [addError, setAddError] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -578,17 +579,25 @@ export default function CustomersPage() {
                 onClick={async () => {
                   if (!businessId || !addForm.firstName.trim()) return
                   setAddSaving(true)
-                  const { data } = await supabase.from('customers').insert({
+                  setAddError('')
+                  // The database needs a last name, so a blank one is saved as empty text (not "nothing"),
+                  // which is what let a first-name-only customer fail without any message before.
+                  const { data, error } = await supabase.from('customers').insert({
                     business_id: businessId,
                     first_name: addForm.firstName.trim(),
-                    last_name: addForm.lastName.trim() || null,
+                    last_name: addForm.lastName.trim(),
                     phone: addForm.phone.trim() || null,
                     email: addForm.email.trim() || null,
                   }).select('id').single()
                   setAddSaving(false)
+                  if (error || !data?.id) {
+                    // Keep the form open with everything typed, so nothing is lost
+                    setAddError('The customer could not be saved. Please try again.')
+                    return
+                  }
                   setShowAddCustomer(false)
                   setAddForm({ firstName: '', lastName: '', phone: '', email: '' })
-                  if (data?.id) router.push(`/dashboard/customers/${data.id}`)
+                  router.push(`/dashboard/customers/${data.id}`)
                 }}
                 style={{ ...BTN.primary, ...(!addForm.firstName.trim() || addSaving ? BTN.disabled : {}) }}
               >
@@ -616,6 +625,9 @@ export default function CustomersPage() {
               <label style={LABEL}>Email</label>
               <input type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" style={FIELD} />
             </div>
+            {addError && (
+              <div role="alert" style={{ fontSize: 13, fontWeight: 600, color: RED, lineHeight: 1.4 }}>{addError}</div>
+            )}
           </div>
         </Modal>
       )}

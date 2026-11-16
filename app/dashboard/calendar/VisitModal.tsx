@@ -408,7 +408,12 @@ export function VisitModal({ businessId, visit, defaults, prefill, customers, jo
           return
         }
       }
-      await supabase.from('visit_series').update({ rule, template: { customer_id: customerId || null, job_id: jobId || null, site_id: siteId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } }).eq('id', series.id)
+      const seriesSave = await supabase.from('visit_series').update({ rule, template: { customer_id: customerId || null, job_id: jobId || null, site_id: siteId || null, staff_id: staffId || null, title: resolvedTitle, kind, notes: notes.trim() || null, duration, time } }).eq('id', series.id)
+      if (seriesSave.error) {
+        setSaving(false)
+        setError('The visits were changed, but the repeat settings could not be saved. Please save again.')
+        return
+      }
       setSaving(false)
       onSaved(`Repeat changed: ${dates.length} visits from ${fmtDay(dates[0])}`)
       return

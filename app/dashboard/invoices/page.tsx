@@ -213,6 +213,7 @@ export default function InvoicesPage() {
   const [showContact, setShowContact] = useState(false)
   const [showSend, setShowSend] = useState(false)
   const [notice, setNotice] = useState('')
+  const [errorNotice, setErrorNotice] = useState('')
   const [businessId, setBusinessId] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [businessSettings, setBusinessSettings] = useState<any>(null)
@@ -282,28 +283,49 @@ export default function InvoicesPage() {
     setSaving(true)
     const taxRate = parseFloat(form.tax_rate) || 10
     const { subtotal, tax_amount, total } = calcTotals(form.line_items, taxRate)
-    const invoice_number = `INV-${String(invoices.length + 1).padStart(4, '0')}`
 
-    const { data } = await supabase
-      .from('invoices')
-      .insert({
-        business_id: businessId,
-        customer_id: form.customer_id,
-        invoice_number,
-        status: 'draft',
-        line_items: form.line_items,
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount,
-        total,
-        amount_paid: 0,
-        notes: form.notes,
-        due_date: form.due_date || null,
-      })
-      .select('*, customers(first_name, last_name, suburb, phone, email, address)')
-      .single()
+    // The number follows the highest one the business already has (so deleting an invoice never causes a
+    // repeat). The database also refuses repeats; if it says a number is taken, the next one is tried.
+    const highestLoaded = invoices.reduce((max, inv) => Math.max(max, parseInt((inv.invoice_number || '').match(/(\d{1,9})$/)?.[1] || '0', 10) || 0), 0)
+    let data: Invoice | null = null
+    let failed = false
+    for (let attempt = 0; attempt < 5 && !data; attempt++) {
+      const { data: next } = await supabase.rpc('next_invoice_number')
+      const invoice_number = typeof next === 'string' && next ? next : `INV-${String(highestLoaded + 1 + attempt).padStart(4, '0')}`
+      const res = await supabase
+        .from('invoices')
+        .insert({
+          business_id: businessId,
+          customer_id: form.customer_id,
+          invoice_number,
+          status: 'draft',
+          line_items: form.line_items,
+          subtotal,
+          tax_rate: taxRate,
+          tax_amount,
+          total,
+          amount_paid: 0,
+          notes: form.notes,
+          due_date: form.due_date || null,
+        })
+        .select('*, customers(first_name, last_name, suburb, phone, email, address)')
+        .single()
+      if (res.data) data = res.data as Invoice
+      else if (res.error?.code !== '23505') {
+        failed = true
+        break
+      }
+    }
 
-    if (data) setInvoices(prev => [data as Invoice, ...prev])
+    if (!data || failed) {
+      // Keep the form open with everything typed, so nothing is lost
+      setErrorNotice('The invoice could not be saved. Please try again.')
+      setSaving(false)
+      return
+    }
+
+    const saved = data
+    setInvoices(prev => [saved, ...prev])
     setShowForm(false)
     setForm({ customer_id: '', due_date: '', notes: '', tax_rate: '10', line_items: [{ description: '', qty: 1, unit_price: 0 }] })
     setSaving(false)
@@ -312,7 +334,11 @@ export default function InvoicesPage() {
   async function updateStatus(id: string, status: string) {
     const update: any = { status }
     if (status === 'paid') update.paid_at = new Date().toISOString()
-    await supabase.from('invoices').update(update).eq('id', id)
+    const { error } = await supabase.from('invoices').update(update).eq('id', id)
+    if (error) {
+      setErrorNotice('The status could not be changed. Please try again.')
+      return
+    }
     setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...update } : inv))
     if (viewingInvoice?.id === id) setViewingInvoice(prev => prev ? { ...prev, ...update } : prev)
   }
@@ -324,6 +350,8 @@ export default function InvoicesPage() {
     if (!error) {
       setInvoices(prev => prev.filter(inv => inv.id !== id))
       if (viewingInvoice?.id === id) setViewingInvoice(null)
+    } else {
+      setErrorNotice('The invoice could not be deleted. Please try again.')
     }
     setDeletingInvoiceId(null)
     setDeleteInvoiceId(null)
@@ -878,6 +906,7 @@ export default function InvoicesPage() {
       )}
 
       {notice && <Toast message={notice} onClose={() => setNotice('')} />}
+      {errorNotice && <Toast message={errorNotice} tone="error" onClose={() => setErrorNotice('')} />}
 
       {viewingInvoice && (
         <ContactDrawer
