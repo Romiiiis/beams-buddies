@@ -197,7 +197,13 @@ export function LeadPipeline({ leads, stages, isMobile, movingId, statusLabels, 
           className="jb-chips wrap"
           role="radiogroup"
           aria-label="Enquiry stage"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4 }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gridAutoFlow: 'row',
+            gridAutoColumns: 'unset',
+            gap: 4,
+          }}
         >
           {stages.map(s => (
             <button key={s.key} type="button" role="radio" aria-checked={s.key === stage.key} className="jb-chip" onClick={() => setActiveStage(s.key)}>
