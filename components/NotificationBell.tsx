@@ -66,6 +66,9 @@ export function NotificationBell() {
   const [items, setItems] = useState<Item[]>([])
   const [open, setOpen] = useState(false)
   const [seen, setSeen] = useState(0)
+  const [gone, setGone] = useState<string[]>([])
+  const [drag, setDrag] = useState<{ id: string; dx: number } | null>(null)
+  const touch = useRef<{ x: number; y: number; id: string; locked: boolean } | null>(null)
   const uid = useRef('')
   const box = useRef<HTMLDivElement>(null)
 
@@ -86,6 +89,7 @@ export function NotificationBell() {
         const raw = localStorage.getItem(`jobyra_notif_seen_${uid.current}`)
         setSeen(raw ? Number(raw) : Date.now() - 3 * 86400000)
       } catch { setSeen(Date.now() - 3 * 86400000) }
+      try { setGone(JSON.parse(localStorage.getItem(`jobyra_notif_gone_${uid.current}`) || '[]')) } catch {}
       const cached = readCache<Item[]>('notifications', uid.current)
       if (cached) setItems(cached)
       refresh()
@@ -100,6 +104,15 @@ export function NotificationBell() {
     try { localStorage.setItem(`jobyra_notif_seen_${uid.current}`, String(t)) } catch {}
   }, [items])
 
+  const dismiss = useCallback((id: string) => {
+    setGone(prev => {
+      const next = [...prev, id].slice(-200)
+      try { localStorage.setItem(`jobyra_notif_gone_${uid.current}`, JSON.stringify(next)) } catch {}
+      return next
+    })
+    setDrag(null)
+  }, [])
+
   const close = useCallback(() => { setOpen(false); markRead() }, [markRead])
 
   useEffect(() => {
@@ -109,14 +122,17 @@ export function NotificationBell() {
     document.addEventListener('mousedown', onDown)
     document.addEventListener('touchstart', onDown)
     document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('touchstart', onDown); document.removeEventListener('keydown', onKey) }
+    const onScroll = () => close()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); document.removeEventListener('mousedown', onDown); document.removeEventListener('touchstart', onDown); document.removeEventListener('keydown', onKey) }
   }, [open, close])
 
-  const unread = items.filter(i => i.at > seen).length
+  const shown = items.filter(i => !gone.includes(i.id))
+  const unread = shown.filter(i => i.at > seen).length
 
   return (
     <div ref={box} style={{ position: 'relative', flexShrink: 0 }}>
-      <style>{`.nb-btn{width:42px;height:42px}@media (max-width:767px){.nb-btn{width:40px;height:40px}.nb-pop{position:fixed!important;left:14px!important;right:14px!important;top:76px!important;width:auto!important}}`}</style>
+      <style>{`.nb-btn{width:42px;height:42px}@media (max-width:767px){.nb-x{display:none}}@media (max-width:767px){.nb-btn{width:40px;height:40px}.nb-pop{position:fixed!important;left:14px!important;right:14px!important;top:76px!important;width:auto!important}}`}</style>
       <button
         type="button"
         aria-label={unread ? `Notifications, ${unread} new` : 'Notifications'}
@@ -136,18 +152,38 @@ export function NotificationBell() {
             <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>Notifications</div>
             {unread > 0 && <button type="button" onClick={markRead} style={{ border: 'none', background: 'none', color: TEAL_DARK, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0 }}>Mark all read</button>}
           </div>
-          {items.length === 0 ? (
+          {shown.length === 0 ? (
             <div style={{ padding: '26px 16px', textAlign: 'center', color: MUTED, fontSize: 14, lineHeight: 1.5 }}>You are all caught up. New payments, quote replies, online bookings and enquiries will show here.</div>
           ) : (
-            items.map(i => (
-              <button key={i.id} type="button" onClick={() => { close(); router.push(i.href) }} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%', textAlign: 'left', padding: '13px 16px', border: 'none', borderTop: `1px solid ${LINE}`, background: i.at > seen ? '#F6FBFA' : '#FFFFFF', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: i.at > seen ? TEAL : 'transparent', marginTop: 6, flexShrink: 0 }} />
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: TEXT, lineHeight: 1.35 }}>{i.title}</span>
-                  <span style={{ display: 'block', fontSize: 12.5, color: MUTED, marginTop: 2 }}>{i.sub}</span>
-                </span>
-              </button>
-            ))
+            shown.map(i => {
+              const dx = drag?.id === i.id ? drag.dx : 0
+              return (
+                <div key={i.id} style={{ position: 'relative', overflow: 'hidden', borderTop: `1px solid ${LINE}`, background: '#EEF2F6' }}>
+                  <span aria-hidden="true" style={{ position: 'absolute', right: 18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 700, color: MUTED }}>Delete</span>
+                  <div
+                    onTouchStart={e => { const t = e.touches[0]; touch.current = { x: t.clientX, y: t.clientY, id: i.id, locked: false } }}
+                    onTouchMove={e => {
+                      const g = touch.current; if (!g) return
+                      const t = e.touches[0]; const mx = t.clientX - g.x; const my = t.clientY - g.y
+                      if (!g.locked) { if (Math.abs(my) > 10 && Math.abs(my) > Math.abs(mx)) { touch.current = null; return } if (Math.abs(mx) > 10) g.locked = true; else return }
+                      setDrag({ id: i.id, dx: Math.min(0, mx) })
+                    }}
+                    onTouchEnd={() => { const d = drag; touch.current = null; if (d && d.id === i.id && d.dx < -90) dismiss(i.id); else setDrag(null) }}
+                    onTouchCancel={() => { touch.current = null; setDrag(null) }}
+                    style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 12, background: i.at > seen ? '#F6FBFA' : '#FFFFFF', transform: `translateX(${dx}px)`, transition: drag?.id === i.id ? 'none' : 'transform 0.18s ease', touchAction: 'pan-y' }}
+                  >
+                    <button type="button" onClick={() => { close(); router.push(i.href) }} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minWidth: 0, textAlign: 'left', padding: '13px 0 13px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: i.at > seen ? TEAL : 'transparent', marginTop: 6, flexShrink: 0 }} />
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: TEXT, lineHeight: 1.35 }}>{i.title}</span>
+                        <span style={{ display: 'block', fontSize: 12.5, color: MUTED, marginTop: 2 }}>{i.sub}</span>
+                      </span>
+                    </button>
+                    <button type="button" className="nb-x" aria-label="Delete notification" onClick={() => dismiss(i.id)} style={{ border: 'none', background: 'none', color: MUTED, fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: '10px 14px' }}>×</button>
+                  </div>
+                </div>
+              )
+            })
           )}
         </div>
       )}
