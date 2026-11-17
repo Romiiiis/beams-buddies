@@ -382,17 +382,26 @@ export default function CalendarPage() {
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <button type="button" aria-label="Previous" onClick={() => go(-1)} style={{ ...BTN.secondary, ...BTN_SM, width: 34, padding: 0 }}>‹</button>
-              <button type="button" onClick={() => setAnchor(startOfDay(new Date()))} style={{ ...BTN.secondary, ...BTN_SM }}>Today</button>
-              <button type="button" aria-label="Next" onClick={() => go(1)} style={{ ...BTN.secondary, ...BTN_SM, width: 34, padding: 0 }}>›</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: isMobile ? '1 1 100%' : undefined, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <button type="button" aria-label="Previous" onClick={() => go(-1)} style={{ ...BTN.secondary, ...BTN_SM, width: 34, padding: 0 }}>‹</button>
+                <button type="button" onClick={() => setAnchor(startOfDay(new Date()))} style={{ ...BTN.secondary, ...BTN_SM }}>Today</button>
+                <button type="button" aria-label="Next" onClick={() => go(1)} style={{ ...BTN.secondary, ...BTN_SM, width: 34, padding: 0 }}>›</button>
+              </div>
+              {isMobile && (
+                <div style={{ flex: '1 1 120px', minWidth: 0 }}>
+                  <Select value={filter} onChange={e => setFilter(e.target.value)} style={{ height: 36, width: '100%', minWidth: 0 }} aria-label="Show">
+                    {filterOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </Select>
+                </div>
+              )}
             </div>
-            <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', flex: '1 1 150px', minWidth: 0 }}>{label}</div>
-            <div style={{ width: isMobile ? '100%' : 200 }}>
+            {!isMobile && <div style={{ fontSize: 15, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', flex: '1 1 150px', minWidth: 0 }}>{label}</div>}
+            {!isMobile && <div style={{ width: 200 }}>
               <Select value={filter} onChange={e => setFilter(e.target.value)} style={{ height: 36 }} aria-label="Show">
                 {filterOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </Select>
-            </div>
+            </div>}
           </div>
 
           {mode === 'month' ? (
