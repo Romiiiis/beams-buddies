@@ -2,6 +2,7 @@
 
 import React, { use, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { PayPage } from '@/components/PayPage'
 
 type Props = { kind: 'quote' | 'invoice'; token: string }
 
@@ -100,6 +101,9 @@ export function PublicDocument({ kind, token }: Props) {
   const bankRows: [string, string][] = (mode === 'card' ? [] : ([['Bank', pay.bank_name], ['Account name', pay.account_name], ['BSB', pay.bsb], ['Account number', pay.account_number], ['PayID', pay.payid], ['Reference', document?.invoice_number]] as [string, any][])).filter(([, v]) => v).map(([k, v]) => [k, String(v)] as [string, string])
   const hasBank = bankRows.some(([k]) => k !== 'Reference')
   const cardUrl: string | null = pay.card_link && mode !== 'bank' ? String(pay.card_link).replace(/\{amount\}/gi, owing.toFixed(2)).replace(/\{invoice\}/gi, encodeURIComponent(String(document?.invoice_number || ''))) : null
+
+  // Invoices get their own pay-now layout (see PayPage)
+  if (kind === 'invoice' && !loading && data && document) return <PayPage data={data} token={token} />
 
   return (
     <main style={{ minHeight: '100vh', background: '#F4F6F8', padding: '28px 16px 48px', color: TEXT, fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
