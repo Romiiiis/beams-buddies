@@ -67,6 +67,8 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [seen, setSeen] = useState(0)
   const [gone, setGone] = useState<string[]>([])
+  const [mounted, setMounted] = useState(false)
+  const [out, setOut] = useState<{ id: string; stage: 1 | 2 } | null>(null)
   const [drag, setDrag] = useState<{ id: string; dx: number } | null>(null)
   const touch = useRef<{ x: number; y: number; id: string; locked: boolean } | null>(null)
   const uid = useRef('')
@@ -105,12 +107,17 @@ export function NotificationBell() {
   }, [items])
 
   const dismiss = useCallback((id: string) => {
-    setGone(prev => {
-      const next = [...prev, id].slice(-200)
-      try { localStorage.setItem(`jobyra_notif_gone_${uid.current}`, JSON.stringify(next)) } catch {}
-      return next
-    })
     setDrag(null)
+    setOut({ id, stage: 1 })
+    setTimeout(() => setOut({ id, stage: 2 }), 200)
+    setTimeout(() => {
+      setGone(prev => {
+        const next = [...prev, id].slice(-200)
+        try { localStorage.setItem(`jobyra_notif_gone_${uid.current}`, JSON.stringify(next)) } catch {}
+        return next
+      })
+      setOut(null)
+    }, 440)
   }, [])
 
   const close = useCallback(() => { setOpen(false); markRead() }, [markRead])
@@ -128,11 +135,17 @@ export function NotificationBell() {
   }, [open, close])
 
   const shown = items.filter(i => !gone.includes(i.id))
+  useEffect(() => {
+    if (open) { setMounted(true); return }
+    const t = setTimeout(() => setMounted(false), 190)
+    return () => clearTimeout(t)
+  }, [open])
+
   const unread = shown.filter(i => i.at > seen).length
 
   return (
     <div ref={box} style={{ position: 'relative', flexShrink: 0 }}>
-      <style>{`.nb-btn{width:42px;height:42px}@media (max-width:767px){.nb-x{display:none}}@media (max-width:767px){.nb-btn{width:40px;height:40px}.nb-pop{position:fixed!important;left:14px!important;right:14px!important;top:76px!important;width:auto!important}}`}</style>
+      <style>{`.nb-btn{transition:transform .15s ease,background .15s ease}.nb-btn:active{transform:scale(.92)}.nb-row{transition:background .15s ease}.nb-row:active{background:rgba(15,23,42,.04)}@keyframes nbIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}@keyframes nbOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-6px) scale(.98)}}.nb-pop{transform-origin:top right;animation:nbIn .22s cubic-bezier(0.22, 1, 0.36, 1)}.nb-pop.nb-closing{animation:nbOut .18s ease-in forwards;pointer-events:none}@media (prefers-reduced-motion:reduce){.nb-pop,.nb-pop.nb-closing{animation:none}}.nb-btn{width:42px;height:42px}@media (max-width:767px){.nb-x{display:none}}@media (max-width:767px){.nb-btn{width:40px;height:40px}.nb-pop{position:fixed!important;left:14px!important;right:14px!important;top:76px!important;width:auto!important}}`}</style>
       <button
         type="button"
         aria-label={unread ? `Notifications, ${unread} new` : 'Notifications'}
@@ -146,8 +159,8 @@ export function NotificationBell() {
         )}
       </button>
 
-      {open && (
-        <div role="dialog" aria-label="Notifications" className="nb-pop" style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 'min(380px, calc(100vw - 28px))', maxHeight: '70vh', overflowY: 'auto', background: '#FFFFFF', border: `1px solid ${LINE}`, borderRadius: 18, boxShadow: '0 16px 48px rgba(15, 23, 42, 0.16)', zIndex: 300 }}>
+      {mounted && (
+        <div role="dialog" aria-label="Notifications" className={open ? 'nb-pop' : 'nb-pop nb-closing'} style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 'min(380px, calc(100vw - 28px))', maxHeight: '70vh', overflowY: 'auto', background: '#FFFFFF', border: `1px solid ${LINE}`, borderRadius: 18, boxShadow: '0 16px 48px rgba(15, 23, 42, 0.16)', zIndex: 300 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', position: 'sticky', top: 0, background: '#FFFFFF', borderBottom: `1px solid ${LINE}` }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>Notifications</div>
             {unread > 0 && <button type="button" onClick={markRead} style={{ border: 'none', background: 'none', color: TEAL_DARK, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0 }}>Mark all read</button>}
@@ -158,7 +171,8 @@ export function NotificationBell() {
             shown.map(i => {
               const dx = drag?.id === i.id ? drag.dx : 0
               return (
-                <div key={i.id} style={{ position: 'relative', overflow: 'hidden', borderTop: `1px solid ${LINE}`, background: '#EEF2F6' }}>
+                <div key={i.id} style={{ display: 'grid', gridTemplateRows: out?.id === i.id && out.stage === 2 ? '0fr' : '1fr', opacity: out?.id === i.id && out.stage === 2 ? 0 : 1, transition: `grid-template-rows .24s ${'cubic-bezier(0.22, 1, 0.36, 1)'}, opacity .2s ease`, borderTop: out?.id === i.id && out.stage === 2 ? '1px solid transparent' : `1px solid ${LINE}` }}>
+                <div style={{ position: 'relative', overflow: 'hidden', minHeight: 0, background: '#EEF2F6' }}>
                   <span aria-hidden="true" style={{ position: 'absolute', right: 18, top: 0, bottom: 0, display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 700, color: MUTED }}>Delete</span>
                   <div
                     onTouchStart={e => { const t = e.touches[0]; touch.current = { x: t.clientX, y: t.clientY, id: i.id, locked: false } }}
@@ -170,9 +184,9 @@ export function NotificationBell() {
                     }}
                     onTouchEnd={() => { const d = drag; touch.current = null; if (d && d.id === i.id && d.dx < -90) dismiss(i.id); else setDrag(null) }}
                     onTouchCancel={() => { touch.current = null; setDrag(null) }}
-                    style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 12, background: i.at > seen ? '#F6FBFA' : '#FFFFFF', transform: `translateX(${dx}px)`, transition: drag?.id === i.id ? 'none' : 'transform 0.18s ease', touchAction: 'pan-y' }}
+                    style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 12, background: i.at > seen ? '#F6FBFA' : '#FFFFFF', transform: out?.id === i.id ? 'translateX(-105%)' : `translateX(${dx}px)`, transition: drag?.id === i.id ? 'none' : `transform ${out?.id === i.id ? '.22s ease-in' : '.32s cubic-bezier(0.22, 1, 0.36, 1)'}`, touchAction: 'pan-y' }}
                   >
-                    <button type="button" onClick={() => { close(); router.push(i.href) }} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minWidth: 0, textAlign: 'left', padding: '13px 0 13px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <button type="button" className="nb-row" onClick={() => { close(); router.push(i.href) }} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minWidth: 0, textAlign: 'left', padding: '13px 0 13px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: i.at > seen ? TEAL : 'transparent', marginTop: 6, flexShrink: 0 }} />
                       <span style={{ minWidth: 0 }}>
                         <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: TEXT, lineHeight: 1.35 }}>{i.title}</span>
@@ -181,6 +195,7 @@ export function NotificationBell() {
                     </button>
                     <button type="button" className="nb-x" aria-label="Delete notification" onClick={() => dismiss(i.id)} style={{ border: 'none', background: 'none', color: MUTED, fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: '10px 14px' }}>×</button>
                   </div>
+                </div>
                 </div>
               )
             })
