@@ -103,7 +103,6 @@ export function SendReminderModal({ job, sender, isMobile, onClose, onSent, from
         <>
           <button type="button" onClick={onClose} disabled={sending} style={BTN.secondary}>Cancel</button>
           <button type="button" onClick={send} disabled={sending} style={{ ...BTN.primary, ...(sending ? BTN.disabled : {}) }}>
-            {sending && <span className="btn-spinner" aria-hidden="true" />}
             <span aria-live="polite">{sending ? 'Sending…' : lastSent ? 'Send again' : 'Send reminder'}</span>
           </button>
         </>

@@ -173,21 +173,55 @@ textarea::placeholder {
   .sk::after { animation: none; }
 }
 
-/* Small spinner inside a button while it works */
-.btn-spinner {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #FFFFFF;
-  animation: btn-spin 0.7s linear infinite;
+/* Loading buttons (components/ButtonLoading.tsx). While a button works, it tightens into a pill, its label gives way
+   to three dots and the dots ripple across. The first dot is the accent, the other two take the button's text
+   colour. It grows back when the work is done. Flat colours only, never a glow. */
+button[data-busy] {
+  position: relative;
+  overflow: hidden;
+  min-width: 0 !important;
+  color: transparent !important;
+  opacity: 1 !important;
+  cursor: default !important;
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.12s ease, border-color 0.12s ease !important;
 }
-@keyframes btn-spin {
-  to { transform: rotate(360deg); }
+button[data-busy] > *:not(.jb-dots) {
+  visibility: hidden;
+}
+.jb-dots {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+  animation: jb-dots-in 0.2s ease 0.1s both;
+}
+.jb-dots i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #FFFFFF;
+  animation: jb-dot 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.jb-dots i:nth-child(1) { background: #BFEDE7; animation-delay: 0s; }
+.jb-dots i:nth-child(2) { animation-delay: 0.12s; }
+.jb-dots i:nth-child(3) { animation-delay: 0.24s; }
+button[data-busy][data-tone="light"] .jb-dots i { background: #1F2937; }
+button[data-busy][data-tone="light"] .jb-dots i:nth-child(1) { background: #2AA198; }
+@keyframes jb-dot {
+  0%, 55%, 100% { transform: translateY(0) scale(1, 1); }
+  27% { transform: translateY(-3px) scale(0.85, 1.5); }
+}
+@keyframes jb-dots-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .btn-spinner { animation-duration: 2s; }
+  .jb-dots i { animation-duration: 2.4s; }
+  button[data-busy] { transition: none !important; }
 }
 
 /* Printing a page (Reports, QR codes) leaves out the menus and prints everything, not just what is on screen */

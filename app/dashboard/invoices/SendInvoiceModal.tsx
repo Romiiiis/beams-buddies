@@ -79,7 +79,6 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent }: 
             Send by text
           </a>
           <button type="button" onClick={send} disabled={sending || !to} style={{ ...BTN.primary, ...(sending || !to ? BTN.disabled : {}) }}>
-            {sending && <span className="btn-spinner" aria-hidden="true" />}
             <span aria-live="polite">{sending ? 'Sending…' : 'Send by email'}</span>
           </button>
         </>

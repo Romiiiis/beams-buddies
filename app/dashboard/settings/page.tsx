@@ -1076,11 +1076,9 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleCropAndUpload}
                 disabled={uploadingLogo}
-                aria-busy={uploadingLogo}
                 style={{ ...BTN.primary, minWidth: 118, cursor: uploadingLogo ? 'default' : 'pointer' }}
               >
-                {uploadingLogo && <span className="btn-spinner" aria-hidden="true" />}
-                {uploadingLogo ? 'Saving' : 'Save image'}
+                {uploadingLogo ? 'Saving...' : 'Save image'}
               </button>
             </>
           }

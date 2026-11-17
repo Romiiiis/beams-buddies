@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { ButtonLoading } from '@/components/ButtonLoading'
 
 // One typeface for the whole CRM. Pages reference it through the --font-sans variable.
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning style={{ margin: 0, padding: 0, background: '#FAFAFA' }}>
         {children}
+        <ButtonLoading />
       </body>
     </html>
   )
