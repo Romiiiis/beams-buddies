@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -693,6 +694,17 @@ export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<any | null>(null)
   const [qrJobId, setQrJobId] = useState<string | null>(null)
 
+  // Keep the device's copy in step with what is on screen (including edits made here)
+
+  const uid = useRef('')
+
+  useEffect(() => {
+
+    if (!loading && uid.current) writeCache('jobs', uid.current, { jobs })
+
+  }, [loading, jobs])
+
+
   useEffect(() => {
     async function load() {
       const {
@@ -701,6 +713,12 @@ export default function JobsPage() {
       if (!session) {
         router.push('/login')
         return
+      }
+      uid.current = session.user.id
+      const cached = readCache<any>('jobs', session.user.id)
+      if (cached) {
+        setJobs(cached.jobs)
+        setLoading(false)
       }
       const { data: userData } = await getUserRow(session.user.id)
       if (!userData) {

@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
@@ -196,6 +197,17 @@ export default function QuotesPage() {
     line_items: [{ description: '', qty: 1, unit_price: 0 }] as LineItem[],
   })
 
+  // Keep the device's copy in step with what is on screen (including edits made here)
+
+  const uid = useRef('')
+
+  useEffect(() => {
+
+    if (!loading && uid.current) writeCache('quotes', uid.current, { quotes, customers, info: businessInfo })
+
+  }, [loading, quotes, customers, businessInfo])
+
+
   useEffect(() => {
     async function load() {
       const {
@@ -205,6 +217,22 @@ export default function QuotesPage() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      uid.current = session.user.id
+
+      const cached = readCache<any>('quotes', session.user.id)
+
+      if (cached) {
+
+        setQuotes(cached.quotes)
+
+        setCustomers(cached.customers)
+
+        setBusinessInfo(cached.info)
+
+        setLoading(false)
+
       }
 
       const { data: userData } = await getUserRow(session.user.id)

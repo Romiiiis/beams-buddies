@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -180,6 +181,15 @@ export default function SchedulePage() {
     window.setTimeout(() => setNotice(current => (current === msg ? null : current)), 9000)
   }
 
+  const uid = useRef('')
+
+  useEffect(() => {
+
+    if (!loading && uid.current) writeCache('schedule', uid.current, { jobs, sender, fromDomain })
+
+  }, [loading, jobs, sender, fromDomain])
+
+
   useEffect(() => {
     async function load() {
       const {
@@ -189,6 +199,22 @@ export default function SchedulePage() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      uid.current = session.user.id
+
+      const cached = readCache<any>('schedule', session.user.id)
+
+      if (cached) {
+
+        setJobs(cached.jobs)
+
+        setSender(cached.sender)
+
+        setFromDomain(cached.fromDomain)
+
+        setLoading(false)
+
       }
 
       const { data: userData } = await getUserRow(session.user.id)

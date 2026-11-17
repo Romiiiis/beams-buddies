@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -410,6 +411,27 @@ export default function DashboardPage() {
 
       const visitFrom = new Date(nowYear, nowMonth - 1, 1).toISOString()
       const visitTo   = new Date(nowYear, nowMonth + 5, 1).toISOString()
+      // Paints the page from raw rows: used for the copy kept on this device and again for the fresh rows
+      const apply = (customerCount: number, jobs: any[], invoices: any[], leads: any[], visits: any[]) => {
+        setAllLeads(leads)
+        setAllVisits(visits)
+
+        const overdue       = jobs.filter(j => serviceBucket(j) === 'overdue')
+        const jobsToday     = 0 // worked out from the calendar items below
+        const jobsThisMonth = jobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear }).length
+
+        setStats({ customers: customerCount, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
+        setAllJobs(jobs)
+        setAllInvoices(invoices)
+        setInvoiceStats({
+          outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
+          overdueCount: invoices.filter(i => i.status === 'overdue').length,
+          allInvoices: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
+        })
+        setLoading(false)
+      }
+      const cached = readCache<any>('dashboard', session.user.id)
+      if (cached) apply(cached.c, cached.jobs, cached.invoices, cached.leads, cached.visits)
       const [customersRes, jobsRes, invoicesRes, leadsRes, visitsRes] = await Promise.all([
         supabase.from('customers').select('id').eq('business_id', bid),
         supabase.from('jobs').select('*, customers(first_name, last_name, suburb, phone)').eq('business_id', bid).order('next_service_date', { ascending: true }),
@@ -420,25 +442,10 @@ export default function DashboardPage() {
         supabase.from('job_visits').select('id, title, kind, status, start_at, customers(first_name, last_name, suburb, phone), staff_members(name)').eq('business_id', bid).neq('status', 'cancelled').gte('start_at', visitFrom).lt('start_at', visitTo),
       ])
 
-      const jobs: any[]     = jobsRes.data || []
-      const invoices: any[] = invoicesRes.data || []
-
-      setAllLeads(leadsRes.data || [])
-      setAllVisits(visitsRes.data || [])
-
-      const overdue       = jobs.filter(j => serviceBucket(j) === 'overdue')
-      const jobsToday     = 0 // worked out from the calendar items below
-      const jobsThisMonth = jobs.filter(j => { const d = parseDateLocal(j.created_at); return d && d.getMonth() === nowMonth && d.getFullYear() === nowYear }).length
-
-      setStats({ customers: customersRes.data?.length || 0, units: jobs.length, overdue: overdue.length, jobsThisMonth, jobsToday })
-      setAllJobs(jobs)
-      setAllInvoices(invoices)
-      setInvoiceStats({
-        outstanding: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + Math.max(0, Number(i.total || 0) - Number(i.amount_paid || 0)), 0),
-        overdueCount: invoices.filter(i => i.status === 'overdue').length,
-        allInvoices: invoices.filter(i => i.status === 'sent' || i.status === 'overdue').slice(0, 4),
-      })
-      setLoading(false)
+      const freshJobs: any[] = jobsRes.data || []
+      const freshInvoices: any[] = invoicesRes.data || []
+      apply(customersRes.data?.length || 0, freshJobs, freshInvoices, leadsRes.data || [], visitsRes.data || [])
+      writeCache('dashboard', session.user.id, { c: customersRes.data?.length || 0, jobs: freshJobs, invoices: freshInvoices, leads: leadsRes.data || [], visits: visitsRes.data || [] })
     }
     load()
   }, [router])

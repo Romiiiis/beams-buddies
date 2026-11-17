@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
@@ -231,6 +232,12 @@ export default function InvoicesPage() {
     line_items: [{ description: '', qty: 1, unit_price: 0 }] as LineItem[],
   })
 
+  // Keep the device's copy in step with what is on screen (including edits made here)
+  const uid = useRef('')
+  useEffect(() => {
+    if (!loading && uid.current) writeCache('invoices', uid.current, { invoices, customers, settings: businessSettings, info: businessInfo })
+  }, [loading, invoices, customers, businessSettings, businessInfo])
+
   useEffect(() => {
     async function load() {
       const {
@@ -239,6 +246,15 @@ export default function InvoicesPage() {
       if (!session) {
         router.push('/login')
         return
+      }
+      uid.current = session.user.id
+      const cached = readCache<{ invoices: Invoice[]; customers: any[]; settings: any; info: any }>('invoices', session.user.id)
+      if (cached) {
+        setInvoices(cached.invoices)
+        setCustomers(cached.customers)
+        setBusinessSettings(cached.settings)
+        setBusinessInfo(cached.info)
+        setLoading(false)
       }
       const { data: userData } = await getUserRow(session.user.id)
       if (!userData) return

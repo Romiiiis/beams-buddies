@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { clearPageCache } from '@/lib/page-cache'
 import { useBusinessData } from '@/lib/business-context'
 import { AppIcon } from '@/components/AppIcon'
 import { SkeletonBox } from '@/components/Skeleton'
@@ -216,6 +217,7 @@ export function Sidebar({ active }: { active: string }) {
     : 'J'
 
   async function signOut() {
+    clearPageCache()
     await supabase.auth.signOut()
     router.push('/login')
   }

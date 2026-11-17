@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
@@ -574,6 +575,17 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
 
+  // Keep the device's copy in step with what is on screen (including edits made here)
+
+  const uid = useRef('')
+
+  useEffect(() => {
+
+    if (!loading && uid.current) writeCache('leads', uid.current, { leads })
+
+  }, [loading, leads])
+
+
   useEffect(() => {
     async function load() {
       const {
@@ -583,6 +595,18 @@ export default function LeadsPage() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      uid.current = session.user.id
+
+      const cached = readCache<any>('leads', session.user.id)
+
+      if (cached) {
+
+        setLeads(cached.leads)
+
+        setLoading(false)
+
       }
 
       const { data: userData } = await getUserRow(session.user.id)

@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getUserRow } from '@/lib/session'
 import { Sidebar } from '@/components/Sidebar'
+import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { ContactDrawer } from '@/components/ContactDrawer'
 import { SERVICE_LABEL, worstBucket, soonestJob, nextServiceDate, formatDate, timingText } from '@/lib/service'
@@ -130,6 +131,17 @@ export default function CustomersPage() {
   const [addSaving, setAddSaving] = useState(false)
   const [addError, setAddError] = useState('')
 
+  // Keep the device's copy in step with what is on screen (including edits made here)
+
+  const uid = useRef('')
+
+  useEffect(() => {
+
+    if (!loading && uid.current) writeCache('customers', uid.current, { customers, reviewClicks, totalPlatforms })
+
+  }, [loading, customers, reviewClicks, totalPlatforms])
+
+
   useEffect(() => {
     async function load() {
       const {
@@ -139,6 +151,22 @@ export default function CustomersPage() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      uid.current = session.user.id
+
+      const cached = readCache<any>('customers', session.user.id)
+
+      if (cached) {
+
+        setCustomers(cached.customers)
+
+        setReviewClicks(cached.reviewClicks)
+
+        setTotalPlatforms(cached.totalPlatforms)
+
+        setLoading(false)
+
       }
 
       const { data: userData } = await getUserRow(session.user.id)
