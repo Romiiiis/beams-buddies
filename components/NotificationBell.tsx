@@ -116,21 +116,22 @@ export function NotificationBell() {
 
   return (
     <div ref={box} style={{ position: 'relative', flexShrink: 0 }}>
+      <style>{`.nb-btn{width:42px;height:42px}@media (max-width:767px){.nb-btn{width:40px;height:40px}.nb-pop{position:fixed!important;left:14px!important;right:14px!important;top:76px!important;width:auto!important}}`}</style>
       <button
         type="button"
         aria-label={unread ? `Notifications, ${unread} new` : 'Notifications'}
         aria-expanded={open}
         onClick={() => { if (open) close(); else { setOpen(true); refresh() } }}
-        style={{ position: 'relative', width: 44, height: 44, borderRadius: 13, border: `1px solid ${LINE}`, background: '#FFFFFF', color: TEXT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px -12px rgba(15, 23, 42, 0.18)' }}
+        className="nb-btn" style={{ position: 'relative', borderRadius: 13, border: `1px solid ${LINE}`, background: '#FFFFFF', color: TEXT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px -12px rgba(15, 23, 42, 0.18)' }}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1112 0c0 5 2 6.5 2 6.5H4S6 14 6 9z" /><path d="M10 19a2 2 0 004 0" /></svg>
         {unread > 0 && (
-          <span aria-hidden="true" style={{ position: 'absolute', top: -5, right: -5, minWidth: 19, height: 19, padding: '0 5px', borderRadius: 999, background: TEAL_DARK, color: '#FFFFFF', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FAFAFA', boxSizing: 'content-box' }}>{unread > 9 ? '9+' : unread}</span>
+          <span aria-hidden="true" style={{ position: 'absolute', top: -6, right: -6, minWidth: 18, height: 18, padding: '0 4px', borderRadius: 999, background: TEAL_DARK, color: '#FFFFFF', fontSize: 10, lineHeight: 1, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FAFAFA', boxSizing: 'border-box' }}>{unread > 9 ? '9+' : unread}</span>
         )}
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Notifications" style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 'min(380px, calc(100vw - 28px))', maxHeight: '70vh', overflowY: 'auto', background: '#FFFFFF', border: `1px solid ${LINE}`, borderRadius: 18, boxShadow: '0 16px 48px rgba(15, 23, 42, 0.16)', zIndex: 300 }}>
+        <div role="dialog" aria-label="Notifications" className="nb-pop" style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 'min(380px, calc(100vw - 28px))', maxHeight: '70vh', overflowY: 'auto', background: '#FFFFFF', border: `1px solid ${LINE}`, borderRadius: 18, boxShadow: '0 16px 48px rgba(15, 23, 42, 0.16)', zIndex: 300 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', position: 'sticky', top: 0, background: '#FFFFFF', borderBottom: `1px solid ${LINE}` }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em' }}>Notifications</div>
             {unread > 0 && <button type="button" onClick={markRead} style={{ border: 'none', background: 'none', color: TEAL_DARK, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 0 }}>Mark all read</button>}
