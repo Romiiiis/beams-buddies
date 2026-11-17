@@ -33,6 +33,14 @@ const DocIcon = () => <Svg size={16}><path d="M7 3.5h7l4 4V20H7z" /><path d="M14
 const LockIcon = () => <Svg size={15}><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 018 0v2.5" /></Svg>
 const CheckIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
 
+// On a phone the card is the whole page (white, edge to edge); on a bigger screen it floats on the soft background
+const PAY_CSS = `
+@media (max-width: 520px) {
+  .pay-shell { background: #FFFFFF !important; padding: 0 !important; display: block !important; }
+  .pay-card { border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 18px 0 !important; }
+  .pay-cta { margin: 0 -18px 0 !important; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)) !important; border-radius: 0 !important; }
+}`
+
 const pill: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${LINE}`, borderRadius: 999, padding: '6px 12px', fontSize: 13, color: MUTED, fontWeight: 500, whiteSpace: 'nowrap' }
 
 export function PayPage({ data, token, onReloaded }: { data: any; token: string; onReloaded?: () => void }) {
@@ -97,9 +105,10 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
+    <main className="pay-shell" style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
+      <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out both' }}>
-        <div style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
+        <div className="pay-card" style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
           {/* Who it is from */}
           <header style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             {business.logo_url ? (
@@ -118,10 +127,10 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 16, fontWeight: 700, color: INK }}>Invoice</span>
-                <span style={{ ...pill, padding: '3px 10px', fontSize: 12 }}>{doc.invoice_number}</span>
+                <span style={{ fontSize: 14, color: MUTED, fontWeight: 600 }}>{doc.invoice_number}</span>
               </div>
-              <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ ...pill, background: '#fff', cursor: 'pointer', fontFamily: FONT }}>
-                <DocIcon /> {open ? 'Hide details' : 'View details'}
+              <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 'none', background: 'none', padding: 0, color: TEAL_DARK, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                {open ? 'Hide details' : 'View details'}
               </button>
             </div>
 
@@ -134,8 +143,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, color: MUTED, fontSize: 14 }}>
-                <span>For {[customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'you'}</span>
-                {summary && <span style={{ ...pill, padding: '3px 10px', fontSize: 12 }}>{summary}</span>}
+                <span>For {[customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'you'}{summary ? ` · ${summary}` : ''}</span>
               </div>
             </div>
 
@@ -157,14 +165,19 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               </div>
             )}
 
-            <div style={{ borderTop: `1px solid ${LINE}`, paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-              {due ? <span style={pill}><CalIcon /> Due {due}</span> : <span />}
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                {!settled && dueNote && (
-                  <span style={{ ...pill, color: dueNote.bad ? '#B42318' : TEAL_DARK, borderColor: dueNote.bad ? '#F4C7C3' : '#BFE7E3', padding: '6px 11px', fontSize: 12.5 }}><ClockIcon /> {dueNote.text}</span>
-                )}
-                <button type="button" onClick={download} style={{ ...pill, background: SOFT, color: INK, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}><DownIcon /> Download</button>
-              </span>
+            <div style={{ borderTop: `1px solid ${LINE}`, paddingTop: 12, display: 'grid', gap: 8, fontSize: 14 }}>
+              {due && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                  <span style={{ color: MUTED }}>Due</span>
+                  <span style={{ color: INK, fontWeight: 600, textAlign: 'right' }}>
+                    {due}
+                    {!settled && dueNote && <span style={{ color: dueNote.bad ? '#B42318' : MUTED, fontWeight: dueNote.bad ? 700 : 500 }}> · {dueNote.text}</span>}
+                  </span>
+                </div>
+              )}
+              <div>
+                <button type="button" onClick={download} style={{ border: 'none', background: 'none', padding: 0, color: TEAL_DARK, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Download invoice</button>
+              </div>
             </div>
           </section>
 
@@ -215,7 +228,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                 </div>
               )}
 
-              <div style={{ position: 'sticky', bottom: 0, background: '#fff', margin: '0 -20px -20px', padding: '12px 20px 20px', borderRadius: '0 0 28px 28px', display: 'grid', gap: 10, boxShadow: '0 -10px 14px -10px rgba(15,23,42,0.08)' }}>
+              <div className="pay-cta" style={{ position: 'sticky', bottom: 0, background: '#fff', margin: '0 -20px -20px', padding: '12px 20px 20px', borderRadius: '0 0 28px 28px', display: 'grid', gap: 10, boxShadow: '0 -10px 14px -10px rgba(15,23,42,0.08)' }}>
                 {reported ? (
                   <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
                     Thanks. We have let {business.name || 'the business'} know you have paid. They will confirm once it arrives.
@@ -266,9 +279,10 @@ const cardBox: React.CSSProperties = { background: '#FFFFFF', borderRadius: 28, 
 export function PayLoading() {
   const bar = (w: string | number, h: number, r = 8) => <div className="sk" style={{ width: w, height: h, borderRadius: r }} />
   return (
-    <main style={shell} aria-busy="true" aria-label="Loading invoice">
+    <main className="pay-shell" style={shell} aria-busy="true" aria-label="Loading invoice">
+      <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out 0.2s both' }}>
-        <div style={cardBox}>
+        <div className="pay-card" style={cardBox}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>{bar(52, 52, 999)}<div style={{ display: 'grid', gap: 8 }}>{bar(150, 16)}{bar(110, 11)}</div></div>
           <div style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 14 }}>{bar(110, 16)}{bar(190, 40, 10)}{bar('70%', 12)}{bar('55%', 30, 999)}</div>
           {bar(150, 16)}
@@ -283,9 +297,10 @@ export function PayLoading() {
 /** A friendly message in the same card (invoice not found, or the link has expired). */
 export function PayMessage({ title, text }: { title: string; text: string }) {
   return (
-    <main style={shell}>
+    <main className="pay-shell" style={shell}>
+      <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, animation: 'jbFade 0.25s ease-out both' }}>
-        <div style={{ ...cardBox, textAlign: 'center', padding: '32px 24px' }}>
+        <div className="pay-card" style={{ ...cardBox, textAlign: 'center', padding: '32px 24px' }}>
           <div style={{ fontSize: 20, fontWeight: 800, color: INK, letterSpacing: '-0.02em' }}>{title}</div>
           <div style={{ fontSize: 14, color: MUTED, lineHeight: 1.55 }}>{text}</div>
         </div>
