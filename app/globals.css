@@ -246,6 +246,13 @@ button[data-busy][data-tone="light"] .jb-dots i:nth-child(1) { background: #2AA1
   }
 }
 
+/* Page changes: content fades in softly, and the loading placeholder only appears if the wait is longer than a blink,
+   so quick loads never flash a skeleton and nothing snaps */
+@keyframes jbFade { from { opacity: 0; } to { opacity: 1; } }
+.page-content { animation: jbFade 0.24s ease-out both; }
+.sk-main { animation: jbFade 0.22s ease-out 0.18s both; }
+@media (prefers-reduced-motion: reduce) { .page-content, .sk-main { animation: none; } }
+
 /* ---------- Dropdowns and filter chips ----------
    The look of the Clients filter in Lumyra: flat fields with a hairline border and a soft grey chevron, and rounded
    chips with a count. The dropdown is a real <select>, so phones open their own picker and nothing floats over the page. */

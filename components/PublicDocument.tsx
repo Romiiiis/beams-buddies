@@ -2,7 +2,7 @@
 
 import React, { use, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { PayPage } from '@/components/PayPage'
+import { PayPage, PayLoading, PayMessage } from '@/components/PayPage'
 
 type Props = { kind: 'quote' | 'invoice'; token: string }
 
@@ -103,7 +103,11 @@ export function PublicDocument({ kind, token }: Props) {
   const cardUrl: string | null = pay.card_link && mode !== 'bank' ? String(pay.card_link).replace(/\{amount\}/gi, owing.toFixed(2)).replace(/\{invoice\}/gi, encodeURIComponent(String(document?.invoice_number || ''))) : null
 
   // Invoices get their own pay-now layout (see PayPage)
-  if (kind === 'invoice' && !loading && data && document) return <PayPage data={data} token={token} />
+  if ((kind as string) === 'invoice') {
+    if (loading) return <PayLoading />
+    if (data && document) return <PayPage data={data} token={token} />
+    return <PayMessage title="This invoice is not available" text="The link may have expired or is no longer valid. Please contact the business if you need help." />
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#F4F6F8', padding: '28px 16px 48px', color: TEXT, fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>

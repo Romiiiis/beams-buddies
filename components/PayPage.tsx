@@ -98,7 +98,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 480, minWidth: 0 }}>
+      <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out both' }}>
         <div style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
           {/* Who it is from */}
           <header style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -172,14 +172,14 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
           {!settled && methods.length > 0 && (
             <>
               <div style={{ fontSize: 16, fontWeight: 700, color: INK }}>Payment method</div>
-              {methods.length > 1 && (
-                <div role="radiogroup" aria-label="Payment method" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {methods.length >= 1 && (
+                <div role="radiogroup" aria-label="Payment method" style={{ display: 'grid', gridTemplateColumns: methods.length > 1 ? '1fr 1fr' : '1fr', gap: 12 }}>
                   {methods.map(m => {
                     const on = current === m
                     return (
-                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: '#fff', border: `${on ? 2 : 1}px solid ${on ? TEAL : LINE}`, display: 'grid', gap: 10, minWidth: 0, position: 'relative' }}>
+                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: on ? '#F6FBFA' : '#fff', border: `${on ? 2 : 1}px solid ${on ? TEAL : LINE}`, display: 'grid', gap: 10, minWidth: 0, position: 'relative' }}>
                         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? TINT : SOFT, color: on ? TEAL_DARK : MUTED, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{m === 'bank' ? <BankIcon /> : <CardIcon />}</span>
+                          <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? '#DDF3EF' : SOFT, color: on ? TEAL_DARK : MUTED, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{m === 'bank' ? <BankIcon /> : <CardIcon />}</span>
                           {on && <span style={{ width: 22, height: 22, borderRadius: '50%', background: TEAL, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><CheckIcon /></span>}
                         </span>
                         <span>
@@ -195,10 +195,10 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               {current === 'bank' && (
                 <div style={{ border: `1px solid ${LINE}`, borderRadius: 20, overflow: 'hidden' }}>
                   {[...bankRows, ['Reference', String(doc.invoice_number || '')] as [string, string]].map(([label, value], i) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 16px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '9px 14px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: INK, overflowWrap: 'anywhere' }}>{value}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: INK, overflowWrap: 'anywhere' }}>{value}</div>
                       </div>
                       {label !== 'Bank' && (
                         <button type="button" onClick={() => copy(label, value)} style={{ ...pill, padding: '5px 12px', fontSize: 12.5, color: TEAL_DARK, fontWeight: 700, background: '#fff', cursor: 'pointer', fontFamily: FONT }}>{copied === label ? 'Copied' : 'Copy'}</button>
@@ -215,22 +215,24 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                 </div>
               )}
 
-              {reported ? (
-                <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
-                  Thanks. We have let {business.name || 'the business'} know you have paid. They will confirm once it arrives.
-                </div>
-              ) : current === 'card' && cardUrl ? (
-                <>
-                  <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}><LockIcon /> Pay {money(owing)} by card</a>
-                  <button type="button" onClick={report} disabled={busy} style={{ border: 'none', background: 'none', color: MUTED, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>{busy ? 'Sending...' : 'I have already paid'}</button>
-                </>
-              ) : (
-                <button type="button" onClick={report} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, border: 'none', background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: busy ? 0.7 : 1 }}>
-                  <CheckIcon /> {busy ? 'Sending...' : 'I have paid'}
-                </button>
-              )}
-              {error && <div role="alert" style={{ color: '#B42318', fontSize: 13, textAlign: 'center' }}>{error}</div>}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: MUTED, fontSize: 12.5 }}><LockIcon /> Payments go straight to {business.name || 'the business'}</div>
+              <div style={{ position: 'sticky', bottom: 0, background: '#fff', margin: '0 -20px -20px', padding: '12px 20px 20px', borderRadius: '0 0 28px 28px', display: 'grid', gap: 10, boxShadow: '0 -10px 14px -10px rgba(15,23,42,0.08)' }}>
+                {reported ? (
+                  <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
+                    Thanks. We have let {business.name || 'the business'} know you have paid. They will confirm once it arrives.
+                  </div>
+                ) : current === 'card' && cardUrl ? (
+                  <>
+                    <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}><LockIcon /> Pay {money(owing)} by card</a>
+                    <button type="button" onClick={report} disabled={busy} style={{ border: 'none', background: 'none', color: MUTED, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>{busy ? 'Sending...' : 'I have already paid'}</button>
+                  </>
+                ) : (
+                  <button type="button" onClick={report} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, border: 'none', background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: busy ? 0.7 : 1 }}>
+                    <CheckIcon /> {busy ? 'Sending...' : 'I have paid'}
+                  </button>
+                )}
+                {error && <div role="alert" style={{ color: '#B42318', fontSize: 13, textAlign: 'center' }}>{error}</div>}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: MUTED, fontSize: 12.5 }}><LockIcon /> Payments go straight to {business.name || 'the business'}</div>
+              </div>
             </>
           )}
 
@@ -252,6 +254,41 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
             Questions? Contact {business.name || 'the business'}{business.phone ? ` on ${business.phone}` : ''}{business.email ? ` or ${business.email}` : ''}.{business.abn ? <><br />ABN {business.abn}</> : null}
           </p>
         )}
+      </div>
+    </main>
+  )
+}
+
+const shell: React.CSSProperties = { minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
+const cardBox: React.CSSProperties = { background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }
+
+/** What shows while the invoice loads: the same card, with placeholders, fading in only if it takes a moment. */
+export function PayLoading() {
+  const bar = (w: string | number, h: number, r = 8) => <div className="sk" style={{ width: w, height: h, borderRadius: r }} />
+  return (
+    <main style={shell} aria-busy="true" aria-label="Loading invoice">
+      <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out 0.2s both' }}>
+        <div style={cardBox}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>{bar(52, 52, 999)}<div style={{ display: 'grid', gap: 8 }}>{bar(150, 16)}{bar(110, 11)}</div></div>
+          <div style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 14 }}>{bar(110, 16)}{bar(190, 40, 10)}{bar('70%', 12)}{bar('55%', 30, 999)}</div>
+          {bar(150, 16)}
+          <div style={{ border: `1px solid ${LINE}`, borderRadius: 20, padding: 14, display: 'grid', gap: 10 }}>{bar(40, 40, 12)}{bar(120, 14)}{bar('60%', 11)}</div>
+          {bar('100%', 56, 18)}
+        </div>
+      </div>
+    </main>
+  )
+}
+
+/** A friendly message in the same card (invoice not found, or the link has expired). */
+export function PayMessage({ title, text }: { title: string; text: string }) {
+  return (
+    <main style={shell}>
+      <div style={{ width: '100%', maxWidth: 480, animation: 'jbFade 0.25s ease-out both' }}>
+        <div style={{ ...cardBox, textAlign: 'center', padding: '32px 24px' }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: INK, letterSpacing: '-0.02em' }}>{title}</div>
+          <div style={{ fontSize: 14, color: MUTED, lineHeight: 1.55 }}>{text}</div>
+        </div>
       </div>
     </main>
   )
