@@ -9,6 +9,7 @@ import { readCache, writeCache } from '@/lib/page-cache'
 import { PageSkeleton } from '@/components/Skeleton'
 import { nextServiceDate, serviceBucket, daysUntilService } from '@/lib/service'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
+import { NotificationBell } from '@/components/NotificationBell'
 import { useBusinessData } from '@/lib/business-context'
 import { getEquipmentLabel } from '@/lib/industry-config'
 import { AppIcon } from '@/components/AppIcon'
@@ -603,6 +604,8 @@ export default function DashboardPage() {
                 </h1>
               </div>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <NotificationBell />
             {/* Phones only have room for the main action next to the logo and greeting */}
             <HeaderToolbar
               isMobile={isMobile}
@@ -616,6 +619,7 @@ export default function DashboardPage() {
                 { label: 'Add job', icon: <AppIcon name="add" size={15} />, tone: 'primary' as const, onClick: () => router.push('/dashboard/jobs/add') },
               ]}
             />
+            </div>
           </div>
 
           {/* ── Row 1: Stat chips ── */}
