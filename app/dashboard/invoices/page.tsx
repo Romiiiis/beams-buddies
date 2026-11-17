@@ -12,7 +12,7 @@ import { ContactDrawer } from '@/components/ContactDrawer'
 import { SendInvoiceModal } from './SendInvoiceModal'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
-import type { StatusTone } from '@/components/Status'
+import { Status, type StatusTone } from '@/components/Status'
 import { useBusinessData } from '@/lib/business-context'
 import { getLineItemPlaceholder } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
@@ -120,6 +120,7 @@ type LineItem = { description: string; qty: number; unit_price: number }
 type Invoice = {
   id: string
   invoice_number: string
+  payment_reported_at?: string | null
   status: string
   total: number
   subtotal: number
@@ -759,6 +760,7 @@ export default function InvoicesPage() {
                 tone={STATUS_TONE[viewingInvoice.status] || 'muted'}
                 label="Invoice status"
               />
+              {viewingInvoice.payment_reported_at && viewingInvoice.status !== 'paid' && <Status label="Customer says they have paid" tone="warn" size={12} />}
             </>
           }
           headerExtra={

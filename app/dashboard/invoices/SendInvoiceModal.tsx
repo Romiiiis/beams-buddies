@@ -55,7 +55,7 @@ export function SendInvoiceModal({ invoice, sender, payment, onClose, onSent }: 
   }
 
   const smsSender: SmsSender = { name: sender.name, phone: sender.phone || '', email: sender.email || '' }
-  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, smsSender, payment))}` : undefined
+  const smsHref = tel ? `sms:${tel}?body=${encodeURIComponent(invoiceSms(invoice, smsSender, payment, publicInvoiceUrl(invoice.public_token)))}` : undefined
   const metaRow: React.CSSProperties = { display: 'flex', gap: 10, minWidth: 0, fontSize: 13, color: TEXT2 }
   const metaLabel: React.CSSProperties = { color: TEXT3, width: 58, flexShrink: 0 }
   const metaValue: React.CSSProperties = { fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }

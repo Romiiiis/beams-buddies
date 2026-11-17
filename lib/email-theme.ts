@@ -201,6 +201,8 @@ export type OverdueInput = {
   /** Bank details, already labelled. Leave empty when there are none. */
   payRows: [string, string][]
   invoiceUrl?: string
+  /** The business takes payment online, so the button reads Pay now. */
+  payNow?: boolean
 }
 
 /** "Split system service" or "Split system service and 2 more". */
@@ -239,7 +241,7 @@ export function buildOverdue(i: OverdueInput, s: EmailSender): EmailContent {
     facts,
     pay: payRows.length ? { title: 'How to pay', rows: payRows } : undefined,
     closing: [`Questions about this invoice? Just reply to this email${callUs} and we will sort it out.`],
-    button: href ? { text: i.invoiceUrl ? 'View invoice' : 'Call about invoice', href } : undefined,
+    button: href ? { text: i.invoiceUrl ? (i.payNow ? 'Pay now' : 'View invoice') : 'Call about invoice', href } : undefined,
     signoff: 'Thank you,',
   }
 }
@@ -303,6 +305,8 @@ export type InvoiceInput = {
   payRows: [string, string][]
   notes: string[]
   invoiceUrl?: string
+  /** The business takes payment online, so the button reads Pay now. */
+  payNow?: boolean
 }
 
 /** A new invoice sent to the customer: line items, totals and how to pay. */
@@ -332,7 +336,7 @@ export function buildInvoice(i: InvoiceInput, s: EmailSender): EmailContent {
     totals,
     pay: payRows.length && !paidUp ? { title: 'How to pay', rows: payRows } : undefined,
     closing: [...i.notes, `Questions about this invoice? Just reply to this email${callUs}.`],
-    button: i.invoiceUrl ? { text: 'View invoice', href: i.invoiceUrl } : s.phone ? { text: 'Call us about this invoice', href: replyHref(s)! } : undefined,
+    button: i.invoiceUrl ? { text: i.payNow && !paidUp ? 'Pay now' : 'View invoice', href: i.invoiceUrl } : s.phone ? { text: 'Call us about this invoice', href: replyHref(s)! } : undefined,
     signoff: 'Thank you,',
     footer: `Invoice ${i.number} from ${biz}.`,
   }

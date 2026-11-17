@@ -27,6 +27,9 @@ export function PublicDocument({ kind, token }: Props) {
   const [responded, setResponded] = useState('')
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
+  const [reporting, setReporting] = useState(false)
+  const [reported, setReported] = useState(false)
+  const [copied, setCopied] = useState('')
 
   async function load() {
     setLoading(true)
@@ -45,6 +48,24 @@ export function PublicDocument({ kind, token }: Props) {
   }
 
   useEffect(() => { load() /* eslint-disable-line react-hooks/exhaustive-deps */ }, [kind, token])
+
+  async function reportPaid() {
+    if (reporting) return
+    setReporting(true)
+    setError('')
+    const res = await fetch('/api/invoices/reported', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) })
+    setReporting(false)
+    if (res.ok) setReported(true)
+    else setError('Sorry, we could not send that. Please contact the business to confirm your payment.')
+  }
+
+  async function copy(label: string, value: string) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(label)
+      setTimeout(() => setCopied(''), 1500)
+    } catch {}
+  }
 
   async function respond(action: 'accept' | 'decline' | 'question') {
     if (acting) return
@@ -73,6 +94,12 @@ export function PublicDocument({ kind, token }: Props) {
   const paid = Number(document?.amount_paid || 0)
   const owing = Math.max(0, Number(document?.total || 0) - paid)
   const quoteCanRespond = kind === 'quote' && document?.status === 'sent'
+  const pay = data?.payment || {}
+  const mode: string = pay.mode || 'bank'
+  const showPay = kind === 'invoice' && !!document && owing > 0 && document.status !== 'paid' && mode !== 'off'
+  const bankRows: [string, string][] = (mode === 'card' ? [] : ([['Bank', pay.bank_name], ['Account name', pay.account_name], ['BSB', pay.bsb], ['Account number', pay.account_number], ['PayID', pay.payid], ['Reference', document?.invoice_number]] as [string, any][])).filter(([, v]) => v).map(([k, v]) => [k, String(v)] as [string, string])
+  const hasBank = bankRows.some(([k]) => k !== 'Reference')
+  const cardUrl: string | null = pay.card_link && mode !== 'bank' ? String(pay.card_link).replace(/\{amount\}/gi, owing.toFixed(2)).replace(/\{invoice\}/gi, encodeURIComponent(String(document?.invoice_number || ''))) : null
 
   return (
     <main style={{ minHeight: '100vh', background: '#F4F6F8', padding: '28px 16px 48px', color: TEXT, fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
@@ -87,6 +114,54 @@ export function PublicDocument({ kind, token }: Props) {
 
         {!loading && document && (
           <section className="jobyra-email-ui" style={{ display: 'grid', gap: 16 }}>
+            {showPay && (
+              <article style={{ ...cardStyle, display: 'grid', gap: 16, borderColor: '#BFE7E3' }}>
+                <div>
+                  <div style={{ color: TEAL_DARK, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Pay now</div>
+                  <div style={{ fontSize: 34, fontWeight: 800, color: INK, letterSpacing: '-0.03em', margin: '4px 0 2px' }}>{money(owing)}</div>
+                  <div style={{ color: MUTED, fontSize: 13 }}>Invoice {document.invoice_number}{document.due_date ? ` · due ${shortDate(document.due_date)}` : ''}</div>
+                </div>
+
+                {cardUrl && (
+                  <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', background: TEAL_DARK, color: '#FFFFFF', fontWeight: 800, fontSize: 16, borderRadius: 12, padding: '14px 16px', textDecoration: 'none' }}>
+                    Pay by card
+                  </a>
+                )}
+
+                {hasBank && (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: MUTED, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{cardUrl ? 'Or pay by bank transfer' : 'Pay by bank transfer'}</div>
+                    <div style={{ border: `1px solid ${LINE}`, borderRadius: 12, overflow: 'hidden' }}>
+                      {bankRows.map(([label, value], i) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 14px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: INK, overflowWrap: 'anywhere' }}>{value}</div>
+                          </div>
+                          {label !== 'Bank' && (
+                            <button type="button" onClick={() => copy(label, value)} style={{ flexShrink: 0, height: 32, padding: '0 12px', borderRadius: 9, border: `1px solid ${LINE}`, background: '#FFFFFF', color: TEAL_DARK, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                              {copied === label ? 'Copied' : 'Copy'}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 6, lineHeight: 1.5 }}>Please use <strong>{document.invoice_number}</strong> as the payment reference so we can match it.</div>
+                  </div>
+                )}
+
+                {!cardUrl && !hasBank && <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.5 }}>Please contact {business.name || 'the business'}{business.phone ? ` on ${business.phone}` : ''} to arrange payment.</div>}
+
+                {(reported || document.payment_reported_at) ? (
+                  <div role="status" style={{ background: '#F1F9F8', borderRadius: 12, padding: '12px 14px', fontSize: 13, color: TEAL_DARK, fontWeight: 600, lineHeight: 1.5 }}>Thanks. We have let {business.name || 'the business'} know you have paid, and they will confirm once it arrives.</div>
+                ) : (
+                  <button type="button" disabled={reporting} onClick={reportPaid} style={{ height: 46, borderRadius: 12, border: `1.5px solid ${LINE}`, background: '#FFFFFF', color: INK, fontSize: 15, fontWeight: 700, cursor: 'pointer', opacity: reporting ? 0.7 : 1 }}>
+                    {reporting ? 'Sending...' : 'I have paid'}
+                  </button>
+                )}
+              </article>
+            )}
+
             <article className="d-card d-card-border" style={cardStyle}>
               <div className="d-card-body" style={{ padding: 0, gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
@@ -131,7 +206,7 @@ export function PublicDocument({ kind, token }: Props) {
               </div>
             </article>
 
-            {kind === 'invoice' && data.payment && Object.values(data.payment).some(Boolean) && (
+            {kind === 'invoice' && !showPay && mode === 'off' && data.payment && Object.values(data.payment).some(Boolean) && (
               <article className="d-card d-card-border" style={cardStyle}>
                 <div className="d-card-body" style={{ padding: 0, gap: 8 }}>
                   <h2 style={{ margin: 0, fontSize: 16, color: INK }}>Payment details</h2>

@@ -130,6 +130,9 @@ export default function SettingsPage() {
     account_name: '',
     bsb: '',
     account_number: '',
+    payid: '',
+    card_link: '',
+    payment_mode: 'bank',
     payment_terms: '14',
     invoice_notes: '',
   })
@@ -218,6 +221,9 @@ export default function SettingsPage() {
           account_name: settingsRes.data.account_name || '',
           bsb: settingsRes.data.bsb || '',
           account_number: settingsRes.data.account_number || '',
+          payid: settingsRes.data.payid || '',
+          card_link: settingsRes.data.card_link || '',
+          payment_mode: settingsRes.data.payment_mode || 'bank',
           payment_terms: settingsRes.data.payment_terms?.toString() || '14',
           invoice_notes: settingsRes.data.invoice_notes || '',
         })
@@ -386,6 +392,9 @@ export default function SettingsPage() {
           account_name: bankDetails.account_name || null,
           bsb: bankDetails.bsb || null,
           account_number: bankDetails.account_number || null,
+          payid: bankDetails.payid.trim() || null,
+          card_link: bankDetails.card_link.trim() || null,
+          payment_mode: bankDetails.payment_mode,
           payment_terms: parseInt(bankDetails.payment_terms) || 14,
           invoice_notes: bankDetails.invoice_notes || null,
           updated_at: new Date().toISOString(),
@@ -817,6 +826,29 @@ export default function SettingsPage() {
                   Keep these accurate so payments land correctly and invoice terms stay clear.
                 </div>
 
+                <div style={{ marginBottom: '18px' }}>
+                  <label style={label}>How customers pay</label>
+                  <div className="jb-chips wrap" role="radiogroup" aria-label="How customers pay">
+                    {([['bank', 'Bank transfer'], ['card', 'Card link'], ['both', 'Both'], ['off', 'Off']] as const).map(([value, text]) => (
+                      <button key={value} type="button" role="radio" aria-checked={bankDetails.payment_mode === value} className="jb-chip" onClick={() => setBank('payment_mode', value)}>{text}</button>
+                    ))}
+                  </div>
+                  <p style={hint}>
+                    {bankDetails.payment_mode === 'bank' && 'Invoices get a Pay now button. The customer sees the amount and your bank details, and can tap "I have paid" to let you know.'}
+                    {bankDetails.payment_mode === 'card' && 'Invoices get a Pay now button that opens your own card payment link (from Stripe, Square, PayPal or similar).'}
+                    {bankDetails.payment_mode === 'both' && 'Invoices get a Pay now button. The customer can pay by card with your link or by bank transfer.'}
+                    {bankDetails.payment_mode === 'off' && 'No Pay now button. Invoices look as they did before.'}
+                  </p>
+                </div>
+
+                {(bankDetails.payment_mode === 'card' || bankDetails.payment_mode === 'both') && (
+                  <div style={{ marginBottom: '18px' }}>
+                    <label style={label}>Card payment link</label>
+                    <input style={input} value={bankDetails.card_link} onChange={e => setBank('card_link', e.target.value)} placeholder="https://buy.stripe.com/..." />
+                    <p style={hint}>Paste the link from your card provider (it must start with https://). If it can carry an amount, add <b>{'{amount}'}</b> and <b>{'{invoice}'}</b> where they belong, for example https://paypal.me/yourname/{'{amount}'}AUD. Card payments are not marked paid automatically yet: you confirm them, as with bank transfers.</p>
+                  </div>
+                )}
+
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
                   <div>
                     <label style={label}>Bank name</label>
@@ -837,6 +869,12 @@ export default function SettingsPage() {
                   <div>
                     <label style={label}>Account number</label>
                     <input style={input} value={bankDetails.account_number} onChange={e => setBank('account_number', e.target.value)} placeholder="12345678" />
+                  </div>
+
+                  <div>
+                    <label style={label}>PayID (optional)</label>
+                    <input style={input} value={bankDetails.payid} onChange={e => setBank('payid', e.target.value)} placeholder="e.g. 0412 345 678 or hello@yourbusiness.com.au" />
+                    <p style={hint}>Shown on the Pay now page with a copy button</p>
                   </div>
 
                   <div>

@@ -98,9 +98,11 @@ export function overdueContent(inv: any, s: EmailSender, settings?: any, invoice
     ['Account no.', clean(settings?.account_number)],
   ]
   // Only show a payment box when there are real bank details to put in it
-  const payRows: [string, string][] = bank.some(([, v]) => v)
+  const cardOnly = settings?.payment_mode === 'card'
+  const payRows: [string, string][] = bank.some(([, v]) => v) && !cardOnly
     ? [...bank, ['Reference', clean(inv?.invoice_number)], ['Terms', clean(settings?.payment_terms)]]
     : []
+  const owingNow = Math.max(0, (Number(inv?.total) || 0) - (Number(inv?.amount_paid) || 0))
   return buildOverdue(
     {
       first: clean(inv?.customers?.first_name),
@@ -113,6 +115,7 @@ export function overdueContent(inv: any, s: EmailSender, settings?: any, invoice
       paid: Number(inv?.amount_paid) || 0,
       payRows,
       invoiceUrl,
+      payNow: !!invoiceUrl && owingNow > 0 && settings?.payment_mode !== 'off',
     },
     s
   )
@@ -145,7 +148,8 @@ export function invoiceContent(inv: any, s: EmailSender, settings?: any, invoice
     ['Reference', clean(inv?.invoice_number)],
     ['Terms', clean(settings?.payment_terms)],
   ]
-  const hasBankDetails = bank.slice(0, 4).some(([, value]) => value)
+  const hasBankDetails = bank.slice(0, 4).some(([, value]) => value) && settings?.payment_mode !== 'card'
+  const owingNow = Math.max(0, (Number(inv?.total) || 0) - (Number(inv?.amount_paid) || 0))
   const notes = [inv?.notes, settings?.invoice_notes]
     .map(value => clean(value))
     .filter(Boolean)
@@ -163,6 +167,7 @@ export function invoiceContent(inv: any, s: EmailSender, settings?: any, invoice
     payRows: hasBankDetails ? bank.filter(([, value]) => value) : [],
     notes,
     invoiceUrl,
+    payNow: !!invoiceUrl && owingNow > 0 && settings?.payment_mode !== 'off',
   }, s)
 }
 

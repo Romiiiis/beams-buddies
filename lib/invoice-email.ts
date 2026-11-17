@@ -11,6 +11,7 @@ export type InvoicePayment = {
   account_number?: string | null
   payment_terms?: string | null
   invoice_notes?: string | null
+  payment_mode?: string | null
 }
 
 const TEAL = '#2AA198'
@@ -79,10 +80,13 @@ export function invoiceText(inv: any, sender: InvoiceSender, pay?: InvoicePaymen
 }
 
 /** Short SMS. */
-export function invoiceSms(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null) {
+export function invoiceSms(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null, payUrl?: string) {
   const first = clean(inv.customers?.first_name) || 'there'
   const name = clean(sender.name) || 'us'
   const due = longDate(inv.due_date)
+  // With a Pay now link the customer sees the amount and every way to pay there; otherwise fall back to the bank details
+  const online = payUrl && pay?.payment_mode !== 'off'
+  if (online) return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}. Pay now: ${payUrl}`
   const bank = pay && (clean(pay.bsb) || clean(pay.account_number)) ? ` Pay to BSB ${clean(pay.bsb)} Acc ${clean(pay.account_number)}, ref ${clean(inv.invoice_number)}.` : ''
   return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}.${bank} Thanks!`
 }
