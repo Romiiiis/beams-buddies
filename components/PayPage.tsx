@@ -24,22 +24,18 @@ const longDate = (v: unknown) => {
 const Svg = ({ children, size = 18 }: { children: React.ReactNode; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>{children}</svg>
 )
-const BankIcon = () => <Svg><path d="M3 10l9-6 9 6" /><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" /><path d="M3 20h18" /></Svg>
-const CardIcon = () => <Svg><rect x="3" y="5.5" width="18" height="13" rx="3" /><path d="M3 10h18M7 15h3" /></Svg>
-const CalIcon = () => <Svg size={16}><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></Svg>
-const ClockIcon = () => <Svg size={15}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></Svg>
-const DownIcon = () => <Svg size={16}><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14" /></Svg>
-const DocIcon = () => <Svg size={16}><path d="M7 3.5h7l4 4V20H7z" /><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h5" /></Svg>
-const LockIcon = () => <Svg size={15}><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 018 0v2.5" /></Svg>
 const CheckIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
 
-// On a phone the card is the whole page (white, edge to edge); on a bigger screen it floats on the soft background
+// On a phone the page is soft grey with white sections and a white pay bar; on a bigger screen the card floats on the grey
 const PAY_CSS = `
 @media (max-width: 520px) {
-  .pay-shell { background: #FFFFFF !important; padding: 0 !important; display: block !important; }
-  .pay-card { border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 18px 0 !important; }
-  .pay-cta { margin: 0 -18px 0 !important; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)) !important; border-radius: 0 !important; }
+  .pay-shell { padding: 0 !important; display: block !important; }
+  .pay-card { background: transparent !important; border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 14px 0 !important; }
+  .pay-sec { background: #FFFFFF !important; border-color: transparent !important; }
+  .pay-cta { margin: 0 -14px 0 !important; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)) !important; border-radius: 0 !important; }
 }`
+
+const contactBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', height: 48, borderRadius: 16, border: `1px solid ${LINE}`, background: '#fff', color: TEAL_DARK, fontSize: 15, fontWeight: 700, textDecoration: 'none' }
 
 const pill: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${LINE}`, borderRadius: 999, padding: '6px 12px', fontSize: 13, color: MUTED, fontWeight: 500, whiteSpace: 'nowrap' }
 
@@ -104,8 +100,26 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
     setTimeout(() => window.print(), 250)
   }
 
+  const contactBlock = (
+    (business.phone || business.email || business.abn) ? (
+      <section className="pay-sec" style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 12, minWidth: 0 }}>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: INK }}>Questions about this invoice?</div>
+          <div style={{ fontSize: 13.5, color: MUTED, marginTop: 2 }}>Get in touch with {business.name || 'the business'}.</div>
+        </div>
+        {(business.phone || business.email) && (
+          <div style={{ display: 'grid', gridTemplateColumns: business.phone && business.email ? '1fr 1fr' : '1fr', gap: 10 }}>
+            {business.phone && <a href={`tel:${String(business.phone).replace(/[^0-9+]/g, '')}`} style={contactBtn}>Call</a>}
+            {business.email && <a href={`mailto:${business.email}?subject=${encodeURIComponent('Invoice ' + (doc.invoice_number || ''))}`} style={contactBtn}>Email</a>}
+          </div>
+        )}
+        {business.abn && <div style={{ fontSize: 12.5, color: MUTED }}>ABN {business.abn}</div>}
+      </section>
+    ) : null
+  )
+
   return (
-    <main className="pay-shell" style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
+    <main className="pay-shell" style={{ minHeight: '100vh', background: '#E7EBF0', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
       <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out both' }}>
         <div className="pay-card" style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
@@ -123,7 +137,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
           </header>
 
           {/* The invoice */}
-          <section style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 14, minWidth: 0 }}>
+          <section className="pay-sec" style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 14, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 16, fontWeight: 700, color: INK }}>Invoice</span>
@@ -190,13 +204,9 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                   {methods.map(m => {
                     const on = current === m
                     return (
-                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: on ? '#F6FBFA' : '#fff', border: `${on ? 2 : 1}px solid ${on ? TEAL : LINE}`, display: 'grid', gap: 10, minWidth: 0, position: 'relative' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? '#DDF3EF' : SOFT, color: on ? TEAL_DARK : MUTED, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{m === 'bank' ? <BankIcon /> : <CardIcon />}</span>
-                          {on && <span style={{ width: 22, height: 22, borderRadius: '50%', background: TEAL, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><CheckIcon /></span>}
-                        </span>
+                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: on ? '#F6FBFA' : '#fff', border: `${on ? 2 : 1}px solid ${on ? TEAL : LINE}`, display: 'grid', gap: 6, minWidth: 0, position: 'relative' }}>
                         <span>
-                          <span style={{ display: 'block', fontSize: 15, fontWeight: 700, color: INK }}>{m === 'bank' ? 'Bank transfer' : 'Card'}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 15, fontWeight: 700, color: INK }}>{m === 'bank' ? 'Bank transfer' : 'Card'}{on && <span style={{ width: 22, height: 22, borderRadius: '50%', background: TEAL, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><CheckIcon /></span>}</span>
                           <span style={{ display: 'block', fontSize: 12.5, color: MUTED, marginTop: 2, lineHeight: 1.4 }}>{m === 'bank' ? 'Straight to their bank account' : 'Debit or credit card'}</span>
                         </span>
                       </button>
@@ -206,7 +216,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               )}
 
               {current === 'bank' && (
-                <div style={{ border: `1px solid ${LINE}`, borderRadius: 20, overflow: 'hidden' }}>
+                <div className="pay-sec" style={{ border: `1px solid ${LINE}`, borderRadius: 20, overflow: 'hidden' }}>
                   {[...bankRows, ['Reference', String(doc.invoice_number || '')] as [string, string]].map(([label, value], i) => (
                     <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '9px 14px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
                       <div style={{ minWidth: 0 }}>
@@ -223,10 +233,12 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               )}
 
               {current === 'card' && (
-                <div style={{ background: SOFT, borderRadius: 20, padding: '14px 16px', fontSize: 13.5, color: TEXT, lineHeight: 1.55 }}>
+                <div className="pay-sec" style={{ background: SOFT, borderRadius: 20, padding: '14px 16px', fontSize: 13.5, color: TEXT, lineHeight: 1.55 }}>
                   You will go to a secure payment page run by {business.name || 'the business'}&rsquo;s card provider to pay {money(owing)}.
                 </div>
               )}
+
+              {contactBlock}
 
               <div className="pay-cta" style={{ position: 'sticky', bottom: 0, background: '#fff', margin: '0 -20px -20px', padding: '12px 20px 20px', borderRadius: '0 0 28px 28px', display: 'grid', gap: 10, boxShadow: '0 -10px 14px -10px rgba(15,23,42,0.08)' }}>
                 {reported ? (
@@ -235,22 +247,22 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                   </div>
                 ) : current === 'card' && cardUrl ? (
                   <>
-                    <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}><LockIcon /> Pay {money(owing)} by card</a>
+                    <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}>Pay {money(owing)} by card</a>
                     <button type="button" onClick={report} disabled={busy} style={{ border: 'none', background: 'none', color: MUTED, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline', textUnderlineOffset: 3 }}>{busy ? 'Sending...' : 'I have already paid'}</button>
                   </>
                 ) : (
                   <button type="button" onClick={report} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, border: 'none', background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: busy ? 0.7 : 1 }}>
-                    <CheckIcon /> {busy ? 'Sending...' : 'I have paid'}
+                    {busy ? 'Sending...' : 'I have paid'}
                   </button>
                 )}
                 {error && <div role="alert" style={{ color: '#B42318', fontSize: 13, textAlign: 'center' }}>{error}</div>}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: MUTED, fontSize: 12.5 }}><LockIcon /> Payments go straight to {business.name || 'the business'}</div>
+                <div style={{ textAlign: 'center', color: MUTED, fontSize: 12.5 }}>Payments go straight to {business.name || 'the business'}</div>
               </div>
             </>
           )}
 
           {!settled && methods.length === 0 && (
-            <div style={{ background: SOFT, borderRadius: 20, padding: '16px', fontSize: 14, color: TEXT, lineHeight: 1.55 }}>
+            <div className="pay-sec" style={{ background: SOFT, borderRadius: 20, padding: '16px', fontSize: 14, color: TEXT, lineHeight: 1.55 }}>
               {mode === 'off' ? 'This invoice is ready for you.' : 'Please contact'} {business.name || 'the business'}{business.phone ? ` on ${business.phone}` : ''}{mode === 'off' ? '' : ' to arrange payment.'}
             </div>
           )}
@@ -260,19 +272,15 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               Thank you. This invoice has been paid{doc.paid_at ? ` on ${longDate(doc.paid_at)}` : ''}.
             </div>
           )}
-        </div>
 
-        {(business.phone || business.email || business.abn) && (
-          <p style={{ textAlign: 'center', color: MUTED, fontSize: 12.5, lineHeight: 1.6, marginTop: 14 }}>
-            Questions? Contact {business.name || 'the business'}{business.phone ? ` on ${business.phone}` : ''}{business.email ? ` or ${business.email}` : ''}.{business.abn ? <><br />ABN {business.abn}</> : null}
-          </p>
-        )}
+          {(settled || methods.length === 0) && contactBlock}
+        </div>
       </div>
     </main>
   )
 }
 
-const shell: React.CSSProperties = { minHeight: '100vh', background: '#FAFAFA', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
+const shell: React.CSSProperties = { minHeight: '100vh', background: '#E7EBF0', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
 const cardBox: React.CSSProperties = { background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }
 
 /** What shows while the invoice loads: the same card, with placeholders, fading in only if it takes a moment. */
