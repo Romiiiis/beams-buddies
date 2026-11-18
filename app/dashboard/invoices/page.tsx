@@ -802,85 +802,83 @@ export default function InvoicesPage() {
           }
         >
           <div style={{ padding: isMobile ? '20px 16px' : '32px 36px' }} id="invoice-print">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isMobile ? '24px' : '36px', gap: isMobile ? '16px' : '24px', flexWrap: 'wrap' }}>
-                <div>
-                  {businessInfo?.logo_url && (
-                    <img src={businessInfo.logo_url} alt="Logo" style={{ width: '52px', height: '52px', borderRadius: '10px', objectFit: 'contain', marginBottom: '10px', border: `1px solid ${BORDER}` }} />
-                  )}
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: TEXT, letterSpacing: '-0.4px' }}>{businessInfo?.name || 'Your Business'}</div>
-                  {businessInfo?.phone && <div style={{ fontSize: '13px', color: TEXT3, marginTop: '3px' }}>{businessInfo.phone}</div>}
-                  {businessInfo?.email && <div style={{ fontSize: '13px', color: TEXT3, marginTop: '2px' }}>{businessInfo.email}</div>}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 800, color: TEAL, letterSpacing: '-0.6px', marginBottom: '6px' }}>INVOICE</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: TEXT, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{viewingInvoice.invoice_number}</div>
-                  <div style={{ fontSize: '12px', color: TEXT3, marginTop: '4px' }}>Issued: {new Date(viewingInvoice.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                  {viewingInvoice.due_date && <div style={{ fontSize: '12px', color: TEXT3, marginTop: '2px' }}>Due: {new Date(viewingInvoice.due_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '28px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>Bill to</div>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: TEXT }}>{viewingInvoice.customers?.first_name} {viewingInvoice.customers?.last_name}</div>
-                {viewingInvoice.customers?.address && <div style={{ fontSize: '13px', color: TEXT2, marginTop: '2px' }}>{viewingInvoice.customers.address}</div>}
-                {viewingInvoice.customers?.suburb && <div style={{ fontSize: '13px', color: TEXT2, marginTop: '1px' }}>{viewingInvoice.customers.suburb}</div>}
-                {viewingInvoice.customers?.phone && <div style={{ fontSize: '13px', color: TEXT3, marginTop: '3px' }}>{viewingInvoice.customers.phone}</div>}
-                {viewingInvoice.customers?.email && <div style={{ fontSize: '13px', color: TEXT3, marginTop: '1px' }}>{viewingInvoice.customers.email}</div>}
-              </div>
-
-              <div style={{ border: `1px solid ${BORDER}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
-                {isMobile ? (
-                  viewingInvoice.line_items?.map((item, idx) => (
-                    <div key={idx} style={{ padding: '12px 14px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}` }}>
-                      <div style={{ fontSize: '14px', color: TEXT, fontWeight: 600, overflowWrap: 'anywhere' }}>{item.description}</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '13px', color: TEXT3 }}>{item.qty} × {money(item.unit_price)}</span>
-                        <span style={{ fontSize: '14px', color: TEXT, fontWeight: 800 }}>{money((item.qty * item.unit_price))}</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
+              {(() => {
+                const inv = viewingInvoice
+                const total = Number(inv.total) || 0
+                const paidAmt = Number(inv.amount_paid) || 0
+                const owing = Math.max(0, total - paidAmt)
+                const settled = inv.status === 'paid' || (total > 0 && owing <= 0)
+                const fmt = (d: string) => new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+                const initial = (businessInfo?.name || '?').trim().charAt(0).toUpperCase()
+                const custName = [inv.customers?.first_name, inv.customers?.last_name].filter(Boolean).join(' ')
+                const custAddress = [inv.customers?.address, inv.customers?.suburb].filter(Boolean).join(', ')
+                const what = inv.line_items?.[0]?.description ? `${inv.line_items[0].description}${inv.line_items.length > 1 ? ` and ${inv.line_items.length - 1} more` : ''}` : ''
+                const facts: [string, string][] = [['Invoice', inv.invoice_number], ['Issued', fmt(inv.created_at)]]
+                if (inv.due_date) facts.push(['Due', fmt(inv.due_date)])
+                if (what) facts.push(['For', what])
+                const row = (k: string, v: string, strong = false, color = TEXT) => (
+                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: strong ? '10px 0 0' : '8px 0 0', marginTop: strong ? 10 : 0, borderTop: strong ? `1px solid ${BORDER}` : 'none', fontSize: strong ? 15 : 14, fontWeight: strong ? 800 : 600, color }}>
+                    <span style={{ color: strong ? color : TEXT3, fontWeight: strong ? 800 : 400 }}>{k}</span><span style={{ whiteSpace: 'nowrap' }}>{v}</span>
+                  </div>
+                )
+                return (
                   <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 80px 100px 110px', columnGap: '10px', background: '#F8FAFC', padding: '10px 16px', borderBottom: `1px solid ${BORDER}` }}>
-                      {['Description', 'Qty', 'Unit price', 'Total'].map(h => (
-                        <div key={h} style={{ fontSize: '11px', fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.4px', textAlign: h !== 'Description' ? 'right' : 'left' }}>{h}</div>
-                      ))}
-                    </div>
-
-                    {viewingInvoice.line_items?.map((item, idx) => (
-                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 80px 100px 110px', columnGap: '10px', padding: '12px 16px', borderTop: idx === 0 ? 'none' : `1px solid ${BORDER}`, alignItems: 'center' }}>
-                        <div style={{ fontSize: '14px', color: TEXT, fontWeight: 500, overflowWrap: 'anywhere' }}>{item.description}</div>
-                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{item.qty}</div>
-                        <div style={{ fontSize: '13px', color: TEXT2, textAlign: 'right' }}>{money(item.unit_price)}</div>
-                        <div style={{ fontSize: '13px', color: TEXT, fontWeight: 700, textAlign: 'right' }}>{money((item.qty * item.unit_price))}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: isMobile ? 20 : 26 }}>
+                      {businessInfo?.logo_url ? (
+                        <img src={businessInfo.logo_url} alt="Logo" style={{ height: 44, width: 'auto', maxWidth: 120, objectFit: 'contain', flexShrink: 0 }} />
+                      ) : (
+                        <span style={{ width: 44, height: 44, borderRadius: 12, background: TEAL, color: WHITE, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, flexShrink: 0 }}>{initial}</span>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 17, fontWeight: 700, color: TEXT }}>{businessInfo?.name || 'Your Business'}</div>
+                        {(businessInfo?.phone || businessInfo?.email) && <div style={{ fontSize: 12.5, color: TEXT3, marginTop: 2 }}>{[businessInfo?.phone, businessInfo?.email].filter(Boolean).join(' · ')}</div>}
                       </div>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '28px' }}>
-                <div style={{ width: isMobile ? '100%' : '260px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                    <span style={{ fontSize: '13px', color: TEXT3 }}>Subtotal</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(viewingInvoice.subtotal)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${BORDER}`, marginBottom: '8px' }}>
-                    <span style={{ fontSize: '13px', color: TEXT3 }}>GST ({viewingInvoice.tax_rate}%)</span>
-                    <span style={{ fontSize: '13px', color: TEXT, fontWeight: 700 }}>{money(viewingInvoice.tax_amount)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', background: TEAL, borderRadius: '8px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 700, color: WHITE }}>Total</span>
-                    <span style={{ fontSize: '15px', fontWeight: 800, color: WHITE }}>{money(viewingInvoice.total)}</span>
-                  </div>
-                  {viewingInvoice.status === 'paid' && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', marginTop: '6px' }}>
-                      <span style={{ fontSize: '13px', color: TEAL_DARK, fontWeight: 700 }}>Paid</span>
-                      {viewingInvoice.paid_at && <span style={{ fontSize: '12px', color: TEXT3 }}>{new Date(viewingInvoice.paid_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
                     </div>
-                  )}
-                </div>
-              </div>
+
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEAL_DARK, marginBottom: 6 }}>Invoice</div>
+                    <div style={{ fontSize: isMobile ? 24 : 28, fontWeight: 800, color: TEXT, letterSpacing: '-0.02em', marginBottom: 16, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{inv.invoice_number}</div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'minmax(0,1fr)' : 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 12, marginBottom: 22 }}>
+                      <div style={{ background: '#13212B', color: WHITE, borderRadius: 14, padding: 20, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' } as React.CSSProperties}>
+                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9FB4BF', marginBottom: 8 }}>{settled ? 'Paid in full' : 'Amount due'}</div>
+                        <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{money(settled ? total : owing)}</div>
+                        {!settled && inv.due_date && <div style={{ fontSize: 14, color: '#C9D6DD', marginTop: 6 }}>Due {fmt(inv.due_date)}</div>}
+                        {settled && inv.paid_at && <div style={{ fontSize: 14, color: '#C9D6DD', marginTop: 6 }}>Paid {fmt(inv.paid_at)}</div>}
+                      </div>
+                      <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '14px 18px' }}>
+                        {facts.map(([k, v]) => (
+                          <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '5px 0', fontSize: 14 }}>
+                            <span style={{ color: TEXT3 }}>{k}</span><span style={{ color: TEXT, fontWeight: 700, textAlign: 'right', overflowWrap: 'anywhere' }}>{v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 22 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Bill to</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: TEXT }}>{custName}</div>
+                      {custAddress && <div style={{ fontSize: 13, color: TEXT2, marginTop: 2 }}>{custAddress}</div>}
+                      {(inv.customers?.phone || inv.customers?.email) && <div style={{ fontSize: 13, color: TEXT3, marginTop: 2 }}>{[inv.customers?.phone, inv.customers?.email].filter(Boolean).join(' · ')}</div>}
+                    </div>
+
+                    <div style={{ borderTop: `1px solid ${BORDER}`, marginBottom: 22 }}>
+                      {inv.line_items?.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 14, padding: '11px 0' }}>
+                          <span style={{ fontSize: 14, color: TEXT2, overflowWrap: 'anywhere' }}>{item.description}{Number(item.qty) !== 1 && <span style={{ color: TEXT3 }}> × {item.qty}</span>}</span>
+                          <span style={{ fontSize: 14, color: TEXT, fontWeight: 700, whiteSpace: 'nowrap' }}>{money(item.qty * item.unit_price)}</span>
+                        </div>
+                      ))}
+                      <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 8 }}>
+                        {row('Subtotal', money(inv.subtotal), false, TEXT)}
+                        {row(`GST (${inv.tax_rate}%)`, money(inv.tax_amount), false, TEXT)}
+                        {row('Total including GST', money(total), true, TEXT)}
+                        {paidAmt > 0 && row('Paid', money(paidAmt), false, TEAL_DARK)}
+                        {paidAmt > 0 && !settled && row('Amount due', money(owing), true, TEXT)}
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
 
               {(businessSettings?.bank_name || businessSettings?.bsb || businessSettings?.account_number) && (
                 <div style={{ background: '#F8FAFC', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '18px 20px', marginBottom: '20px' }}>

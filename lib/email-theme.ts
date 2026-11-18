@@ -228,7 +228,7 @@ export function buildOverdue(i: OverdueInput, s: EmailSender): EmailContent {
   return {
     kind: 'overdue',
     subject: `Invoice ${i.number} is overdue | ${biz}`,
-    preheader: `${money(owing)} was due ${dateShort(i.due)}. Payment details are inside.`,
+    preheader: `${money(owing)} was due ${dateShort(i.due)}.${i.invoiceUrl ? ' Tap to view and pay online.' : ''}`,
     label: 'Payment reminder',
     headline: `Hi ${first}, invoice ${i.number} is overdue`,
     greeting: `Hi ${first},`,
@@ -240,7 +240,7 @@ export function buildOverdue(i: OverdueInput, s: EmailSender): EmailContent {
       chip: { text: i.daysLate > 0 ? `${plural(i.daysLate)} overdue` : 'Overdue', tone: 'danger' },
     },
     facts,
-    pay: payRows.length ? { title: 'How to pay', rows: payRows } : undefined,
+    pay: payRows.length && !i.invoiceUrl ? { title: 'How to pay', rows: payRows } : undefined,
     closing: [`Questions about this invoice? Just reply to this email${callUs} and we will sort it out.`],
     button: href ? { text: i.invoiceUrl ? (i.payNow ? 'Pay now' : 'View invoice') : 'Call about invoice', href } : undefined,
     signoff: 'Thank you,',
@@ -317,25 +317,26 @@ export function buildInvoice(i: InvoiceInput, s: EmailSender): EmailContent {
   const owing = Math.max(0, Number(i.total) - Number(i.paid || 0))
   const paidUp = owing <= 0 && Number(i.total) > 0
   const callUs = s.phone ? ` or call us on ${s.phone}` : ''
-  const totals: NonNullable<EmailContent['totals']> = [
-    { label: 'Subtotal', value: money(i.subtotal) },
-    { label: `GST (${i.taxRate}%)`, value: money(i.tax) },
-    { label: 'Total', value: money(i.total), strong: true },
-  ]
-  if (Number(i.paid) > 0) totals.push({ label: 'Paid', value: money(i.paid) }, { label: 'Amount due', value: money(owing) })
+  const totals: NonNullable<EmailContent['totals']> = [{ label: 'Total including GST', value: money(i.total), strong: true }]
+  if (Number(i.paid) > 0) totals.push({ label: 'Paid', value: money(i.paid) }, { label: 'Amount due', value: money(owing), strong: true })
   const payRows = i.payRows.filter(([, v]) => v)
+  const what = summarise(i.lines)
+  const facts: [string, string][] = [['Invoice', i.number]]
+  if (what) facts.push(['For', what])
   return {
     kind: 'invoice',
     subject: `Invoice ${i.number} from ${biz}`,
-    preheader: paidUp ? `Invoice ${i.number}, paid in full. Thank you.` : `${money(owing)}${i.due ? ` due ${dateShort(i.due)}` : ''}. Payment details are inside.`,
+    preheader: paidUp ? `Invoice ${i.number}, paid in full. Thank you.` : `${money(owing)}${i.due ? ` due ${dateShort(i.due)}` : ''}.${i.invoiceUrl ? ' Tap to view and pay online.' : ''}`,
     label: 'Invoice',
     headline: `Hi ${first}, here is invoice ${i.number}`,
     greeting: `Hi ${first},`,
     paragraphs: [`Thank you for choosing ${biz}. Your invoice is below${i.due && !paidUp ? `, due ${dateShort(i.due)}` : ''}.`],
     highlight: { label: paidUp ? 'Paid in full' : 'Amount due', value: money(paidUp ? i.total : owing), sub: i.due && !paidUp ? `Due ${dateMid(i.due)}` : undefined },
-    items: i.lines.map(l => ({ description: l.description, detail: `${l.qty} x ${money(l.unit)}`, amount: money(l.qty * l.unit) })),
+    facts,
+    items: i.lines.map(l => ({ description: Number(l.qty) === 1 ? l.description : `${l.description} × ${l.qty}`, detail: '', amount: money(l.qty * l.unit) })),
     totals,
-    pay: payRows.length && !paidUp ? { title: 'How to pay', rows: payRows } : undefined,
+    // With a link to the invoice page the button is how they pay; bank details only appear when there is no link
+    pay: payRows.length && !paidUp && !i.invoiceUrl ? { title: 'How to pay', rows: payRows } : undefined,
     closing: [...i.notes, `Questions about this invoice? Just reply to this email${callUs}.`],
     button: i.invoiceUrl ? { text: i.payNow && !paidUp ? 'Pay now' : 'View invoice', href: i.invoiceUrl } : s.phone ? { text: 'Call us about this invoice', href: replyHref(s)! } : undefined,
     signoff: 'Thank you,',
@@ -420,7 +421,7 @@ function itemsBlock(items: NonNullable<EmailContent['items']>, line = C.line) {
   const rows = items
     .map(
       (it, idx) =>
-        `<tr><td valign="top" style="padding:12px 0;${idx === 0 ? '' : `border-top:1px solid ${line};`}"><div style="${T(14, 20, 600, C.ink)}">${esc(it.description)}</div><div style="${T(12, 18, 400, C.muted, 'padding-top:2px;')}">${esc(it.detail)}</div></td><td valign="top" align="right" style="padding:12px 0 12px 14px;${idx === 0 ? '' : `border-top:1px solid ${line};`}${T(14, 20, 700, C.ink, 'white-space:nowrap;text-align:right;')}">${esc(it.amount)}</td></tr>`
+        `<tr><td valign="top" style="padding:12px 0;${idx === 0 ? '' : `border-top:1px solid ${line};`}"><div style="${T(14, 20, 600, C.ink)}">${esc(it.description)}</div>${it.detail ? `<div style="${T(12, 18, 400, C.muted, 'padding-top:2px;')}">${esc(it.detail)}</div>` : ''}</td><td valign="top" align="right" style="padding:12px 0 12px 14px;${idx === 0 ? '' : `border-top:1px solid ${line};`}${T(14, 20, 700, C.ink, 'white-space:nowrap;text-align:right;')}">${esc(it.amount)}</td></tr>`
     )
     .join('')
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${line};border-bottom:1px solid ${line};">${rows}</table>`
@@ -712,6 +713,24 @@ function splitSummary(c: EmailContent) {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>${lightCell('')}</tr></table>`
 }
 
+/** Plain list: description on the left, amount on the right, then the totals. */
+function splitItems(items: NonNullable<EmailContent['items']>, totals?: EmailContent['totals']) {
+  const rows = items
+    .map(
+      it =>
+        `<tr><td valign="top" style="padding:10px 12px 10px 0;${T(14, 20, 400, C.text)}">${esc(it.description)}${it.detail ? `<div style="${T(12, 18, 400, C.muted, 'padding-top:2px;')}">${esc(it.detail)}</div>` : ''}</td><td valign="top" align="right" style="padding:10px 0;${T(14, 20, 700, C.ink, 'text-align:right;white-space:nowrap;')}">${esc(it.amount)}</td></tr>`
+    )
+    .join('')
+  const tot = (totals || [])
+    .map(r =>
+      r.strong
+        ? `<tr><td style="padding:10px 12px 0 0;border-top:1px solid ${C.line};${T(14, 22, 800, C.ink)}">${esc(r.label)}</td><td align="right" style="padding:10px 0 0 0;border-top:1px solid ${C.line};${T(15, 22, 800, C.ink, 'text-align:right;white-space:nowrap;')}">${esc(r.value)}</td></tr>`
+        : `<tr><td style="padding:8px 12px 0 0;${T(14, 20, 400, C.muted)}">${esc(r.label)}</td><td align="right" style="padding:8px 0 0 0;${T(14, 20, 600, C.ink, 'text-align:right;white-space:nowrap;')}">${esc(r.value)}</td></tr>`
+    )
+    .join('')
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${C.line};">${rows}${tot}</table>`
+}
+
 function split(c: EmailContent, s: EmailSender) {
   const rows: string[] = []
   rows.push(row(splitBrand(s), '8px 4px 0 4px'))
@@ -724,7 +743,7 @@ function split(c: EmailContent, s: EmailSender) {
   rows.push(row(c.paragraphs.map(p => para(p)).join(''), '0 4px 6px 4px'))
   const sum = splitSummary(c)
   if (sum) rows.push(row(sum, '8px 0 18px 0'))
-  if (c.items && c.items.length) rows.push(row(itemsBlock(c.items) + (c.totals ? totalsBlock(c.totals) : ''), '0 4px 18px 4px'))
+  if (c.items && c.items.length) rows.push(row(splitItems(c.items, c.totals), '0 4px 18px 4px'))
   if (c.pay) rows.push(row(payBlock(c.pay), '0 0 18px 0'))
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 4px 6px 4px'))
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 0 22px 0'))
@@ -749,7 +768,7 @@ export function renderText(c: EmailContent, s: EmailSender): string {
     L.push(`${h.label}: ${h.stars ? '' : h.value}${h.chip ? ` (${h.chip.text})` : ''}${h.sub ? ` - ${h.sub}` : ''}`.replace(': -', ':').trim(), '')
   }
   if (c.items && c.items.length) {
-    for (const it of c.items) L.push(`- ${it.description}: ${it.detail} = ${it.amount}`)
+    for (const it of c.items) L.push(it.detail ? `- ${it.description}: ${it.detail} = ${it.amount}` : `- ${it.description}: ${it.amount}`)
     L.push('')
     for (const t of c.totals || []) L.push(`${t.label}: ${t.value}`)
     L.push('')
