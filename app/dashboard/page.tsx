@@ -378,8 +378,7 @@ function AnalyticsCard({ allJobs, allInvoices, isMobile }: { allJobs: any[]; all
 export default function DashboardPage() {
   const router    = useRouter()
   const isMobile  = useIsMobile()
-  const { business, loading: businessLoading } = useBusinessData()
-  const logoUrl   = business?.logo_url ?? null
+  const { business } = useBusinessData()
   const [loading,      setLoading]      = useState(true)
   const [popupDate,    setPopupDate]    = useState<Date | null>(null)
   const [popupJobs,    setPopupJobs]    = useState<CalItem[]>([])
@@ -587,14 +586,7 @@ export default function DashboardPage() {
           {/* ── Header ── */}
           <div style={{ padding: isMobile ? '16px 14px 14px' : '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: BG, borderBottom: `1px solid ${BORDER}`, gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '14px' }}>
-              {/* Phones: greeting only (the logo lives in the menu). Desktop keeps the logo. */}
-              {isMobile ? null : logoUrl ? (
-                <img src={logoUrl} alt="Business logo" style={{ width: 84, height: 84, objectFit: 'contain', flexShrink: 0 }} />
-              ) : businessLoading && !business ? (
-                <div style={{ width: 84, height: 84, flexShrink: 0 }} />
-              ) : (
-                <img src="/jobyra-logo.jpg" alt="Jobyra" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'contain', flexShrink: 0, mixBlendMode: 'multiply' }} />
-              )}
+              {/* No logo here: it already shows in the menu */}
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>
                   {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
