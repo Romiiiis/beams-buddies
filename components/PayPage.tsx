@@ -160,9 +160,16 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: TEAL_DARK }}>INVOICE</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: INK, letterSpacing: '-0.03em', lineHeight: 1.15, marginTop: 4, overflowWrap: 'anywhere' }}>{doc.invoice_number}</div>
-            <div style={{ fontSize: 14, color: MUTED, marginTop: 6, lineHeight: 1.5 }}>
-              {issued ? `Issued ${issued}` : ''}{issued && due ? ' · ' : ''}{due ? `Due ${due}` : ''}
-              {!settled && dueNote?.bad && <span style={{ color: '#B42318', fontWeight: 700 }}> · {dueNote.text}</span>}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${LINE}` }}>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', color: MUTED }}>ISSUED</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginTop: 3 }}>{issued || '-'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', color: MUTED }}>DUE</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: !settled && dueNote?.bad ? '#B42318' : INK, marginTop: 3 }}>{due || '-'}</div>
+                {!settled && dueNote && <div style={{ fontSize: 13, color: dueNote.bad ? '#B42318' : MUTED, marginTop: 2 }}>{dueNote.text}</div>}
+              </div>
             </div>
           </div>
 
@@ -238,7 +245,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                       )}
                     </div>
                   ))}
-                  <div style={{ padding: '10px 16px', background: SOFT, fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
+                  <div style={{ padding: '10px 16px', background: TINT, fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
                 </div>
               )}
 
