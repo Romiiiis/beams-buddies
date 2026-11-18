@@ -10,6 +10,7 @@ import { StatStrip } from '@/components/StatStrip'
 import { monthlyTrend } from '@/lib/trend'
 import { HeaderToolbar } from '@/components/HeaderToolbar'
 import { ContactDrawer } from '@/components/ContactDrawer'
+import { CustomerPicker } from '@/components/CustomerPicker'
 import { SendInvoiceModal } from './SendInvoiceModal'
 import { AppIcon } from '@/components/AppIcon'
 import { DataList, PersonCell, TextCell, StatusSelect } from '@/components/DataList'
@@ -212,6 +213,7 @@ export default function InvoicesPage() {
   const [showForm, setShowForm] = useState(false)
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null)
   const [saving, setSaving] = useState(false)
+  const [savingCustomer, setSavingCustomer] = useState(false)
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null)
   const [deleteInvoiceId, setDeleteInvoiceId] = useState<string | null>(null)
   const [showContact, setShowContact] = useState(false)
@@ -657,12 +659,12 @@ export default function InvoicesPage() {
         <Modal
           title="New invoice"
           size="lg"
-          busy={saving}
+          busy={saving || savingCustomer}
           onClose={() => setShowForm(false)}
           footer={
             <>
               <button type="button" onClick={() => setShowForm(false)} style={BTN.secondary}>Cancel</button>
-              <button type="button" onClick={handleSave} disabled={saving || !form.customer_id} style={{ ...BTN.primary, ...(saving || !form.customer_id ? BTN.disabled : {}) }}>
+              <button type="button" onClick={handleSave} disabled={saving || savingCustomer || !form.customer_id} style={{ ...BTN.primary, ...(saving || savingCustomer || !form.customer_id ? BTN.disabled : {}) }}>
                 {saving ? 'Saving...' : 'Create invoice'}
               </button>
             </>
@@ -670,17 +672,15 @@ export default function InvoicesPage() {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-              <div>
-                <label style={lbl}>Customer *</label>
-                <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
-                  <option value="">Select customer...</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.first_name} {c.last_name}{c.suburb ? ` - ${c.suburb}` : ''}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+              <CustomerPicker
+                customers={customers}
+                value={form.customer_id}
+                onChange={id => setForm(f => ({ ...f, customer_id: id }))}
+                businessId={businessId}
+                onCreated={c => setCustomers(prev => [...prev, c].sort((a, b) => String(a.first_name).localeCompare(String(b.first_name))))}
+                isMobile={isMobile}
+                onBusy={setSavingCustomer}
+              />
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <div>

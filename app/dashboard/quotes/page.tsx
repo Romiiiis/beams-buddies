@@ -18,6 +18,7 @@ import type { StatusTone } from '@/components/Status'
 import { Select } from '@/components/Select'
 import { money, moneyWhole } from '@/lib/format'
 import { BTN, ConfirmDialog, FIELD, FIELD_LINE, LABEL, Modal, Toast } from '@/components/forms'
+import { CustomerPicker } from '@/components/CustomerPicker'
 import { QuoteView } from './QuoteView'
 import { randomQuoteNumber } from '@/lib/quote-number'
 
@@ -176,10 +177,7 @@ export default function QuotesPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [showNewCustomer, setShowNewCustomer] = useState(false)
   const [savingCustomer, setSavingCustomer] = useState(false)
-  const [customerError, setCustomerError] = useState('')
-  const [newCustomer, setNewCustomer] = useState({ first_name: '', last_name: '', phone: '', email: '', address: '', suburb: '' })
   const [businessId, setBusinessId] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [search, setSearch] = useState('')
@@ -297,36 +295,6 @@ export default function QuotesPage() {
       ...f,
       line_items: f.line_items.length === 1 ? f.line_items : f.line_items.filter((_, i) => i !== idx),
     }))
-  }
-
-  async function handleCreateCustomer() {
-    if (!businessId || !newCustomer.first_name.trim()) {
-      setCustomerError('Add the customer’s first name.')
-      return
-    }
-
-    setSavingCustomer(true)
-    setCustomerError('')
-    const { data, error } = await supabase.from('customers').insert({
-      business_id: businessId,
-      first_name: newCustomer.first_name.trim(),
-      last_name: newCustomer.last_name.trim(),
-      phone: newCustomer.phone.trim() || null,
-      email: newCustomer.email.trim() || null,
-      address: newCustomer.address.trim() || null,
-      suburb: newCustomer.suburb.trim() || null,
-    }).select('id, first_name, last_name, suburb').single()
-    setSavingCustomer(false)
-
-    if (error || !data) {
-      setCustomerError('The customer could not be saved. Check the details and try again.')
-      return
-    }
-
-    setCustomers(prev => [...prev, data].sort((a, b) => a.first_name.localeCompare(b.first_name)))
-    setForm(current => ({ ...current, customer_id: data.id }))
-    setNewCustomer({ first_name: '', last_name: '', phone: '', email: '', address: '', suburb: '' })
-    setShowNewCustomer(false)
   }
 
   async function handleSave() {
@@ -722,62 +690,15 @@ export default function QuotesPage() {
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 7 }}>
-                  <label style={{ ...lbl, marginBottom: 0 }}>Customer *</label>
-                  <button
-                    type="button"
-                    onClick={() => { setShowNewCustomer(value => !value); setCustomerError('') }}
-                    style={{ border: 0, background: 'none', color: TEAL_DARK, font: `700 12px ${FONT}`, cursor: 'pointer', padding: '4px 0', whiteSpace: 'nowrap' }}
-                  >
-                    {showNewCustomer ? 'Choose existing' : '+ Add new customer'}
-                  </button>
-                </div>
-                <Select style={inp} value={form.customer_id} onChange={e => setForm(f => ({ ...f, customer_id: e.target.value }))}>
-                  <option value="">Select customer...</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.first_name} {c.last_name}
-                      {c.suburb ? ` - ${c.suburb}` : ''}
-                    </option>
-                  ))}
-                </Select>
-                {showNewCustomer && (
-                  <div style={{ marginTop: 12, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 14, background: '#F8FAFC', display: 'grid', gap: 12 }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: TEXT }}>New customer details</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-                      <div>
-                        <label style={lbl}>First name *</label>
-                        <input autoComplete="given-name" value={newCustomer.first_name} onChange={e => setNewCustomer(f => ({ ...f, first_name: e.target.value }))} placeholder="First name" style={inp} />
-                      </div>
-                      <div>
-                        <label style={lbl}>Last name</label>
-                        <input autoComplete="family-name" value={newCustomer.last_name} onChange={e => setNewCustomer(f => ({ ...f, last_name: e.target.value }))} placeholder="Last name" style={inp} />
-                      </div>
-                      <div>
-                        <label style={lbl}>Phone</label>
-                        <input type="tel" autoComplete="tel" value={newCustomer.phone} onChange={e => setNewCustomer(f => ({ ...f, phone: e.target.value }))} placeholder="Phone number" style={inp} />
-                      </div>
-                      <div>
-                        <label style={lbl}>Email</label>
-                        <input type="email" autoComplete="email" value={newCustomer.email} onChange={e => setNewCustomer(f => ({ ...f, email: e.target.value }))} placeholder="Email address" style={inp} />
-                      </div>
-                      <div>
-                        <label style={lbl}>Street address</label>
-                        <input autoComplete="street-address" value={newCustomer.address} onChange={e => setNewCustomer(f => ({ ...f, address: e.target.value }))} placeholder="Street address" style={inp} />
-                      </div>
-                      <div>
-                        <label style={lbl}>Suburb</label>
-                        <input autoComplete="address-level2" value={newCustomer.suburb} onChange={e => setNewCustomer(f => ({ ...f, suburb: e.target.value }))} placeholder="Suburb" style={inp} />
-                      </div>
-                    </div>
-                    {customerError && <div role="alert" style={{ color: RED, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '9px 11px', fontSize: 12 }}>{customerError}</div>}
-                    <button type="button" onClick={handleCreateCustomer} disabled={savingCustomer || !newCustomer.first_name.trim()} style={{ ...BTN.primary, alignSelf: 'start', ...(savingCustomer || !newCustomer.first_name.trim() ? BTN.disabled : {}) }}>
-                      {savingCustomer ? 'Saving customer…' : 'Save and select customer'}
-                    </button>
-                  </div>
-                )}
-              </div>
+              <CustomerPicker
+                customers={customers}
+                value={form.customer_id}
+                onChange={id => setForm(f => ({ ...f, customer_id: id }))}
+                businessId={businessId}
+                onCreated={c => setCustomers(prev => [...prev, c].sort((a, b) => String(a.first_name).localeCompare(String(b.first_name))))}
+                isMobile={isMobile}
+                onBusy={setSavingCustomer}
+              />
 
               <div
                 style={{
