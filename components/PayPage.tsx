@@ -26,12 +26,12 @@ const Svg = ({ children, size = 18 }: { children: React.ReactNode; size?: number
 )
 const CheckIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
 
-// On a phone the page is soft grey with white sections and a white pay bar; on a bigger screen the card floats on the grey
+// The page is white with slightly grey sections; on a bigger screen the card floats
 const PAY_CSS = `
+.pay-sec { background: #F3F5F7 !important; border-color: transparent !important; }
 @media (max-width: 520px) {
   .pay-shell { padding: 0 !important; display: block !important; }
-  .pay-card { background: transparent !important; border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 14px 0 !important; }
-  .pay-sec { background: #FFFFFF !important; border-color: transparent !important; }
+  .pay-card { border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 14px 0 !important; }
   .pay-cta { margin: 0 -14px 0 !important; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)) !important; border-radius: 0 !important; }
 }`
 
@@ -119,7 +119,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
   )
 
   return (
-    <main className="pay-shell" style={{ minHeight: '100vh', background: '#E7EBF0', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
+    <main className="pay-shell" style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
       <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out both' }}>
         <div className="pay-card" style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
@@ -204,7 +204,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                   {methods.map(m => {
                     const on = current === m
                     return (
-                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: on ? '#F6FBFA' : '#fff', border: `${on ? 2 : 1}px solid ${on ? TEAL : LINE}`, display: 'grid', gap: 6, minWidth: 0, position: 'relative' }}>
+                      <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} style={{ textAlign: 'left', fontFamily: FONT, cursor: 'pointer', borderRadius: 20, padding: 14, background: on ? '#F6FBFA' : '#F3F5F7', border: `${on ? 2 : 1}px solid ${on ? TEAL : 'transparent'}`, display: 'grid', gap: 6, minWidth: 0, position: 'relative' }}>
                         <span>
                           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 15, fontWeight: 700, color: INK }}>{m === 'bank' ? 'Bank transfer' : 'Card'}{on && <span style={{ width: 22, height: 22, borderRadius: '50%', background: TEAL, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><CheckIcon /></span>}</span>
                           <span style={{ display: 'block', fontSize: 12.5, color: MUTED, marginTop: 2, lineHeight: 1.4 }}>{m === 'bank' ? 'Straight to their bank account' : 'Debit or credit card'}</span>
@@ -228,7 +228,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                       )}
                     </div>
                   ))}
-                  <div style={{ padding: '10px 16px', background: SOFT, fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
+                  <div style={{ padding: '10px 16px', background: '#E9EDF1', fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
                 </div>
               )}
 
@@ -280,7 +280,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
   )
 }
 
-const shell: React.CSSProperties = { minHeight: '100vh', background: '#E7EBF0', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
+const shell: React.CSSProperties = { minHeight: '100vh', background: '#FFFFFF', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
 const cardBox: React.CSSProperties = { background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }
 
 /** What shows while the invoice loads: the same card, with placeholders, fading in only if it takes a moment. */
