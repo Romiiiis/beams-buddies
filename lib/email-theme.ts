@@ -8,7 +8,7 @@
 export type EmailKind = 'service' | 'overdue' | 'quote' | 'review' | 'visit'
 /** Every kind of message the app can send. The two after 'visit' are one-off messages about a booked visit. */
 export type MailKind = EmailKind | 'on_the_way' | 'moved' | 'invoice'
-export type EmailStyleId = 'classic' | 'banner' | 'letter' | 'summary' | 'bold'
+export type EmailStyleId = 'classic' | 'banner' | 'letter' | 'summary' | 'bold' | 'split'
 export type Tone = 'neutral' | 'good' | 'warn' | 'danger'
 
 export type EmailSender = { name: string; phone?: string; email?: string; logoUrl?: string }
@@ -39,6 +39,7 @@ export type EmailContent = {
 }
 
 export const EMAIL_STYLES: { id: EmailStyleId; name: string; blurb: string }[] = [
+  { id: 'split', name: 'Split summary', blurb: 'A dark panel with the key detail beside a light panel of facts, then the breakdown and one clear action.' },
   { id: 'classic', name: 'Classic', blurb: 'A clean white card with a teal top edge. Familiar and easy to scan.' },
   { id: 'banner', name: 'Letterhead', blurb: 'A teal brand band across the top with your logo, details below.' },
   { id: 'letter', name: 'Personal note', blurb: 'No card and no chrome. Reads like a short email written by you.' },
@@ -465,7 +466,7 @@ const row = (html: string, pad = '0 28px 18px 28px', extra = '') => `<tr><td cla
 function shell(c: EmailContent, bg: string, outerPad: string, inner: string) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${esc(c.subject)}</title>
-<style>@media only screen and (max-width:480px){.px{padding-left:20px!important;padding-right:20px!important}.outer{padding:14px 8px!important}}</style></head>
+<style>@media only screen and (max-width:480px){.px{padding-left:20px!important;padding-right:20px!important}.outer{padding:14px 8px!important}.sp-l,.sp-r{display:block!important;width:100%!important;box-sizing:border-box!important}.sp-gap{display:block!important;width:100%!important;height:10px!important;line-height:10px!important;font-size:0!important}}</style></head>
 <body style="margin:0;padding:0;background:${bg};-webkit-text-size-adjust:100%;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;font-size:1px;line-height:1px;">${esc(c.preheader)}${'&nbsp;&zwnj;'.repeat(30)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${bg}" style="background:${bg};"><tr><td class="outer" align="center" style="padding:${outerPad};">${inner}</td></tr></table>
@@ -666,7 +667,74 @@ function bold(c: EmailContent, s: EmailSender) {
 // Public API
 // ---------------------------------------------------------------------------------------------
 
-const STYLES: Record<EmailStyleId, (c: EmailContent, s: EmailSender) => string> = { classic, banner, letter, summary, bold }
+
+// ---------------------------------------------------------------------------------------------
+// Style 6: Split summary. A dark panel with the key detail beside a light panel of facts.
+// ---------------------------------------------------------------------------------------------
+
+const SPLIT_DARK = '#13212B'
+
+function splitBrand(s: EmailSender) {
+  const name = esc(s.name || 'Your business')
+  const mark = isImage(s.logoUrl)
+    ? `<img src="${esc(s.logoUrl)}" alt="${name}" height="44" style="display:block;height:44px;width:auto;max-width:120px;border:0;outline:none;text-decoration:none;">`
+    : `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" valign="middle" width="44" height="44" bgcolor="${C.teal}" style="width:44px;height:44px;background:${C.teal};border-radius:12px;${T(20, 44, 800, '#FFFFFF', 'text-align:center;')}">${esc((s.name || '?').trim().charAt(0).toUpperCase())}</td></tr></table>`
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:12px;">${mark}</td><td valign="middle" style="${T(17, 22, 700, C.ink)}">${name}</td></tr></table>`
+}
+
+function splitSummary(c: EmailContent) {
+  const h = c.highlight
+  const facts = c.facts && c.facts.length ? c.facts : null
+  if (!h && !facts) return ''
+  const left = h
+    ? `<div style="${T(11, 14, 700, '#9FB4BF', CAPS + 'padding-bottom:8px;')}">${esc(h.label)}</div>${
+        h.stars
+          ? `<div style="${T(28, 34, 400, C.amber, 'letter-spacing:4px;')}">${esc(h.value)}</div>`
+          : `<div style="${String(h.value).length > 14 ? T(23, 29, 800, '#FFFFFF', 'letter-spacing:-0.01em;') : T(28, 34, 800, '#FFFFFF', 'letter-spacing:-0.02em;')}">${esc(h.value)}</div>`
+      }${h.sub ? `<div style="${T(14, 20, 400, '#C9D6DD', 'padding-top:6px;')}">${esc(h.sub)}</div>` : ''}${
+        h.chip ? `<div style="padding-top:12px;">${chip(h.chip.text, h.chip.tone, true)}</div>` : ''
+      }`
+    : ''
+  const right = facts
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${facts
+        .map(
+          ([k, v]) =>
+            `<tr><td valign="top" style="padding:5px 12px 5px 0;${T(14, 20, 400, C.muted)}">${esc(k)}</td><td valign="top" align="right" style="padding:5px 0;${T(14, 20, 700, C.ink, 'text-align:right;')}">${esc(v)}</td></tr>`
+        )
+        .join('')}</table>`
+    : ''
+  const darkCell = (extra: string) => `<td class="sp-l" valign="top" bgcolor="${SPLIT_DARK}" style="background:${SPLIT_DARK};border-radius:14px;padding:20px;${extra}">${left}</td>`
+  const lightCell = (extra: string) => `<td class="sp-r" valign="top" bgcolor="${C.panel}" style="background:${C.panel};border-radius:14px;padding:16px 18px;${extra}">${right}</td>`
+  if (h && facts) {
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>${darkCell('width:46%;')}<td class="sp-gap" width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${lightCell('')}</tr></table>`
+  }
+  if (h) return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>${darkCell('')}</tr></table>`
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>${lightCell('')}</tr></table>`
+}
+
+function split(c: EmailContent, s: EmailSender) {
+  const rows: string[] = []
+  rows.push(row(splitBrand(s), '8px 4px 0 4px'))
+  rows.push(
+    row(
+      `<div style="${T(11, 16, 700, C.tealDark, CAPS + 'padding-bottom:8px;')}">${esc(c.label)}</div><div style="${T(26, 32, 800, C.ink, 'letter-spacing:-0.02em;')}">${rich(c.headline)}</div>`,
+      '26px 4px 12px 4px'
+    )
+  )
+  rows.push(row(c.paragraphs.map(p => para(p)).join(''), '0 4px 6px 4px'))
+  const sum = splitSummary(c)
+  if (sum) rows.push(row(sum, '8px 0 18px 0'))
+  if (c.items && c.items.length) rows.push(row(itemsBlock(c.items) + (c.totals ? totalsBlock(c.totals) : ''), '0 4px 18px 4px'))
+  if (c.pay) rows.push(row(payBlock(c.pay), '0 0 18px 0'))
+  rows.push(row(c.closing.map(p => para(p)).join(''), '0 4px 6px 4px'))
+  if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 0 22px 0'))
+  rows.push(row(signature(c, s), '0 4px 8px 4px'))
+  const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border-collapse:separate;">${rows.join('')}</table>`
+  const foot = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;"><tr><td style="padding:14px 4px 0 4px;">${footerNote(s, 'left', c.footer)}</td></tr></table>`
+  return shell(c, '#FFFFFF', '24px 14px', card + foot)
+}
+
+const STYLES: Record<EmailStyleId, (c: EmailContent, s: EmailSender) => string> = { classic, banner, letter, summary, bold, split }
 
 export function renderEmail(style: EmailStyleId, c: EmailContent, s: EmailSender): string {
   return (STYLES[style] || classic)(c, s)

@@ -17,7 +17,7 @@ import {
 import { daysUntilService, nextServiceDate, parseDateLocal, startOfDay } from '@/lib/service'
 
 /** The look every automation email uses. Change this one value to restyle them all. */
-export const EMAIL_STYLE: EmailStyleId = 'classic'
+export const EMAIL_STYLE: EmailStyleId = 'split'
 
 const DAY = 86400000
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
