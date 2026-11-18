@@ -31,8 +31,18 @@ function facts(job: any, sender: ReminderSender): ReminderFacts {
   }
 }
 
-/** Short SMS reminder. */
+/** Service reminder text: short blocks, a plain call to action, and a sign-off. */
 export function reminderSms(job: any, sender: ReminderSender) {
   const f = facts(job, sender)
-  return `Hi ${f.first}, it's ${f.business}. Your ${f.what} service ${f.overdue ? 'was due on' : 'is due on'} ${f.when || 'soon'}. Reply here${f.phone ? ` or call ${f.phone}` : ''} to book a time. Thanks!`
+  const out: string[] = [
+    `Hi ${f.first}, this is ${f.business}.`,
+    '',
+    `Your ${f.what} service ${f.overdue ? 'was due on' : 'is due on'} ${f.when || 'soon'}.`,
+    '',
+    f.phone ? `To book a time, reply to this message or call ${f.phone}.` : 'To book a time, just reply to this message.',
+    '',
+    'Thank you,',
+    f.business,
+  ]
+  return out.join('\n')
 }

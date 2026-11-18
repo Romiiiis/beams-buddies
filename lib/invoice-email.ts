@@ -79,16 +79,31 @@ export function invoiceText(inv: any, sender: InvoiceSender, pay?: InvoicePaymen
   return lines.join('\r\n')
 }
 
-/** Short SMS. */
+/**
+ * The invoice text message. Plain text laid out in short blocks with blank lines between them, the link on a line of
+ * its own so it is easy to tap, and a sign-off. Works the same for the manual "text it" button and any future automatic send.
+ */
 export function invoiceSms(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null, payUrl?: string) {
   const first = clean(inv.customers?.first_name) || 'there'
   const name = clean(sender.name) || 'us'
+  const number = clean(inv.invoice_number)
   const due = longDate(inv.due_date)
+  const phone = clean(sender.phone)
   // With a Pay now link the customer sees the amount and every way to pay there; otherwise fall back to the bank details
-  const online = payUrl && pay?.payment_mode !== 'off'
-  if (online) return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}. Pay now: ${payUrl}`
-  const bank = pay && (clean(pay.bsb) || clean(pay.account_number)) ? ` Pay to BSB ${clean(pay.bsb)} Acc ${clean(pay.account_number)}, ref ${clean(inv.invoice_number)}.` : ''
-  return `Hi ${first}, it's ${name}. Invoice ${clean(inv.invoice_number)} for ${money(owing(inv))}${due ? ` is due ${due}` : ' is ready'}.${bank} Thanks!`
+  const online = !!payUrl && pay?.payment_mode !== 'off'
+  const out: string[] = [`Hi ${first}, this is ${name}.`, '', `Invoice ${number}`, `Amount due: ${money(owing(inv))}`]
+  if (due) out.push(`Due: ${due}`)
+  if (online) {
+    out.push('', 'View and pay online:', payUrl as string)
+  } else if (pay && (clean(pay.bsb) || clean(pay.account_number))) {
+    out.push('', 'Pay by bank transfer:')
+    if (clean(pay.bsb)) out.push(`BSB: ${clean(pay.bsb)}`)
+    if (clean(pay.account_number)) out.push(`Account: ${clean(pay.account_number)}`)
+    out.push(`Reference: ${number}`)
+  }
+  out.push('', 'Thank you,', name)
+  if (phone) out.push(phone)
+  return out.join('\n')
 }
 
 export function invoiceHtml(inv: any, sender: InvoiceSender, pay?: InvoicePayment | null) {
