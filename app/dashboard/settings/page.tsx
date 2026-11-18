@@ -137,6 +137,51 @@ export default function SettingsPage() {
     invoice_notes: '',
   })
 
+  // Card payments through Stripe: the business connects its own Stripe account
+  const [stripeSt, setStripeSt] = useState<{ connected: boolean; ready: boolean } | null>(null)
+  const [stripeBusy, setStripeBusy] = useState(false)
+  const [stripeMsg, setStripeMsg] = useState('')
+
+  async function stripeCall(action: 'connect' | 'status' | 'disconnect') {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` }, body: JSON.stringify({ action }) })
+    return { ok: res.ok, body: await res.json().catch(() => ({})) as any }
+  }
+
+  useEffect(() => {
+    if (!businessId) return
+    let live = true
+    ;(async () => {
+      const returning = new URLSearchParams(window.location.search).get('stripe')
+      if (returning) {
+        const r = await stripeCall('status')
+        if (live && r.ok) setStripeSt({ connected: !!r.body.connected, ready: !!r.body.ready })
+        window.history.replaceState(null, '', window.location.pathname)
+        return
+      }
+      const { data } = await supabase.from('business_stripe').select('charges_enabled').eq('business_id', businessId).maybeSingle()
+      if (live) setStripeSt({ connected: !!data, ready: !!data?.charges_enabled })
+    })()
+    return () => { live = false }
+  }, [businessId])
+
+  async function connectStripe() {
+    setStripeBusy(true)
+    setStripeMsg('')
+    const r = await stripeCall('connect')
+    if (r.ok && r.body.url) { window.location.href = r.body.url; return }
+    setStripeMsg(r.body.message || 'Sorry, that did not work. Please try again.')
+    setStripeBusy(false)
+  }
+
+  async function disconnectStripe() {
+    if (!window.confirm('Disconnect Stripe? Customers will no longer be able to pay these invoices by card. Your Stripe account is not deleted.')) return
+    setStripeBusy(true)
+    const r = await stripeCall('disconnect')
+    if (r.ok) setStripeSt({ connected: false, ready: false })
+    setStripeBusy(false)
+  }
+
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [openingLogo, setOpeningLogo] = useState(false)
@@ -829,24 +874,44 @@ export default function SettingsPage() {
                 <div style={{ marginBottom: '18px' }}>
                   <label style={label}>How customers pay</label>
                   <div className="jb-chips wrap" role="radiogroup" aria-label="How customers pay">
-                    {([['bank', 'Bank transfer'], ['card', 'Card link'], ['both', 'Both'], ['off', 'Off']] as const).map(([value, text]) => (
+                    {([['bank', 'Bank transfer'], ['card', 'Card'], ['both', 'Both'], ['off', 'Off']] as const).map(([value, text]) => (
                       <button key={value} type="button" role="radio" aria-checked={bankDetails.payment_mode === value} className="jb-chip" onClick={() => setBank('payment_mode', value)}>{text}</button>
                     ))}
                   </div>
                   <p style={hint}>
                     {bankDetails.payment_mode === 'bank' && 'Invoices get a Pay now button. The customer sees the amount and your bank details, and can tap "I have paid" to let you know.'}
-                    {bankDetails.payment_mode === 'card' && 'Invoices get a Pay now button that opens your own card payment link (from Stripe, Square, PayPal or similar).'}
-                    {bankDetails.payment_mode === 'both' && 'Invoices get a Pay now button. The customer can pay by card with your link or by bank transfer.'}
+                    {bankDetails.payment_mode === 'card' && 'Invoices get a Pay now button for card payments, through your connected Stripe account or your own payment link.'}
+                    {bankDetails.payment_mode === 'both' && 'Invoices get a Pay now button. The customer can pay by card (Stripe or your link) or by bank transfer.'}
                     {bankDetails.payment_mode === 'off' && 'No Pay now button. Invoices look as they did before.'}
                   </p>
                 </div>
 
                 {(bankDetails.payment_mode === 'card' || bankDetails.payment_mode === 'both') && (
-                  <div style={{ marginBottom: '18px' }}>
-                    <label style={label}>Card payment link</label>
-                    <input style={input} value={bankDetails.card_link} onChange={e => setBank('card_link', e.target.value)} placeholder="https://buy.stripe.com/..." />
-                    <p style={hint}>Paste the link from your card provider (it must start with https://). If it can carry an amount, add <b>{'{amount}'}</b> and <b>{'{invoice}'}</b> where they belong, for example https://paypal.me/yourname/{'{amount}'}AUD. Card payments are not marked paid automatically yet: you confirm them, as with bank transfers.</p>
-                  </div>
+                  <>
+                    <div style={{ marginBottom: '18px' }}>
+                      <label style={label}>Card payments with Stripe</label>
+                      {stripeSt?.ready ? (
+                        <>
+                          <p style={{ ...hint, marginTop: 0, color: TEXT }}>Stripe is connected. Customers pay the exact amount owing on each invoice, and the invoice is marked paid automatically.</p>
+                          <button type="button" disabled={stripeBusy} onClick={disconnectStripe} style={{ ...BTN.secondary, ...(stripeBusy ? BTN.disabled : {}) }}>Disconnect Stripe</button>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ ...hint, marginTop: 0 }}>{stripeSt?.connected ? 'Your Stripe account is connected but not finished yet. Carry on where you left off so it can take card payments.' : 'Connect your own Stripe account. Each invoice then gets its own card payment page for the exact amount, and is marked paid automatically. Money goes straight to your Stripe account, and Stripe charges its normal card fee.'}</p>
+                          <button type="button" disabled={stripeBusy} onClick={connectStripe} style={{ ...BTN.primary, ...(stripeBusy ? BTN.disabled : {}) }}>{stripeBusy ? 'Opening Stripe...' : stripeSt?.connected ? 'Finish Stripe setup' : 'Connect Stripe'}</button>
+                          {stripeMsg && <p style={{ ...hint, color: '#B42318' }}>{stripeMsg}</p>}
+                        </>
+                      )}
+                    </div>
+
+                    {!stripeSt?.ready && (
+                      <div style={{ marginBottom: '18px' }}>
+                        <label style={label}>Or use your own card payment link</label>
+                        <input style={input} value={bankDetails.card_link} onChange={e => setBank('card_link', e.target.value)} placeholder="https://buy.stripe.com/..." />
+                        <p style={hint}>Optional. Paste a link from your card provider (it must start with https://). If it can carry an amount, add <b>{'{amount}'}</b> and <b>{'{invoice}'}</b> where they belong. Payments through a link are not marked paid automatically: you confirm them, as with bank transfers.</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>

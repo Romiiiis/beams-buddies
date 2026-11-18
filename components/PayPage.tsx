@@ -56,7 +56,8 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
     .map(([k, v]) => [k, String(v)])
   const hasBank = mode !== 'card' && mode !== 'off' && bankRows.length > 0
   const cardUrl: string | null = pay.card_link && (mode === 'card' || mode === 'both') ? String(pay.card_link).replace(/\{amount\}/gi, owing.toFixed(2)).replace(/\{invoice\}/gi, encodeURIComponent(String(doc.invoice_number || ''))) : null
-  const methods = [hasBank && 'bank', cardUrl && 'card'].filter(Boolean) as ('bank' | 'card')[]
+  const stripeCard = !!pay.card_stripe && (mode === 'card' || mode === 'both')
+  const methods = [hasBank && 'bank', (stripeCard || cardUrl) && 'card'].filter(Boolean) as ('bank' | 'card')[]
 
   const [method, setMethod] = useState<'bank' | 'card'>(methods[0] || 'bank')
   const [open, setOpen] = useState(false)
@@ -81,6 +82,23 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
       setCopied(label)
       setTimeout(() => setCopied(''), 1500)
     } catch {}
+  }
+
+  const justPaid = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('paid') === '1'
+
+  async function payByCard() {
+    if (busy) return
+    setBusy(true)
+    setError('')
+    try {
+      const res = await fetch('/api/invoices/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) })
+      const body = await res.json().catch(() => ({}))
+      if (res.ok && body.url) { window.location.href = body.url; return }
+      setError(body.message || 'Sorry, the card page did not open. Please try again.')
+    } catch {
+      setError('Sorry, the card page did not open. Please try again.')
+    }
+    setBusy(false)
   }
 
   async function report() {
@@ -234,7 +252,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
 
               {current === 'card' && (
                 <div className="pay-sec" style={{ background: SOFT, borderRadius: 20, padding: '14px 16px', fontSize: 13.5, color: TEXT, lineHeight: 1.55 }}>
-                  You will go to a secure payment page run by {business.name || 'the business'}&rsquo;s card provider to pay {money(owing)}.
+                  {stripeCard ? <>You will go to a secure payment page run by Stripe to pay {money(owing)}. Apple Pay and Google Pay show there if your phone has them.</> : <>You will go to a secure payment page run by {business.name || 'the business'}&rsquo;s card provider to pay {money(owing)}.</>}
                 </div>
               )}
 
@@ -245,6 +263,8 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                   <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
                     Thanks. We have let {business.name || 'the business'} know you have paid. They will confirm once it arrives.
                   </div>
+                ) : current === 'card' && stripeCard ? (
+                  <button type="button" onClick={payByCard} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 18, border: 'none', background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: busy ? 0.7 : 1 }}>{busy ? 'Opening...' : `Pay ${money(owing)} by card`}</button>
                 ) : current === 'card' && cardUrl ? (
                   <>
                     <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}>Pay {money(owing)} by card</a>
@@ -264,6 +284,12 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
           {!settled && methods.length === 0 && (
             <div className="pay-sec" style={{ background: SOFT, borderRadius: 20, padding: '16px', fontSize: 14, color: TEXT, lineHeight: 1.55 }}>
               {mode === 'off' ? 'This invoice is ready for you.' : 'Please contact'} {business.name || 'the business'}{business.phone ? ` on ${business.phone}` : ''}{mode === 'off' ? '' : ' to arrange payment.'}
+            </div>
+          )}
+
+          {!settled && justPaid && (
+            <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
+              Thanks. Your card payment is being confirmed. This page will show it as paid in a moment.
             </div>
           )}
 
