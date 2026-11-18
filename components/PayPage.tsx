@@ -28,14 +28,17 @@ const CheckIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="no
 
 // The page is white with slightly grey sections; on a bigger screen the card floats
 const PAY_CSS = `
-.pay-sec { background: #F3F5F7 !important; border-color: transparent !important; }
+.pay-sec { background: #FFFFFF; border: 1px solid #E8EDF2; border-radius: 22px; }
+.tnum { font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) {
-  .pay-shell { padding: 0 !important; display: block !important; }
-  .pay-card { border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 22px 14px 0 !important; }
+  .pay-shell { padding: 0 !important; display: block !important; background: #F4F6F8 !important; }
+  .pay-card { border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; align-content: start; padding: 20px 14px 0 !important; }
   .pay-cta { margin: 0 -14px 0 !important; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)) !important; border-radius: 0 !important; }
 }`
 
 const contactBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', height: 48, borderRadius: 16, border: `1px solid ${LINE}`, background: '#fff', color: TEAL_DARK, fontSize: 15, fontWeight: 700, textDecoration: 'none' }
+
+const totalRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', gap: 14, padding: '9px 0' }
 
 const pill: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${LINE}`, borderRadius: 999, padding: '6px 12px', fontSize: 13, color: MUTED, fontWeight: 500, whiteSpace: 'nowrap' }
 
@@ -74,6 +77,8 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
   const dueNote = days === null ? null : days < 0 ? { text: `${-days} day${days === -1 ? '' : 's'} overdue`, bad: true } : days === 0 ? { text: 'Due today', bad: false } : { text: `${days} day${days === 1 ? '' : 's'} left`, bad: false }
   const dollars = Math.floor(owing)
   const cents = String(Math.round((owing - dollars) * 100)).padStart(2, '0')
+  const issued = longDate(doc.created_at)
+  const address = [customer.address, customer.suburb].map((v: unknown) => String(v ?? '').trim()).filter(Boolean).join(', ')
   const initial = (business.name || '?').trim().charAt(0).toUpperCase()
 
   async function copy(label: string, value: string) {
@@ -140,83 +145,70 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
     <main className="pay-shell" style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: FONT, color: TEXT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }}>
       <style>{PAY_CSS}</style>
       <div style={{ width: '100%', maxWidth: 480, minWidth: 0, animation: 'jbFade 0.25s ease-out both' }}>
-        <div className="pay-card" style={{ background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
+        <div className="pay-card" style={{ background: SOFT, borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }}>
           {/* Who it is from */}
           <header style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             {business.logo_url ? (
-              <img src={business.logo_url} alt="" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'contain', border: `1px solid ${LINE}`, background: '#fff', flexShrink: 0 }} />
+              <img src={business.logo_url} alt="" style={{ width: 48, height: 48, borderRadius: 14, objectFit: 'contain', border: `1px solid ${LINE}`, background: '#fff', flexShrink: 0 }} />
             ) : (
-              <span style={{ width: 52, height: 52, borderRadius: '50%', background: TINT, color: TEAL_DARK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, flexShrink: 0 }}>{initial}</span>
+              <span style={{ width: 48, height: 48, borderRadius: 14, background: TEAL, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 21, fontWeight: 800, flexShrink: 0 }}>{initial}</span>
             )}
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: INK, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business.name}</div>
-              <div style={{ fontSize: 13, color: MUTED, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business.email || business.phone || ''}</div>
-            </div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: INK, letterSpacing: '-0.02em', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{business.name}</div>
           </header>
 
-          {/* The invoice */}
-          <section className="pay-sec" style={{ border: `1px solid ${LINE}`, borderRadius: 22, padding: 18, display: 'grid', gap: 14, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: INK }}>Invoice</span>
-                <span style={{ fontSize: 14, color: MUTED, fontWeight: 600 }}>{doc.invoice_number}</span>
-              </div>
-              <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 'none', background: 'none', padding: 0, color: TEAL_DARK, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                {open ? 'Hide details' : 'View details'}
-              </button>
+          {/* Which invoice, and when */}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: TEAL_DARK }}>INVOICE</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: INK, letterSpacing: '-0.03em', lineHeight: 1.15, marginTop: 4, overflowWrap: 'anywhere' }}>{doc.invoice_number}</div>
+            <div style={{ fontSize: 14, color: MUTED, marginTop: 6, lineHeight: 1.5 }}>
+              {issued ? `Issued ${issued}` : ''}{issued && due ? ' · ' : ''}{due ? `Due ${due}` : ''}
+              {!settled && dueNote?.bad && <span style={{ color: '#B42318', fontWeight: 700 }}> · {dueNote.text}</span>}
             </div>
+          </div>
 
-            <div>
-              {settled ? (
-                <div style={{ fontSize: 40, fontWeight: 800, color: TEAL_DARK, letterSpacing: '-0.03em', lineHeight: 1.1 }}>Paid in full</div>
-              ) : (
-                <div style={{ fontSize: 44, fontWeight: 800, color: INK, letterSpacing: '-0.04em', lineHeight: 1.05 }}>
-                  ${dollars.toLocaleString('en-AU')}<span style={{ fontSize: 22, color: '#94A3B8', fontWeight: 700 }}>.{cents}</span>
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, color: MUTED, fontSize: 14 }}>
-                <span>For {[customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'you'}{summary ? ` · ${summary}` : ''}</span>
-              </div>
-            </div>
-
-            {open && (
-              <div style={{ borderTop: `1px solid ${LINE}`, paddingTop: 12, display: 'grid', gap: 8, fontSize: 13 }}>
-                {items.map((item, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <span style={{ color: INK, minWidth: 0, overflowWrap: 'anywhere' }}>{item.description || 'Item'}<span style={{ color: MUTED }}> × {Number(item.qty || 0)}</span></span>
-                    <strong style={{ color: INK, whiteSpace: 'nowrap' }}>{money(Number(item.qty || 0) * Number(item.unit_price || 0))}</strong>
-                  </div>
-                ))}
-                <div style={{ borderTop: `1px solid ${LINE}`, paddingTop: 8, display: 'grid', gap: 5 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: MUTED }}>Subtotal</span><span>{money(doc.subtotal)}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: MUTED }}>GST ({Number(doc.tax_rate || 0)}%)</span><span>{money(doc.tax_amount)}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: INK }}><span>Total</span><span>{money(total)}</span></div>
-                  {payments.map((p, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', color: TEAL_DARK }}><span>Paid {longDate(p.paid_on)}</span><span>−{money(p.amount)}</span></div>)}
-                </div>
-                {[doc.notes, pay.invoice_notes].filter(Boolean).length > 0 && <div style={{ color: MUTED, lineHeight: 1.5, whiteSpace: 'pre-line' }}>{[doc.notes, pay.invoice_notes].filter(Boolean).join('\n')}</div>}
-              </div>
+          {/* The amount, first */}
+          <section style={{ background: INK, color: '#fff', borderRadius: 22, padding: 20, display: 'grid', gap: 6, minWidth: 0 }}>
+            <div style={{ fontSize: 14, color: '#B7C2D2' }}>{settled ? 'Paid in full' : 'Amount due'}</div>
+            <div className="tnum" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.1 }}>{money(settled ? total : owing)}</div>
+            {!settled && paid > 0 && <div style={{ fontSize: 13.5, color: '#B7C2D2' }}>{money(paid)} of {money(total)} already paid</div>}
+            {settled && doc.paid_at && <div style={{ fontSize: 13.5, color: '#B7C2D2' }}>Paid on {longDate(doc.paid_at)}</div>}
+            {!settled && methods.length > 0 && (
+              <a href="#pay" onClick={e => { e.preventDefault(); document.getElementById('pay')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 54, borderRadius: 14, background: TEAL_DARK, color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>Payment details</a>
             )}
+          </section>
 
-            <div style={{ borderTop: `1px solid ${LINE}`, paddingTop: 12, display: 'grid', gap: 8, fontSize: 14 }}>
-              {due && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <span style={{ color: MUTED }}>Due</span>
-                  <span style={{ color: INK, fontWeight: 600, textAlign: 'right' }}>
-                    {due}
-                    {!settled && dueNote && <span style={{ color: dueNote.bad ? '#B42318' : MUTED, fontWeight: dueNote.bad ? 700 : 500 }}> · {dueNote.text}</span>}
-                  </span>
+          {/* Who it is for, and what for */}
+          <section className="pay-sec" style={{ padding: 18, display: 'grid', gap: 14, minWidth: 0 }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: INK, letterSpacing: '-0.01em' }}>For {[customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'you'}</div>
+              {(items.length === 1 ? items[0]?.description : address) && <div style={{ fontSize: 14, color: MUTED, marginTop: 4, lineHeight: 1.5 }}>{[items.length === 1 ? items[0]?.description : '', address].filter(Boolean).join(' · ')}</div>}
+            </div>
+            <div style={{ borderTop: `1px solid ${LINE}` }}>
+              {items.map((item, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 14, padding: '13px 0', borderBottom: `1px solid ${LINE}`, fontSize: 15 }}>
+                  <span style={{ color: INK, minWidth: 0, overflowWrap: 'anywhere' }}>{item.description || 'Item'}{Number(item.qty || 0) !== 1 && <span style={{ color: MUTED }}> × {Number(item.qty || 0)}</span>}</span>
+                  <strong className="tnum" style={{ color: INK, whiteSpace: 'nowrap' }}>{money(Number(item.qty || 0) * Number(item.unit_price || 0))}</strong>
                 </div>
-              )}
-              <div>
-                <button type="button" onClick={download} style={{ border: 'none', background: 'none', padding: 0, color: TEAL_DARK, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Download invoice</button>
-              </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gap: 0, fontSize: 15 }}>
+              <div style={totalRow}><span style={{ color: MUTED }}>Subtotal</span><span className="tnum">{money(doc.subtotal)}</span></div>
+              <div style={totalRow}><span style={{ color: MUTED }}>GST ({Number(doc.tax_rate || 0)}%)</span><span className="tnum">{money(doc.tax_amount)}</span></div>
+              <div style={{ ...totalRow, fontWeight: 800, color: INK }}><span>Total</span><span className="tnum">{money(total)}</span></div>
+              {payments.map((p, i) => <div key={i} style={{ ...totalRow, color: TEAL_DARK }}><span>Paid {longDate(p.paid_on)}</span><span className="tnum">−{money(p.amount)}</span></div>)}
+              {paid > 0 && !settled && <div style={{ ...totalRow, fontWeight: 800, color: INK }}><span>Amount due</span><span className="tnum">{money(owing)}</span></div>}
+            </div>
+            {[doc.notes, pay.invoice_notes].filter(Boolean).length > 0 && <div style={{ fontSize: 13.5, color: MUTED, lineHeight: 1.55, whiteSpace: 'pre-line' }}>{[doc.notes, pay.invoice_notes].filter(Boolean).join('\n')}</div>}
+            <div>
+              <button type="button" onClick={() => window.print()} style={{ border: 'none', background: 'none', padding: 0, color: TEAL_DARK, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Download invoice</button>
             </div>
           </section>
 
           {/* How to pay */}
           {!settled && methods.length > 0 && (
             <>
-              <div style={{ fontSize: 16, fontWeight: 700, color: INK }}>Payment method</div>
+              <section id="pay" className="pay-sec" style={{ padding: 18, display: 'grid', gap: 14, minWidth: 0, scrollMarginTop: 16 }}>
+              <div style={{ fontSize: 17, fontWeight: 800, color: INK, letterSpacing: '-0.01em' }}>{methods.length > 1 ? 'Payment method' : current === 'card' ? 'Pay by card' : 'Pay by bank transfer'}</div>
               {methods.length >= 1 && (
                 <div role="radiogroup" aria-label="Payment method" style={{ display: 'grid', gridTemplateColumns: methods.length > 1 ? '1fr 1fr' : '1fr', gap: 12 }}>
                   {methods.map(m => {
@@ -234,9 +226,9 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               )}
 
               {current === 'bank' && (
-                <div className="pay-sec" style={{ border: `1px solid ${LINE}`, borderRadius: 20, overflow: 'hidden' }}>
+                <div style={{ border: `1px solid ${LINE}`, borderRadius: 16, overflow: 'hidden', background: '#fff' }}>
                   {[...bankRows, ['Reference', String(doc.invoice_number || '')] as [string, string]].map(([label, value], i) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '9px 14px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}>
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '9px 14px', borderTop: i === 0 ? 'none' : `1px solid ${LINE}`, background: label === 'Reference' ? TINT : undefined }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: INK, overflowWrap: 'anywhere' }}>{value}</div>
@@ -246,15 +238,17 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
                       )}
                     </div>
                   ))}
-                  <div style={{ padding: '10px 16px', background: '#E9EDF1', fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
+                  <div style={{ padding: '10px 16px', background: SOFT, fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Please use <strong style={{ color: INK }}>{doc.invoice_number}</strong> as the reference so the payment can be matched. Transfers usually arrive within 1 to 2 business days.</div>
                 </div>
               )}
 
               {current === 'card' && (
-                <div className="pay-sec" style={{ background: SOFT, borderRadius: 20, padding: '14px 16px', fontSize: 13.5, color: TEXT, lineHeight: 1.55 }}>
+                <div style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 16, padding: '14px 16px', fontSize: 13.5, color: TEXT, lineHeight: 1.55 }}>
                   {stripeCard ? <>You will go to a secure payment page run by Stripe to pay {money(owing)}. Apple Pay and Google Pay show there if your phone has them.</> : <>You will go to a secure payment page run by {business.name || 'the business'}&rsquo;s card provider to pay {money(owing)}.</>}
                 </div>
               )}
+
+              </section>
 
               {contactBlock}
 
@@ -310,7 +304,7 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
 }
 
 const shell: React.CSSProperties = { minHeight: '100vh', background: '#FFFFFF', fontFamily: FONT, padding: '24px 14px 48px', display: 'flex', justifyContent: 'center' }
-const cardBox: React.CSSProperties = { background: '#FFFFFF', borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }
+const cardBox: React.CSSProperties = { background: SOFT, borderRadius: 28, boxShadow: '0 2px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.04)', padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18 }
 
 /** What shows while the invoice loads: the same card, with placeholders, fading in only if it takes a moment. */
 export function PayLoading() {
