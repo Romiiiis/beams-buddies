@@ -12,6 +12,7 @@ import { AppIcon } from '@/components/AppIcon'
 import { INDUSTRIES } from '@/lib/industry-config'
 import { Select } from '@/components/Select'
 import { BTN, FIELD, LABEL, Modal } from '@/components/forms'
+import { disableFaceId, enableFaceId, faceIdEnabled, faceIdLabel, faceIdSupported } from '@/lib/biometric'
 import { LogoEditor, renderLogo, type PixelCrop } from '@/components/LogoEditor'
 
 const TEAL = '#2AA198'
@@ -136,6 +137,28 @@ export default function SettingsPage() {
     payment_terms: '14',
     invoice_notes: '',
   })
+
+  // Face ID lock on this device
+  const [fid, setFid] = useState<{ uid: string; email: string; supported: boolean; on: boolean } | null>(null)
+  const [fidBusy, setFidBusy] = useState(false)
+  useEffect(() => {
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const supported = await faceIdSupported()
+      setFid({ uid: session.user.id, email: session.user.email || '', supported, on: faceIdEnabled(session.user.id) })
+    })()
+  }, [])
+  async function toggleFid() {
+    if (!fid) return
+    setFidBusy(true)
+    if (fid.on) { disableFaceId(fid.uid); setFid({ ...fid, on: false }) }
+    else {
+      const ok = await enableFaceId(fid.uid, fid.email)
+      if (ok) setFid({ ...fid, on: true })
+    }
+    setFidBusy(false)
+  }
 
   // Card payments through Stripe: the business connects its own Stripe account
   const [stripeSt, setStripeSt] = useState<{ connected: boolean; ready: boolean } | null>(null)
@@ -707,6 +730,14 @@ export default function SettingsPage() {
                     <p style={hint}>Shown below your name in the sidebar</p>
                   </div>
                 </div>
+
+                {fid?.supported && (
+                  <div style={{ marginTop: '18px' }}>
+                    <label style={label}>{faceIdLabel() === 'Face ID' ? 'Face ID' : 'Fingerprint or face unlock'} on this phone</label>
+                    <button type="button" disabled={fidBusy} onClick={toggleFid} style={{ ...BTN.secondary, ...(fidBusy ? BTN.disabled : {}) }}>{fid.on ? 'Turn off' : 'Turn on'}</button>
+                    <p style={hint}>{fid.on ? 'On. Opening Jobyra on this phone asks for it first. It only applies to this phone.' : 'Off. Turn it on so opening Jobyra on this phone asks for it first.'}</p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AuthShell, AuthField, MailIcon, LockIcon } from './AuthShell'
+import { declineFaceId, enableFaceId, faceIdDeclined, faceIdEnabled, faceIdLabel, faceIdSupported, verifyFaceId } from '@/lib/biometric'
 
 const CONTACT = 'https://mail.google.com/mail/?view=cm&to=hello@beamsmarketing.com.au'
 
@@ -15,23 +16,55 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
+  const [lockedUser, setLockedUser] = useState('')
+  const [offer, setOffer] = useState<{ uid: string; email: string } | null>(null)
+  const [label, setLabel] = useState('Face ID')
 
-  // Already signed in on this device (e.g. reopening the app from the home screen): go straight to the dashboard,
-  // so no password or Face ID prompt shows. The sign-in form only appears when nobody is remembered.
+  // Already signed in on this device (e.g. reopening the app from the home screen). Without Face ID turned on, go
+  // straight to the dashboard. With it on, stay here and show the "Use Face ID" button under the password form, so the
+  // app only opens once the phone recognises you.
   useEffect(() => {
+    setLabel(faceIdLabel())
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace('/dashboard')
+      const uid = data.session?.user.id
+      if (!uid) return
+      if (faceIdEnabled(uid)) setLockedUser(uid)
+      else router.replace('/dashboard')
     })
   }, [router])
+
+  async function useFaceId() {
+    setError('')
+    setLoading(true)
+    const ok = await verifyFaceId(lockedUser)
+    setLoading(false)
+    if (ok) router.replace('/dashboard')
+    else setError(`${label === 'Face ID' ? 'Face ID' : 'Your fingerprint or face'} did not recognise you. Try again, or use your password.`)
+  }
+
+  async function turnOn() {
+    if (!offer) return
+    setLoading(true)
+    const ok = await enableFaceId(offer.uid, offer.email)
+    setLoading(false)
+    if (!ok) { setError('That did not work. You can turn it on later in Settings.'); return }
+    router.push('/dashboard')
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) {
       setError(error.message === 'Invalid login credentials' ? 'That email and password don’t match. Please try again.' : error.message)
       setLoading(false)
+      return
+    }
+    const uid = data.user?.id
+    if (uid && !faceIdEnabled(uid) && !faceIdDeclined(uid) && (await faceIdSupported())) {
+      setLoading(false)
+      setOffer({ uid, email: email.trim() })
       return
     }
     router.push('/dashboard')
@@ -51,6 +84,18 @@ export default function LoginPage() {
     }
     // Same message whether or not the email has an account, so accounts can't be probed
     setSent(true)
+  }
+
+  if (offer) {
+    return (
+      <AuthShell title={`Use ${label} next time?`} subtitle={`Open Jobyra with ${label === 'Face ID' ? 'Face ID' : label} instead of typing your password. You can change this any time in Settings.`}>
+        <div className="auth-form">
+          {error && <div className="auth-msg err" role="alert">{error}</div>}
+          <button type="button" className="auth-btn" disabled={loading} onClick={turnOn}>{loading ? 'Waiting…' : `Turn on ${label}`}</button>
+          <button type="button" className="auth-btn alt" disabled={loading} onClick={() => { declineFaceId(offer.uid); router.push('/dashboard') }}>Not now</button>
+        </div>
+      </AuthShell>
+    )
   }
 
   if (mode === 'forgot') {
@@ -89,6 +134,7 @@ export default function LoginPage() {
         </div>
         {error && <div className="auth-msg err" role="alert">{error}</div>}
         <button type="submit" className="auth-btn" disabled={loading}>{loading ? 'Logging in…' : 'Log In'}</button>
+        {lockedUser && <button type="button" className="auth-btn alt" disabled={loading} onClick={useFaceId}>Use {label}</button>}
         <div className="auth-note">
           Need an account? <a href={CONTACT} target="_blank" rel="noreferrer">Contact us</a>
         </div>

@@ -70,6 +70,8 @@ const css = `
   }
   .auth-btn:hover:not(:disabled) { background: #1F2937; }
   .auth-btn:disabled { opacity: 0.7; cursor: default; }
+  .auth-btn.alt { background: #FFFFFF; color: #0B1220; border: 1px solid #D5DCE4; margin-top: 10px; }
+  .auth-btn.alt:hover:not(:disabled) { background: #F4F6F8; }
   .auth-note { margin-top: 16px; text-align: center; font-size: 13.5px; color: ${AUTH.TEXT3}; }
   .auth-note a, .auth-note button { color: ${AUTH.TEXT}; font-weight: 600; text-decoration: none; background: none; border: none; font: inherit; cursor: pointer; padding: 0; }
   .auth-note a:hover, .auth-note button:hover { text-decoration: underline; }
