@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AuthShell, AuthField, MailIcon, LockIcon } from './AuthShell'
@@ -15,6 +15,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
+
+  // Already signed in on this device (e.g. reopening the app from the home screen): go straight to the dashboard,
+  // so no password or Face ID prompt shows. The sign-in form only appears when nobody is remembered.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/dashboard')
+    })
+  }, [router])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
