@@ -259,12 +259,15 @@ export function PayPage({ data, token, onReloaded }: { data: any; token: string;
               {contactBlock}
 
               <div className="pay-cta" style={{ position: 'sticky', bottom: 0, background: '#fff', margin: '0 -20px -20px', padding: '12px 20px 20px', borderRadius: '0 0 28px 28px', display: 'grid', gap: 10, boxShadow: '0 -10px 14px -10px rgba(15,23,42,0.08)' }}>
-                {reported ? (
+                {reported && !(current === 'card' && stripeCard) ? (
                   <div role="status" style={{ background: TINT, color: TEAL_DARK, borderRadius: 16, padding: '13px 16px', fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>
                     Thanks. We have let {business.name || 'the business'} know you have paid. They will confirm once it arrives.
                   </div>
                 ) : current === 'card' && stripeCard ? (
+                  <>
+                    {reported && <div style={{ textAlign: 'center', color: MUTED, fontSize: 13, lineHeight: 1.5 }}>You have already told {business.name || 'the business'} you paid. Only pay by card if that is not right.</div>}
                   <button type="button" onClick={payByCard} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 18, border: 'none', background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: busy ? 0.7 : 1 }}>{busy ? 'Opening...' : `Pay ${money(owing)} by card`}</button>
+                  </>
                 ) : current === 'card' && cardUrl ? (
                   <>
                     <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 56, borderRadius: 18, background: TEAL_DARK, color: '#fff', fontSize: 17, fontWeight: 700, textDecoration: 'none' }}>Pay {money(owing)} by card</a>
