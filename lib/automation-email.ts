@@ -38,15 +38,13 @@ function clean(v: unknown) {
   return String(v ?? '').trim()
 }
 
-/**
- * Emails should not pull a full-size logo (a typical upload is over 1MB). Logos stored in Supabase
- * Storage are served as a small 160px copy instead. SVGs are skipped because mail apps cannot show them.
- */
+/** The logo address for emails. SVGs are skipped because mail apps cannot show them. */
 export function emailLogoUrl(url?: string | null): string | undefined {
   const u = clean(url)
   if (!/^https:\/\//i.test(u) || /\.svg(\?|$)/i.test(u)) return undefined
-  const m = u.match(/^(https:\/\/[^/]+\.supabase\.co)\/storage\/v1\/object\/public\/([^?]+)/)
-  return m ? `${m[1]}/storage/v1/render/image/public/${m[2]}?width=160&height=160&resize=contain` : u
+  // The logo is used as uploaded. (Supabase's image-resizing endpoint is not enabled on this project and answers 403,
+  // which showed up as a broken image in emails.) The email sets the display height, so a big file just scales down.
+  return u
 }
 
 /** Australian numbers read better spaced out: 0434 946 801, 02 9876 5432, 1300 123 456. Anything else is left as typed. */
