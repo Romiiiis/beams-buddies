@@ -532,9 +532,9 @@ function classic(c: EmailContent, s: EmailSender) {
   rows.push(row(c.closing.map(p => para(p)).join(''), '0 28px 6px 28px'))
   if (c.button) rows.push(row(button(c.button.href, c.button.text, { bg: C.tealDark, full: true, radius: 10 }), '6px 28px 24px 28px'))
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
-  const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid ${C.card};border-radius:14px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
+  const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
   const foot = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;"><tr><td style="padding:16px 12px 0 12px;">${footerNote(s, 'center', c.footer)}</td></tr></table>`
-  return shell(c, C.page, '28px 12px', card + foot)
+  return shell(c, '#FFFFFF', '20px 12px', card + foot)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -566,7 +566,7 @@ function banner(c: EmailContent, s: EmailSender) {
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
   rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer)}</td></tr>`)
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid #DCE5E5;border-radius:16px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
-  return shell(c, '#EAF0F0', '28px 12px', card)
+  return shell(c, '#FFFFFF', '20px 12px', card)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -631,7 +631,7 @@ function summary(c: EmailContent, s: EmailSender) {
   rows.push(row(signature(c, s), '0 28px 26px 28px'))
   rows.push(row(footerNote(s, 'center', c.footer), '16px 28px 22px 28px', `border-top:1px solid ${C.line};`))
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border:1px solid ${C.card};border-radius:18px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
-  return shell(c, '#F1F3F5', '28px 12px', card)
+  return shell(c, '#FFFFFF', '20px 12px', card)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -659,7 +659,7 @@ function bold(c: EmailContent, s: EmailSender) {
   rows.push(row(signature(c, s), '0 28px 28px 28px'))
   rows.push(`<tr><td class="px" bgcolor="#F6F8F9" style="background:#F6F8F9;padding:18px 28px;border-top:1px solid ${C.line};">${footerNote(s, 'left', c.footer)}</td></tr>`)
   const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="max-width:560px;background:#FFFFFF;border-radius:18px;border-collapse:separate;overflow:hidden;">${rows.join('')}</table>`
-  return shell(c, '#E6ECEE', '28px 12px', card)
+  return shell(c, '#FFFFFF', '20px 12px', card)
 }
 
 // ---------------------------------------------------------------------------------------------
