@@ -385,16 +385,16 @@ export default function MarketingPage() {
                 <div style={cardTitle}>Promotional email template</div>
                 <div style={{ marginTop: 4, fontSize: 12, lineHeight: 1.5, color: TEXT3 }}>Style 6 · {PROMO_STYLE_NAME} · Image-led seasonal service campaign</div>
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 9px', borderRadius: 8, color: '#9A382F', background: '#FFF0EA', whiteSpace: 'nowrap' }}>CORE PROMO STYLE</span>
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 9px', borderRadius: 8, color: '#123C53', background: '#E8F2F7', whiteSpace: 'nowrap' }}>CORE PROMO STYLE</span>
             </div>
             <div style={{ padding: isMobile ? 12 : 18 }}>
-              <div style={{ maxWidth: 560, margin: '0 auto 12px', fontSize: 12, lineHeight: 1.55, color: TEXT3 }}>
-                A bright, colour-blocked email with real air conditioning imagery, repeated booking prompts and space for seasonal offer copy.
+              <div style={{ maxWidth: 640, margin: '0 auto 12px', fontSize: 12, lineHeight: 1.55, color: TEXT3 }}>
+                A cool-blue, image-led layout with air conditioning imagery, clear service sections and repeated booking prompts.
               </div>
-              <div style={{ maxWidth: 560, margin: '0 auto', border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden', background: '#F6F4EF' }}>
-                <iframe title="Promotional email template preview" srcDoc={promoDoc} sandbox="" loading="lazy" scrolling="yes" style={{ width: '100%', height: isMobile ? 650 : 760, border: 'none', display: 'block', background: '#F6F4EF' }} />
+              <div style={{ width: '100%', maxWidth: 640, margin: '0 auto', overflow: 'hidden', background: WHITE }}>
+                <iframe title="Promotional email template preview" srcDoc={promoDoc} sandbox="" loading="lazy" scrolling="yes" style={{ width: '100%', height: isMobile ? 650 : 760, border: 'none', display: 'block', background: WHITE }} />
               </div>
-              <div style={{ maxWidth: 560, margin: '10px auto 0', fontSize: 11, lineHeight: 1.5, color: TEXT3 }}>
+              <div style={{ maxWidth: 640, margin: '10px auto 0', fontSize: 11, lineHeight: 1.5, color: TEXT3 }}>
                 Preview subject: <b style={{ color: TEXT2 }}>{SAMPLE_PROMO_EMAIL.subject}</b>
               </div>
             </div>

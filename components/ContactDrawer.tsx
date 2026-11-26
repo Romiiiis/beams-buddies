@@ -250,7 +250,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       setPromoContent(previous => {
         if (target === 'hero') return { ...previous, heroImage: imageUrl }
         const sections = [...previous.sections]
-        const current = sections[sectionIndex] || { kicker: '', headline: '', body: '', background: '#93DDE3', foreground: '#123C53' }
+        const current = sections[sectionIndex] || { kicker: '', headline: '', body: '', background: '#E8F2F7', foreground: '#123C53' }
         sections[sectionIndex] = { ...current, image: imageUrl }
         return { ...previous, sections }
       })
