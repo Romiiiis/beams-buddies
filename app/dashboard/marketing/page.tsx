@@ -13,6 +13,7 @@ import { nextServiceDate, toYMD } from '@/lib/service'
 import { AUTOMATION_DAY_OPTIONS, AUTOMATION_DEFAULT_DAYS, AUTOMATION_WHEN, dayWord, overdueDue, quoteDue, reviewDue, serviceDue, visitDue, type AutomationKind } from '@/lib/automation-rules'
 import { Select } from '@/components/Select'
 import { applyCopy, COPY_LIMITS, type EmailCopy } from '@/lib/email-copy'
+import { PROMO_STYLE_NAME, renderPromoEmail, SAMPLE_PROMO_EMAIL } from '@/lib/promo-email'
 import { FIELD, FIELD_TEXTAREA } from '@/components/forms'
 
 const TEAL = '#2AA198'
@@ -152,6 +153,7 @@ export default function MarketingPage() {
   const content = useMemo(() => applyCopy(sampleContent(cur.id as EmailKind, sender), sender, liveCopy), [cur.id, sender, liveCopy])
   const standard = useMemo(() => sampleContent(cur.id as EmailKind, sender), [cur.id, sender])
   const emailDoc = useMemo(() => renderEmail(EMAIL_STYLE, content, sender), [content, sender])
+  const promoDoc = useMemo(() => renderPromoEmail(SAMPLE_PROMO_EMAIL, sender, ''), [sender])
   const emailSubject = content.subject
 
   const daysOf = (kind: string) => daysSel[kind] ?? AUTOMATION_DEFAULT_DAYS[kind as AutomationKind]
@@ -373,6 +375,27 @@ export default function MarketingPage() {
                     {cur.action}
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+
+          <div style={card}>
+            <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <div style={cardTitle}>Promotional email template</div>
+                <div style={{ marginTop: 4, fontSize: 12, lineHeight: 1.5, color: TEXT3 }}>Style 6 · {PROMO_STYLE_NAME} · Image-led seasonal service campaign</div>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 9px', borderRadius: 8, color: '#9A382F', background: '#FFF0EA', whiteSpace: 'nowrap' }}>CORE PROMO STYLE</span>
+            </div>
+            <div style={{ padding: isMobile ? 12 : 18 }}>
+              <div style={{ maxWidth: 560, margin: '0 auto 12px', fontSize: 12, lineHeight: 1.55, color: TEXT3 }}>
+                A bright, colour-blocked email with real air conditioning imagery, repeated booking prompts and space for seasonal offer copy.
+              </div>
+              <div style={{ maxWidth: 560, margin: '0 auto', border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden', background: '#F6F4EF' }}>
+                <iframe title="Promotional email template preview" srcDoc={promoDoc} sandbox="" loading="lazy" scrolling="yes" style={{ width: '100%', height: isMobile ? 650 : 760, border: 'none', display: 'block', background: '#F6F4EF' }} />
+              </div>
+              <div style={{ maxWidth: 560, margin: '10px auto 0', fontSize: 11, lineHeight: 1.5, color: TEXT3 }}>
+                Preview subject: <b style={{ color: TEXT2 }}>{SAMPLE_PROMO_EMAIL.subject}</b>
               </div>
             </div>
           </div>
