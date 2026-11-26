@@ -239,7 +239,7 @@ export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender
   const brandMark = sender.logoUrl
     ? `<img src="${esc(sender.logoUrl)}" alt="${esc(brand)} logo" style="display:block;max-width:38px;max-height:38px;width:auto;height:auto;border:0;margin:0 auto;">`
     : `<span style="font-family:${FONT};font-size:15px;line-height:20px;font-weight:800;color:${NAVY};">${esc(initials)}</span>`
-  const brandHeader = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="left"><tr><td width="52" height="52" align="center" valign="middle" bgcolor="#D9EDF5" style="width:52px;height:52px;background:#D9EDF5;border-radius:50%;">${brandMark}</td><td align="left" valign="middle" style="padding-left:13px;font-family:${FONT};"><div style="font-size:17px;line-height:22px;font-weight:800;letter-spacing:-.02em;color:#FFFFFF;">${esc(brand)}</div><div style="padding-top:4px;font-size:11px;line-height:14px;color:#C8E2ED;">Heating &middot; cooling &middot; service</div></td></tr></table>`
+  const brandHeader = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="left"><tr><td width="52" height="52" align="center" valign="middle" bgcolor="#FFFFFF" style="width:52px;height:52px;background:#FFFFFF;border-radius:50%;">${brandMark}</td><td align="left" valign="middle" style="padding-left:13px;font-family:${FONT};"><div style="font-size:17px;line-height:22px;font-weight:800;letter-spacing:-.02em;color:${NAVY};">${esc(brand)}</div><div style="padding-top:4px;font-size:11px;line-height:14px;color:#416F84;">Heating &middot; cooling &middot; service</div></td></tr></table>`
   const primaryHref = safeHref(content.primaryButtonHref, sender)
   const sections = content.sections.map((section, index) => sectionBlock(section, index, assetOrigin, sender, businessId, supabaseOrigin)).join('')
   const footerContact = [sender.phone, sender.email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ')
@@ -255,7 +255,7 @@ export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${PALE}" style="background:${PALE};border-collapse:collapse;">
       <tr><td align="center" style="padding:0;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${NAVY}" style="width:100%;max-width:640px;background:${NAVY};border-collapse:collapse;">
-          <tr><td align="left" bgcolor="${NAVY}" style="padding:15px 22px 13px;background:${NAVY};">${brandHeader}</td></tr>
+          <tr><td align="left" bgcolor="#D9EDF5" style="padding:15px 22px 13px;background:#D9EDF5;">${brandHeader}</td></tr>
           <tr><td align="center" bgcolor="${NAVY}" style="padding:20px 20px 17px;background:${NAVY};font-family:${FONT};color:#FFFFFF;">
             <div style="font-size:10px;line-height:15px;font-weight:bold;letter-spacing:.16em;text-transform:uppercase;color:#C8E2ED;">${esc(content.eyebrow)}</div>
             <div style="padding:9px 0 0;font-size:31px;line-height:32px;font-weight:900;letter-spacing:-.05em;">${esc(content.headline)}</div>
