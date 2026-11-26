@@ -13,10 +13,12 @@ import {
   serviceContent,
 } from '@/lib/automation-email'
 import { contactEmailContent, isContactEmailTemplate, type ContactEmailTemplateId } from '@/lib/contact-email'
+import { renderPromoEmail, renderPromoText, SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent } from '@/lib/promo-email'
 
 const DEFAULT_SEND_DOMAIN = 'mail.jobyra.app'
 const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const PROMO_EDITOR_EMAIL = 'ramizarib@hotmail.com'
 const EMAIL = /^[^\s@<>\"]+@[^\s@<>\"]+\.[^\s@<>\"]+$/
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -38,21 +40,15 @@ export async function POST(request: Request) {
     return json({ error: 'bad_request', message: 'Invalid request.' }, 400)
   }
 
-  const mode = payload.mode === 'preview' ? 'preview' : 'send'
+  const mode = payload.mode === undefined || payload.mode === 'send' ? 'send' : payload.mode
+  if (mode !== 'preview' && mode !== 'send') {
+    return json({ error: 'bad_request', message: 'Invalid email action.' }, 400)
+  }
   const customerId = payload.customer_id
   const template = payload.template
   const message = payload.message
   const subjectInput = payload.subject
-  if (typeof customerId !== 'string' || !UUID.test(customerId) || !isContactEmailTemplate(template)) {
-    return json({ error: 'bad_request', message: 'Invalid customer or email template.' }, 400)
-  }
-  if (typeof message !== 'string' || message.length > 8000 || (mode === 'send' && !message.trim())) {
-    return json({ error: 'bad_request', message: 'Add a message of 8,000 characters or fewer.' }, 400)
-  }
-  if (subjectInput !== undefined && (typeof subjectInput !== 'string' || subjectInput.length > 150)) {
-    return json({ error: 'bad_request', message: 'The subject must be 150 characters or fewer.' }, 400)
-  }
-  const subject = typeof subjectInput === 'string' ? subjectInput.replace(/[\r\n]+/g, ' ').trim() : ''
+  const isPromoAction = template === 'promo'
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '', {
     global: { headers: { Authorization: 'Bearer ' + token } },
@@ -60,16 +56,32 @@ export async function POST(request: Request) {
   })
   const { data: authData, error: authError } = await supabase.auth.getUser(token)
   if (authError || !authData.user) return json({ error: 'unauthorized', message: 'Please sign in again.' }, 401)
+  if (isPromoAction && String(authData.user.email || '').trim().toLowerCase() !== PROMO_EDITOR_EMAIL) {
+    return json({ error: 'forbidden', message: 'Promotional emails are not enabled for this account.' }, 403)
+  }
+
+  if (typeof customerId !== 'string' || !UUID.test(customerId) || !isContactEmailTemplate(template)) {
+    return json({ error: 'bad_request', message: 'Invalid customer or email template.' }, 400)
+  }
+  if (typeof message !== 'string' || message.length > 8000 || (mode === 'send' && template !== 'promo' && !message.trim())) {
+    return json({ error: 'bad_request', message: 'Add a message of 8,000 characters or fewer.' }, 400)
+  }
+  if (subjectInput !== undefined && (typeof subjectInput !== 'string' || subjectInput.length > 150)) {
+    return json({ error: 'bad_request', message: 'The subject must be 150 characters or fewer.' }, 400)
+  }
+  const subject = typeof subjectInput === 'string' ? subjectInput.replace(/[\r\n]+/g, ' ').trim() : ''
 
   const { data: userRow } = await supabase.from('users').select('business_id').eq('id', authData.user.id).single()
   if (!userRow?.business_id) return json({ error: 'forbidden', message: 'No business found for this account.' }, 403)
   const businessId = userRow.business_id as string
 
   const [{ data: customer }, { data: business }, { data: settings }] = await Promise.all([
-    supabase.from('customers').select('id, first_name, last_name, email').eq('id', customerId).eq('business_id', businessId).single(),
+    supabase.from('customers').select('id, first_name, last_name, email').eq('id', String(customerId || '')).eq('business_id', businessId).single(),
     supabase.from('businesses').select('name, phone, email, logo_url, email_domain, email_domain_verified').eq('id', businessId).single(),
     supabase.from('business_settings').select('*').eq('business_id', businessId).maybeSingle(),
   ])
+
+  const supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://invalid.invalid').origin
   if (!customer) return json({ error: 'not_found', message: 'Customer not found.' }, 404)
 
   const to = String((customer as any).email || '').trim()
@@ -124,12 +136,24 @@ export async function POST(request: Request) {
   }
 
   const canSend = !resourceMissing
-  const rendered = renderAutomation(contactEmailContent({
-    template: template as ContactEmailTemplateId,
-    firstName: (customer as any).first_name,
-    subject,
-    message,
-  }, sender, baseContent), sender)
+  let rendered: { html: string; text: string; subject: string }
+  if (template === 'promo') {
+    const promoContent = sanitizePromoEmailContent(payload.promo_content ?? (settings as any)?.promo_email_config ?? SAMPLE_PROMO_EMAIL, businessId, supabaseOrigin)
+    if (!promoContent) return json({ error: 'bad_request', message: 'The promotional campaign is invalid. Reopen the editor and check the content.' }, 400)
+    const campaign = { ...promoContent, subject: subject || promoContent.subject }
+    rendered = {
+      html: renderPromoEmail(campaign, sender, 'https://jobyra.app', businessId, supabaseOrigin),
+      text: renderPromoText(campaign, sender),
+      subject: campaign.subject,
+    }
+  } else {
+    rendered = renderAutomation(contactEmailContent({
+      template: template as ContactEmailTemplateId,
+      firstName: (customer as any).first_name,
+      subject,
+      message,
+    }, sender, baseContent), sender)
+  }
 
   if (mode === 'preview') {
     return json({

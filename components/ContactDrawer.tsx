@@ -6,6 +6,7 @@ import { Select } from '@/components/Select'
 import { useBusinessData } from '@/lib/business-context'
 import { CONTACT_EMAIL_TEMPLATES, contactEmailBody, type ContactEmailTemplateId } from '@/lib/contact-email'
 import { senderFrom } from '@/lib/automation-email'
+import { SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent, type PromoEmailContent, type PromoEmailSection } from '@/lib/promo-email'
 import { supabase } from '@/lib/supabase'
 
 const TEAL = '#2AA198'
@@ -58,6 +59,13 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
   const [previewHtml, setPreviewHtml] = useState('')
   const [previewInfo, setPreviewInfo] = useState<{ subject?: string; can_send?: boolean; needs_resource?: boolean; create_url?: string } | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
+  const [promoEnabled, setPromoEnabled] = useState(false)
+  const [promoBusinessId, setPromoBusinessId] = useState('')
+  const [promoContent, setPromoContent] = useState<PromoEmailContent>(SAMPLE_PROMO_EMAIL)
+  const [promoLoaded, setPromoLoaded] = useState(false)
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoSaving, setPromoSaving] = useState(false)
+  const [promoSaved, setPromoSaved] = useState(false)
 
   const sender = useMemo(() => senderFrom(business), [business])
 
@@ -70,12 +78,24 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       setSending(false)
       setEmailError('')
       setEmailSent(false)
+      setPromoEnabled(false)
+      setPromoBusinessId('')
+      setPromoContent(SAMPLE_PROMO_EMAIL)
+      setPromoLoaded(false)
+      setPromoSaved(false)
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (!session) return
+        setPromoEnabled(String(session.user.email || '').trim().toLowerCase() === 'ramizarib@hotmail.com')
+        if (String(session.user.email || '').trim().toLowerCase() !== 'ramizarib@hotmail.com') return
+        const { data } = await supabase.from('users').select('business_id').eq('id', session.user.id).maybeSingle()
+        if (data?.business_id) setPromoBusinessId(data.business_id)
+      }).catch(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   useEffect(() => {
-    if (!isOpen || channel !== 'email' || !customer.id) return
+    if (!isOpen || channel !== 'email' || !customer.id || (template === 'promo' && (!promoEnabled || !promoLoaded))) return
     let active = true
     setPreviewLoading(true)
     const timer = window.setTimeout(async () => {
@@ -85,7 +105,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
         const response = await fetch('/api/contact/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
-          body: JSON.stringify({ mode: 'preview', customer_id: customer.id, template, subject, message }),
+          body: JSON.stringify({ mode: 'preview', customer_id: customer.id, template, subject, message, ...(template === 'promo' ? { promo_content: promoContent } : {}) }),
         })
         const result = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(result.message || 'Could not load the email preview.')
@@ -105,7 +125,32 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       }
     }, 250)
     return () => { active = false; window.clearTimeout(timer) }
-  }, [isOpen, channel, customer.id, template, subject, message])
+  }, [isOpen, channel, customer.id, template, subject, message, promoEnabled, promoLoaded, promoContent])
+
+  useEffect(() => {
+    if (!isOpen || channel !== 'email' || template !== 'promo' || !promoEnabled || !promoBusinessId || promoLoaded) return
+    let active = true
+    setPromoLoading(true)
+    try {
+      const key = `jobyra:promo-email:${promoBusinessId}`
+      const savedValue = window.localStorage.getItem(key)
+      const saved = savedValue
+        ? sanitizePromoEmailContent(JSON.parse(savedValue), promoBusinessId, process.env.NEXT_PUBLIC_SUPABASE_URL || '')
+        : null
+      if (active) {
+        setPromoContent(saved || SAMPLE_PROMO_EMAIL)
+        setSubject(saved?.subject || SAMPLE_PROMO_EMAIL.subject)
+        setPromoLoaded(true)
+        setPromoSaved(Boolean(saved))
+        setEmailError('')
+      }
+    } catch {
+      if (active) setEmailError('Could not read the saved campaign in this browser.')
+    } finally {
+      if (active) setPromoLoading(false)
+    }
+    return () => { active = false }
+  }, [isOpen, channel, template, promoEnabled, promoBusinessId, promoLoaded])
 
   async function sendEmail() {
     if (!customer.email) {
@@ -116,7 +161,11 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       setEmailError('This customer could not be identified. Refresh the page and try again.')
       return
     }
-    if (!message.trim()) {
+    if (template === 'promo' && (!promoEnabled || !promoLoaded || promoLoading || !promoBusinessId)) {
+      setEmailError('The promotional campaign is still loading. Please wait a moment and try again.')
+      return
+    }
+    if (template !== 'promo' && !message.trim()) {
       setEmailError('Write a message before sending.')
       return
     }
@@ -132,7 +181,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       const response = await fetch('/api/contact/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
-        body: JSON.stringify({ customer_id: customer.id, template, subject, message }),
+        body: JSON.stringify({ customer_id: customer.id, template, subject, message, ...(template === 'promo' ? { promo_content: promoContent } : {}) }),
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) {
@@ -144,6 +193,71 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       setEmailError('Could not reach Jobyra. Check your connection and try again.')
     } finally {
       setSending(false)
+    }
+  }
+
+  async function savePromoCampaign() {
+    setPromoSaving(true)
+    setEmailError('')
+    setPromoSaved(false)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Your session has expired. Please sign in again.')
+      if (String(session.user.email || '').trim().toLowerCase() !== 'ramizarib@hotmail.com' || !promoBusinessId) {
+        throw new Error('Promotional emails are not enabled for this account.')
+      }
+      const savedCampaign = sanitizePromoEmailContent(
+        { ...promoContent, subject },
+        promoBusinessId,
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      )
+      if (!savedCampaign) throw new Error('Check that the subject, button links and required campaign text are valid.')
+      window.localStorage.setItem(`jobyra:promo-email:${promoBusinessId}`, JSON.stringify(savedCampaign))
+      setPromoContent(savedCampaign)
+      setPromoSaved(true)
+    } catch (error) {
+      setEmailError(error instanceof Error ? error.message : 'Could not save the campaign.')
+    } finally {
+      setPromoSaving(false)
+    }
+  }
+
+  function updatePromoSection(index: number, updates: Partial<PromoEmailSection>) {
+    setPromoContent(previous => ({ ...previous, sections: previous.sections.map((section, i) => i === index ? { ...section, ...updates } : section) }))
+    setPromoSaved(false)
+    setEmailSent(false)
+  }
+
+  async function uploadPromoImage(target: 'hero' | 'section', file?: File, sectionIndex = 0) {
+    if (!file) return
+    if (!promoBusinessId) {
+      setEmailError('Your business could not be identified. Refresh the page and try again.')
+      return
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setEmailError('Choose a JPG, PNG or WebP image up to 5 MB.')
+      return
+    }
+    setEmailError('')
+    try {
+      const ext = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp'
+      const filePath = `${promoBusinessId}/promo/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const { error } = await supabase.storage.from('business-logos').upload(filePath, file, {
+        cacheControl: '3600', contentType: file.type, upsert: false,
+      })
+      if (error) throw new Error(error.message || 'Image upload failed.')
+      const imageUrl = supabase.storage.from('business-logos').getPublicUrl(filePath).data.publicUrl
+      setPromoContent(previous => {
+        if (target === 'hero') return { ...previous, heroImage: imageUrl }
+        const sections = [...previous.sections]
+        const current = sections[sectionIndex] || { kicker: '', headline: '', body: '', background: '#93DDE3', foreground: '#123C53' }
+        sections[sectionIndex] = { ...current, image: imageUrl }
+        return { ...previous, sections }
+      })
+      setPromoSaved(false)
+      setEmailSent(false)
+    } catch (error) {
+      setEmailError(error instanceof Error ? error.message : 'Could not upload that image.')
     }
   }
 
@@ -195,6 +309,9 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
     cursor: 'pointer',
     width: '100%',
   }
+
+  const emailSendDisabled = sending || emailSent || !customer.email || previewLoading || previewInfo?.can_send === false ||
+    (template === 'promo' && (!promoEnabled || !promoLoaded || promoLoading || !promoBusinessId || previewInfo?.can_send !== true))
 
   if (!isOpen) return null
 
@@ -252,7 +369,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
               { key: 'text' as const, label: 'Text', icon: <IconMessage size={14} /> },
               { key: 'email' as const, label: 'Email', icon: <IconMail size={14} /> },
             ]).map(tab => (
-              <button key={tab.key} type="button" role="radio" aria-checked={channel === tab.key} className="jb-chip" onClick={() => { setChannel(tab.key); setEmailError(''); setEmailSent(false) }}>
+              <button key={tab.key} type="button" role="radio" aria-checked={channel === tab.key} className="jb-chip" onClick={() => { setChannel(tab.key); if (tab.key !== 'email' && template === 'promo') { setTemplate('custom'); setMessage(''); setSubject('') } setEmailError(''); setEmailSent(false) }}>
                 {tab.icon}{tab.label}
               </button>
             ))}
@@ -284,9 +401,11 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                     setTemplate(key)
                     setEmailError('')
                     setEmailSent(false)
+                    setPreviewHtml('')
+                    setPreviewInfo(null)
                     if (channel === 'email') {
-                      setMessage(contactEmailBody(key, jobType))
-                    setSubject('')
+                      setMessage(key === 'promo' ? '' : contactEmailBody(key, jobType))
+                      setSubject(key === 'promo' ? promoContent.subject : '')
                     } else {
                       const bodies: Record<ContactEmailTemplateId, string> = {
                         custom: '',
@@ -295,32 +414,74 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                         service_reminder: 'It is time to schedule your next service for your ' + (jobType || 'system') + '. Give us a call or reply to book in.',
                         follow_up: 'Just following up on our recent visit. Please do not hesitate to reach out if you have any questions.',
                         review: 'Thank you for your business. If you are happy with the service, we would really appreciate a quick review.',
+                        promo: '',
                       }
                       setMessage(bodies[key])
                     }
                   }}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
-                  {CONTACT_EMAIL_TEMPLATES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+                  {CONTACT_EMAIL_TEMPLATES.filter(item => item.id !== 'promo' || (channel === 'email' && promoEnabled)).map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
                 </Select>
               </div>
 
               {channel === 'email' && (
                 <div>
                   <div style={labelStyle}>Subject</div>
-                  <input value={subject} onChange={e => { setSubject(e.target.value); setEmailSent(false) }} style={inputStyle} placeholder={previewInfo?.subject || 'Subject from selected template'} maxLength={150} />
+                  <input value={subject} onChange={e => { setSubject(e.target.value); if (template === 'promo') setPromoContent(previous => ({ ...previous, subject: e.target.value })); setEmailSent(false); setPromoSaved(false) }} style={inputStyle} placeholder={previewInfo?.subject || 'Subject from selected template'} maxLength={150} />
                 </div>
               )}
 
-              <div>
-                <div style={labelStyle}>Message</div>
-                <textarea
-                  value={message}
-                  onChange={e => { setMessage(e.target.value); setEmailSent(false) }}
-                  style={textareaStyle}
-                  placeholder={channel === 'text' ? 'Write your message...' : 'Write your email body...'}
-                />
-              </div>
+              {template === 'promo' && channel === 'email' ? (
+                <div style={{ border: '1px solid ' + BORDER, borderRadius: 12, padding: 12, background: '#FAFBFC' }}>
+                  <div style={{ fontSize: 13, color: TEXT2, fontWeight: 700 }}>Style 6 promotional campaign</div>
+                  <div style={{ marginTop: 4, fontSize: 12, color: TEXT3, lineHeight: 1.45 }}>Uses your business name and logo automatically. Save your edits as the default for this browser and device.</div>
+                  <details style={{ marginTop: 10 }}>
+                    <summary style={{ color: '#176B65', cursor: 'pointer', fontSize: 12, fontWeight: 750 }}>Edit text and images</summary>
+                    <div style={{ display: 'grid', gap: 10, paddingTop: 12 }}>
+                      <label><span style={labelStyle}>Preheader</span><input value={promoContent.preheader} onChange={e => { setPromoContent(p => ({ ...p, preheader: e.target.value })); setPromoSaved(false) }} maxLength={180} style={inputStyle} /></label>
+                      <label><span style={labelStyle}>Eyebrow</span><input value={promoContent.eyebrow} onChange={e => { setPromoContent(p => ({ ...p, eyebrow: e.target.value })); setPromoSaved(false) }} maxLength={90} style={inputStyle} /></label>
+                      <label><span style={labelStyle}>Main headline</span><input value={promoContent.headline} onChange={e => { setPromoContent(p => ({ ...p, headline: e.target.value })); setPromoSaved(false) }} maxLength={120} style={inputStyle} /></label>
+                      <label><span style={labelStyle}>Introduction</span><textarea value={promoContent.intro} onChange={e => { setPromoContent(p => ({ ...p, intro: e.target.value })); setPromoSaved(false) }} maxLength={1200} style={{ ...textareaStyle, height: 82 }} /></label>
+                      <label><span style={labelStyle}>Hero image · JPG, PNG or WebP (max 5 MB)</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { void uploadPromoImage('hero', e.target.files?.[0]); e.currentTarget.value = '' }} style={{ ...inputStyle, padding: '8px 10px', height: 42 }} /></label>
+                      <label><span style={labelStyle}>Hero image description</span><input value={promoContent.heroImageAlt} onChange={e => { setPromoContent(p => ({ ...p, heroImageAlt: e.target.value })); setPromoSaved(false) }} maxLength={180} style={inputStyle} /></label>
+                      {promoContent.sections.map((section, index) => (
+                        <div key={index} style={{ borderTop: '1px solid ' + BORDER, paddingTop: 10, display: 'grid', gap: 10 }}>
+                          <div style={{ fontSize: 12, fontWeight: 750, color: TEXT2 }}>Campaign section {index + 1}</div>
+                          <label><span style={labelStyle}>Section label</span><input value={section.kicker} onChange={e => updatePromoSection(index, { kicker: e.target.value })} maxLength={90} style={inputStyle} /></label>
+                          <label><span style={labelStyle}>Section headline</span><input value={section.headline} onChange={e => updatePromoSection(index, { headline: e.target.value })} maxLength={120} style={inputStyle} /></label>
+                          <label><span style={labelStyle}>Section copy</span><textarea value={section.body} onChange={e => updatePromoSection(index, { body: e.target.value })} maxLength={1200} style={{ ...textareaStyle, height: 82 }} /></label>
+                          <label><span style={labelStyle}>Section image · JPG, PNG or WebP (max 5 MB)</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { void uploadPromoImage('section', e.target.files?.[0], index); e.currentTarget.value = '' }} style={{ ...inputStyle, padding: '8px 10px', height: 42 }} /></label>
+                          <label><span style={labelStyle}>Image description</span><input value={section.imageAlt || ''} onChange={e => updatePromoSection(index, { imageAlt: e.target.value })} maxLength={180} style={inputStyle} /></label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            <label><span style={labelStyle}>Section button</span><input value={section.buttonText || ''} onChange={e => updatePromoSection(index, { buttonText: e.target.value, buttonHref: e.target.value ? section.buttonHref || 'tel:' : '' })} maxLength={40} style={inputStyle} /></label>
+                            <label><span style={labelStyle}>Section button link</span><input value={section.buttonHref || ''} onChange={e => updatePromoSection(index, { buttonHref: e.target.value, buttonText: e.target.value ? section.buttonText || 'GET IN TOUCH' : '' })} maxLength={500} style={inputStyle} placeholder="tel: or https://…" /></label>
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <label><span style={labelStyle}>Button label</span><input value={promoContent.primaryButtonText} onChange={e => { setPromoContent(p => ({ ...p, primaryButtonText: e.target.value })); setPromoSaved(false) }} maxLength={40} style={inputStyle} /></label>
+                        <label><span style={labelStyle}>Button link</span><input value={promoContent.primaryButtonHref} onChange={e => { setPromoContent(p => ({ ...p, primaryButtonHref: e.target.value })); setPromoSaved(false) }} maxLength={500} style={inputStyle} placeholder="tel: or https://…" /></label>
+                      </div>
+                      <label><span style={labelStyle}>Closing headline</span><input value={promoContent.closingHeadline} onChange={e => { setPromoContent(p => ({ ...p, closingHeadline: e.target.value })); setPromoSaved(false) }} maxLength={120} style={inputStyle} /></label>
+                      <label><span style={labelStyle}>Closing copy</span><textarea value={promoContent.closing} onChange={e => { setPromoContent(p => ({ ...p, closing: e.target.value })); setPromoSaved(false) }} maxLength={800} style={{ ...textareaStyle, height: 82 }} /></label>
+                    </div>
+                  </details>
+                  <button type="button" onClick={savePromoCampaign} disabled={promoSaving || promoLoading} style={{ ...actionStyle, height: 38, marginTop: 11, fontSize: 12, opacity: promoSaving ? 0.65 : 1 }}>
+                    {promoSaving ? 'Saving campaign…' : promoSaved ? 'Default saved on this device' : 'Save as default on this device'}
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={labelStyle}>Message</div>
+                  <textarea
+                    value={message}
+                    onChange={e => { setMessage(e.target.value); setEmailSent(false) }}
+                    style={textareaStyle}
+                    placeholder={channel === 'text' ? 'Write your message...' : 'Write your email body...'}
+                  />
+                </div>
+              )}
 
               {channel === 'text' ? (
                 <a
@@ -341,10 +502,12 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                   <div className="d-card d-card-border" style={{ overflow: 'hidden', borderRadius: 12, background: '#FFFFFF' }}>
                     <div className="d-card-body" style={{ padding: 0, gap: 0 }}>
                       <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid ' + BORDER }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: TEXT2 }}>Classic email preview</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: TEXT2 }}>{template === 'promo' ? 'Style 6 promotional preview' : 'Classic email preview'}</span>
                         <span style={{ fontSize: 11, color: TEXT3, textAlign: 'right' }}>Scroll inside to read the full email</span>
                       </div>
-                      {previewLoading && !previewHtml ? (
+                      {template === 'promo' && promoLoading ? (
+                        <div role="status" style={{ display: 'grid', placeItems: 'center', height: 280, color: TEXT3, fontSize: 13 }}>Loading your saved campaign…</div>
+                      ) : previewLoading && !previewHtml ? (
                         <div role="status" style={{ display: 'grid', placeItems: 'center', height: 280, color: TEXT3, fontSize: 13 }}>Preparing email preview…</div>
                       ) : previewHtml ? (
                         <iframe title="Email preview — scroll inside to see the full message" srcDoc={previewHtml} sandbox="" scrolling="yes" style={{ display: 'block', width: '100%', height: 'min(42dvh, 420px)', minHeight: 260, border: 'none', background: '#F4F6F8' }} />
@@ -364,7 +527,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
               <div style={{ padding: '12px 20px calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid ' + BORDER, flexShrink: 0, background: WHITE }}>
                 {emailError && <div role="alert" style={{ marginBottom: 10, fontSize: 12, color: '#B42318', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 9, padding: '8px 10px' }}>{emailError}</div>}
                 {emailSent && <div role="status" style={{ marginBottom: 10, fontSize: 12, color: '#17706A' }}>Email sent to {customer.email}.</div>}
-                <button type="button" onClick={sendEmail} disabled={sending || emailSent || !customer.email || previewLoading || previewInfo?.can_send === false} className="d-btn d-btn-primary" style={{ ...actionStyle, opacity: sending || emailSent || !customer.email || previewLoading || previewInfo?.can_send === false ? 0.6 : 1, cursor: sending || emailSent || !customer.email || previewLoading || previewInfo?.can_send === false ? 'not-allowed' : 'pointer' }}>
+                <button type="button" onClick={sendEmail} disabled={emailSendDisabled} className="d-btn d-btn-primary" style={{ ...actionStyle, opacity: emailSendDisabled ? 0.6 : 1, cursor: emailSendDisabled ? 'not-allowed' : 'pointer' }}>
                   <IconMail size={15} />
                   {sending ? 'Sending…' : emailSent ? 'Email sent' : customer.email ? 'Send email' : 'No email address on file'}
                 </button>

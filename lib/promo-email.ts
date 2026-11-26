@@ -90,6 +90,109 @@ function imageUrl(path: string, assetOrigin: string) {
   return assetOrigin ? `${assetOrigin.replace(/\/$/, '')}${safePath}` : safePath
 }
 
+function businessImageUrl(path: string, businessId: string, supabaseOrigin: string) {
+  try {
+    const value = new URL(path)
+    const base = new URL(supabaseOrigin)
+    const prefix = `/storage/v1/object/public/business-logos/${businessId}/promo/`
+    const filename = value.pathname.slice(prefix.length)
+    if (value.origin === base.origin && businessId && value.pathname.startsWith(prefix) && /^[A-Za-z0-9._-]{1,180}$/.test(filename)) return value.toString()
+  } catch {
+    // Non-URL paths are validated against the built-in assets below.
+  }
+  return ''
+}
+
+function safeImage(path: unknown, businessId: string, supabaseOrigin: string) {
+  const value = typeof path === 'string' ? path.trim() : ''
+  return PROMO_ASSETS.has(value) || businessImageUrl(value, businessId, supabaseOrigin) ? value : ''
+}
+
+function safeText(value: unknown, max: number) {
+  if (typeof value !== 'string') return null
+  const clean = value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim()
+  return clean.length <= max ? clean : null
+}
+
+function safeCampaignHref(value: unknown) {
+  if (typeof value !== 'string') return null
+  const href = value.trim()
+  return href.length <= 500 && (href === 'tel:' || href === '#' || /^https:\/\//i.test(href) || /^mailto:[^\s<>]+$/i.test(href)) ? href : null
+}
+
+/** Validate and normalize campaign data before it is stored or rendered. */
+export function sanitizePromoEmailContent(value: unknown, businessId: string, supabaseOrigin: string): PromoEmailContent | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const input = value as Record<string, unknown>
+  const subject = safeText(input.subject, 150)
+  const preheader = safeText(input.preheader, 180)
+  const eyebrow = safeText(input.eyebrow, 90)
+  const headline = safeText(input.headline, 120)
+  const intro = safeText(input.intro, 1200)
+  const heroImage = safeImage(input.heroImage, businessId, supabaseOrigin)
+  const heroImageAlt = safeText(input.heroImageAlt, 180)
+  const primaryButtonText = safeText(input.primaryButtonText, 40)
+  const primaryButtonHref = safeCampaignHref(input.primaryButtonHref)
+  const closingHeadline = safeText(input.closingHeadline, 120)
+  const closing = safeText(input.closing, 800)
+  const preferencesUrl = input.preferencesUrl === undefined || input.preferencesUrl === '' ? '' : safeCampaignHref(input.preferencesUrl)
+  if ([subject, preheader, eyebrow, headline, intro, heroImageAlt, primaryButtonText, primaryButtonHref, closingHeadline, closing].some(item => item === null) || !subject || !headline || !primaryButtonText || !heroImage || preferencesUrl === null) return null
+  if (!Array.isArray(input.sections) || input.sections.length > 3) return null
+
+  const sections: PromoEmailSection[] = []
+  for (const item of input.sections) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return null
+    const section = item as Record<string, unknown>
+    const kicker = safeText(section.kicker, 90)
+    const sectionHeadline = safeText(section.headline, 120)
+    const body = safeText(section.body, 1200)
+    const imageAlt = safeText(section.imageAlt ?? '', 180)
+    const background = safeText(section.background, 7)
+    const foreground = safeText(section.foreground, 7)
+    const buttonText = section.buttonText === undefined || section.buttonText === '' ? '' : safeText(section.buttonText, 40)
+    const buttonHref = section.buttonHref === undefined || section.buttonHref === '' ? '' : safeCampaignHref(section.buttonHref)
+    const image = section.image === undefined || section.image === '' ? '' : safeImage(section.image, businessId, supabaseOrigin)
+    if ([kicker, sectionHeadline, body, imageAlt, background, foreground, buttonText, buttonHref].some(field => field === null) || (section.image && !image)) return null
+    if (background && !/^#[\da-f]{6}$/i.test(background)) return null
+    if (foreground && !/^#[\da-f]{6}$/i.test(foreground)) return null
+    if (Boolean(buttonText) !== Boolean(buttonHref)) return null
+    sections.push({
+      kicker: kicker!, headline: sectionHeadline!, body: body!,
+      ...(image ? { image } : {}), imageAlt: imageAlt!,
+      background: background!, foreground: foreground!,
+      ...(buttonText ? { buttonText: buttonText!, buttonHref: buttonHref! } : {}),
+    })
+  }
+
+  return {
+    subject: subject!, preheader: preheader!, eyebrow: eyebrow!, headline: headline!, intro: intro!,
+    heroImage, heroImageAlt: heroImageAlt!, primaryButtonText: primaryButtonText!, primaryButtonHref: primaryButtonHref!,
+    sections, closingHeadline: closingHeadline!, closing: closing!, ...(preferencesUrl ? { preferencesUrl } : {}),
+  }
+}
+
+export function renderPromoText(content: PromoEmailContent, sender: EmailSender) {
+  const plainHref = (href: string) => {
+    if (href !== 'tel:') return href
+    const phone = String(sender.phone || '').replace(/[^\d+]/g, '')
+    return /^\+?\d{6,15}$/.test(phone) ? 'tel:' + phone : sender.email ? 'mailto:' + sender.email : '#'
+  }
+  const lines = [
+    content.eyebrow,
+    content.headline,
+    content.intro,
+    content.primaryButtonText + ': ' + plainHref(content.primaryButtonHref),
+    ...content.sections.flatMap(section => [section.kicker, section.headline, section.body, ...(section.buttonText ? [section.buttonText + ': ' + plainHref(section.buttonHref || '#')] : [])]),
+    content.closingHeadline,
+    content.closing,
+    sender.name || 'Your local team',
+    sender.phone || '',
+    sender.email || '',
+    'To update your email preferences, reply to this email or contact us.',
+  ]
+  return lines.filter(Boolean).join('\n\n')
+}
+
 function button(text: string, href: string, background: string, foreground: string) {
   return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr><td align="center" bgcolor="${background}" style="border-radius:24px;"><a href="${esc(href || '#')}" style="display:inline-block;padding:13px 22px;color:${foreground};font-family:${FONT};font-size:13px;font-weight:bold;letter-spacing:.04em;text-decoration:none;border-radius:24px;">${esc(text)}</a></td></tr></table>`
 }
@@ -109,11 +212,11 @@ function safeHref(value: string, sender: EmailSender) {
   return '#'
 }
 
-function sectionBlock(section: PromoEmailSection, index: number, assetOrigin: string, sender: EmailSender) {
+function sectionBlock(section: PromoEmailSection, index: number, assetOrigin: string, sender: EmailSender, businessId: string, supabaseOrigin: string) {
   const background = safeColor(section.background, CORAL)
   const foreground = safeColor(section.foreground, INK)
   const image = section.image
-    ? `<tr><td style="padding:0;"><img src="${esc(imageUrl(section.image, assetOrigin))}" width="560" alt="${esc(section.imageAlt || '')}" style="display:block;width:100%;max-width:560px;height:auto;border:0;"></td></tr>`
+    ? `<tr><td style="padding:0;"><img src="${esc(PROMO_ASSETS.has(section.image) ? imageUrl(section.image, assetOrigin) : businessImageUrl(section.image, businessId, supabaseOrigin))}" width="560" alt="${esc(section.imageAlt || '')}" style="display:block;width:100%;max-width:560px;height:auto;border:0;"></td></tr>`
     : ''
   const cta = section.buttonText && section.buttonHref
     ? `<tr><td align="center" bgcolor="${background}" style="padding:2px 20px 28px;background:${background};">${button(section.buttonText, safeHref(section.buttonHref, sender), CTA_CORAL, '#FFFFFF')}</td></tr>`
@@ -129,19 +232,20 @@ function sectionBlock(section: PromoEmailSection, index: number, assetOrigin: st
 }
 
 /** Render the email-safe promotional campaign. */
-export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender, assetOrigin = 'https://jobyra.app') {
+export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender, assetOrigin = 'https://jobyra.app', businessId = '', supabaseOrigin = '') {
   const brand = sender.name || 'Your local air conditioning team'
   const logo = sender.logoUrl
     ? `<img src="${esc(sender.logoUrl)}" alt="${esc(brand)}" height="34" style="display:block;max-width:170px;max-height:34px;width:auto;height:auto;border:0;margin:0 auto;">`
     : `<div style="font-family:${FONT};font-size:18px;line-height:24px;font-weight:900;letter-spacing:-.03em;color:${INK};">${esc(brand)}</div>`
   const primaryHref = safeHref(content.primaryButtonHref, sender)
-  const sections = content.sections.map((section, index) => sectionBlock(section, index, assetOrigin, sender)).join('')
+  const sections = content.sections.map((section, index) => sectionBlock(section, index, assetOrigin, sender, businessId, supabaseOrigin)).join('')
   const footerContact = [sender.phone, sender.email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ')
   const preferencesHref = content.preferencesUrl ? safeHref(content.preferencesUrl, sender) : '#'
   const preference = content.preferencesUrl && preferencesHref !== '#'
     ? `To stop receiving promotional emails, <a href="${esc(preferencesHref)}" style="color:#46556A;text-decoration:underline;">manage your preferences</a>.`
     : 'To update your email preferences, reply to this email or contact us.'
-  const hero = `<img src="${esc(imageUrl(content.heroImage, assetOrigin))}" width="560" alt="${esc(content.heroImageAlt)}" style="display:block;width:100%;max-width:560px;height:auto;border:0;">`
+  const heroSource = PROMO_ASSETS.has(content.heroImage) ? imageUrl(content.heroImage, assetOrigin) : businessImageUrl(content.heroImage, businessId, supabaseOrigin)
+  const hero = `<img src="${esc(heroSource)}" width="560" alt="${esc(content.heroImageAlt)}" style="display:block;width:100%;max-width:560px;height:auto;border:0;">`
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${esc(content.subject)}</title></head>
   <body style="margin:0;padding:0;background:#F6F4EF;-webkit-text-size-adjust:100%;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(content.preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>

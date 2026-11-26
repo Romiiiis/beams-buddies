@@ -1,6 +1,6 @@
 import type { EmailContent, EmailSender } from '@/lib/email-theme'
 
-export type ContactEmailTemplateId = 'custom' | 'new_quote' | 'outstanding' | 'service_reminder' | 'follow_up' | 'review'
+export type ContactEmailTemplateId = 'custom' | 'new_quote' | 'outstanding' | 'service_reminder' | 'follow_up' | 'review' | 'promo'
 
 type ContactEmailTemplate = {
   id: ContactEmailTemplateId
@@ -17,6 +17,7 @@ export const CONTACT_EMAIL_TEMPLATES: ContactEmailTemplate[] = [
   { id: 'service_reminder', label: 'Service reminder', subject: 'Service Reminder', headline: 'Time to schedule your next service', kind: 'service' },
   { id: 'follow_up', label: 'Follow-up', subject: 'Following Up', headline: 'Following up', kind: 'visit' },
   { id: 'review', label: 'Review request', subject: 'How Did We Do?', headline: 'We would love your feedback', kind: 'review' },
+  { id: 'promo', label: 'Promotional email · Style 6', subject: '', headline: '', kind: 'visit' },
 ]
 
 const EMAIL_ACTIONS: Record<ContactEmailTemplateId, string> = {
@@ -26,6 +27,7 @@ const EMAIL_ACTIONS: Record<ContactEmailTemplateId, string> = {
   service_reminder: 'Call to book',
   follow_up: 'Call us back',
   review: 'Talk with us',
+  promo: 'See our seasonal offer',
 }
 
 function contactAction(template: ContactEmailTemplateId, sender: EmailSender) {
