@@ -86,6 +86,7 @@ export default function MarketingPage() {
   const [enabled, setEnabled] = useState<Record<string, boolean>>({})
   const [daysSel, setDaysSel] = useState<Record<string, number>>({})
   const [bizId, setBizId] = useState('')
+  const [promoEnabled, setPromoEnabled] = useState(false)
   const [quotes, setQuotes] = useState<any[]>([])
   const [autoLog, setAutoLog] = useState<any[]>([])
   const [saveError, setSaveError] = useState('')
@@ -101,6 +102,7 @@ export default function MarketingPage() {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
+      setPromoEnabled(String(session.user.email || '').trim().toLowerCase() === 'ramizarib@hotmail.com')
       const { data: u } = await getUserRow(session.user.id)
       if (!u?.business_id) { setLoading(false); return }
       const bid = u.business_id
@@ -379,7 +381,7 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div style={card}>
+          {promoEnabled && <div style={card}>
             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div>
                 <div style={cardTitle}>Promotional email template</div>
@@ -398,7 +400,7 @@ export default function MarketingPage() {
                 Preview subject: <b style={{ color: TEXT2 }}>{SAMPLE_PROMO_EMAIL.subject}</b>
               </div>
             </div>
-          </div>
+          </div>}
 
           <div style={card}>
             <div style={{ padding: '16px 18px', borderBottom: `1px solid ${BORDER}` }}>

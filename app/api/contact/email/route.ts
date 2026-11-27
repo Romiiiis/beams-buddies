@@ -13,7 +13,7 @@ import {
   serviceContent,
 } from '@/lib/automation-email'
 import { contactEmailContent, isContactEmailTemplate, type ContactEmailTemplateId } from '@/lib/contact-email'
-import { renderPromoEmail, renderPromoText, SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent } from '@/lib/promo-email'
+import { hasPromoOfferPlaceholder, renderPromoEmail, renderPromoText, SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent } from '@/lib/promo-email'
 
 const DEFAULT_SEND_DOMAIN = 'mail.jobyra.app'
 const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i
@@ -140,6 +140,9 @@ export async function POST(request: Request) {
   if (template === 'promo') {
     const promoContent = sanitizePromoEmailContent(payload.promo_content ?? (settings as any)?.promo_email_config ?? SAMPLE_PROMO_EMAIL, businessId, supabaseOrigin)
     if (!promoContent) return json({ error: 'bad_request', message: 'The promotional campaign is invalid. Reopen the editor and check the content.' }, 400)
+    if (mode === 'send' && hasPromoOfferPlaceholder(promoContent)) {
+      return json({ error: 'unfinished_offer', message: 'Replace the bracketed offer amount and date before sending this promotion.' }, 400)
+    }
     const campaign = { ...promoContent, subject: subject || promoContent.subject }
     rendered = {
       html: renderPromoEmail(campaign, sender, 'https://jobyra.app', businessId, supabaseOrigin),

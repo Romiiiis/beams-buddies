@@ -19,6 +19,8 @@ export type PromoEmailContent = {
   eyebrow: string
   headline: string
   intro: string
+  offerValue: string
+  offerDetails: string
   heroImage: string
   heroImageAlt: string
   primaryButtonText: string
@@ -32,39 +34,41 @@ export type PromoEmailContent = {
 export const PROMO_STYLE_NAME = 'Cool blue HVAC'
 
 export const SAMPLE_PROMO_EMAIL: PromoEmailContent = {
-  subject: 'Get your home ready for the heat',
-  preheader: 'A little air conditioning care can make the warmer months more comfortable.',
-  eyebrow: 'A seasonal note from your air conditioning team',
-  headline: 'READY FOR A COOLER SUMMER?',
-  intro: 'Hot days are easier when your system is ready for them. Book a seasonal check and head into summer with cleaner filters, better airflow and one less thing to worry about.',
-  heroImage: '/promo/cool-living-room.jpg',
-  heroImageAlt: 'A bright, comfortable living room with a wall-mounted air conditioner',
-  primaryButtonText: 'BOOK A SUMMER SERVICE',
+  subject: 'A cooler home starts with a summer tune-up',
+  preheader: 'Book your seasonal air conditioning service before the summer rush.',
+  eyebrow: 'SUMMER SERVICE OFFER',
+  headline: 'IS YOUR A/C SUMMER-READY?',
+  intro: 'Get ahead of the first heatwave. Book a professional tune-up and feel confident your system is ready for the warmer months.',
+  offerValue: '[X% OFF]',
+  offerDetails: 'when you book your summer tune-up by [DATE]',
+  heroImage: '/promo/avalanche-tech-hero.jpg',
+  heroImageAlt: 'An air conditioning technician servicing an outdoor condenser before summer',
+  primaryButtonText: 'BOOK YOUR SUMMER TUNE-UP',
   primaryButtonHref: 'tel:',
   sections: [
     {
-      kicker: 'A FRESH START FOR YOUR SYSTEM',
-      headline: 'CLEANER FILTERS. BETTER FLOW.',
-      body: 'Dusty filters can make your system work harder. A proper clean helps keep air moving around your home.',
-      image: '/promo/filter-cleaning.jpg',
-      imageAlt: 'A technician cleaning an air conditioning filter',
+      kicker: 'WHAT YOUR TUNE-UP COVERS',
+      headline: 'A LITTLE PREP. A LOT MORE COMFORT.',
+      body: 'We check airflow, filters, coils and key system components, then let you know what we find before any extra work is done.',
+      image: '/promo/avalanche-service-detail.jpg',
+      imageAlt: 'A technician checking a wall-mounted air conditioning unit with diagnostic equipment',
       background: '#E8F2F7',
       foreground: '#123C53',
-      buttonText: 'ASK ABOUT A CLEAN',
+      buttonText: 'ASK ABOUT A TUNE-UP',
       buttonHref: 'tel:',
     },
     {
-      kicker: 'BEAT THE FIRST HEATWAVE',
-      headline: 'MAKE COMFORT PART OF THE PLAN.',
-      body: 'A seasonal service checks the essentials before the busiest days arrive. Get in touch and we will find a time that suits you.',
+      kicker: 'LOCAL, PROFESSIONAL SERVICE',
+      headline: 'READY BEFORE THE HEAT ARRIVES.',
+      body: 'Book with your local air conditioning team and get clear advice, professional care and a home that is ready for summer.',
       background: '#F3F7F9',
       foreground: '#123C53',
       buttonText: 'GET IN TOUCH',
       buttonHref: 'tel:',
     },
   ],
-  closingHeadline: 'A COOLER HOME IS A GOOD PLACE TO START.',
-  closing: 'Reply to this email or give us a call to book your service. We would be happy to help you get ready for the season.',
+  closingHeadline: 'LET’S GET YOUR HOME SUMMER-READY.',
+  closing: 'Reply to this email or call our team to book your tune-up. We will confirm your appointment and explain the service before we begin.',
 }
 
 const esc = (value: unknown) => String(value ?? '')
@@ -84,6 +88,8 @@ const MUTED = '#526878'
 const PROMO_ASSETS = new Set([
   '/promo/cool-living-room.jpg',
   '/promo/filter-cleaning.jpg',
+  '/promo/avalanche-tech-hero.jpg',
+  '/promo/avalanche-service-detail.jpg',
 ])
 
 function imageUrl(path: string, assetOrigin: string) {
@@ -130,6 +136,8 @@ export function sanitizePromoEmailContent(value: unknown, businessId: string, su
   const eyebrow = safeText(input.eyebrow, 90)
   const headline = safeText(input.headline, 120)
   const intro = safeText(input.intro, 1200)
+  const offerValue = safeText(input.offerValue ?? '', 60)
+  const offerDetails = safeText(input.offerDetails ?? '', 240)
   const heroImage = safeImage(input.heroImage, businessId, supabaseOrigin)
   const heroImageAlt = safeText(input.heroImageAlt, 180)
   const primaryButtonText = safeText(input.primaryButtonText, 40)
@@ -137,7 +145,7 @@ export function sanitizePromoEmailContent(value: unknown, businessId: string, su
   const closingHeadline = safeText(input.closingHeadline, 120)
   const closing = safeText(input.closing, 800)
   const preferencesUrl = input.preferencesUrl === undefined || input.preferencesUrl === '' ? '' : safeCampaignHref(input.preferencesUrl)
-  if ([subject, preheader, eyebrow, headline, intro, heroImageAlt, primaryButtonText, primaryButtonHref, closingHeadline, closing].some(item => item === null) || !subject || !headline || !primaryButtonText || !heroImage || preferencesUrl === null) return null
+  if ([subject, preheader, eyebrow, headline, intro, offerValue, offerDetails, heroImageAlt, primaryButtonText, primaryButtonHref, closingHeadline, closing].some(item => item === null) || !subject || !headline || !primaryButtonText || !heroImage || preferencesUrl === null) return null
   if (!Array.isArray(input.sections) || input.sections.length > 3) return null
 
   const sections: PromoEmailSection[] = []
@@ -167,9 +175,15 @@ export function sanitizePromoEmailContent(value: unknown, businessId: string, su
 
   return {
     subject: subject!, preheader: preheader!, eyebrow: eyebrow!, headline: headline!, intro: intro!,
+    offerValue: offerValue!, offerDetails: offerDetails!,
     heroImage, heroImageAlt: heroImageAlt!, primaryButtonText: primaryButtonText!, primaryButtonHref: primaryButtonHref!,
     sections, closingHeadline: closingHeadline!, closing: closing!, ...(preferencesUrl ? { preferencesUrl } : {}),
   }
+}
+
+/** Campaign offer placeholders are useful while drafting, but must be filled before sending. */
+export function hasPromoOfferPlaceholder(content: PromoEmailContent) {
+  return /\[[^\]]{1,40}\]/.test(content.offerValue) || /\[[^\]]{1,40}\]/.test(content.offerDetails)
 }
 
 export function renderPromoText(content: PromoEmailContent, sender: EmailSender) {
@@ -182,6 +196,8 @@ export function renderPromoText(content: PromoEmailContent, sender: EmailSender)
     content.eyebrow,
     content.headline,
     content.intro,
+    ...(content.offerValue ? [content.offerValue] : []),
+    ...(content.offerDetails ? [content.offerDetails] : []),
     content.primaryButtonText + ': ' + plainHref(content.primaryButtonHref),
     ...content.sections.flatMap(section => [section.kicker, section.headline, section.body, ...(section.buttonText ? [section.buttonText + ': ' + plainHref(section.buttonHref || '#')] : [])]),
     content.closingHeadline,
@@ -249,6 +265,13 @@ export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender
     : 'To update your email preferences, reply to this email or contact us.'
   const heroSource = PROMO_ASSETS.has(content.heroImage) ? imageUrl(content.heroImage, assetOrigin) : businessImageUrl(content.heroImage, businessId, supabaseOrigin)
   const hero = `<img src="${esc(heroSource)}" width="640" alt="${esc(content.heroImageAlt)}" style="display:block;width:100%;max-width:640px;height:auto;border:0;">`
+  const offer = content.offerValue || content.offerDetails
+    ? `<tr><td bgcolor="#FFFFFF" align="center" style="padding:24px 22px 23px;background:#FFFFFF;font-family:${FONT};color:${NAVY};">
+        <div style="font-size:10px;line-height:15px;font-weight:bold;letter-spacing:.16em;color:${BLUE};">A SEASONAL OFFER FOR YOUR HOME</div>
+        ${content.offerValue ? `<div style="padding-top:5px;font-size:38px;line-height:42px;font-weight:900;letter-spacing:-.055em;color:${NAVY};">${esc(content.offerValue)}</div>` : ''}
+        ${content.offerDetails ? `<div style="padding-top:5px;font-size:15px;line-height:21px;font-weight:700;color:${INK};">${esc(content.offerDetails)}</div>` : ''}
+      </td></tr>`
+    : ''
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${esc(content.subject)}</title></head>
   <body style="margin:0;padding:0;background:${PALE};-webkit-text-size-adjust:100%;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(content.preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
@@ -264,11 +287,8 @@ export function renderPromoEmail(content: PromoEmailContent, sender: EmailSender
             <div style="font-size:14px;line-height:21px;font-weight:600;">${esc(content.intro)}</div>
           </td></tr>
           <tr><td style="padding:0;">${hero}</td></tr>
+          ${offer}
           <tr><td bgcolor="${ICE}" align="center" style="padding:18px 20px 23px;background:${ICE};">${button(content.primaryButtonText, primaryHref, BLUE, '#FFFFFF')}</td></tr>
-          <tr><td bgcolor="${NAVY}" align="center" style="padding:25px 22px 20px;background:${NAVY};font-family:${FONT};color:#FFFFFF;">
-            <div style="font-size:21px;line-height:25px;font-weight:900;letter-spacing:-.035em;">A LITTLE CARE GOES A LONG WAY</div>
-            <div style="padding-top:7px;font-size:13px;line-height:19px;color:#E1EEF4;">Small seasonal checks can help your system feel ready for the warmer months.</div>
-          </td></tr>
           ${sections}
           <tr><td bgcolor="${NAVY}" align="center" style="padding:27px 24px 10px;background:${NAVY};font-family:${FONT};color:#FFFFFF;">
             <div style="font-size:21px;line-height:25px;font-weight:900;letter-spacing:-.035em;">${esc(content.closingHeadline)}</div>

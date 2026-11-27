@@ -6,7 +6,7 @@ import { Select } from '@/components/Select'
 import { useBusinessData } from '@/lib/business-context'
 import { CONTACT_EMAIL_TEMPLATES, contactEmailBody, type ContactEmailTemplateId } from '@/lib/contact-email'
 import { senderFrom } from '@/lib/automation-email'
-import { SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent, type PromoEmailContent, type PromoEmailSection } from '@/lib/promo-email'
+import { hasPromoOfferPlaceholder, SAMPLE_PROMO_EMAIL, sanitizePromoEmailContent, type PromoEmailContent, type PromoEmailSection } from '@/lib/promo-email'
 import { supabase } from '@/lib/supabase'
 
 const TEAL = '#2AA198'
@@ -165,6 +165,10 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
       setEmailError('The promotional campaign is still loading. Please wait a moment and try again.')
       return
     }
+    if (template === 'promo' && hasPromoOfferPlaceholder(promoContent)) {
+      setEmailError('Replace the bracketed offer amount and date before sending this promotion.')
+      return
+    }
     if (template !== 'promo' && !message.trim()) {
       setEmailError('Write a message before sending.')
       return
@@ -311,7 +315,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
   }
 
   const emailSendDisabled = sending || emailSent || !customer.email || previewLoading || previewInfo?.can_send === false ||
-    (template === 'promo' && (!promoEnabled || !promoLoaded || promoLoading || !promoBusinessId || previewInfo?.can_send !== true))
+    (template === 'promo' && (!promoEnabled || !promoLoaded || promoLoading || !promoBusinessId || previewInfo?.can_send !== true || hasPromoOfferPlaceholder(promoContent)))
 
   if (!isOpen) return null
 
@@ -443,6 +447,8 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                       <label><span style={labelStyle}>Eyebrow</span><input value={promoContent.eyebrow} onChange={e => { setPromoContent(p => ({ ...p, eyebrow: e.target.value })); setPromoSaved(false) }} maxLength={90} style={inputStyle} /></label>
                       <label><span style={labelStyle}>Main headline</span><input value={promoContent.headline} onChange={e => { setPromoContent(p => ({ ...p, headline: e.target.value })); setPromoSaved(false) }} maxLength={120} style={inputStyle} /></label>
                       <label><span style={labelStyle}>Introduction</span><textarea value={promoContent.intro} onChange={e => { setPromoContent(p => ({ ...p, intro: e.target.value })); setPromoSaved(false) }} maxLength={1200} style={{ ...textareaStyle, height: 82 }} /></label>
+                      <label><span style={labelStyle}>Offer amount or short highlight</span><input value={promoContent.offerValue} onChange={e => { setPromoContent(p => ({ ...p, offerValue: e.target.value })); setPromoSaved(false) }} maxLength={60} style={inputStyle} placeholder="e.g. 10% OFF" /></label>
+                      <label><span style={labelStyle}>Offer details and end date</span><input value={promoContent.offerDetails} onChange={e => { setPromoContent(p => ({ ...p, offerDetails: e.target.value })); setPromoSaved(false) }} maxLength={240} style={inputStyle} placeholder="e.g. when you book by 30 November" /></label>
                       <label><span style={labelStyle}>Hero image · JPG, PNG or WebP (max 5 MB)</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { void uploadPromoImage('hero', e.target.files?.[0]); e.currentTarget.value = '' }} style={{ ...inputStyle, padding: '8px 10px', height: 42 }} /></label>
                       <label><span style={labelStyle}>Hero image description</span><input value={promoContent.heroImageAlt} onChange={e => { setPromoContent(p => ({ ...p, heroImageAlt: e.target.value })); setPromoSaved(false) }} maxLength={180} style={inputStyle} /></label>
                       {promoContent.sections.map((section, index) => (
@@ -467,6 +473,7 @@ export function ContactDrawer({ customer, jobType, isOpen, onClose, isMobile, pr
                       <label><span style={labelStyle}>Closing copy</span><textarea value={promoContent.closing} onChange={e => { setPromoContent(p => ({ ...p, closing: e.target.value })); setPromoSaved(false) }} maxLength={800} style={{ ...textareaStyle, height: 82 }} /></label>
                     </div>
                   </details>
+                  {hasPromoOfferPlaceholder(promoContent) && <div role="status" style={{ marginTop: 10, padding: '9px 10px', borderRadius: 9, background: '#FFF7E8', color: '#8A4B08', fontSize: 11, lineHeight: 1.45 }}>Complete the offer amount and end date in “Edit text and images” before sending.</div>}
                   <button type="button" onClick={savePromoCampaign} disabled={promoSaving || promoLoading} style={{ ...actionStyle, height: 38, marginTop: 11, fontSize: 12, opacity: promoSaving ? 0.65 : 1 }}>
                     {promoSaving ? 'Saving campaign…' : promoSaved ? 'Default saved on this device' : 'Save as default on this device'}
                   </button>
